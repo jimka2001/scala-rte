@@ -270,7 +270,7 @@ p cnf 3 2
   }
   test("read dimacs benchmark files") {
     val base = this.getClass().getResource(".").toString.drop(5) // skip "file:" 5 characters
-    val rel = "../../../../../../data"
+    val rel = "../../../../../cl-robdd/data"
     // bench marks
     List("aim-100-1_6-no-1.cnf",
          "aim-50-1_6-yes1-4.cnf",
