@@ -20,35 +20,23 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package bdd
-import cl.CLcompat.prog2
 
 object MapColoring {
-  type FOLDFUN = (Seq[String], Bdd, ()=>Int, (Double,()=>Double)=>Unit, String=>Bdd)=>Bdd
+  type FOLD_FUN = (Seq[String], Bdd, String=>Bdd,(Bdd,Bdd)=>Bdd)=>Bdd
 
-  val folders:List[(Int,String,FOLDFUN)] = List(
-    (0,
-      "fold-left",
-      (states,top,incr,consume,getConstraints) => states.map(getConstraints).foldLeft(top) { (acc: Bdd, bdd: Bdd) =>
-      val n = incr()
-      val answer = And(acc, bdd)
-      val size = (() => answer.size().toDouble)
-      consume(n.toDouble, size)
-      answer
-    }),
-    locally{
-      // This imports the TreeReducible instances.
-      import treereduce.TreeReducible._
-      // This imports the obj.treeMapReduce() syntax.
-      import treereduce.TreeReduce._
-      (1,
-        "tree-fold",
-        (states,top,incr,consume,getConstraints) =>  states.treeMapReduce(top)(getConstraints, { (acc: Bdd, bdd: Bdd) =>
-        val n = incr()
-        val answer = And(acc, bdd)
-        val size = (() => answer.size().toDouble)
-        consume(n.toDouble, size)
-        answer
-      }) )  }  )
+  val folders:List[(Int,String,FOLD_FUN)] = {
+    import treereduce.TreeReducible._ // This imports the TreeReducible instances.
+    import treereduce.TreeReduce._ // This imports the obj.treeMapReduce() syntax.
+    List((0,
+           "fold-left",
+           (states, top, getConstraints, op) =>
+             states.map(getConstraints).foldLeft(top)(op)),
+         (1,
+           "tree-fold",
+           (states, top, getConstraints, op) =>
+             states.treeMapReduce(top)(getConstraints, op))
+         )
+  }
   // assign every state two Boolean variables to represent 1 of 4 colors
   def makeStateToVarMap(allStates: List[String]): Map[String, (Int, Int)] = {
     allStates.zipWithIndex.map {
@@ -103,16 +91,15 @@ object MapColoring {
           (if (bit1) Bdd(a) else Bdd(-a)),
           (if (bit2) Bdd(b) else Bdd(-b)))
     }
-    val topx: Bdd = BddTrue // or fixColors
 
-    def getConstraints(ab: String): Bdd = {
+    def computeBorderConstraints(ab: String): Bdd = {
       // convert the connection (neighbor) information from a state (ab)
       //   to a Bdd representing the color constraints because neighboring
       //   states cannot have the same color.   a and b are the color bits
       //   of state ab.  c and d are the color bits of the neighbor.
       //   The constraint (per neighbor) is that either a and c are different
       //   or b and d are different.
-      //   The getConstraints function AND's all these constraints for the
+      //   The computeBorderConstraints function AND's all these constraints for the
       //   neighbors of a given state.
       val (a, b) = stateToVar(ab)
       val neighbors = uniGraph.getOrElse(ab, Set())
@@ -128,13 +115,19 @@ object MapColoring {
           top //BddTrue
       }
     }
+
     var n = 0
     (stateToVar,
       folders(fold)._3(states,
                        top,
-                       ()=>{n=n+1 ; n},
-                       consume,
-                       getConstraints))
+                       computeBorderConstraints,
+                       ({ (acc: Bdd, bdd: Bdd) =>
+                         n = n + 1
+                         val answer = And(acc, bdd)
+                         val size = (() => answer.size().toDouble)
+                         consume(n.toDouble, size)
+                         answer
+                       })))
   }
 
   // calculate a mapping from graph node to color given that the hard work
@@ -224,10 +217,10 @@ object MapColoring {
     val numAllocations: Array[List[(Double, Double)]] = Array(List(), List())
 
     var retain: Map[String, String] = null
-    val folders = List(1 -> "treeMapReduce",
-                       2 -> "foldLeft")
-    for {(fold,folder) <- folders
-         k = fold - 1} {
+
+    for {(k,folder,_) <- folders
+         } {
+      println(s" calculating $folder for numNodes=$numNodes")
       retain = colorize(fold = k,
                         (n: Double, m: Double) => sizes(k) = (n -> m) :: sizes(k),
                         (n: Double, m: Double) => hashSizes(k) = (n -> m) :: hashSizes(k),
@@ -239,22 +232,22 @@ object MapColoring {
            <- List((sizes, 1 / 1000.0,
                      "Allocation for Map 4-coloring",
                      "Bdd size computed per step (K objects)",
-                     s"4-color-allocation-$numNodes"),
+                     s"$numNodes-4-color-allocation"),
                    (hashSizes, 1 / 1000.0,
                      "Hash Size for Map 4-coloring",
-                     "Hash size computed per step (K objects)",
-                     s"4-color-hash-size-$numNodes"),
+                     "Hash size at step (K objects)",
+                     s"$numNodes-4-color-hash-size"),
                    (numAllocations, 1 / 1000.0,
                      "Num Allocations for Map 4-coloring",
-                     "Num Allocations computed per step (K objects)",
-                     s"4-color-num-allocations-$numNodes"),
+                     "Num Allocations accumulated through step (K objects)",
+                     s"$numNodes-4-color-num-allocations"),
                    (times, 1e-9,
                      "Time elapsed for Map 4-coloring",
                      "Total time elapsed (sec)",
-                     s"4-color-time-$numNodes")
+                     s"$numNodes-4-color-time")
                    )} {
       import gnuplot.GnuPlot._
-      gnuPlot(folders.map{case(k,folder) => (s"Using $folder", measurements(k-1).map(_._1), measurements(k-1).map(_._2).map(_ * scale))})(
+      gnuPlot(folders.map{case(k,folder,_) => (s"Using $folder", measurements(k).map(_._1), measurements(k).map(_._2).map(_ * scale))})(
         title = title,
         xAxisLabel = "Step",
         yAxisLabel = yAxisLabel,
