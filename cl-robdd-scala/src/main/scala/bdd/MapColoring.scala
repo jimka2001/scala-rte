@@ -23,7 +23,32 @@ package bdd
 import cl.CLcompat.prog2
 
 object MapColoring {
+  type FOLDFUN = (Seq[String], Bdd, ()=>Int, (Double,()=>Double)=>Unit, String=>Bdd)=>Bdd
 
+  val folders:List[(Int,String,FOLDFUN)] = List(
+    (0,
+      "fold-left",
+      (states,top,incr,consume,getConstraints) => states.map(getConstraints).foldLeft(top) { (acc: Bdd, bdd: Bdd) =>
+      val n = incr()
+      val answer = And(acc, bdd)
+      val size = (() => answer.size().toDouble)
+      consume(n.toDouble, size)
+      answer
+    }),
+    locally{
+      // This imports the TreeReducible instances.
+      import treereduce.TreeReducible._
+      // This imports the obj.treeMapReduce() syntax.
+      import treereduce.TreeReduce._
+      (1,
+        "tree-fold",
+        (states,top,incr,consume,getConstraints) =>  states.treeMapReduce(top)(getConstraints, { (acc: Bdd, bdd: Bdd) =>
+        val n = incr()
+        val answer = And(acc, bdd)
+        val size = (() => answer.size().toDouble)
+        consume(n.toDouble, size)
+        answer
+      }) )  }  )
   // assign every state two Boolean variables to represent 1 of 4 colors
   def makeStateToVarMap(allStates: List[String]): Map[String, (Int, Int)] = {
     allStates.zipWithIndex.map {
@@ -103,37 +128,13 @@ object MapColoring {
           top //BddTrue
       }
     }
-
-    if (fold == 1)
-      locally {
-        // This imports the TreeReducible instances.
-        import treereduce.TreeReducible._
-        // This imports the obj.treeMapReduce() syntax.
-        import treereduce.TreeReduce._
-        var n = 0
-        (stateToVar,
-          states.treeMapReduce(top)(getConstraints, { (acc: Bdd, bdd: Bdd) =>
-            n = n + 1
-            val answer = And(acc, bdd)
-            val size = (() => answer.size().toDouble)
-            consume(n.toDouble, size)
-            answer
-          })
-        )
-      }
-    else
-      locally {
-        var n = 0
-        (stateToVar,
-          states.map(getConstraints).foldLeft(top) { (acc: Bdd, bdd: Bdd) =>
-            n = n + 1
-            val answer = And(acc, bdd)
-            val size = (() => answer.size().toDouble)
-            consume(n.toDouble, size)
-            answer
-          }
-        )
-      }
+    var n = 0
+    (stateToVar,
+      folders(fold)._3(states,
+                       top,
+                       ()=>{n=n+1 ; n},
+                       consume,
+                       getConstraints))
   }
 
   // calculate a mapping from graph node to color given that the hard work
