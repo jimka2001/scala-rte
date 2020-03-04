@@ -246,7 +246,8 @@ object Bdd {
     }
   }
 
-  def newCache(): Cache = CacheByJboss()
+  //def newCache(): Cache = CacheByJboss()
+  def newCache(): Cache = CacheByWeakRef()
 
   def getBddSizeCount():(Long,Long) = {
     maybeHash.value.get.getBddSizeCount()
@@ -254,7 +255,7 @@ object Bdd {
 
   // constructor Bdd(var,bddPositive,bddNegative)
   def apply(label: Int, positive: Bdd, negative: Bdd): Bdd = {
-    if (positive == negative)
+    if (positive eq negative)
       positive
     else {
       maybeHash.value match {
@@ -272,6 +273,33 @@ abstract class Cache {
   def getBddSizeCount():(Long,Long)
 
   var numAllocations:Long = 0L
+}
+
+case class CacheByWeakRef() extends Cache{
+  // This class is based very closely on the suggestions of Eyal Roth.
+  //     https://www.linkedin.com/in/eyal-roth/
+  //     https://users.scala-lang.org/u/eyalroth/summary
+  // See https://users.scala-lang.org/t/how-to-find-a-key-of-a-map/5694/36
+  import scala.ref.WeakReference
+  import scala.collection.mutable
+
+  val nodesIndex: mutable.WeakHashMap[BddNode, WeakReference[BddNode]] = mutable.WeakHashMap.empty
+
+  override def getBddSizeCount():(Long,Long) = {
+    (nodesIndex.size, numAllocations)
+  }
+  override def getOrCreate(label: Int, positive: Bdd, negative: Bdd): BddNode = {
+    val newNode = BddNode(label, positive, negative)
+
+    nodesIndex.get(newNode) match {
+      case Some(WeakReference(node)) =>
+        node
+      case _ =>
+        numAllocations = 1L + numAllocations
+        nodesIndex.put(newNode, WeakReference(newNode))
+        newNode
+    }
+  }
 }
 
 case class CacheByJboss() extends Cache {
