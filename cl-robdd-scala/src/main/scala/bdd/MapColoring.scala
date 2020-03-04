@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package bdd
+import cl.CLcompat.prog2
 
 object MapColoring {
 
@@ -55,7 +56,8 @@ object MapColoring {
   def graphToBdd(seed: List[String],
                  uniGraph:Map[String,Set[String]],
                  biGraph: Map[String, Set[String]],
-                 numNodes:Int,consume:(Double,Double)=>Unit,
+                 numNodes:Int,
+                 consume:(Double,()=>Double)=>Unit,
                  differentColor:List[String],
                  fold:Int): (Map[String,(Int,Int)],Bdd) = {
 
@@ -113,8 +115,8 @@ object MapColoring {
           states.treeMapReduce(top)(getConstraints, { (acc: Bdd, bdd: Bdd) =>
             n = n + 1
             val answer = And(acc, bdd)
-            val size = answer.size()
-            consume(n, size)
+            val size = (() => answer.size().toDouble)
+            consume(n.toDouble, size)
             answer
           })
         )
@@ -126,8 +128,8 @@ object MapColoring {
           states.map(getConstraints).foldLeft(top) { (acc: Bdd, bdd: Bdd) =>
             n = n + 1
             val answer = And(acc, bdd)
-            val size = answer.size()
-            consume(n, size)
+            val size = (() => answer.size().toDouble)
+            consume(n.toDouble, size)
             answer
           }
         )
@@ -178,19 +180,33 @@ object MapColoring {
     import System.nanoTime
     val colors: Array[String] = Array("red", "green", "orange", "yellow")
 
-    def colorize(fold: Int, newSize: (Double, Double) => Unit, newTime: (Double, Double) => Unit): Map[String, String] = {
+    def colorize(fold: Int,
+                 newSize: (Double, Double) => Unit,
+                 newHashSize: (Double, Double) => Unit,
+                 newNumAllocations: (Double, Double) => Unit,
+                 newTime          : (Double, Double) => Unit): Map[String, String] = {
       Bdd.withNewBddHash {
+        // we first convert the graph to a Bdd without counting the size, because counting
+        // the size is exponential in complexity given that the size of the Bdd grows
+        // exponentially.
         val time0 = nanoTime.toDouble
+        graphToBdd(List(start), uniGraph, biGraph, numNodes,
+                   (n: Double, _: () => Double) => {
+                     newTime(n, nanoTime() - time0)
+                   },
+                   differentColor,
+                   fold = fold)
+      }
+      Bdd.withNewBddHash {
         val (colorization, bdd) = graphToBdd(List(start), uniGraph, biGraph, numNodes,
-                                             (n: Double, size: Double) => {
-                                               newSize(n, size)
-                                               newTime(n, nanoTime() - time0)
+                                             (n: Double, size: () => Double) => {
+                                               newSize(n, size())
+                                               val Some((hashSize, numAllocations)) = Bdd.getBddSizeCount()
+                                               newHashSize(n, hashSize.toDouble)
+                                               newNumAllocations(n, numAllocations.toDouble)
                                              },
-                                             // TODO remove this differentColor argument and auto-generate a C3 or C4
-                                             //    within graphToBdd
                                              differentColor,
                                              fold = fold)
-
         bdd.findSatisfyingAssignment() match {
           case None => Map()
           case Some((assignTrue, assignFalse)) =>
@@ -201,29 +217,53 @@ object MapColoring {
       }
     }
 
-    var sizes1: List[(Double, Double)] = List()
-    var times1: List[(Double, Double)] = List()
-    cl.CLcompat.prog1(colorize(1,
-    { (n: Double, size: Double) => sizes1 = (n -> size) :: sizes1 },
-    { (n: Double, time: Double) => times1 = (n -> time) :: times1 }),
+    val sizes: Array[List[(Double, Double)]] = Array(List(), List())
+    val times: Array[List[(Double, Double)]] = Array(List(), List())
+    val hashSizes: Array[List[(Double, Double)]] = Array(List(), List())
+    val numAllocations: Array[List[(Double, Double)]] = Array(List(), List())
 
-                      locally {
-                        import gnuplot.GnuPlot._
-                        gnuPlot(List(("Using treeMapReduce", sizes1.map(_._1), sizes1.map(_._2).map(_ / 1000.0))
-                                     ))(
-                          title = "Allocation for Map 4-coloring",
-                          xAxisLabel = "Step",
-                          yAxisLabel = "Bdd size computed per step (K objects)",
-                          yLog = true,
-                          outputFileBaseName = "4-color-allocation")
-                        gnuPlot(List(("Using treeMapReduce", times1.map(_._1), times1.map(_._2).map(_ / 1e9))))(
-                          title = "Time elapsed for Map 4-coloring",
-                          xAxisLabel = "Step",
-                          yAxisLabel = "Total time elapsed (sec)",
-                          yLog = false,
-                          outputFileBaseName = "4-color-time")
-                      })
+    var retain: Map[String, String] = null
+    val folders = List(1 -> "treeMapReduce",
+                       2 -> "foldLeft")
+    for {(fold,folder) <- folders
+         k = fold - 1} {
+      retain = colorize(fold = k,
+                        (n: Double, m: Double) => sizes(k) = (n -> m) :: sizes(k),
+                        (n: Double, m: Double) => hashSizes(k) = (n -> m) :: hashSizes(k),
+                        (n: Double, m: Double) => numAllocations(k) = (n -> m) :: numAllocations(k),
+                        (n: Double, m: Double) => times(k) = (n -> m) :: times(k))
+    }
+
+    for {(measurements, scale, title, yAxisLabel, outputFileBaseName)
+           <- List((sizes, 1 / 1000.0,
+                     "Allocation for Map 4-coloring",
+                     "Bdd size computed per step (K objects)",
+                     s"4-color-allocation-$numNodes"),
+                   (hashSizes, 1 / 1000.0,
+                     "Hash Size for Map 4-coloring",
+                     "Hash size computed per step (K objects)",
+                     s"4-color-hash-size-$numNodes"),
+                   (numAllocations, 1 / 1000.0,
+                     "Num Allocations for Map 4-coloring",
+                     "Num Allocations computed per step (K objects)",
+                     s"4-color-num-allocations-$numNodes"),
+                   (times, 1e-9,
+                     "Time elapsed for Map 4-coloring",
+                     "Total time elapsed (sec)",
+                     s"4-color-time-$numNodes")
+                   )} {
+      import gnuplot.GnuPlot._
+      gnuPlot(folders.map{case(k,folder) => (s"Using $folder", measurements(k-1).map(_._1), measurements(k-1).map(_._2).map(_ * scale))})(
+        title = title,
+        xAxisLabel = "Step",
+        yAxisLabel = yAxisLabel,
+        yLog = true,
+        outputFileBaseName = outputFileBaseName
+        )
+    }
+    retain
   }
+
   def usMapColoringTest(numRegions:Int) = {
     import USAgraph._
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols)

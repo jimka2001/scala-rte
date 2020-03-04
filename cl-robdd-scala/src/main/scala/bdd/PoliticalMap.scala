@@ -94,8 +94,10 @@ class PoliticalMap {
       case Some(path) => path
     }
   }
-  def biGraphToDot(biGraph:Map[String,Set[String]],locations:Map[String,(Double,Double)],baseName:String)(symbols:(String=>String)={x=>x},
-                                                                                                          colors:(String=>String)={x=>"no-color"}) = {
+  def biGraphToDot(biGraph:Map[String,Set[String]],
+                   locations:Map[String,(Double,Double)],
+                   baseName:String)(symbols:(String=>String)={x=>x},
+                                    colors:(String=>String)={x=>"no-color"}) = {
     val dotPathName = s"/tmp/${baseName}.dot"
     val pngPathName = s"/tmp/${baseName}.png"
     val stream = new java.io.FileOutputStream(new java.io.File(dotPathName))
