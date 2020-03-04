@@ -195,7 +195,7 @@ object MapColoring {
         val (colorization, bdd) = graphToBdd(List(start), uniGraph, biGraph, numNodes,
                                              (n: Double, size: () => Double) => {
                                                newSize(n, size())
-                                               val Some((hashSize, numAllocations)) = Bdd.getBddSizeCount()
+                                               val (hashSize, numAllocations) = Bdd.getBddSizeCount()
                                                newHashSize(n, hashSize.toDouble)
                                                newNumAllocations(n, numAllocations.toDouble)
                                              },

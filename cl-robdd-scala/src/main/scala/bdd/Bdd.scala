@@ -22,6 +22,8 @@
 package bdd
 
 import scala.annotation.tailrec
+import scala.util.DynamicVariable
+
 
 sealed abstract class Bdd {
 
@@ -232,38 +234,22 @@ object Bdd {
       Bdd(-label, BddFalse, BddTrue) // calls Bdd.apply 3-arg version
   }
 
-  import scala.util.DynamicVariable
-
-  type BDD_HASH = scala.collection.mutable.Map[(Int, Bdd, Bdd), BddNode]
-  val maybeHash = new DynamicVariable[Option[BDD_HASH]](None)
-  var numAllocations = new DynamicVariable[Long](0L)
-
-  // this function is provided for debug purposes, to allow memory allocation
-  // monitoring during intense computations.
-  def getBddSizeCount():Option[(Long,Long)] = {
-    for{ hash <- maybeHash.value}
-      yield (hash.size, numAllocations.value)
-  }
+  val maybeHash = new DynamicVariable[Option[Cache]](None)
 
   // wrapper for all code which needs to calculate with Bdds.  The Bdd
   //   calculations need a hash map to enforce structural identity.
   //   Attempt to construct a Bdd outside the dynamic extend of this
   //   function results in an error.
   def withNewBddHash[A](code: => A): A = {
-    numAllocations.withValue(0L) {
-      maybeHash.withValue(Some(newHash())) {
-        code
-      }
+    maybeHash.withValue(Some(newCache())) {
+      code
     }
   }
 
-  def newHash(): BDD_HASH = {
-    // this code was suggested by Patrick Römer
-    // https://users.scala-lang.org/t/id-like-a-weak-hash-table-which-allows-gc-when-value-is-otherwise-unreferenced/4681/8?u=jimka
-    import org.jboss.util.collection._
+  def newCache(): Cache = CacheByJboss()
 
-    import scala.collection.JavaConverters._
-    new WeakValueHashMap[(Int, Bdd, Bdd), BddNode].asScala
+  def getBddSizeCount():(Long,Long) = {
+    maybeHash.value.get.getBddSizeCount()
   }
 
   // constructor Bdd(var,bddPositive,bddNegative)
@@ -273,18 +259,44 @@ object Bdd {
     else {
       maybeHash.value match {
         case None => sys.error("Bdd constructor called outside dynamic extent of withNewBddHash(...)")
-        case Some(hash) =>
-          hash.get((label, positive, negative)) match {
-            case Some(bdd: BddNode) => bdd
-            case None | Some(null) =>
-              val bdd = BddNode(label, positive, negative)
-              numAllocations.value = 1L + numAllocations.value
-              //if (0 == numAllocations.value % 1000000)
-              //  println(s"numAllocations = ${numAllocations.value} hash=${hash.size} " + 100 * hash.size.toDouble/numAllocations.value)
-              hash((label, positive, negative)) = bdd
-              bdd
-          }
+        case Some(hash) => hash.getOrCreate(label,positive,negative)
       }
+    }
+  }
+}
+
+abstract class Cache {
+  def getOrCreate(label:Int, positive:Bdd, negative:Bdd):BddNode
+  // this function is provided for debug purposes, to allow memory allocation
+  // monitoring during intense computations.
+  def getBddSizeCount():(Long,Long)
+
+  var numAllocations:Long = 0L
+}
+
+case class CacheByJboss() extends Cache {
+  type BDD_HASH = scala.collection.mutable.Map[(Int, Bdd, Bdd), BddNode]
+  // this code was suggested by Patrick Römer
+  // https://users.scala-lang.org/t/id-like-a-weak-hash-table-which-allows-gc-when-value-is-otherwise-unreferenced/4681/8?u=jimka
+  import org.jboss.util.collection._
+
+  import scala.collection.JavaConverters._
+  val hash = new WeakValueHashMap[(Int, Bdd, Bdd), BddNode].asScala
+
+  override def getBddSizeCount():(Long,Long) = {
+    (hash.size, numAllocations)
+  }
+
+  override def getOrCreate(label:Int,positive:Bdd,negative:Bdd):BddNode = {
+    hash.get((label, positive, negative)) match {
+      case Some(bdd: BddNode) => bdd
+      case None | Some(null) =>
+        val bdd = BddNode(label, positive, negative)
+        numAllocations = 1L + numAllocations
+        //if (0 == numAllocations.value % 1000000)
+        //  println(s"numAllocations = ${numAllocations.value} hash=${hash.size} " + 100 * hash.size.toDouble/numAllocations.value)
+        hash((label, positive, negative)) = bdd
+        bdd
     }
   }
 }
