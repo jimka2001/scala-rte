@@ -27,15 +27,14 @@ object MapColoring {
   val folders:List[(Int,String,FOLD_FUN)] = {
     import treereduce.TreeReducible._ // This imports the TreeReducible instances.
     import treereduce.TreeReduce._ // This imports the obj.treeMapReduce() syntax.
-    List((0,
-           "fold-left",
-           (states, top, getConstraints, op) =>
-             states.map(getConstraints).foldLeft(top)(op)),
-         (1,
+    List((1,
            "tree-fold",
            (states, top, getConstraints, op) =>
-             states.treeMapReduce(top)(getConstraints, op))
-         )
+             states.treeMapReduce(top)(getConstraints, op)),
+         (0,
+           "fold-left",
+           (states, top, getConstraints, op) =>
+             states.map(getConstraints).foldLeft(top)(op)))
   }
   // assign every state two Boolean variables to represent 1 of 4 colors
   def makeStateToVarMap(allStates: List[String]): Map[String, (Int, Int)] = {
