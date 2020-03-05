@@ -174,9 +174,11 @@ object MapColoring {
     import System.nanoTime
     val colors: Array[String] = Array("red", "green", "orange", "yellow")
 
-    def colorize(fold: Int,
-                 newSize: (Double, Double) => Unit,
-                 newHashSize: (Double, Double) => Unit,
+    def colorize(fold             : Int,
+                 newSize          : (Double, Double) => Unit,
+                 newGcCount       : (Double, Double) => Unit,
+                 newGcTime        : (Double, Double) => Unit,
+                 newHashSize      : (Double, Double) => Unit,
                  newNumAllocations: (Double, Double) => Unit,
                  newTime          : (Double, Double) => Unit): Map[String, String] = {
       Bdd.withNewBddHash {
@@ -185,15 +187,32 @@ object MapColoring {
         // exponentially.
         val time0 = nanoTime.toDouble
         graphToBdd(List(start), uniGraph, biGraph, numNodes,
-                   (n: Double, _: () => Double) => {
+                   (n                          : Double, _: () => Double) => {
                      newTime(n, nanoTime() - time0)
                    },
                    differentColor,
                    fold = fold)
       }
       Bdd.withNewBddHash {
+        import java.lang.management._
+
+        // Thanks Jasper M for the following recipe.
+        // https://users.scala-lang.org/u/jasper-m
+        // https://users.scala-lang.org/t/how-to-call-a-function-from-a-java-library/5722/2
+        val beans: Array[GarbageCollectorMXBean] = ManagementFactory
+          .getGarbageCollectorMXBeans()
+          .toArray(Array.empty[GarbageCollectorMXBean])
+
+        def gcCount(): Long = beans.foldLeft(0L) { (acc, b) => b.getCollectionCount() + acc }
+
+        def gcTime(): Long = beans.foldLeft(0L) { (acc, b) => b.getCollectionTime() + acc }
+
+        val gcCount0 = gcCount().toDouble
+        val gcTime0 = gcTime().toDouble
         val (colorization, bdd) = graphToBdd(List(start), uniGraph, biGraph, numNodes,
                                              (n: Double, size: () => Double) => {
+                                               newGcCount(n, gcCount() - gcCount0)
+                                               newGcTime(n, gcTime() - gcTime0)
                                                newSize(n, size())
                                                val (hashSize, numAllocations) = Bdd.getBddSizeCount()
                                                newHashSize(n, hashSize.toDouble)
@@ -202,7 +221,7 @@ object MapColoring {
                                              differentColor,
                                              fold = fold)
         bdd.findSatisfyingAssignment() match {
-          case None => Map()
+          case None => Map[String, String]()
           case Some((assignTrue, assignFalse)) =>
             val ret = assignColors(colorization, assignTrue, assignFalse, colors)
             println(s"  $numNodes color assignment=" + ret)
@@ -212,36 +231,73 @@ object MapColoring {
     }
 
     val sizes: Array[List[(Double, Double)]] = Array(List(), List())
+    val gcTimes: Array[List[(Double, Double)]] = Array(List(), List())
+    val gcCounts: Array[List[(Double, Double)]] = Array(List(), List())
     val times: Array[List[(Double, Double)]] = Array(List(), List())
     val hashSizes: Array[List[(Double, Double)]] = Array(List(), List())
     val numAllocations: Array[List[(Double, Double)]] = Array(List(), List())
 
+
     var retain: Map[String, String] = null
 
-    for {(k,folder,_) <- folders
+    for {(k, folder, _) <- folders
          } {
       println(s" calculating $folder for numNodes=$numNodes")
       retain = colorize(fold = k,
                         (n: Double, m: Double) => sizes(k) = (n -> m) :: sizes(k),
+                        (n: Double, m: Double) => gcCounts(k) = (n -> m) :: gcCounts(k),
+                        (n: Double, m: Double) => gcTimes(k) = (n -> m) :: gcTimes(k),
                         (n: Double, m: Double) => hashSizes(k) = (n -> m) :: hashSizes(k),
                         (n: Double, m: Double) => numAllocations(k) = (n -> m) :: numAllocations(k),
                         (n: Double, m: Double) => times(k) = (n -> m) :: times(k))
     }
+    //    val reclaimed: Array[List[(Double, Double)]] = for {(numAllocation:List[(Double,Double)],hashSize:List[(Double,Double)]) <- numAllocations.zip(hashSizes)
+    //                                                        ((n1:Double,numObj1:Double),(n2:Double,numObj2:Double)) <- numAllocation.zip(hashSize)
+    //                                                        } yield {
+    //      assert(n1 == n2)
+    //      (n1,numObj1 - numObj2)
+    //    }
 
-    for {(measurements, scale, title, yAxisLabel, outputFileBaseName)
-           <- List((sizes, 1 / 1000.0,
+    val reclaimed: Array[List[(Double, Double)]] = numAllocations.zip(hashSizes)
+      .map { case (numAllocation: List[(Double, Double)], hashSizes: List[(Double, Double)]) =>
+        def tmp(l1: List[(Double, Double)], l2: List[(Double, Double)]): List[(Double, Double)] = {
+          (l1, l2).zipped.map { case ((n1: Double, numObj1: Double), (n2: Double, numObj2: Double)) => {
+            assert(n1 == n2)
+            (n1, numObj1 - numObj2)
+          }
+          }
+        }
+
+        tmp(numAllocation, hashSizes)
+
+      }
+
+    for {(measurements, scale, yLog, title, yAxisLabel, outputFileBaseName)
+           <- List((sizes, 1 / 1000.0, true,
                      "Allocation for Map 4-coloring",
                      "Bdd size computed per step (K objects)",
                      s"$numNodes-4-color-allocation"),
-                   (hashSizes, 1 / 1000.0,
+                   (gcCounts, 1.0, false,
+                     "GC count for Map 4-coloring",
+                     "GC count",
+                     s"$numNodes-4-color-gc-count "),
+                   (gcTimes, 1.0, true,
+                     "GC time for map 4-coloring",
+                     "GC time (ms)",
+                     s"$numNodes-4-color-gc-time"),
+                   (hashSizes, 1 / 1000.0, true,
                      "Hash Size for Map 4-coloring",
                      "Hash size at step (K objects)",
                      s"$numNodes-4-color-hash-size"),
-                   (numAllocations, 1 / 1000.0,
+                   (numAllocations, 1 / 1000.0, true,
                      "Num Allocations for Map 4-coloring",
                      "Num Allocations accumulated through step (K objects)",
                      s"$numNodes-4-color-num-allocations"),
-                   (times, 1e-9,
+                   (reclaimed, 1/1000.0, true,
+                     "Num Objects reclaimed for Map 4-coloring",
+                     "Num Objects reclaimed through step (K objects)",
+                     s"$numNodes-4-color-reclaimed"),
+                   (times, 1e-9, true,
                      "Time elapsed for Map 4-coloring",
                      "Total time elapsed (sec)",
                      s"$numNodes-4-color-time")
@@ -251,7 +307,7 @@ object MapColoring {
         title = title,
         xAxisLabel = "Step",
         yAxisLabel = yAxisLabel,
-        yLog = true,
+        yLog = yLog,
         outputFileBaseName = outputFileBaseName
         )
     }
