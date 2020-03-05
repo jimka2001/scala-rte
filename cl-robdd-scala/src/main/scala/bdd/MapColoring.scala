@@ -77,12 +77,12 @@ object MapColoring {
     require(differentColor.length <= 4) // states whose colors are different to reduce the size of the BDD
     import GenericGraph.orderStates
 
-    val states = orderStates(seed, biGraph).take(numNodes)
+    val states = differentColor ++ orderStates(seed, biGraph).filter{st => !differentColor.contains(st)}.take(numNodes - differentColor.length)
     println(s"$numNodes (${states.length}) states: $states")
 
     val stateToVar: Map[String, (Int, Int)] = makeStateToVarMap(states)
     // TODO we need to find C3 or C4 subgraph and fix those colors rather than taking differentColor as input parameter.
-    val top: Bdd = differentColor.intersect(states).zipWithIndex.foldLeft(BddTrue: Bdd) { case (bdd, (st, index)) =>
+    val top: Bdd = differentColor.zipWithIndex.foldLeft(BddTrue: Bdd) { case (bdd, (st, index)) =>
       val (a, b) = stateToVar(st)
       val bit1 = (index & 1) == 1
       val bit2 = (index & 2) == 2
