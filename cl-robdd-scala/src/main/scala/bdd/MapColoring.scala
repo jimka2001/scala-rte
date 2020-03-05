@@ -166,6 +166,7 @@ object MapColoring {
   }
 
   def colorizeMap(numNodes:Int,
+                  baseName:String,
                   start:String,
                   uniGraph:Map[String,Set[String]],
                   biGraph:Map[String,Set[String]],
@@ -278,39 +279,41 @@ object MapColoring {
            <- List((sizes, 1 / 1000.0, true,
                      "Allocation for Map 4-coloring",
                      "Bdd size computed per step (K objects)",
-                     s"$numNodes-4-color-allocation"),
+                     "allocation"),
                    (gcCounts, 1.0, false,
                      "GC count for Map 4-coloring",
                      "GC count",
-                     s"$numNodes-4-color-gc-count "),
+                     "gc-count "),
                    (gcTimes, 1.0, true,
                      "GC time for map 4-coloring",
                      "GC time (ms)",
-                     s"$numNodes-4-color-gc-time"),
+                     "gc-time"),
                    (hashSizes, 1 / 1000.0, true,
                      "Hash Size for Map 4-coloring",
                      "Hash size at step (K objects)",
-                     s"$numNodes-4-color-hash-size"),
+                     "hash-size"),
                    (numAllocations, 1 / 1000.0, true,
                      "Num Allocations for Map 4-coloring",
                      "Num Allocations accumulated through step (K objects)",
-                     s"$numNodes-4-color-num-allocations"),
+                     "num-allocations"),
                    (reclaimed, 1/1000.0, true,
                      "Num Objects reclaimed for Map 4-coloring",
                      "Num Objects reclaimed through step (K objects)",
-                     s"$numNodes-4-color-reclaimed"),
+                     "reclaimed"),
                    (times, 1e-9, true,
                      "Time elapsed for Map 4-coloring",
                      "Total time elapsed (sec)",
-                     s"$numNodes-4-color-time")
+                     "time")
                    )} {
       import gnuplot.GnuPlot._
+
       gnuPlot(folders.map{case(k,folder,_) => (s"Using $folder", measurements(k).map(_._1), measurements(k).map(_._2).map(_ * scale))})(
         title = title,
         xAxisLabel = "Step",
         yAxisLabel = yAxisLabel,
         yLog = yLog,
-        outputFileBaseName = outputFileBaseName
+        grid = true,
+        outputFileBaseName = s"$baseName-$numNodes-4-color-$outputFileBaseName"
         )
     }
     retain
@@ -319,7 +322,7 @@ object MapColoring {
   def usMapColoringTest(numRegions:Int) = {
     import USAgraph._
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols)
-    val colors = colorizeMap(numRegions, "Maine",
+    val colors = colorizeMap(numRegions, "US", "ME",
                              stateUniGraph, // removeStates(List("Russia"), stateUniGraph),
                              stateBiGraph, //removeStates(List("Russia"), stateBiGraph),
                              List("MA", "VT", "NH"))
@@ -331,7 +334,7 @@ object MapColoring {
   def europeMapColoringTest(numRegions:Int) = {
     import EuropeGraph._
     biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions")(symbols = symbols)
-    val colors = colorizeMap(numRegions, "Russia",
+    val colors = colorizeMap(numRegions, "europe", "Russia",
                              stateUniGraph, //removeStates(List("Russia"), stateUniGraph),
                              stateBiGraph, // removeStates(List("Russia"), stateBiGraph),
                              List("Croatia", "Bosnia", "Serbia", "Montenegro"))
