@@ -152,7 +152,6 @@ object BddTrue extends BddTerm {
   override def apply(assignments:Assignment):Boolean = {
     true
   }
-
 }
 
 object BddFalse extends BddTerm {
@@ -173,13 +172,13 @@ case class BddNode(label:Int, positive:Bdd, negative:Bdd) extends Bdd {
   //   https://users.scala-lang.org/t/what-does-equivalence-of-instances-mean/4368/11?u=jimka
   override def equals(that: Any): Boolean = {
     that match {
-      case b: Bdd => this eq b
+      case BddNode(l2:Int,p2:Bdd,n2:Bdd) => ( p2 eq positive) && (n2 eq negative) && (l2 == label)
       case _ => false
     }
   }
 
   override def hashCode(): Int =
-    System.identityHashCode(this)
+    label.## ^ System.identityHashCode(positive) ^ ~System.identityHashCode(negative)
 
   def validateChild(child: Bdd): Unit = {
     // a BddTerm may be a child of any BddNode
