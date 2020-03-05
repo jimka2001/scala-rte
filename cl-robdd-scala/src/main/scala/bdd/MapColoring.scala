@@ -261,9 +261,11 @@ object MapColoring {
     val reclaimed: Array[List[(Double, Double)]] = numAllocations.zip(hashSizes)
       .map { case (numAllocation: List[(Double, Double)], hashSizes: List[(Double, Double)]) =>
         def tmp(l1: List[(Double, Double)], l2: List[(Double, Double)]): List[(Double, Double)] = {
-          (l1, l2).zipped.map { case ((n1: Double, numObj1: Double), (n2: Double, numObj2: Double)) => {
+          (l1, l2).zipped.flatMap { case ((n1: Double, numObj1: Double), (n2: Double, numObj2: Double)) => {
             assert(n1 == n2)
-            (n1, numObj1 - numObj2)
+            if (0.0 == numObj1 - numObj2)
+              List()
+            else List((n1, numObj1 - numObj2))
           }
           }
         }
