@@ -167,14 +167,14 @@ object EuropeGraph extends PoliticalMap {
                                                   "Ireland" -> Set(),
                                                   "Italy" -> Set("Slovenia"),
                                                   "Latvia" -> Set("Estonia", "Russia"),
-                                                  "Lithuania" -> Set("Belarus","Latvia"), // also Russia, but ignore this one
+                                                  "Lithuania" -> Set("Belarus","Latvia", "Russia"), // also Russia, but ignore this one
                                                   "Luxembourg" -> Set("Germany"),
                                                   "Moldova" -> Set("Ukraine","Romania"),
                                                   "Montenegro" -> Set("Kosovo","Croatia"),
                                                   "North Macedonia" -> Set("Greece","Albania","Kosovo"),
                                                   "Netherlands" -> Set("Germany"),
                                                   "Norway" -> Set("Finland","Russia"),
-                                                  "Poland" -> Set("Slovakia","Belarus","Ukraine","Lithuania"), // also to Russia but ignore that
+                                                  "Poland" -> Set("Slovakia","Belarus","Ukraine","Lithuania", "Russia"), // also to Russia but ignore that
                                                   "Portugal" -> Set("Spain"),
                                                   "Romania" -> Set("Ukraine","Hungary","Bulgaria","Serbia"),
                                                   "Russia" -> Set("Finland","Belarus","Ukraine"),
