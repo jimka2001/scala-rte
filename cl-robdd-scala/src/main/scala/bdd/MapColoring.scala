@@ -24,18 +24,19 @@ package bdd
 object MapColoring {
   type FOLD_FUN = (Seq[String], Bdd, String=>Bdd,(Bdd,Bdd)=>Bdd)=>Bdd
 
-  val folders:List[(Int,String,FOLD_FUN)] = {
+  val folders:Array[(String,FOLD_FUN)] = {
     import treereduce.TreeReducible._ // This imports the TreeReducible instances.
     import treereduce.TreeReduce._ // This imports the obj.treeMapReduce() syntax.
-    List((1,
+    Array((
            "tree-fold",
            (states, top, getConstraints, op) =>
              states.treeMapReduce(top)(getConstraints, op)),
-         (0,
+         (
            "fold-left",
            (states, top, getConstraints, op) =>
              states.map(getConstraints).foldLeft(top)(op)))
   }
+
   // assign every state two Boolean variables to represent 1 of 4 colors
   def makeStateToVarMap(differentColor:List[String], allStates: List[String]): Map[String, (Int, Int)]  = {
     def correlate(bias:Int, states:List[String]):Map[String, (Int, Int)]  = states.zipWithIndex.map {
@@ -82,7 +83,7 @@ object MapColoring {
     val states = differentColor ++ orderStates(seed, biGraph).filter{st => !differentColor.contains(st)}.take(numNodes - differentColor.length)
     println(s"$numNodes (${states.length}) states: $states")
 
-    val stateToVar: Map[String, (Int, Int)] = makeStateToVarMap(states)
+    val stateToVar: Map[String, (Int, Int)] = makeStateToVarMap(differentColor, states)
     // TODO we need to find C3 or C4 subgraph and fix those colors rather than taking differentColor as input parameter.
     val top: Bdd = differentColor.zipWithIndex.foldLeft(BddTrue: Bdd) { case (bdd, (st, index)) =>
       val (a, b) = stateToVar(st)
@@ -120,13 +121,14 @@ object MapColoring {
 
     var n = 0
     (stateToVar,
-      folders(fold)._3(states,
+      folders(fold)._2(states,
                        top,
                        computeBorderConstraints,
                        ({ (acc: Bdd, bdd: Bdd) =>
                          n = n + 1
                          val answer = And(acc, bdd)
                          val size = (() => answer.size().toDouble)
+                         //GraphViz.bddView(answer,drawFalseLeaf=false,s"intermediate-$n-of-$numNodes")
                          consume(n.toDouble, size)
                          answer
                        })))
@@ -189,12 +191,14 @@ object MapColoring {
         // the size is exponential in complexity given that the size of the Bdd grows
         // exponentially.
         val time0 = nanoTime.toDouble
-        graphToBdd(List(start), uniGraph, biGraph, numNodes,
+        val bdd = graphToBdd(List(start), uniGraph, biGraph, numNodes,
                    (n                          : Double, _: () => Double) => {
                      newTime(n, nanoTime() - time0)
                    },
                    differentColor,
                    fold = fold)
+        //GraphViz.bddView(bdd._2,drawFalseLeaf=false,s"$baseName-$numNodes")
+        bdd
       }
       Bdd.withNewBddHash {
         import java.lang.management._
@@ -243,7 +247,7 @@ object MapColoring {
 
     var retain: Map[String, String] = null
 
-    for {(k, folder, _) <- folders
+    for {((folder, _),k) <- folders.zipWithIndex
          } {
       println(s" calculating $folder for numNodes=$numNodes")
       retain = colorize(fold = k,
@@ -309,7 +313,8 @@ object MapColoring {
                    )} {
       import gnuplot.GnuPlot._
 
-      gnuPlot(folders.map{case(k,folder,_) => (s"Using $folder", measurements(k).map(_._1), measurements(k).map(_._2).map(_ * scale))})(
+      gnuPlot(folders.zipWithIndex.map{case((folder,_),k) =>
+        (s"Using $folder", measurements(k).map(_._1), measurements(k).map(_._2).map(_ * scale))}.toList)(
         title = title,
         xAxisLabel = "Step",
         yAxisLabel = yAxisLabel,
@@ -346,12 +351,13 @@ object MapColoring {
   }
 
   def main(argv: Array[String]): Unit = {
-    for {numNodes <- (30 to 40)} {
+    for {numNodes <- (35 to 49 )} {
       import java.lang.System.nanoTime
 
       val time0 = nanoTime
       println(s" === coloring $numNodes regions")
-      europeMapColoringTest(numNodes)
+      //europeMapColoringTest(numNodes)
+      usMapColoringTest(numNodes)
       val now = nanoTime
       val elapsed = (now - time0 ) * 1e9
       println(s"Time to colorize $numNodes regions was $elapsed sec")
