@@ -37,11 +37,14 @@ object MapColoring {
              states.map(getConstraints).foldLeft(top)(op)))
   }
   // assign every state two Boolean variables to represent 1 of 4 colors
-  def makeStateToVarMap(allStates: List[String]): Map[String, (Int, Int)] = {
-    allStates.zipWithIndex.map {
-      case (st, index) => (st -> (2 * index + 1, 2 * index + 2))
+  def makeStateToVarMap(differentColor:List[String], allStates: List[String]): Map[String, (Int, Int)]  = {
+    def correlate(bias:Int, states:List[String]):Map[String, (Int, Int)]  = states.zipWithIndex.map {
+      case (st, index) => (st -> (bias*2 + 2 * index + 1, bias*2 + 2 * index + 2))
     }.toMap
+    val list2 = allStates.filterNot(x => differentColor.contains(x))
+    correlate(0, differentColor) ++ correlate(differentColor.length, list2.reverse)
   }
+
   def uniGraphToBiGraph(uniGraph:Map[String,Set[String]]):Map[String,Set[String]] = {
     uniGraph.foldLeft(Map[String,Set[String]]()){
       case (acc:Map[String,Set[String]],(st1:String,states:Set[String])) =>
