@@ -169,7 +169,11 @@ object GraphViz {
              3,
              Xor(1, 2, And(-2, -3, 4)),
              AndNot(2, 3))).bddView(drawFalseLeaf=drawFalse,title="")
+
+      Or(1, 2).bddToDot(System.out, drawFalseLeaf = true, title="")
+
     }
     BddTrue.bddView(drawFalse,title="")
+
   }
 }

@@ -49,7 +49,7 @@ object Or extends BinaryOperations {
   def apply(b: LBdd): LBdd = b
 
 
-  def orOpExec(b1: LBddNode, b2: LBddNode): LBdd = {
+  def orOp(b1: LBddNode, b2: LBddNode): LBdd = {
     if (b1.label == b2.label)
       LBdd(b1.label, apply(b1.positive, b2.positive),
                      apply(b1.middle, b2.middle),
@@ -64,52 +64,6 @@ object Or extends BinaryOperations {
                      b2.negative)
   }
 
-  def orOpNegative(b1: LBddNode, b2: LBddNode): LBdd = {
-    if (b1.label < b2.label && b1.negative == LBddFalse) {
-      val b = apply(l = b1.middle, b = b2)
-      if (b.nonEmpty)
-        LBdd(b1.label, b1.positive, b, b.get())
-      else
-        LBdd(b1.label, b1.positive, b, b1.negative)
-    }
-    else if (b1.label > b2.label && b2.negative == LBddFalse) {
-      val b = apply(b = b1, l = b2.middle)
-      if (b.nonEmpty)
-        LBdd(b2.label, b2.positive, b, b.get())
-      else
-        LBdd(b2.label, b2.positive, b, b2.negative)
-    }
-    else
-      orOpExec(b1, b2)
-  }
-
-  def orOpPositive(b1: LBddNode, b2: LBddNode): LBdd = {
-    if (b1.label < b2.label && b1.positive == LBddFalse) {
-      val b = apply(l = b1.middle, b = b2)
-      if (b.nonEmpty)
-        LBdd(b1.label, b.get(), b, b1.negative)
-      else
-        LBdd(b1.label, b1.positive, b, b1.negative)
-    }
-    else if (b1.label > b2.label && b2.positive == LBddFalse) {
-      val b = apply(b = b1, l = b2.middle)
-      if (b.nonEmpty)
-        LBdd(b2.label, b.get(), b, b2.negative)
-      else
-        LBdd(b2.label, b2.positive, b, b2.negative)
-    }
-    else
-      orOpExec(b1, b2)
-  }
-
-  def orOp(b1: LBddNode, b2:LBddNode): LBdd = {
-    if (b1.negative == LBddFalse || b2.negative == LBddFalse)
-      orOpNegative(b1, b2)
-    else if (b1.positive == LBddFalse || b2.positive == LBddFalse)
-      orOpPositive(b1, b2)
-    else
-      orOpExec(b1, b2)
-  }
 
   def apply(b1: LBdd, b2: LBdd): LBdd = {
     (b1, b2) match {
@@ -125,8 +79,8 @@ object Or extends BinaryOperations {
   def apply(l1: lazyNode, l2: lazyNode): lazyNode = {
     (l1, l2) match {
       case (None, None) => None
-      case (None, _) => lazify(l2.get())
-      case (_, None) => lazify(l1.get())
+      case (None, _) => l2
+      case (_, None) => l1
       case (_, _) => lazify(apply(l1.get(), l2.get()))
     }
   }
@@ -135,7 +89,7 @@ object Or extends BinaryOperations {
     (b, l) match {
       case (_, None) => lazify(b)
       case (LBddTrue, _) => f_true
-      case (LBddFalse, _) => lazify(l.get())
+      case (LBddFalse, _) => l
       case (b: LBddNode, l: lazyNode) => lazify(apply(b, l.get()))
     }
   }
@@ -168,7 +122,7 @@ object And extends BinaryOperations {
     (b, l) match {
       case (_, None) => lazify(b)
       case (LBddFalse, _) => f_false
-      case (LBddTrue, _) => lazify(l.get())
+      case (LBddTrue, _) => l
       case (b: LBddNode, l: lazyNode) => lazify(apply(b, l.get()))
     }
   }

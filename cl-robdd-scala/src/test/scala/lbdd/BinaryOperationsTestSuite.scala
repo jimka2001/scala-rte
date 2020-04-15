@@ -23,6 +23,7 @@ package lbdd
 
 import lbdd.LBdd._
 import org.scalatest._
+import lbdd.GraphViz._
 
 
 class BinaryOperationsTestSuite extends FunSuite {
@@ -124,7 +125,7 @@ class BinaryOperationsTestSuite extends FunSuite {
     for (b1 <- samples) {
       for (b2 <- samples) {
         assert(Or(b1, b2).toString == Or(b2, b1).toString)
-        //assert(And(b1, b2).toString == And(b2, b1).toString)
+        // assert(And(b1, b2).toString == And(b2, b1).toString)
       }
     }
   }
@@ -139,5 +140,17 @@ class BinaryOperationsTestSuite extends FunSuite {
         }
       }
     }
+  }
+
+
+  test("and") {
+    val drawFalse = true
+    val b1 = Or(1, 2)
+    val b2 = Or(2, Not(3))
+
+    b1.bddView(drawFalseLeaf = drawFalse, "")
+    b2.bddView(drawFalseLeaf = drawFalse, "b2 : Or(2, Not(3))")
+    And(b1, b2).bddView(drawFalseLeaf = drawFalse, "And(b1, b2)")
+    And(b2, b1).bddView(drawFalseLeaf = drawFalse, "And(b2, b1)")
   }
 }

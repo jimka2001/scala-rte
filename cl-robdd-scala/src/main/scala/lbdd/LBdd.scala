@@ -114,6 +114,8 @@ object LBddFalse extends LBddTerm {
 // LBdd Internal nodes
 ///////////////////////////////
 
+
+
 case class LBddNode(label: Int, positive: LBdd,
                     middle: lazyNode, negative: LBdd) extends LBdd {
   override def equals(that: Any): Boolean = {
@@ -122,6 +124,8 @@ case class LBddNode(label: Int, positive: LBdd,
       case _ => false
     }
   }
+
+  LBdd.counter += 1
 
   //override def hashCode(): Int =
   //  System.identityHashCode(this)
@@ -160,6 +164,9 @@ case class LBddNode(label: Int, positive: LBdd,
 ///////////////////////////////
 
 object LBdd {
+
+  var counter: Int = 0
+
   implicit def int2lbdd(raw: Int): LBdd = LBdd(raw)
 
   def apply(label: Int, b1: LBdd, b2: LBdd): LBdd = {
@@ -178,6 +185,8 @@ object LBdd {
             middle: lazyNode, negative: LBdd): LBdd = {
     if (positive == negative && middle.isEmpty)
       positive
+    else if (negative == LBddFalse && middle.nonEmpty)
+      LBddNode(label, positive, middle, middle.get())
     else
       LBddNode(label, positive, middle, negative)
   }
@@ -189,9 +198,13 @@ object LBddTest {
 
   def main(args: Array[String]): Unit = {
     LBdd(1)
+    println(LBdd.counter)
 
     Or(LBdd(1), LBdd(2))
+    println(LBdd.counter)
     And(Or(LBdd(1), LBdd(2)), Or(LBdd(1), LBdd(-2)))
+    println(LBdd.counter)
     And(LBdd(1), LBdd(2), LBdd(3), LBdd(4))
+    println(LBdd.counter)
   }
 }

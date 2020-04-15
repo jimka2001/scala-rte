@@ -33,7 +33,7 @@ package object lbdd {
     * @param    b a lazy binary decision diagram
     * @return   A lazy node constructed from b
     */
-  def lazify(b: LBdd): lazyNode = {
+  def lazify(b: => LBdd): lazyNode = {
     Some(() => b)
   }
 
