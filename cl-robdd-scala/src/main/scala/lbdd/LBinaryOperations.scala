@@ -154,8 +154,8 @@ object Not {
 
   def apply(l: lazyNode): LBdd = {
     l match {
-      case None => LBddFalse            // TODO : ERROR ??
-      case Some(f) => apply(f())        // TODO : Is this ok ?
+      case None => LBddFalse
+      case Some(f) => f()
     }
   }
 

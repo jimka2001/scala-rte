@@ -185,13 +185,10 @@ object LBdd {
             middle: lazyNode, negative: LBdd): LBdd = {
     if (positive == negative && middle.isEmpty)
       positive
-    else if (negative == LBddFalse && middle.nonEmpty)
-      LBddNode(label, positive, middle, middle.get())
     else
       LBddNode(label, positive, middle, negative)
   }
 }
-
 
 
 object LBddTest {

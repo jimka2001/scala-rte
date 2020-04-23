@@ -146,11 +146,13 @@ class BinaryOperationsTestSuite extends FunSuite {
   test("and") {
     val drawFalse = true
     val b1 = Or(1, 2)
-    val b2 = Or(2, Not(3))
+    val b2 = Or(1, Not(2))
+    val b = LBdd(1)
 
-    b1.bddView(drawFalseLeaf = drawFalse, "")
-    b2.bddView(drawFalseLeaf = drawFalse, "b2 : Or(2, Not(3))")
-    And(b1, b2).bddView(drawFalseLeaf = drawFalse, "And(b1, b2)")
-    And(b2, b1).bddView(drawFalseLeaf = drawFalse, "And(b2, b1)")
+    //b.bddView(drawFalseLeaf = drawFalse, "x1")
+    //Not(b).bddView(drawFalseLeaf = drawFalse, "Not(x1)")
+
+    b2.bddView(drawFalseLeaf = drawFalse, "Or(x1, Not(x2))")
+    b1.bddView(drawFalseLeaf = drawFalse, "Or(x1, x2)")
   }
 }
