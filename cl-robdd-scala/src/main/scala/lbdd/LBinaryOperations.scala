@@ -241,10 +241,12 @@ object Xor extends BinaryOperations {
   def apply(b: LBdd): LBdd = b
 
   def apply(b1: LBdd, b2: LBdd): LBdd = {
-    ???
+
+    // TODO : lazify
+
+    And(Or(Not(b1), Not(b2)), Or(b1, b2))
   }
 }
-
 
 
 object Xnor extends BinaryOperations {
@@ -253,6 +255,9 @@ object Xnor extends BinaryOperations {
   def apply(b: LBdd): LBdd = b
 
   def apply(b1: LBdd, b2: LBdd): LBdd = {
-    ???
+
+    // TODO : lazify
+
+    And(Or(b1, Not(b2)), Or(Not(b1), b2))
   }
 }
