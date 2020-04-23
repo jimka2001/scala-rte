@@ -268,30 +268,30 @@ p cnf 3 2
       assert(cnf == List(List(-1,3,2), List(-3, 1)), s"failed for str=$str")
     }
   }
-  test("read dimacs benchmark files") {
-    val base = this.getClass().getResource(".").toString.drop(5) // skip "file:" 5 characters
-    val rel = "../../../../../../data"
-    // bench marks
-    List("aim-100-1_6-no-1.cnf",
-         "aim-50-1_6-yes1-4.cnf",
-         "bf0432-007.cnf",
-         "dtba-sat.cnf",
-         "dubois20.cnf",
-         "dubois21.cnf",
-         "dubois22.cnf",
-         "hole6.cnf",
-         "par8-1-c.cnf",
-         "quinn.cnf",
-         "sat-33ZzxW.cnf",
-
-         "sat-dMt1DH.cnf", // too big
-         "simple_v3_c2.cnf",
-         "zebra_v155_c1135.cnf"
-         ).foreach { fname =>
-
-      dimacsConvertFile(fname,
-                        fname => base + rel + "/" + fname,
-                        fname => s"/tmp/reduced-$fname")
-    }
-  }
+//  test("read dimacs benchmark files") {
+//    val base = this.getClass().getResource(".").toString.drop(5) // skip "file:" 5 characters
+//    val rel = "../../../../../../data"
+//    // bench marks
+//    List("aim-100-1_6-no-1.cnf",
+//         "aim-50-1_6-yes1-4.cnf",
+//         "bf0432-007.cnf",
+//         "dtba-sat.cnf",
+//         "dubois20.cnf",
+//         "dubois21.cnf",
+//         "dubois22.cnf",
+//         "hole6.cnf",
+//         "par8-1-c.cnf",
+//         "quinn.cnf",
+//         "sat-33ZzxW.cnf",
+//
+//         "sat-dMt1DH.cnf", // too big
+//         "simple_v3_c2.cnf",
+//         "zebra_v155_c1135.cnf"
+//         ).foreach { fname =>
+//
+//      dimacsConvertFile(fname,
+//                        fname => base + rel + "/" + fname,
+//                        fname => s"/tmp/reduced-$fname")
+//    }
+//  }
 }
