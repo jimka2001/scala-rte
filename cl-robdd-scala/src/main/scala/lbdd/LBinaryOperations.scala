@@ -120,7 +120,7 @@ object And extends BinaryOperations {
 
   def apply(b: LBdd, l: lazyNode): lazyNode = {
     (b, l) match {
-      case (_, None) => lazify(b)
+      case (_, None) => f_false
       case (LBddFalse, _) => f_false
       case (LBddTrue, _) => l
       case (b: LBddNode, l: lazyNode) => lazify(apply(b, l.get()))
