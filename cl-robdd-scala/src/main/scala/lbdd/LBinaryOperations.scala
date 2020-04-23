@@ -32,7 +32,7 @@ sealed abstract class BinaryOperations {
   def apply(args: List[LBdd]): LBdd = {
     args match {
       case Nil => apply()
-      case b::Nil => apply(b)
+      case b :: Nil => apply(b)
       case _ => args.reduceLeft {
         (acc, b) => apply(acc, b)         // TODO : Better ?
       }
@@ -105,7 +105,7 @@ object And extends BinaryOperations {
     if (b1.label == b2.label)
       LBdd(b1.label, apply(Or(b1.positive, b1.middle),
                            Or(b2.positive, b1.middle)),
-                     f_false,
+                     None,
                      apply(Or(b1.negative, b1.middle),
                            Or(b2.negative, b1.middle)))
     else if (b1.label < b2.label)
@@ -120,8 +120,8 @@ object And extends BinaryOperations {
 
   def apply(b: LBdd, l: lazyNode): lazyNode = {
     (b, l) match {
-      case (_, None) => f_false
-      case (LBddFalse, _) => f_false
+      case (_, None) => None
+      case (LBddFalse, _) => None
       case (LBddTrue, _) => l
       case (b: LBddNode, l: lazyNode) => lazify(apply(b, l.get()))
     }
@@ -165,7 +165,7 @@ object Not {
       case LBddTrue => LBddFalse
       case b: LBddNode =>
         LBdd(b.label, apply(Or(b.negative, b.middle)),
-                      f_false,
+                      None,
                       apply(Or(b.positive, b.middle)))
     }
   }
@@ -184,19 +184,19 @@ object AndNot extends BinaryOperations {
                      apply(b1.negative, b2.negative))
     else if (b1.label < b2.label)
       LBdd(b1.label, apply(Or(b1.positive, b1.middle), b2),
-                     f_false,
+                     None,
                      apply(Or(b1.negative, b1.middle), b2))
     else
       LBdd(b2.label, apply(b1, Or(b2.positive, b2.middle)),
-                     f_false,
+                     None,
                      apply(b1, Or(b2.negative, b2.middle)))
   }
 
   def apply(l1: lazyNode, l2: lazyNode): lazyNode = {
     (l1, l2) match {
       case (None, None) => None
-      case (None, _) => f_false         // TODO : Not sure, None ?
-      case (_, None) => f_false
+      case (None, _) => None         // TODO : Not sure, None ?
+      case (_, None) => None
       case (_, _) => lazify(apply(l1.get(), l2.get()))
     }
   }
