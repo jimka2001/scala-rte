@@ -155,18 +155,19 @@ object Not {
   def apply(l: lazyNode): LBdd = {
     l match {
       case None => LBddFalse
-      case Some(f) => f()
+      case Some(f) => apply(f())
     }
   }
 
+  // TODO : Do not understand why this works
   def apply(b: LBdd): LBdd = {
     b match {
       case LBddFalse => LBddTrue
       case LBddTrue => LBddFalse
       case b: LBddNode =>
-        LBdd(b.label, apply(Or(b.negative, b.middle)),
+        LBdd(b.label, apply(Or(b.positive, b.middle)),
                       None,
-                      apply(Or(b.positive, b.middle)))
+                      apply(Or(b.negative, b.middle)))
     }
   }
 }
