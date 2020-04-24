@@ -64,7 +64,7 @@ class BinaryOperationsTestSuite extends FunSuite {
     assert(AndNot(LBddFalse, LBddFalse) eq LBddFalse)
   }
 
-  test("failing identities") {
+  test("Xor and Xnor identities") {
     // Xor identities
     assert(Xor(LBddTrue, LBddFalse) eq LBddTrue)
     assert(Xor(LBddTrue, LBddTrue) eq LBddFalse)
