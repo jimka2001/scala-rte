@@ -119,7 +119,7 @@ class BinaryOperationsTestSuite extends FunSuite {
 
         // TODO
 
-        // assert(Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2)).toString == Or(b1, b2).toString)
+//        assert(Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2)).toString == Or(b1, b2).toString)
       }
     }
   }
@@ -147,12 +147,12 @@ class BinaryOperationsTestSuite extends FunSuite {
       for (b2 <- samples) {
         assert(Or(b1, b2).toString == Or(b2, b1).toString)
 
-        if (And(b1, b2).toString != And(b2, b1).toString) {
-          b1.bddView(drawFalseLeaf = true, title = "b1")
-          b2.bddView(drawFalseLeaf = true, title = "b2")
-          And(b1, b2).bddView(drawFalseLeaf = true, title = "And(b1, b2)")
-          And(b2, b1).bddView(drawFalseLeaf = true, title = "And(b2, b1)")
-        }
+//        if (And(b1, b2).toString != And(b2, b1).toString) {
+//          b1.bddView(drawFalseLeaf = true, title = "b1")
+//          b2.bddView(drawFalseLeaf = true, title = "b2")
+//          And(b1, b2).bddView(drawFalseLeaf = true, title = "And(b1, b2)")
+//          And(b2, b1).bddView(drawFalseLeaf = true, title = "And(b2, b1)")
+//        }
         assert(And(b1, b2).toString == And(b2, b1).toString)
       }
     }
@@ -180,6 +180,9 @@ class BinaryOperationsTestSuite extends FunSuite {
 //            And(And(b1, b2), b3).bddView(true, "And(And(b1, b2), b3)")
 //            And(b1, And(b2, b3)).bddView(true, "And(b1, And(b2, b3))")
 //          }
+
+          assert(Evaluator.truthEval(Or(Or(b1, b2), b3), Or(b1, Or(b2, b3)), 3))
+          assert(Evaluator.truthEval(And(And(b1, b2), b3), And(b1, And(b2, b3)), 3))
 
 //          assert(Or(Or(b1, b2), b3).toString == Or(b1, Or(b2, b3)).toString)
 //          assert(And(And(b1, b2), b3).toString == And(b1, And(b2, b3)).toString)

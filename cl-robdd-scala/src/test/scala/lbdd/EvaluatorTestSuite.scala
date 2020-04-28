@@ -58,20 +58,6 @@ class EvaluatorTestSuite extends FunSuite {
     }
   }
 
-
-  def permutations(n : Int): List[List[Boolean]] = {
-    val input = List(true, false)
-    n match {
-      case 1 => for (el <- input) yield List(el)
-      case _ => for (el <- input; perm <- permutations(n - 1)) yield el :: perm
-    }
-  }
-
-  def mapPermutations(n: Int): Set[Map[Int, Boolean]] = {
-    permutations(n).map(l => (l.indices.map(_ + 1) zip l).toMap).toSet
-  }
-
-
   val all3Values: Set[Map[Int, Boolean]] =
     Set(
       Map(1 -> true, 2 -> true, 3 -> true),
@@ -86,7 +72,7 @@ class EvaluatorTestSuite extends FunSuite {
 
   test("permutations") {
     for (n <- 1 to 7) {
-      val perms = mapPermutations(n)
+      val perms = Evaluator.mapPermutations(n)
       assert(perms.size == Math.pow(2, n))
       assert(perms.forall(p => p.size == n))
     }
@@ -98,15 +84,27 @@ class EvaluatorTestSuite extends FunSuite {
     val b2 = And(Not(And(1, 2)), Not(And(1, 3)))
     val b3 = And(Or(Not(1), Not(2)), Or(Not(1), Not(3)))
 
-    for (l <- mapPermutations(3)) {
-      if (Evaluator(b2, l) != Evaluator(b3, l)) {
-        Or(Not(1), Not(2)).bddView(true, "Or(Not(1), Not(2))")
-        Or(Not(1), Not(3)).bddView(true, "Or(Not(1), Not(3))")
-        b3.bddView(true, "And(Or(Not(1), Not(2)), Or(Not(1), Not(3)))")
-        //b2.bddView(true, "And(Not(And(1, 2)), Not(And(1, 3)))")
-      }
+    for (l <- Evaluator.mapPermutations(3)) {
+//      if (Evaluator(b2, l) != Evaluator(b3, l)) {
+//        Or(Not(1), Not(2)).bddView(true, "Or(Not(1), Not(2))")
+//        Or(Not(1), Not(3)).bddView(true, "Or(Not(1), Not(3))")
+//        b3.bddView(true, "And(Or(Not(1), Not(2)), Or(Not(1), Not(3)))")
+//        //b2.bddView(true, "And(Not(And(1, 2)), Not(And(1, 3)))")
+//      }
       assert(Evaluator(b1, l) == Evaluator(b2, l))
       assert(Evaluator(b2, l) == Evaluator(b3, l))
+    }
+  }
+
+
+
+  test("not canonical") {
+    for (l <- Evaluator.mapPermutations(3)) {
+      val b1 = And(Not(1), Not(2), Not(3))
+      val b2 = LBdd(2)
+
+      assert(Evaluator(Or(b1, b2), l) ==
+        Evaluator(Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2)), l))
     }
   }
 
