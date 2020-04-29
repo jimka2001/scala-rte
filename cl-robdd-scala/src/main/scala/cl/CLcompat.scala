@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2019,20 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -65,17 +65,22 @@ object CLcompat {
     //  by the caller.
     //  Usage:  block{ ret =>  ... ret(someValue) ...}
 
+    // extending Exception with NoStackTrace prevents throwing the
+    // exception from computing the stacktrace and storing the information.
+    // We don't need a stacktrace because the purpose of this exception
+    // is simply to perform a non-local exit.
     import scala.util.control.NoStackTrace
 
-    class NonLocalExit(val data:A) extends Exception with NoStackTrace {}
+    class NonLocalExit(val data:A,val ident:(A=>Nothing)=>A) extends Exception with NoStackTrace {}
+
     def ret(data:A):Nothing = {
-      throw new NonLocalExit(data)
+      throw new NonLocalExit(data,body)
     }
     try{
       body(ret)
     }
     catch{
-      case nonLocalExit: NonLocalExit => nonLocalExit.data
+      case nonLocalExit: NonLocalExit if nonLocalExit.ident eq body => nonLocalExit.data
     }
   }
 }
