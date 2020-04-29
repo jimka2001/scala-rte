@@ -63,6 +63,10 @@ object CLcompat {
     //  by the caller.
     //  Usage:  block{ ret =>  ... ret(someValue) ...}
 
+    // extending Exception with NoStackTrace prevents throwing the
+    // exception from computing the stacktrace and storing the information.
+    // We don't need a stacktrace because the purpose of this exception
+    // is simply to perform a non-local exit.
     import scala.util.control.NoStackTrace
 
     class NonLocalExit(val data:A) extends Exception with NoStackTrace {}
