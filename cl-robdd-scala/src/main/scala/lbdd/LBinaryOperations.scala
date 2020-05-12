@@ -104,10 +104,10 @@ object And extends BinaryOperations {
   def andOp(b1: LBddNode, b2: LBddNode): LBdd = {
     if (b1.label == b2.label)
       LBdd(b1.label, apply(Or(b1.positive, b1.middle),
-                           Or(b2.positive, b1.middle)),
+                           Or(b2.positive, b2.middle)), // b2 ?
                      None,
                      apply(Or(b1.negative, b1.middle),
-                           Or(b2.negative, b1.middle)))
+                           Or(b2.negative, b2.middle))) // b2 ?
     else if (b1.label < b2.label)
       LBdd(b1.label, apply(b1.positive, b2),
                      apply(l = b1.middle, b = b2),

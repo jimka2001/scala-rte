@@ -50,10 +50,6 @@ class EvaluatorTestSuite extends FunSuite {
     val b2 = And(Not(1), Not(2))
 
     for (l <- allValues) {
-      if (Evaluator(b1, l) != Evaluator(b2, l)) {
-        b1.bddView(true, "Not(Or(1, 2))")
-        b2.bddView(true, "And(Not(1), Not(2))")
-      }
       assert(Evaluator(b1, l) == Evaluator(b2, l))
     }
   }
@@ -78,25 +74,25 @@ class EvaluatorTestSuite extends FunSuite {
     }
   }
 
-
   test("De Morgan's and Associativity") {
     val b1 = Not(And(1, Or(2, 3)))
     val b2 = And(Not(And(1, 2)), Not(And(1, 3)))
-    val b3 = And(Or(Not(1), Not(2)), Or(Not(1), Not(3)))
+
+    val or1 = Or(Not(1), Not(2))
+    val or2 = Or(Not(1), Not(3))
+    val b3 = And(or1, or2)
 
     for (l <- Evaluator.mapPermutations(3)) {
-//      if (Evaluator(b2, l) != Evaluator(b3, l)) {
-//        Or(Not(1), Not(2)).bddView(true, "Or(Not(1), Not(2))")
-//        Or(Not(1), Not(3)).bddView(true, "Or(Not(1), Not(3))")
-//        b3.bddView(true, "And(Or(Not(1), Not(2)), Or(Not(1), Not(3)))")
-//        //b2.bddView(true, "And(Not(And(1, 2)), Not(And(1, 3)))")
-//      }
+      if (Evaluator(b2, l) != Evaluator(b3, l)) {
+        or1.bddView(true, "Or(Not(1), Not(2))")
+        or2.bddView(true, "Or(Not(1), Not(3))")
+        b3.bddView(true, "And(Or(Not(1), Not(2)), Or(Not(1), Not(3)))")
+        //b2.bddView(true, "And(Not(And(1, 2)), Not(And(1, 3)))")
+      }
       assert(Evaluator(b1, l) == Evaluator(b2, l))
       assert(Evaluator(b2, l) == Evaluator(b3, l))
     }
   }
-
-
 
   test("not canonical") {
     for (l <- Evaluator.mapPermutations(3)) {

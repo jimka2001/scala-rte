@@ -97,29 +97,11 @@ class BinaryOperationsTestSuite extends FunSuite {
     }
   }
 
-  test("AndNot trivial") {
-    val b1 = AndNot(1, 2)
-    val b2 = AndNot(2, 1)
-
-    //b1.bddView(true, "AndNot(1, 2)")
-    //b2.bddView(true, "AndNot(2, 1)")
-  }
-
   test("AndNot") {
     val samples = genSamples()
     for (b1 <- samples) {
       for (b2 <- samples) {
-
-//        if (Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2)).toString != Or(b1, b2).toString) {
-//          b1.bddView(drawFalseLeaf = true, title = "b1")
-//          b2.bddView(drawFalseLeaf = true, title = "b2")
-//          Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2)).bddView(drawFalseLeaf = true, title = "Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2))")
-//          Or(b1, b2).bddView(drawFalseLeaf = true, title = "Or(b1, b2)")
-//        }
-
-        // TODO
-
-//        assert(Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2)).toString == Or(b1, b2).toString)
+        assert(Evaluator.truthEval(Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2)), Or(b1, b2), 3))
       }
     }
   }
@@ -133,11 +115,8 @@ class BinaryOperationsTestSuite extends FunSuite {
           v3 <- 1 to 4
           if v3 != 0
         } {
-
-      // TODO
-
-      //assert(And(v1, v2, v3).toString == And(v1, And(v2, v3)).toString)
-      //assert(Or(v1, v2, v3).toString == Or(v1, Or(v2, v3)).toString)
+      assert(Evaluator.truthEval(And(v1, v2, v3), And(v1, And(v2, v3)), 4))
+      assert(Evaluator.truthEval(Or(v1, v2, v3), Or(v1, Or(v2, v3)), 4))
     }
   }
 
@@ -146,13 +125,6 @@ class BinaryOperationsTestSuite extends FunSuite {
     for (b1 <- samples) {
       for (b2 <- samples) {
         assert(Or(b1, b2).toString == Or(b2, b1).toString)
-
-//        if (And(b1, b2).toString != And(b2, b1).toString) {
-//          b1.bddView(drawFalseLeaf = true, title = "b1")
-//          b2.bddView(drawFalseLeaf = true, title = "b2")
-//          And(b1, b2).bddView(drawFalseLeaf = true, title = "And(b1, b2)")
-//          And(b2, b1).bddView(drawFalseLeaf = true, title = "And(b2, b1)")
-//        }
         assert(And(b1, b2).toString == And(b2, b1).toString)
       }
     }
@@ -163,56 +135,12 @@ class BinaryOperationsTestSuite extends FunSuite {
     for (b1 <- samples) {
       for (b2 <- samples) {
         for (b3 <- samples) {
-
-          // TODO
-
-//          if (Or(Or(b1, b2), b3).toString != Or(b1, Or(b2, b3)).toString) {
-//            b1.bddView(true, "b1")
-//            b2.bddView(true, "b2")
-//            b3.bddView(true, "b3")
-//            Or(Or(b1, b2), b3).bddView(true, "Or(Or(b1, b2), b3)")
-//            Or(b1, Or(b2, b3)).bddView(true, "Or(b1, Or(b2, b3))")
-//          }
-//          if (And(And(b1, b2), b3).toString != And(b1, And(b2, b3)).toString) {
-//            b1.bddView(true, "b1")
-//            b2.bddView(true, "b2")
-//            b3.bddView(true, "b3")
-//            And(And(b1, b2), b3).bddView(true, "And(And(b1, b2), b3)")
-//            And(b1, And(b2, b3)).bddView(true, "And(b1, And(b2, b3))")
-//          }
-
           assert(Evaluator.truthEval(Or(Or(b1, b2), b3), Or(b1, Or(b2, b3)), 3))
           assert(Evaluator.truthEval(And(And(b1, b2), b3), And(b1, And(b2, b3)), 3))
 
-//          assert(Or(Or(b1, b2), b3).toString == Or(b1, Or(b2, b3)).toString)
-//          assert(And(And(b1, b2), b3).toString == And(b1, And(b2, b3)).toString)
         }
       }
     }
   }
 
-  test("And") {
-    val drawFalse = true
-    val b1 = And(1, 2)
-    val b2 = And(2, 1)
-
-//    b1.bddView(drawFalseLeaf = drawFalse, "And(1, 2)")
-//    b2.bddView(drawFalseLeaf = drawFalse, "And(2, 1)")
-    //b3.bddView(drawFalseLeaf = drawFalse)
-    //b4.bddView(drawFalseLeaf = drawFalse)
-  }
-
-
-  test("Or") {
-    val drawFalse = true
-    val b1 = Or(1, 2)
-    val b2 = Or(1, Not(2))
-    val b = LBdd(1)
-
-    //b.bddView(drawFalseLeaf = drawFalse, "x1")
-    //Not(b).bddView(drawFalseLeaf = drawFalse, "Not(x1)")
-
-    //b2.bddView(drawFalseLeaf = drawFalse, "Or(x1, Not(x2))")
-    //b1.bddView(drawFalseLeaf = drawFalse, "Or(x1, x2)")
-  }
 }
