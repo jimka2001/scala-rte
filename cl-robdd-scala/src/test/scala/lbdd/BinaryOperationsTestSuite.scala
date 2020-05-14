@@ -78,6 +78,42 @@ class BinaryOperationsTestSuite extends FunSuite {
     assert(Xnor(LBddFalse, LBddFalse) eq LBddTrue)
   }
 
+  test("Xor samples") {
+    val samples = genSamples()
+    for (b1 <- samples) {
+      for (b2 <- samples) {
+        val b = Xor(b1, b2)
+        val t1 = Or(And(b1, Not(b2)), And(Not(b1), b2))
+        val t2 = And(Or(b1, b2), Or(Not(b1), Not(b2)))
+        val t3 = And(Or(b1, b2), Not(And(b1, b2)))
+        val t = Seq(t1, t2, t3)
+
+        assert(t.forall(Evaluator.truthEval(b, _, 3)))
+
+        assert(Evaluator.truthEval(b, Xor(Not(b1), b2), 3))
+        assert(Evaluator.truthEval(b, Xor(b1, Not(b2)), 3))
+        assert(Evaluator.truthEval(b, Xor(Not(b1), Not(b2)), 3))
+        assert(Evaluator.truthEval(Xor(b, b2), b1, 3))
+      }
+    }
+  }
+
+  test("Xnor samples") {
+    val samples = genSamples()
+    for (b1 <- samples) {
+      for (b2 <- samples) {
+        val b = Xnor(b1, b2)
+        val t1 = And(Or(b1, Not(b2)), Or(Not(b1), b2))
+        val t2 = Or(And(b1, b2), And(Not(b1), Not(b2)))
+        val t3 = Or(And(b1, b2), Not(Or(b1, b2)))
+        val t4 = Xnor(b2, b1)
+        val t = Seq(t1, t2, t3, t4)
+
+        assert(t.forall(Evaluator.truthEval(b, _, 3)))
+      }
+    }
+  }
+
   test("idempotence") {
     val samples = genSamples()
     for (b <- samples) {
@@ -126,6 +162,7 @@ class BinaryOperationsTestSuite extends FunSuite {
       for (b2 <- samples) {
         assert(Or(b1, b2).toString == Or(b2, b1).toString)
         assert(And(b1, b2).toString == And(b2, b1).toString)
+        assert(Xnor(b1, b2).toString == Xnor(b2, b1).toString)
       }
     }
   }
@@ -137,7 +174,7 @@ class BinaryOperationsTestSuite extends FunSuite {
         for (b3 <- samples) {
           assert(Evaluator.truthEval(Or(Or(b1, b2), b3), Or(b1, Or(b2, b3)), 3))
           assert(Evaluator.truthEval(And(And(b1, b2), b3), And(b1, And(b2, b3)), 3))
-
+          assert(Evaluator.truthEval(Xnor(Xnor(b1, b2), b3), Xnor(b1, And(b2, b3)), 3))
         }
       }
     }

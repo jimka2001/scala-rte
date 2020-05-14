@@ -84,10 +84,10 @@ class EvaluatorTestSuite extends FunSuite {
 
     for (l <- Evaluator.mapPermutations(3)) {
       if (Evaluator(b2, l) != Evaluator(b3, l)) {
-        or1.bddView(true, "Or(Not(1), Not(2))")
-        or2.bddView(true, "Or(Not(1), Not(3))")
-        b3.bddView(true, "And(Or(Not(1), Not(2)), Or(Not(1), Not(3)))")
-        //b2.bddView(true, "And(Not(And(1, 2)), Not(And(1, 3)))")
+//        or1.bddView(true, "Or(Not(1), Not(2))")
+//        or2.bddView(true, "Or(Not(1), Not(3))")
+//        b3.bddView(true, "And(Or(Not(1), Not(2)), Or(Not(1), Not(3)))")
+        b2.bddView(true, "And(Not(And(1, 2)), Not(And(1, 3)))")
       }
       assert(Evaluator(b1, l) == Evaluator(b2, l))
       assert(Evaluator(b2, l) == Evaluator(b3, l))

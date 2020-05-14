@@ -104,10 +104,10 @@ object And extends BinaryOperations {
   def andOp(b1: LBddNode, b2: LBddNode): LBdd = {
     if (b1.label == b2.label)
       LBdd(b1.label, apply(Or(b1.positive, b1.middle),
-                           Or(b2.positive, b2.middle)), // b2 ?
+                           Or(b2.positive, b2.middle)),
                      None,
                      apply(Or(b1.negative, b1.middle),
-                           Or(b2.negative, b2.middle))) // b2 ?
+                           Or(b2.negative, b2.middle)))
     else if (b1.label < b2.label)
       LBdd(b1.label, apply(b1.positive, b2),
                      apply(l = b1.middle, b = b2),
@@ -245,7 +245,7 @@ object Xor extends BinaryOperations {
 
     // TODO : lazify
 
-    And(Or(Not(b1), Not(b2)), Or(b1, b2))
+    Or(And(b1, Not(b2)), And(Not(b1), b2))
   }
 }
 
@@ -259,6 +259,6 @@ object Xnor extends BinaryOperations {
 
     // TODO : lazify
 
-    And(Or(b1, Not(b2)), Or(Not(b1), b2))
+    Or(And(b1, b2), And(Not(b1), Not(b2)))
   }
 }
