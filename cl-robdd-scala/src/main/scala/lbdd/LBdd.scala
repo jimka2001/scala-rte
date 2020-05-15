@@ -27,6 +27,20 @@ import bdd.Assignment
 
 sealed abstract class LBdd {
 
+  def findSatisfyingAssignment(): Option[(Assignment, Assignment)] = {
+    def recur(b: LBdd, assignTrue: Assignment, assignFalse: Assignment): Option[(Assignment, Assignment)] = {
+      b match {
+        case LBddFalse => None
+        case LBddTrue => Some((assignTrue, assignFalse))
+        case LBddNode(label, positive, middle, negative) =>
+          recur(positive, Assignment(assignTrue.trueVariables + label), assignFalse) orElse
+          recur(negative, assignTrue, Assignment(assignTrue.trueVariables + label)) orElse
+          recur(unlazify(middle), assignTrue, assignFalse)
+      }
+    }
+    recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))
+  }
+
 
   def fold[R](z: R)(f: (R, LBdd) => R): R = {
     def bfsWalk(f: LBdd => Unit): Unit = {
@@ -80,8 +94,6 @@ sealed abstract class LBdd {
   }
 
 
-
-
   def apply(assignment: Assignment): Boolean
 }
 
@@ -127,9 +139,6 @@ case class LBddNode(label: Int, positive: LBdd,
 
   LBdd.counter += 1
 
-  //override def hashCode(): Int =
-  //  System.identityHashCode(this)
-
   def validateChild(child: LBdd): Unit = {
     child match {
       case child: LBddNode => assert(child.label > label)
@@ -138,11 +147,13 @@ case class LBddNode(label: Int, positive: LBdd,
   }
 
   validateChild(positive)
-  //  validateChild(middle.get.apply)     // TODO : Label on lazy node ?
   validateChild(negative)
 
   def apply(assignment: Assignment): Boolean = {
-    ???
+    if (assignment.value(label))
+      positive(assignment) || unlazify(middle)(assignment)
+    else
+      negative(assignment) || unlazify(middle)(assignment)
   }
 
   override def toString: String = {

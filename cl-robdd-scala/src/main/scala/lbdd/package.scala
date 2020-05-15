@@ -40,4 +40,11 @@ package object lbdd {
   // Lazy leaves, functional true and false
   val f_false: lazyNode = lazify(LBddFalse)
   val f_true: lazyNode = lazify(LBddTrue)
+
+  def unlazify(b: lazyNode): LBdd = {
+    if (b.isEmpty)
+      LBddFalse
+    else
+      b.get()
+  }
 }
