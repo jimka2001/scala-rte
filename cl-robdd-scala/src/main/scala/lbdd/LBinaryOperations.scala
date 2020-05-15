@@ -245,7 +245,7 @@ object Xor extends BinaryOperations {
 
     // TODO : lazify
 
-    Or(And(b1, Not(b2)), And(Not(b1), b2))
+    Or(AndNot(b1, b2), AndNot(b2, b1))
   }
 }
 
