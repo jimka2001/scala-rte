@@ -123,7 +123,7 @@ object And extends BinaryOperations {
       case (_, None) => None
       case (LBddFalse, _) => None
       case (LBddTrue, _) => l
-      case (b: LBddNode, l: lazyNode) => apply(b, l)
+      case (b: LBddNode, l: lazyNode) => lazify(apply(b, l.get()))
     }
   }
 
@@ -155,7 +155,7 @@ object Not {
   def apply(l: lazyNode): LBdd = {
     l match {
       case None => LBddFalse
-      case Some(f) => apply(f())
+      case f => apply(f())
     }
   }
 

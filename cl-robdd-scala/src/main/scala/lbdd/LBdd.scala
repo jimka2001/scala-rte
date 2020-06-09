@@ -30,8 +30,8 @@ sealed abstract class LBdd {
   def findSatisfyingAssignment(): Option[(Assignment, Assignment)] = {
     def recur(b: LBdd, assignTrue: Assignment, assignFalse: Assignment): Option[(Assignment, Assignment)] = {
       b match {
-        case LBddFalse => None
-        case LBddTrue => Some((assignTrue, assignFalse))
+        case LBddFalse => scala.None
+        case LBddTrue => scala.Some((assignTrue, assignFalse))
         case LBddNode(label, positive, middle, negative) =>
           recur(positive, Assignment(assignTrue.trueVariables + label), assignFalse) orElse
           recur(negative, assignTrue, Assignment(assignTrue.trueVariables + label)) orElse
@@ -55,7 +55,7 @@ sealed abstract class LBdd {
             recur(tail,
               h match {
                 case LBddNode(_, pos, None, neg) => pos :: neg :: nextGeneration
-                case LBddNode(_, pos, Some(mid), neg) => pos :: mid() :: neg :: nextGeneration
+                case LBddNode(_, pos, mid, neg) => pos :: mid() :: neg :: nextGeneration
                 case _ => nextGeneration
               },
               done + h
@@ -83,9 +83,8 @@ sealed abstract class LBdd {
         visited = visited + bdd
         bdd match {
           case _: LBddTerm => 1 + n
-          case bdd: LBddNode => {
+          case bdd: LBddNode =>
             recur(bdd.negative, recur(bdd.middle.get(), recur(bdd.positive, 2 + n)))
-          }
         }
       }
     }
@@ -101,7 +100,7 @@ sealed abstract class LBdd {
 // LBdd Terminal nodes
 ///////////////////////////////
 
-sealed abstract  class LBddTerm extends LBdd {
+sealed abstract class LBddTerm extends LBdd {
 }
 
 object LBddTrue extends LBddTerm {
@@ -162,7 +161,7 @@ case class LBddNode(label: Int, positive: LBdd,
       case (LBddFalse, None, LBddTrue) => "!" + label.toString
 
         // TODO : Better printer
-      case _ if middle.nonEmpty => label + positive.toString + middle.get() + negative.toString
+      case _ if middle.nonEmpty => label + positive.toString + middle.get().toString + negative.toString
       case _ => label + positive.toString + "N" + negative.toString
 
     }

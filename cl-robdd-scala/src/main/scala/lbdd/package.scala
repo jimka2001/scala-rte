@@ -26,7 +26,30 @@ package object lbdd {
   //  empty middle node. If the middle node is not empty, then it contains a function
   //  returning a lazy binary decision diagram.
 
-  type lazyNode = Option[() => LBdd]
+
+  case class lazyNode(f: Option[() => LBdd], negation: Boolean = false) {
+    def apply(): LBdd = {
+      f.get()
+    }
+
+    def isEmpty: Boolean = {
+      f.isEmpty
+    }
+
+    def nonEmpty: Boolean = {
+      f.nonEmpty
+    }
+
+    def get: () => LBdd = {
+      f.get
+    }
+  }
+
+  object None extends lazyNode(scala.None)
+
+  def Some(f: () => LBdd): lazyNode = {
+    lazyNode(scala.Some(f))
+  }
 
 
   /** lazification function
@@ -40,6 +63,7 @@ package object lbdd {
   // Lazy leaves, functional true and false
   val f_false: lazyNode = lazify(LBddFalse)
   val f_true: lazyNode = lazify(LBddTrue)
+
 
   def unlazify(b: lazyNode): LBdd = {
     if (b.isEmpty)

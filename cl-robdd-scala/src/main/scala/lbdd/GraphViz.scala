@@ -36,7 +36,7 @@ object GraphViz {
   val dotProgram:String = locally{
     import java.nio.file.{Files, Paths}
     Seq("/usr/local/bin/dot").find(p => Files.exists(Paths.get(p))) match {
-      case None => "dot"
+      case scala.None => "dot"
       case Some(path) => path
     }
   }
@@ -96,7 +96,8 @@ object GraphViz {
     def drawConnection(parent: LBdd, child: LBdd, style: String, color: String,
                        arrowHead: Option[String], arrowTail: Option[String], dir: Option[String]): Unit = {
       if ((child != LBddFalse) || drawFalseLeaf) {
-        write(s" ${names(parent)} -> ${names(child)} [")
+
+        write(s" ${names.getOrElse(parent, 0)} -> ${names.getOrElse(child, 0)} [")
         write(s"style=$style,color=$color,penwidth=$penWidth")
         for {a <- arrowHead} {
           write(s",arrowhead=$a")
@@ -114,10 +115,10 @@ object GraphViz {
     for {(bdd, n) <- names} yield {
       bdd match {
         case bdd: LBddNode =>
-          drawConnection(bdd, bdd.positive, style = """"solid"""", color = """"green"""", arrowHead = None, arrowTail = None, dir = None)
+          drawConnection(bdd, bdd.positive, style = """"solid"""", color = """"green"""", arrowHead = scala.None, arrowTail = scala.None, dir = scala.None)
           if (bdd.middle.nonEmpty)
-            drawConnection(bdd, bdd.middle.get(), style = """"dashed"""", color = """"blue"""", arrowHead = None, arrowTail = None, dir = None)
-          drawConnection(bdd, bdd.negative, style = """"solid"""", color = """"red"""", arrowHead = Some("normal"), arrowTail = Some("odot"), dir = Some("both"))
+            drawConnection(bdd, bdd.middle.get(), style = """"dashed"""", color = """"blue"""", arrowHead = scala.None, arrowTail = scala.None, dir = scala.None)
+          drawConnection(bdd, bdd.negative, style = """"solid"""", color = """"red"""", arrowHead = scala.Some("normal"), arrowTail = scala.Some("odot"), dir = scala.Some("both"))
         case _ => ()
       }
     }
@@ -155,18 +156,20 @@ object GraphViz {
 
   def main(argv: Array[String]): Unit = {
     val drawFalse = true
-      val bdd3 = LBdd(3)
-      val bdd2 = LBdd(2)
-      LBdd(1).bddToDot(System.out, drawFalseLeaf=drawFalse,"")
-      //LBdd(1, bdd2, bdd3).bddView(drawFalseLeaf=drawFalse,"")
-      Or(1, 2, -3, And(-1, 4), And(2, Not(Or(1, 3)))).bddView(drawFalseLeaf=drawFalse,"")
+    val bdd3 = LBdd(3)
+    val bdd2 = LBdd(2)
+    LBdd(1).bddToDot(System.out, drawFalseLeaf=drawFalse,"")
+    //LBdd(1, bdd2, bdd3).bddView(drawFalseLeaf=drawFalse,"")
+    Or(1, 2, -3, And(-1, 4), And(2, Not(Or(1, 3)))).bddView(drawFalseLeaf=drawFalse,"")
+    Or(1, 2).bddView(true, "Or(1, 2)")
+    Or(1, 3).bddView(true, "Or(1, 3)")
 
-      //Not(Or(Or(1, And(-2, -3)),
-      //       AndNot(2, 3))).bddView(drawFalseLeaf=drawFalse,title="")
-      //Not(Or(-2,
-      //       3,
-      //       Or(1, 2, And(-2, -3, 4)),
-      //       AndNot(2, 3))).bddView(drawFalseLeaf=drawFalse,title="")
+    //Not(Or(Or(1, And(-2, -3)),
+    //       AndNot(2, 3))).bddView(drawFalseLeaf=drawFalse,title="")
+    //Not(Or(-2,
+    //       3,
+    //       Or(1, 2, And(-2, -3, 4)),
+    //       AndNot(2, 3))).bddView(drawFalseLeaf=drawFalse,title="")
     //LBddTrue.bddView(drawFalse,title="")
   }
 }
