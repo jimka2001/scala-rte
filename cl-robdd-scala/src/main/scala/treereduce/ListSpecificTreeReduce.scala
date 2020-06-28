@@ -41,7 +41,10 @@ object ListSpecificTreeReduce{
     else {
       @scala.annotation.tailrec
       def recur(li: List[(A, A)], maybeB: Option[A]): A = {
-        val reduced: List[A] = li.map { case (b1: A, b2: A) => f(b1, b2) }
+        // val reduced: List[A] = li.map { case (b1: A, b2: A) => f(b1, b2) }
+        def f1(aa:(A,A)):A = f(aa._1, aa._2)
+        val reduced: List[A] = li.map(f1)
+
         if (reduced.tail.isEmpty)
           maybeB match {
             case None => reduced.head
@@ -64,7 +67,7 @@ object ListSpecificTreeReduce{
   }
 
   def treeFold[A](m: List[A])(z: A)(f: (A, A) => A): A = {
-
+    @scala.annotation.tailrec
     def consumeStack(stack: List[(Int, A)]): List[(Int, A)] = {
       stack match {
         case (i, b1) :: (j, b2) :: tail if i == j => consumeStack((i + 1, f(b2, b1)) :: tail)

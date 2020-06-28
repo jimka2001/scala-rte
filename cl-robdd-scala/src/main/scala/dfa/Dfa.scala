@@ -17,7 +17,7 @@ class Dfa[L,E](Qids:Set[Int], q0id:Int, Fids:Set[Int], protoDelta:Set[(Int,L,Int
   // each element of Fids is in Qids
   require(Fids.subsetOf(Qids))
   // each triple in protoDelta is of the form (x,_,y) where x and y are elements of Qids
-  require(protoDelta.forall { case (from: Int, label: L, to: Int) => Qids.contains(from) && Qids.contains(to) })
+  require(protoDelta.forall { case (from: Int, _, to: Int) => Qids.contains(from) && Qids.contains(to) })
   // fMap maps each element of Fids to some object of type E
   require(fMap.map{case (q,_) => q}.toSet == Fids)
 
