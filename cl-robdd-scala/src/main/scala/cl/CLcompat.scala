@@ -58,6 +58,8 @@ object CLcompat {
     (L1, L2).zipped.flatMap(f)
   }
 
+  def mapcar[A1,A2,B](f:(A1,A2)=>B)(l1:List[A1],l2:List[A2]):List[B] = (l1,l2).zipped.map(f)
+
   def block[A](body:(A=>Nothing)=>A):A = {
     // CL like block/return, the name of the return() function is provided
     //  by the caller.

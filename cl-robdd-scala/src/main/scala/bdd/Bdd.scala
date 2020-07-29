@@ -22,6 +22,8 @@
 package bdd
 
 import scala.annotation.tailrec
+import scala.util.DynamicVariable
+
 
 sealed abstract class Bdd {
 
@@ -133,7 +135,6 @@ sealed abstract class Bdd {
     recur(this, 0)
   }
 
-
   def apply(assignments: Assignment): Boolean
 
 }
@@ -150,7 +151,6 @@ object BddTrue extends BddTerm {
   override def apply(assignments:Assignment):Boolean = {
     true
   }
-
 }
 
 object BddFalse extends BddTerm {
@@ -166,18 +166,18 @@ object BddFalse extends BddTerm {
 /////////////////////////////
 
 
-case class BddNode(label:Int, positive:Bdd, negative:Bdd) extends Bdd {
+case class BddNode(label:Short, positive:Bdd, negative:Bdd) extends Bdd {
   // equals and hashCode methods copied from here:
   //   https://users.scala-lang.org/t/what-does-equivalence-of-instances-mean/4368/11?u=jimka
   override def equals(that: Any): Boolean = {
     that match {
-      case b: Bdd => this eq b
+      case BddNode(l2:Short,p2:Bdd,n2:Bdd) => ( p2 eq positive) && (n2 eq negative) && (l2 == label)
       case _ => false
     }
   }
 
   override def hashCode(): Int =
-    System.identityHashCode(this)
+    label.## ^ System.identityHashCode(positive) ^ ~System.identityHashCode(negative)
 
   def validateChild(child: Bdd): Unit = {
     // a BddTerm may be a child of any BddNode
@@ -222,69 +222,122 @@ case class BddNode(label:Int, positive:Bdd, negative:Bdd) extends Bdd {
 //////////////////////////////
 
 object Bdd {
-  implicit def int2bdd(raw: Int): Bdd = Bdd(raw) // allow varargs And,Or,etc e.g., And(1), Or(1,2,3), And(1,Or(2,3))
+  implicit def int2bdd(raw: Int): Bdd = {
+    if (raw > scala.Short.MaxValue)
+      sys.error(s"int2bdd cannot convert $raw to Bdd because $raw > ${scala.Short.MaxValue}")
+    else if (raw < scala.Short.MinValue)
+      sys.error(s"int2bdd cannot convert $raw to Bdd because $raw < ${scala.Short.MinValue}")
+    else
+      Bdd(raw.toShort) // allow varargs And,Or,etc e.g., And(1), Or(1,2,3), And(1,Or(2,3))
+  }
+  implicit def short2bdd(raw: Short): Bdd = Bdd(raw) // allow varargs And,Or,etc e.g., And(1), Or(1,2,3), And(1,Or(2,3))
 
-  def apply(label: Int): Bdd = {
+  def apply(label:Int):Bdd = {
+    int2bdd(label)
+  }
+
+  def apply(label: Short): Bdd = {
     require(label != 0)
     if (label > 0)
       Bdd(label, BddTrue, BddFalse) // calls Bdd.apply 3-arg version
-    else // ( label < 0)
-      Bdd(-label, BddFalse, BddTrue) // calls Bdd.apply 3-arg version
+    else if (-label > scala.Short.MaxValue)
+      sys.error(s"cannot convert $label to Bdd because -$label > ${scala.Short.MaxValue}")
+    else { // ( label < 0)
+      Bdd((-label).toShort, BddFalse, BddTrue) // calls Bdd.apply 3-arg version
+    }
   }
 
-  import scala.util.DynamicVariable
-
-  type BDD_HASH = scala.collection.mutable.Map[(Int, Bdd, Bdd), BddNode]
-  val maybeHash = new DynamicVariable[Option[BDD_HASH]](None)
-  var numAllocations = new DynamicVariable[Long](0L)
-
-  // this function is provided for debug purposes, to allow memory allocation
-  // monitoring during intense computations.
-  def getBddSizeCount():Option[(Long,Long)] = {
-    for{ hash <- maybeHash.value}
-      yield (hash.size, numAllocations.value)
-  }
+  val maybeHash = new DynamicVariable[Option[Cache]](None)
 
   // wrapper for all code which needs to calculate with Bdds.  The Bdd
   //   calculations need a hash map to enforce structural identity.
   //   Attempt to construct a Bdd outside the dynamic extend of this
   //   function results in an error.
   def withNewBddHash[A](code: => A): A = {
-    numAllocations.withValue(0L) {
-      maybeHash.withValue(Some(newHash())) {
-        code
-      }
+    maybeHash.withValue(Some(newCache())) {
+      code
     }
   }
 
-  def newHash(): BDD_HASH = {
-    // this code was suggested by Patrick Römer
-    // https://users.scala-lang.org/t/id-like-a-weak-hash-table-which-allows-gc-when-value-is-otherwise-unreferenced/4681/8?u=jimka
-    import org.jboss.util.collection._
+  //def newCache(): Cache = CacheByJboss()
+  def newCache(): Cache = CacheByWeakRef()
 
-    import scala.collection.JavaConverters._
-    new WeakValueHashMap[(Int, Bdd, Bdd), BddNode].asScala
+  def getBddSizeCount():(Long,Long) = {
+    maybeHash.value.get.getBddSizeCount()
   }
 
   // constructor Bdd(var,bddPositive,bddNegative)
-  def apply(label: Int, positive: Bdd, negative: Bdd): Bdd = {
-    if (positive == negative)
+  def apply(label: Short, positive: Bdd, negative: Bdd): Bdd = {
+    if (positive eq negative)
       positive
     else {
       maybeHash.value match {
         case None => sys.error("Bdd constructor called outside dynamic extent of withNewBddHash(...)")
-        case Some(hash) =>
-          hash.get((label, positive, negative)) match {
-            case Some(bdd: BddNode) => bdd
-            case None | Some(null) =>
-              val bdd = BddNode(label, positive, negative)
-              numAllocations.value = 1L + numAllocations.value
-              //if (0 == numAllocations.value % 1000000)
-              //  println(s"numAllocations = ${numAllocations.value} hash=${hash.size} " + 100 * hash.size.toDouble/numAllocations.value)
-              hash((label, positive, negative)) = bdd
-              bdd
-          }
+        case Some(hash) => hash.getOrCreate(label,positive,negative)
       }
+    }
+  }
+}
+
+abstract class Cache {
+  def getOrCreate(label:Short, positive:Bdd, negative:Bdd):BddNode
+  // this function is provided for debug purposes, to allow memory allocation
+  // monitoring during intense computations.
+  def getBddSizeCount():(Long,Long)
+
+  var numAllocations:Long = 0L
+}
+
+case class CacheByWeakRef() extends Cache{
+  // This class is based very closely on the suggestions of Eyal Roth.
+  //     https://www.linkedin.com/in/eyal-roth/
+  //     https://users.scala-lang.org/u/eyalroth/summary
+  // See https://users.scala-lang.org/t/how-to-find-a-key-of-a-map/5694/36
+  import scala.ref.WeakReference
+  import scala.collection.mutable
+
+  val nodesIndex: mutable.WeakHashMap[BddNode, WeakReference[BddNode]] = mutable.WeakHashMap.empty
+
+  override def getBddSizeCount():(Long,Long) = {
+    (nodesIndex.size, numAllocations)
+  }
+  override def getOrCreate(label: Short, positive: Bdd, negative: Bdd): BddNode = {
+    val newNode = BddNode(label, positive, negative)
+
+    nodesIndex.get(newNode) match {
+      case Some(WeakReference(node)) =>
+        node
+      case _ =>
+        numAllocations = 1L + numAllocations
+        nodesIndex.put(newNode, WeakReference(newNode))
+        newNode
+    }
+  }
+}
+
+case class CacheByJboss() extends Cache {
+  type BDD_HASH = scala.collection.mutable.Map[(Int, Bdd, Bdd), BddNode]
+  // this code was suggested by Patrick Römer
+  // https://users.scala-lang.org/t/id-like-a-weak-hash-table-which-allows-gc-when-value-is-otherwise-unreferenced/4681/8?u=jimka
+  import org.jboss.util.collection._
+
+  import scala.collection.JavaConverters._
+  val hash = new WeakValueHashMap[(Int, Bdd, Bdd), BddNode].asScala
+
+  override def getBddSizeCount():(Long,Long) = {
+    (hash.size, numAllocations)
+  }
+
+  override def getOrCreate(label:Short,positive:Bdd,negative:Bdd):BddNode = {
+    hash.get((label, positive, negative)) match {
+      case Some(bdd: BddNode) => bdd
+      case None | Some(null) =>
+        val bdd = BddNode(label, positive, negative)
+        numAllocations = 1L + numAllocations
+        //if (0 == numAllocations.value % 1000000)
+        //  println(s"numAllocations = ${numAllocations.value} hash=${hash.size} " + 100 * hash.size.toDouble/numAllocations.value)
+        hash((label, positive, negative)) = bdd
+        bdd
     }
   }
 }

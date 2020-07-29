@@ -61,6 +61,7 @@ object EuropeGraph extends PoliticalMap {
                                    "Spain",
                                    "Sweden",
                                    "Switzerland",
+                                   "Turkey",
                                    "UK",
                                    "Ukraine"
                                    )
@@ -103,51 +104,53 @@ object EuropeGraph extends PoliticalMap {
                                    "Spain" -> "ES",
                                    "Sweden" -> "SE",
                                    "Switzerland" -> "CH",
+                                   "Turkey" -> "TU",
                                    "UK" -> "GB",
                                    "Ukraine" -> "UA"
                                    )
 
-  val statePositions:Map[String,(Double,Double)] = Map("Albania" -> (41.31666667,	19.816667),
-                                                       "Andora" -> (43.958292,2.0),
-                                                       "Austria" -> (48.2,	13.4),
+  val statePositions:Map[String,(Double,Double)] = Map("Albania" -> (42.0,	16.0),
+                                                       "Andora" -> (48.0,4.0),
+                                                       "Austria" -> (49.0,	11.0),
                                                        "Belarus" -> (53.9,	19.0),
                                                        "Belgium" -> (52.83333333,	4.333333),
-                                                       "Bosnia" -> (43.86666667,	18.416667),
-                                                       "Bulgaria" -> (42.68333333,	23.316667),
-                                                       "Croatia" -> (45.0,	16),
-                                                       "Czech Republic" -> (50.08333333, 14.466667),
+                                                       "Bosnia" -> (44.5,	13.5),
+                                                       "Bulgaria" -> (45.5,	22.0),
+                                                       "Croatia" -> (46.0,	12.0),
+                                                       "Czech Republic" -> (51.0, 13.0),
                                                        "Denmark" -> (54.66666667,	11.0),
                                                        "Estonia" -> (57.5,	16.5),
                                                        "Finland" -> (59.0,	16.5),
-                                                       "France" -> (49.0,	2.333333),
-                                                       "Germany" -> (52.51666667,	11.0),
-                                                       "Greece" -> (41.0,	23.0),
-                                                       "Hungary" -> (47.5,	19.083333),
-                                                       "Ireland" -> (53.31666667,	-1.0),
-                                                       "Italy" -> (43.0,	11.0),
-                                                       "Kosovo" -> (42.66666667,	20.0),
-                                                       "Liechtenstein" -> (46.0,	9.516667),
+                                                       "France" -> (49.0,	5.0),
+                                                       "Germany" -> (52.51666667,	10.0),
+                                                       "Greece" -> (42.0,	20.0),
+                                                       "Hungary" -> (47.5,	13.0),
+                                                       "Ireland" -> (55.0,	1.0),
+                                                       "Italy" -> (45.0,	7.0),
+                                                       "Kosovo" -> (44.0,	16.5),
+                                                       "Liechtenstein" -> (48.0, 8.5),
                                                        "Latvia" -> (56.0,	16.0),
                                                        "Lithuania" -> (54.68333333,	16.0),
                                                        "Luxembourg" -> (51.6,	6.116667),
-                                                       "Moldova" -> (48,	23.0),
-                                                       "Monaco" -> (43.73333333,	4.0),
-                                                       "Montenegro" -> (42.43333333,	18.0),
+                                                       "Moldova" -> (50.0,	21.0),
+                                                       "Monaco" -> (47.0,	5.0),
+                                                       "Montenegro" -> (42.43333333,	12.0),
                                                        "Netherlands" -> (54.35,	4.916667),
-                                                       "North Macedonia" -> (42,21.433333),
+                                                       "North Macedonia" -> (44.0,19.0),
                                                        "Norway" -> (62.0,	19.0),
                                                        "Poland" -> (52.25,	16.0),
-                                                       "Portugal" -> (45.0,-1.0),
-                                                       "Romania" -> (46.0,	23.0),
+                                                       "Portugal" -> (48.0,1.5),
+                                                       "Romania" -> (48.0,	19.0),
                                                        "Russia" -> (58.0,	22.0),
-                                                       "Serbia" -> (44.83333333,	20.5),
-                                                       "Slovakia" -> (49.0,	17.116667),
-                                                       "Slovenia" -> (46.05,	14.516667),
-                                                       "Spain" -> (46.0,0.0),
+                                                       "Serbia" -> (46.0,	17.0),
+                                                       "Slovakia" -> (49.5,	14.5),
+                                                       "Slovenia" -> (46.05,	10.0),
+                                                       "Spain" -> (49.0,3.0),
                                                        "Sweden" -> (58.0,	12.0),
-                                                       "Switzerland" -> (46.91666667,	7.466667),
-                                                       "UK" -> (51.507222,-0.1275),
-                                                       "Ukraine" -> (50.43333333,	20.0)
+                                                       "Switzerland" -> (49.0,	7.0),
+                                                       "Turkey" -> (43.0, 23.0),
+                                                       "UK" -> (53.5,2.0),
+                                                       "Ukraine" -> (50.43333333,	18.0)
                                                        )
 
 
@@ -167,14 +170,14 @@ object EuropeGraph extends PoliticalMap {
                                                   "Ireland" -> Set(),
                                                   "Italy" -> Set("Slovenia"),
                                                   "Latvia" -> Set("Estonia", "Russia"),
-                                                  "Lithuania" -> Set("Belarus","Latvia"), // also Russia, but ignore this one
+                                                  "Lithuania" -> Set("Belarus","Latvia", "Russia"), // also Russia, but ignore this one
                                                   "Luxembourg" -> Set("Germany"),
                                                   "Moldova" -> Set("Ukraine","Romania"),
                                                   "Montenegro" -> Set("Kosovo","Croatia"),
                                                   "North Macedonia" -> Set("Greece","Albania","Kosovo"),
                                                   "Netherlands" -> Set("Germany"),
                                                   "Norway" -> Set("Finland","Russia"),
-                                                  "Poland" -> Set("Slovakia","Belarus","Ukraine","Lithuania"), // also to Russia but ignore that
+                                                  "Poland" -> Set("Slovakia","Belarus","Ukraine","Lithuania", "Russia"), // also to Russia but ignore that
                                                   "Portugal" -> Set("Spain"),
                                                   "Romania" -> Set("Ukraine","Hungary","Bulgaria","Serbia"),
                                                   "Russia" -> Set("Finland","Belarus","Ukraine"),
@@ -184,6 +187,7 @@ object EuropeGraph extends PoliticalMap {
                                                   "Spain" -> Set("Andora","France","UK"),
                                                   "Sweden"-> Set("Norway", "Finland"),
                                                   "Switzerland" -> Set("Liechtenstein","Austria","Italy"),
+                                                  "Turkey" -> Set("Bulgaria","Greece"),
                                                   "UK" -> Set("Ireland")
                                                   )
   checkUniMap(allStates,stateUniGraph)
@@ -195,9 +199,11 @@ object EuropeGraph extends PoliticalMap {
   // assert that stateBiGraph does not contain any isolates vertices
   assert (allStates.forall{state => stateBiGraph.get(state).nonEmpty})
 
-  def main(argv:Array[String]) = {
+  def main(argv:Array[String]):Unit = {
     println("-------------------")
     for{ (st,states) <- stateBiGraph}
       println(s"$st -> $states")
+    biGraphToDot(stateBiGraph,statePositions,"europe-political")(symbols=symbols)
+    ()
   }
 }
