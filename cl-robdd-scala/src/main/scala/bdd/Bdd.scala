@@ -135,7 +135,6 @@ sealed abstract class Bdd {
     recur(this, 0)
   }
 
-
   def apply(assignments: Assignment): Boolean
 
 }
@@ -167,12 +166,12 @@ object BddFalse extends BddTerm {
 /////////////////////////////
 
 
-case class BddNode(label:Int, positive:Bdd, negative:Bdd) extends Bdd {
+case class BddNode(label:Short, positive:Bdd, negative:Bdd) extends Bdd {
   // equals and hashCode methods copied from here:
   //   https://users.scala-lang.org/t/what-does-equivalence-of-instances-mean/4368/11?u=jimka
   override def equals(that: Any): Boolean = {
     that match {
-      case BddNode(l2:Int,p2:Bdd,n2:Bdd) => ( p2 eq positive) && (n2 eq negative) && (l2 == label)
+      case BddNode(l2:Short,p2:Bdd,n2:Bdd) => ( p2 eq positive) && (n2 eq negative) && (l2 == label)
       case _ => false
     }
   }
@@ -223,14 +222,29 @@ case class BddNode(label:Int, positive:Bdd, negative:Bdd) extends Bdd {
 //////////////////////////////
 
 object Bdd {
-  implicit def int2bdd(raw: Int): Bdd = Bdd(raw) // allow varargs And,Or,etc e.g., And(1), Or(1,2,3), And(1,Or(2,3))
+  implicit def int2bdd(raw: Int): Bdd = {
+    if (raw > scala.Short.MaxValue)
+      sys.error(s"int2bdd cannot convert $raw to Bdd because $raw > ${scala.Short.MaxValue}")
+    else if (raw < scala.Short.MinValue)
+      sys.error(s"int2bdd cannot convert $raw to Bdd because $raw < ${scala.Short.MinValue}")
+    else
+      Bdd(raw.toShort) // allow varargs And,Or,etc e.g., And(1), Or(1,2,3), And(1,Or(2,3))
+  }
+  implicit def short2bdd(raw: Short): Bdd = Bdd(raw) // allow varargs And,Or,etc e.g., And(1), Or(1,2,3), And(1,Or(2,3))
 
-  def apply(label: Int): Bdd = {
+  def apply(label:Int):Bdd = {
+    int2bdd(label)
+  }
+
+  def apply(label: Short): Bdd = {
     require(label != 0)
     if (label > 0)
       Bdd(label, BddTrue, BddFalse) // calls Bdd.apply 3-arg version
-    else // ( label < 0)
-      Bdd(-label, BddFalse, BddTrue) // calls Bdd.apply 3-arg version
+    else if (-label > scala.Short.MaxValue)
+      sys.error(s"cannot convert $label to Bdd because -$label > ${scala.Short.MaxValue}")
+    else { // ( label < 0)
+      Bdd((-label).toShort, BddFalse, BddTrue) // calls Bdd.apply 3-arg version
+    }
   }
 
   val maybeHash = new DynamicVariable[Option[Cache]](None)
@@ -253,7 +267,7 @@ object Bdd {
   }
 
   // constructor Bdd(var,bddPositive,bddNegative)
-  def apply(label: Int, positive: Bdd, negative: Bdd): Bdd = {
+  def apply(label: Short, positive: Bdd, negative: Bdd): Bdd = {
     if (positive eq negative)
       positive
     else {
@@ -266,7 +280,7 @@ object Bdd {
 }
 
 abstract class Cache {
-  def getOrCreate(label:Int, positive:Bdd, negative:Bdd):BddNode
+  def getOrCreate(label:Short, positive:Bdd, negative:Bdd):BddNode
   // this function is provided for debug purposes, to allow memory allocation
   // monitoring during intense computations.
   def getBddSizeCount():(Long,Long)
@@ -287,7 +301,7 @@ case class CacheByWeakRef() extends Cache{
   override def getBddSizeCount():(Long,Long) = {
     (nodesIndex.size, numAllocations)
   }
-  override def getOrCreate(label: Int, positive: Bdd, negative: Bdd): BddNode = {
+  override def getOrCreate(label: Short, positive: Bdd, negative: Bdd): BddNode = {
     val newNode = BddNode(label, positive, negative)
 
     nodesIndex.get(newNode) match {
@@ -314,7 +328,7 @@ case class CacheByJboss() extends Cache {
     (hash.size, numAllocations)
   }
 
-  override def getOrCreate(label:Int,positive:Bdd,negative:Bdd):BddNode = {
+  override def getOrCreate(label:Short,positive:Bdd,negative:Bdd):BddNode = {
     hash.get((label, positive, negative)) match {
       case Some(bdd: BddNode) => bdd
       case None | Some(null) =>
