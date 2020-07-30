@@ -117,6 +117,7 @@ object TreeParallelReduce {
   }
 
   def main(argv: Array[String]): Unit = {
+    import scala.collection.parallel.CollectionConverters._
 
     var data = (1 to 100).toList
 

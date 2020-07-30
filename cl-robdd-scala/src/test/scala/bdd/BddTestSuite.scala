@@ -23,9 +23,9 @@
 package bdd
 
 import bdd.Bdd._
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class BddTestSuite extends FunSuite {
+class BddTestSuite extends AnyFunSuite {
 
   test("printing") {
     withNewBddHash {

@@ -22,9 +22,9 @@
 package bdd
 
 import bdd.Bdd._
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class BinaryOperationTestSuite  extends FunSuite {
+class BinaryOperationTestSuite  extends AnyFunSuite {
 
   def genSamples() = {
     val bdd1 = Bdd(3, BddTrue, BddFalse)

@@ -20,10 +20,10 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package bdd
-
 import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class MapColoringTestSuite extends FunSuite {
+class MapColoringTestSuite extends AnyFunSuite {
   import org.scalactic.source
   override def test(testName: String, testTags: Tag*)(testFun: =>Any)(implicit pos: source.Position):Unit = {
     super.test(testName, testTags :_*){

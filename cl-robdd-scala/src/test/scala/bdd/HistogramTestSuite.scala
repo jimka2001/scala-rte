@@ -21,9 +21,9 @@
 
 package bdd
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class HistogramTestSuite extends FunSuite {
+class HistogramTestSuite extends AnyFunSuite {
 
   test("foreachBdd 1") {
     import Bdd._

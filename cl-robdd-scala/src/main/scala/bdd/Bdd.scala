@@ -90,7 +90,7 @@ sealed abstract class Bdd {
       def recur(generation: List[Bdd], nextGeneration: List[Bdd], done: Set[Bdd]): Unit = {
         // BFS walk of bdd, calling f exactly once on each node
         (generation, nextGeneration) match {
-          case (Nil, Nil) => Unit
+          case (Nil, Nil) => ()
           case (Nil, _) => recur(nextGeneration, Nil, done)
           case (h :: tail, _) if done.contains(h) => recur(tail, nextGeneration, done)
           case (h :: tail, _) =>
@@ -185,7 +185,7 @@ case class BddNode(label:Short, positive:Bdd, negative:Bdd) extends Bdd {
     child match {
       case child: BddNode => assert(child.label > label,
                                     "expecting child.label > this.label, got " + child.label + "<=" + label)
-      case _: BddTerm => Unit
+      case _: BddTerm => ()
     }
   }
 

@@ -145,7 +145,7 @@ object GnuPlot {
       var outputFileName = s"${outputDirName}${outputFileBaseName}.${terminal}"
 
       //println(s"[generating $outputFileName")
-      val exitCode = Seq(gnuPlotPath, "-e", s"set terminal ${terminal}", gnuName) #>> new File(outputFileName) !
+      val exitCode = (Seq(gnuPlotPath, "-e", s"set terminal ${terminal}", gnuName) #>> new File(outputFileName)).!
 
       //if (exitCode != 0)
       //  println(s"finished $outputFileName with exit code=$exitCode]")

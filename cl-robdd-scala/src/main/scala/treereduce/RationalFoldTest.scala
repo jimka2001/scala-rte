@@ -68,9 +68,12 @@ object RationalFoldTest {
     import treereduce.TreeReduce._
     import treereduce.TreeReducible._
     import gnuplot.GnuPlot.gnuPlot
+    import scala.collection.parallel.CollectionConverters._
+
     def rationalAdd(a: Rational, b: Rational): Rational = a + b
 
     val zero = Rational(0, 1)
+
     val rawDataForPlot = (for {r <- bounds.sorted.reverse.par // allow computation in parallel
                                piercedInterval = (if (randomize)
                                  scala.util.Random.shuffle( (( -r to -1) ++ (1 to r)).toList)
