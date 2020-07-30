@@ -86,8 +86,7 @@ class TreeParallelReduceSuite extends AnyFunSuite {
     for {r <- List(10, 20, 40, 75, 100, 200, 400, 750, 1000, 2000, 4000, 7500)} {
       val piercedInterval = (-r to -1) ++ (1 to r)
       time(s"$r  pairMapReduce", {
-        import scala.collection.immutable.IndexedSeq
-        val sum = pairMapReduce(piercedInterval)(Rational(0, 1), Rational(1, _), rationalAdd)//(indexedSeqPairable)
+        val sum = pairMapReduce(piercedInterval)(Rational(0, 1), Rational(1, _), rationalAdd)
         assert(sum === zero)
       })
       time(s"$r           fold", {
