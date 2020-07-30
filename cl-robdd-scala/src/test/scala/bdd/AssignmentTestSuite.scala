@@ -22,9 +22,9 @@
 package bdd
 
 import bdd.Bdd._
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class AssignmentTestSuite extends FunSuite {
+class AssignmentTestSuite extends AnyFunSuite {
   test("evaluate") {
     withNewBddHash {
       val bdd = And(1, Not(Or(2, 3, 4)))

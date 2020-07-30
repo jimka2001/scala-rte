@@ -25,10 +25,10 @@ import cl.CLcompat._
 import dimacs.QmVec._
 import dimacs.dimacsParse._
 import dimacs.dimacsSimplify._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 
-class DimacsSuite extends FunSuite {
+class DimacsSuite extends AnyFunSuite {
   test("sample test") {
     assert(1 == 1, "sample assertion")
   }

@@ -173,7 +173,7 @@ class QmVec() {
       (posCount, _) <- hash
       if posCount <= maxPosCount && posCount > 0
     } yield posCount
-
+    import scala.collection.parallel.CollectionConverters._
     val RemoveAdd(removes, adds) = foldUps(posCounts.par.map(reducePosCountClauses).toList)
 
     def calcNextPhase(removes: List[ClauseDesignator], adds: List[ClauseDesignator]): Set[(Int, Int, ClauseAsList)] = {

@@ -22,9 +22,9 @@
 
 package treereduce
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class TreeReducePerfSuite extends FunSuite {
+class TreeReducePerfSuite extends AnyFunSuite {
 
   test("bdds") {
     import bdd.ReducePerf.testRandomBddConstruction

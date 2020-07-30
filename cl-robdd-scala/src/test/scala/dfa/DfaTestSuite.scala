@@ -23,10 +23,10 @@
 
 package dfa
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
 
-class DfaTestSuite extends FunSuite {
+class DfaTestSuite extends AnyFunSuite {
   test("build bdd dfa") {
     import bdd._
 

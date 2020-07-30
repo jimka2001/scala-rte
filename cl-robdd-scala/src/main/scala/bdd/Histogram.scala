@@ -69,6 +69,7 @@ object Histogram {
     //   less than numSamples= 2^2^n to be passed to foldBdds, resulting in each
     //   iteration of foldBdds to calculate the same histogram.
     val numPartitions = if (n <= 5) 1 else 64
+    import scala.collection.parallel.CollectionConverters._
     (1 to numPartitions).par.map { x =>
       withNewBddHash {
         foldBdds(n, numSamples / numPartitions, Map[Int, Long]()) { (m  : Map[Int, Long], bdd: Bdd) => {

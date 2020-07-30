@@ -22,12 +22,14 @@
 
 package treereduce
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class TreeParallelReduceSuite extends FunSuite {
+
+class TreeParallelReduceSuite extends AnyFunSuite {
 
   test("parallel") {
     import treereduce.TreeParallelReduce._
+    import scala.collection.parallel.CollectionConverters._
 
     def id[A](a: A): A = a
 

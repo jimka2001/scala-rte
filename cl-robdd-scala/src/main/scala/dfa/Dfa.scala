@@ -32,7 +32,12 @@ class State[L,E](dfa:Dfa[L,E], val id:Int) {
 
 case class Transition[L,E](source:State[L,E], label:L, destination:State[L,E]) {}
 
-class Dfa[L,E](Qids:Set[Int], q0id:Int, Fids:Set[Int], protoDelta:Set[(Int,L,Int)], val combineLabels:(L,L)=>L, fMap:Map[Int,E]) {
+class Dfa[L,E](Qids:Set[Int],
+               q0id:Int,
+               Fids:Set[Int],
+               protoDelta:Set[(Int,L,Int)],
+               val combineLabels:(L,L)=>L,
+               fMap:Map[Int,E]) {
   // q0id is in Qids
   require(Qids.contains(q0id))
   // each element of Fids is in Qids

@@ -133,7 +133,7 @@ object dimacsParse {
     assert(it.next() == 'c')
     skipThroughEOL(it)
     dropWhile(it, whiteSpace.contains)
-    Unit
+    ()
   }
 
   def consumeBufferedContent(it: BufferedIterator[Char], consumeClause: ClauseAsList => Unit, consumeProblem: Problem => Unit): Unit = {
@@ -171,7 +171,7 @@ object dimacsParse {
       else if (partialClause.nonEmpty)
         consumeClause(partialClause)
       else
-        Unit
+        ()
     }
 
     recur(Nil)
