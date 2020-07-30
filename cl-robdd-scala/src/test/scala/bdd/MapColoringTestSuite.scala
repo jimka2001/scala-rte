@@ -70,7 +70,8 @@ class MapColoringTestSuite extends AnyFunSuite {
   }
 
   test("usa"){
-    colorizeMap(30, "AL", USAgraph.stateUniGraph,USAgraph.stateBiGraph,List("MS","AL","TN"))
+    colorizeMap(30, "test-us", "AL",
+                USAgraph.stateUniGraph,USAgraph.stateBiGraph,List("MS","AL","TN"))
   }
   def sanityCheck(numNodes:Int):Unit = {
     import accumulators.Accumulators._
