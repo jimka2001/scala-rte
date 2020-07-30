@@ -44,6 +44,7 @@ class TreeReduceSuite extends AnyFunSuite {
       import treereduce.TreeReduce._
 
       // by type class val byTypeClass =
+      // IntelliJ markes the following as error, but it works fine.  This must be an IntelliJ bug.
       assert(byFold == loremWords.treeMapReduce(0)(_.length, _ + _))
       assert(byFold == loremWords.toList.treeMapReduce(0)(_.length, _ + _))
       assert(byFold == loremWords.toArray.treeMapReduce(0)(_.length, _ + _))
