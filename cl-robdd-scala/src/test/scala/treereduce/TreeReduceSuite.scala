@@ -24,6 +24,8 @@ package treereduce
 
 import org.scalatest.funsuite.AnyFunSuite
 
+import scala.annotation.tailrec
+
 class TreeReduceSuite extends AnyFunSuite {
   test("lorem ipsum") {
 
@@ -70,12 +72,12 @@ class TreeReduceSuite extends AnyFunSuite {
       assert(sum == nums.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.toList.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.toSet.treeMapReduce(0)(id, _ + _))
-      assert(sum == nums.toIterator.treeMapReduce(0)(id, _ + _))
+      assert(sum == nums.iterator.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.par.toIterator.treeMapReduce(0)(id, _ + _))
 
       assert(sum == nums.par.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.toList.par.treeMapReduce(0)(id, _ + _))
-      assert(sum == nums.toIterator.treeMapReduce(0)(id, _ + _))
+      assert(sum == nums.iterator.treeMapReduce(0)(id, _ + _))
     }
 
   }
@@ -214,12 +216,13 @@ object Reference {
   // This is in fact the code I would like to remove once it has been generalized as a type class.
   // For the moment the code remains because it us used in the tests to assert the same results
   //   are computed.
-  def treeMapReduce[A, B](objects: TraversableOnce[A])(init: B)(seqOp: A => B, combOp: (B, B) => B): B = {
+  def treeMapReduce[A, B](objects: IterableOnce[A])(init: B)(seqOp: A => B, combOp: (B, B) => B): B = {
     // we have to assume that combOp is NOT commutative, so we have to be
     // careful and apply the arguments in the correct order.
     // because the stack is storing items in *reverse* order, we have to reverse the
     // the arguments of combOp to have combOp(a2,a1) rather than combOp(a1,a2)
 
+    @tailrec
     def consumeStack(stack: List[(Int, B)]): List[(Int, B)] = {
       stack match {
         case (i, a1) :: (j, a2) :: tail if i == j => consumeStack((i + 1, combOp(a2, a1)) :: tail)
@@ -227,7 +230,7 @@ object Reference {
       }
     }
 
-    val stack = objects.foldLeft((1, init) :: Nil) { (stack: List[(Int, B)], ob: A) =>
+    val stack = objects.iterator.foldLeft((1, init) :: Nil) { (stack: List[(Int, B)], ob: A) =>
       (1, seqOp(ob)) :: consumeStack(stack)
     }
     // there may be up to log_2 of objects.size many pairs left on the stack
