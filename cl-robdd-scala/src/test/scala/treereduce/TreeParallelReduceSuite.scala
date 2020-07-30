@@ -35,7 +35,7 @@ class TreeParallelReduceSuite extends AnyFunSuite {
 
     def addInt(a: Int, b: Int): Int = a + b
 
-    var data = (1 to 100).toList
+    val data = (1 to 100).toList
     assert(5050 == pairMapReduce(data)(init = 0, id, addInt))
     assert(5050 == pairMapReduce(data)(init = 0, id, addInt))
     assert(5050 == pairMapReduce(data.par)(init = 0, id, addInt))
