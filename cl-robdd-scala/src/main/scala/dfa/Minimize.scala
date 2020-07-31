@@ -75,21 +75,6 @@ object Minimize {
     fixedPoint(Pi0, refine, partitionEqual)
   }
 
-  def mergeMap[K, V](m:Map[K,V], kv:(K,V), combine:(V,V)=>V):Map[K,V] = {
-    // given a Map and a key,value pair, produce a new Map with the key,value
-    // added.  If the key does not already exist in the map, it is simply added,
-    // however, if the map already has the key, then we add it by merging/combining
-    // the previous value with the new value.   The given combine function
-    // is used to produce this new value, and combine is called as combine(old,new).
-    kv match {
-      case (key,value) =>
-        if (m.contains(key))
-          m + (key -> combine(m(key), value))
-        else
-          m + (key -> value)
-    }
-  }
-
   def minimize[L, E](dfa: Dfa[L, E]): Dfa[L, E] = {
     val PiMinimized = findHopcroftPartition(dfa)
     // associate each element of PiMinimized with a new id
