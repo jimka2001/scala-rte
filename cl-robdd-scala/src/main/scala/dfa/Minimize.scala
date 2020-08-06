@@ -61,12 +61,15 @@ object Minimize {
         //   whose source and label are given
         partition.find(_.contains(source.delta(label))).get
       }
-
+      def PhiPrime(s: STATE): Set[(L, EQVCLASS)] = {
+        for{ Transition(_src,label,_dst) <- s.transitions }
+          yield (label,phi(s,label))
+      }
       def Phi(s: STATE): Set[(L, EQVCLASS)] = {
-        val m = for {
-          (eqvClass, trans) <- s.transitions.groupBy(tr => phi(s, tr.label))
-          label = trans.map(_.label).reduce(dfa.combineLabels)
-        } yield (label, eqvClass)
+        val m = for{ (k,pairs) <- PhiPrime(s).groupBy(_._2)
+             labels = pairs.map(_._1)
+             label = labels.reduce(dfa.combineLabels)}
+          yield (label,k)
         m.toSet
       }
       def repartition(eqvClass:EQVCLASS):PARTITION = {
