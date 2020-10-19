@@ -66,9 +66,7 @@ sealed abstract class Type {
 
 /** The empty type, subtype of all types. */
 object EmptyType extends Type {
-  override def typep(a: Any): Boolean = {
-    false
-  }
+  override def typep(a: Any): Boolean = false
 
   override def disjointDown(t: Type): Option[Boolean] = Some(true)
 
@@ -80,9 +78,7 @@ object EmptyType extends Type {
 
 /** The super type, super type of all types. */
 object SuperType extends Type {
-  override def typep(a: Any): Boolean = {
-    true
-  }
+  override def typep(a: Any): Boolean = true
 
   override def disjointDown(t: Type): Option[Boolean] = {
     t match {
@@ -185,7 +181,11 @@ case class UnionType(U: Type*) extends Type {
     else None
   }
 
-  override def subtypep(t: Type): Option[Boolean] = ???
+  override def subtypep(t: Type): Option[Boolean] = {
+    if (U.forall(_.subtypep(t).getOrElse(false))) Some(true)
+    else if (U.exists(! _.subtypep(t).getOrElse(true))) Some(false)
+    else None
+  }
 }
 
 

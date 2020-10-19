@@ -41,4 +41,30 @@ class TypeSystemDisjoint extends FunSuite {
     assert(SuperType.disjoint(EmptyType).get)
     assert(! SuperType.disjoint(SuperType).get)
   }
+
+  test("disjoint AtomicType") {
+    val numericType = AtomicType(classOf[java.lang.Number])
+
+    assert(! numericType.disjoint(numericType).getOrElse(true))
+    assert(! numericType.disjoint(intJavaType).getOrElse(true))
+    assert(! numericType.disjoint(doubleJavaType).getOrElse(true))
+    assert(! intJavaType.disjoint(numericType).getOrElse(true))
+    assert(! doubleJavaType.disjoint(numericType).getOrElse(true))
+    assert(numericType.disjoint(stringType).getOrElse(true))
+    assert(stringType.disjoint(numericType).getOrElse(true))
+  }
+
+  test("disjoint Member") {
+    val m1 = MemberType(1, 2, 3, 4)
+    val m2 = MemberType(42, "test")
+
+    assert(m1.disjoint(m2).getOrElse(false))
+    assert(m2.disjoint(m1).getOrElse(false))
+    assert(! m1.disjoint(intJavaType).getOrElse(true))
+    assert(m1.disjoint(stringType).getOrElse(false))
+    assert(! m2.disjoint(intJavaType).getOrElse(true))
+    assert(! m2.disjoint(stringType).getOrElse(true))
+    assert(! intJavaType.disjoint(m2).getOrElse(true))
+    assert(! stringType.disjoint(m2).getOrElse(true))
+  }
 }
