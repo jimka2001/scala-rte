@@ -74,7 +74,7 @@ object EmptyType extends Type {
 
   override def disjoint(t: Type): Option[Boolean] = Some(true)
 
-  override def subtypep(t: Type): Option[Boolean] = ???
+  override def subtypep(t: Type): Option[Boolean] = Some(true)
 }
 
 
@@ -98,7 +98,10 @@ object SuperType extends Type {
     }
   }
 
-  override def subtypep(t: Type): Option[Boolean] = ???
+  override def subtypep(t: Type): Option[Boolean] = {
+    if (t == SuperType) Some(true)
+    else Some(false)
+  }
 }
 
 
@@ -137,7 +140,13 @@ case class AtomicType(T: Class[_]) extends Type {
     }
   }
 
-  override def subtypep(t: Type): Option[Boolean] = ???
+  override def subtypep(t: Type): Option[Boolean] = {
+    t match {
+      case tp: AtomicType if this.T.isAssignableFrom(tp.T) => Some(true)
+      // TODO : Other cases ?
+      case _ => None
+    }
+  }
 }
 
 
