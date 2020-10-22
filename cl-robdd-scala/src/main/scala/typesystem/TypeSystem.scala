@@ -43,7 +43,13 @@ sealed abstract class Type {
     * @param t the type we want to check whether it is disjoint to this type
     * @return an optional Boolean which is true if t and this type are disjoint
     */
-  def disjoint(t: Type): Option[Boolean]
+  def disjoint(t: Type): Option[Boolean] = {
+    disjointDown(t) match {
+      case None => t.disjointDown(this)
+      case x => x
+    }
+  }
+
   def disjointDown(t: Type): Option[Boolean]
 
   /** Returns whether this type is a recognizable subtype of another given type.
@@ -70,8 +76,6 @@ object EmptyType extends Type {
 
   override def disjointDown(t: Type): Option[Boolean] = Some(true)
 
-  override def disjoint(t: Type): Option[Boolean] = Some(true)
-
   override def subtypep(t: Type): Option[Boolean] = Some(true)
 }
 
@@ -81,13 +85,6 @@ object SuperType extends Type {
   override def typep(a: Any): Boolean = true
 
   override def disjointDown(t: Type): Option[Boolean] = {
-    t match {
-      case EmptyType => Some(true)
-      case _ => Some(false)
-    }
-  }
-
-  override def disjoint(t: Type): Option[Boolean] = {
     t match {
       case EmptyType => Some(true)
       case _ => Some(false)
@@ -124,22 +121,10 @@ case class AtomicType(T: Class[_]) extends Type {
     }
   }
 
-  override def disjoint(t: Type): Option[Boolean] = {
-    t match {
-      case EmptyType => Some(true)
-      case SuperType => Some(false)
-      // TODO : Is equal working as I think ?
-      case _ if t == this => Some(false)
-      case tp: AtomicType
-        if this.T.isAssignableFrom(tp.T) || tp.T.isAssignableFrom(this.T) => Some(false)
-      case _ => t.disjointDown(this)
-    }
-  }
-
   override def subtypep(t: Type): Option[Boolean] = {
     t match {
       case tp: AtomicType if this.T.isAssignableFrom(tp.T) => Some(true)
-      // TODO : Other cases ?
+      // TODO : Other cases ? Interfaces ?
       case _ => None
     }
   }
@@ -173,15 +158,8 @@ case class UnionType(U: Type*) extends Type {
     else None
   }
 
-  override def disjoint(t: Type): Option[Boolean] = {
-    if (U.forall(_.disjoint(t).nonEmpty))
-      Some(U.forall(_.disjoint(t).get))
-    else if (t.disjointDown(this).nonEmpty)
-      t.disjointDown(this)
-    else None
-  }
-
   override def subtypep(t: Type): Option[Boolean] = {
+    // TODO : Only a single pass ?
     if (U.forall(_.subtypep(t).getOrElse(false))) Some(true)
     else if (U.exists(! _.subtypep(t).getOrElse(true))) Some(false)
     else None
@@ -204,15 +182,10 @@ case class IntersectionType(U: Type*) extends Type {
     else None
   }
 
-  override def disjoint(t: Type): Option[Boolean] = {
-    if (U.exists(_.disjoint(t).getOrElse(false)))
-      Some(true)
-    else if (t.disjointDown(this).nonEmpty)
-      t.disjointDown(this)
+  override def subtypep(t: Type): Option[Boolean] = {
+    if (U.exists(_.subtypep(t).getOrElse(false))) Some(true)
     else None
   }
-
-  override def subtypep(t: Type): Option[Boolean] = ???
 }
 
 
@@ -228,14 +201,6 @@ case class NotType(T: Type) extends Type {
   override def disjointDown(t: Type): Option[Boolean] = {
     if (t.subtypep(T).getOrElse(false))
       Some(true)
-    else None
-  }
-
-  override def disjoint(t: Type): Option[Boolean] = {
-    if (t.subtypep(T).getOrElse(false))
-      Some(true)
-    else if (t.disjointDown(this).nonEmpty)
-      t.disjointDown(this)
     else None
   }
 
@@ -256,13 +221,6 @@ case class MemberType(M: Any*) extends Type {
     else Some(true)
   }
 
-  override def disjoint(t: Type): Option[Boolean] = {
-    if (M.exists(t.typep)) Some(false)
-    else if (t.disjointDown(this).nonEmpty)
-      t.disjointDown(this)
-    else Some(true)
-  }
-
   override def subtypep(t: Type): Option[Boolean] = ???
 }
 
@@ -278,8 +236,6 @@ case class EqlType(a: Any) extends Type {
 
   override def disjointDown(t: Type): Option[Boolean] = ???
 
-  override def disjoint(t: Type): Option[Boolean] = ???
-
   override def subtypep(t: Type): Option[Boolean] = ???
 }
 
@@ -292,8 +248,6 @@ case class CustomType(f: Any => Boolean) extends Type {
   override def typep(a: Any): Boolean = f(a)
 
   override def disjointDown(t: Type): Option[Boolean] = ???
-
-  override def disjoint(t: Type): Option[Boolean] = ???
 
   override def subtypep(t: Type): Option[Boolean] = ???
 }
