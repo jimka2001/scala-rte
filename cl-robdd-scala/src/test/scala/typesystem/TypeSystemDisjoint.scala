@@ -67,4 +67,32 @@ class TypeSystemDisjoint extends FunSuite {
     assert(! intJavaType.disjoint(m2).getOrElse(true))
     assert(! stringType.disjoint(m2).getOrElse(true))
   }
+
+  test("disjoint union") {
+    val m1 = MemberType(1, 2, 3, 4)
+    val m2 = MemberType(42, "test")
+    val u = UnionType(m1, m2)
+
+    assert(! u.disjoint(m1).getOrElse(true))
+    assert(! u.disjoint(m2).getOrElse(true))
+    assert(! m1.disjoint(u).getOrElse(true))
+    assert(! m2.disjoint(u).getOrElse(true))
+  }
+
+  test("disjoint intersection") {
+    val m1 = MemberType(1, 2, 3, 4)
+    val m2 = MemberType(3, 42, "test", 2)
+    val m3 = MemberType(0)
+    val inter = IntersectionType(m1, m2)
+    val inter2 = IntersectionType(inter, m3)
+
+    assert(! inter.disjoint(m1).getOrElse(true))
+    assert(! inter.disjoint(m2).getOrElse(true))
+    assert(! m1.disjoint(inter).getOrElse(true))
+    assert(! m2.disjoint(inter).getOrElse(true))
+    assert(inter2.disjoint(m1).getOrElse(false))
+    assert(inter2.disjoint(m2).getOrElse(false))
+    assert(m1.disjoint(inter2).getOrElse(false))
+    assert(m2.disjoint(inter2).getOrElse(false))
+  }
 }
