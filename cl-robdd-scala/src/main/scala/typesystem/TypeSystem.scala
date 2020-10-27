@@ -50,7 +50,7 @@ sealed abstract class Type {
     }
   }
 
-  def disjointDown(t: Type): Option[Boolean]
+  protected def disjointDown(t: Type): Option[Boolean]
 
   /** Returns whether this type is a recognizable subtype of another given type.
     * It is a subset test. This might be undecidable.
