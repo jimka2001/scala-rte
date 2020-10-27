@@ -234,9 +234,16 @@ case class EqlType(a: Any) extends Type {
     a == b
   }
 
-  override def disjointDown(t: Type): Option[Boolean] = ???
+  override def disjointDown(t: Type): Option[Boolean] = {
+    if (t.typep(a)) Some(false)
+    else Some(true)
+  }
 
-  override def subtypep(t: Type): Option[Boolean] = ???
+  override def subtypep(t: Type): Option[Boolean] = {
+    if (t == this) Some(true)
+    else if (t == EmptyType) Some(true)
+    else Some(false)
+  }
 }
 
 

@@ -95,4 +95,9 @@ class TypeSystemDisjoint extends FunSuite {
     assert(m1.disjoint(inter2).getOrElse(false))
     assert(m2.disjoint(inter2).getOrElse(false))
   }
+
+  test("disjoint unknown") {
+    println(UnionType(intJavaType, stringType).disjoint(UnionType(charJavaType, booleanJavaType)))
+    println(IntersectionType(UnionType(intJavaType, doubleJavaType), stringType).disjoint(stringType))
+  }
 }
