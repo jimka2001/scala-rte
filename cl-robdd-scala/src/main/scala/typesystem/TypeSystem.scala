@@ -74,7 +74,7 @@ sealed abstract class Type {
 object EmptyType extends Type {
   override def typep(a: Any): Boolean = false
 
-  override def disjointDown(t: Type): Option[Boolean] = Some(true)
+  override protected def disjointDown(t: Type): Option[Boolean] = Some(true)
 
   override def subtypep(t: Type): Option[Boolean] = Some(true)
 }
@@ -84,7 +84,7 @@ object EmptyType extends Type {
 object SuperType extends Type {
   override def typep(a: Any): Boolean = true
 
-  override def disjointDown(t: Type): Option[Boolean] = {
+  override protected def disjointDown(t: Type): Option[Boolean] = {
     t match {
       case EmptyType => Some(true)
       case _ => Some(false)
@@ -107,7 +107,7 @@ case class AtomicType(T: Class[_]) extends Type {
     T.isInstance(a)
   }
 
-  override def disjointDown(t: Type): Option[Boolean] = {
+  override protected def disjointDown(t: Type): Option[Boolean] = {
     t match {
       case EmptyType => Some(true)
       case SuperType => Some(false)
@@ -149,7 +149,7 @@ case class UnionType(U: Type*) extends Type {
     U.exists(_.typep(a))
   }
 
-  override def disjointDown(t: Type): Option[Boolean] = {
+  override protected def disjointDown(t: Type): Option[Boolean] = {
     if (U.forall(_.disjoint(t).nonEmpty))
       Some(U.forall(_.disjoint(t).get))
     else None
@@ -173,7 +173,7 @@ case class IntersectionType(U: Type*) extends Type {
     U.forall(_.typep(a))
   }
 
-  override def disjointDown(t: Type): Option[Boolean] = {
+  override protected def disjointDown(t: Type): Option[Boolean] = {
     if (U.exists(_.disjoint(t).getOrElse(false)))
       Some(true)
     else None
@@ -195,7 +195,7 @@ case class NotType(T: Type) extends Type {
     ! T.typep(a)
   }
 
-  override def disjointDown(t: Type): Option[Boolean] = {
+  override protected def disjointDown(t: Type): Option[Boolean] = {
     if (t.subtypep(T).getOrElse(false))
       Some(true)
     else None
@@ -215,7 +215,7 @@ case class NotType(T: Type) extends Type {
 case class MemberType(M: Any*) extends Type {
   override def typep(a: Any): Boolean = M.contains(a)
 
-  override def disjointDown(t: Type): Option[Boolean] = {
+  override protected def disjointDown(t: Type): Option[Boolean] = {
     if (M.exists(t.typep)) Some(false)
     else Some(true)
   }
@@ -236,7 +236,7 @@ case class EqlType(a: Any) extends Type {
     a == b
   }
 
-  override def disjointDown(t: Type): Option[Boolean] = {
+  override protected def disjointDown(t: Type): Option[Boolean] = {
     if (t.typep(a)) Some(false)
     else Some(true)
   }
@@ -256,7 +256,7 @@ case class EqlType(a: Any) extends Type {
 case class CustomType(f: Any => Boolean) extends Type {
   override def typep(a: Any): Boolean = f(a)
 
-  override def disjointDown(t: Type): Option[Boolean] = ???
+  override protected def disjointDown(t: Type): Option[Boolean] = ???
 
   override def subtypep(t: Type): Option[Boolean] = ???
 }
