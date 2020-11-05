@@ -174,6 +174,5 @@ object GraphViz {
 
     }
     BddTrue.bddView(drawFalse,title="")
-
   }
 }

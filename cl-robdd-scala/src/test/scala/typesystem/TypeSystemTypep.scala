@@ -66,8 +66,9 @@ class TypeSystemTypep extends FunSuite {
 
   test("typep of list int") {
     assert(listIntType.typep(List(1, 2, 3)))
-    assert(! listIntType.typep(List[Double](1.1, 0.42)))
-    assert(! listIntType.typep(List[Any]("test", 2, "coucou")))
+    // Because of type erasure
+    assert(listIntType.typep(List[Double](1.1, 0.42)))
+    assert(listIntType.typep(List[Any]("test", 2, "coucou")))
   }
 
   test("typep of a UnionType") {

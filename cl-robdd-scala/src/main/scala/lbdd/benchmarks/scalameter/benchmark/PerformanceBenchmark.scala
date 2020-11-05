@@ -32,7 +32,7 @@ object PerformanceBenchmark extends Bench.OfflineReport {
 
   override lazy val persistor = SerializationPersistor(new File("target/scalameter/performance/results"))
 
-  val nbGen: Gen[Int] = Gen.range("nbVariables")(1, 5000,20)
+  val nbGen: Gen[Int] = Gen.range("nbVariables")(1, 3000,20)
 
   performance of "inputs" in {
     measure method "bddSamples" in {

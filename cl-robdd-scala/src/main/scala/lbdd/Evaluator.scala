@@ -9,16 +9,20 @@ object Evaluator {
     b match {
       case LBddFalse => false
       case LBddTrue => true
-      case node: LBddNode => apply(node, assignment)
+      case node: LBddNode =>
+        if (node.negation) apply(node, assignment)
+        else apply(node, assignment)
     }
   }
 
   def apply(node: LBddNode, assignment: Map[Int, Boolean]): Boolean = {
     val value = assignment(node.label)
     if (value)
-      apply(node.positive, assignment) || apply(node.middle, assignment)
+      if (node.negation)  ! apply(node.positive, assignment) & ! apply(node.middle, assignment)
+      else apply(node.positive, assignment) || apply(node.middle, assignment)
     else
-      apply(node.negative, assignment) || apply(node.middle, assignment)
+      if (node.negation) ! apply(node.negative, assignment) & ! apply(node.middle, assignment)
+      else apply(node.negative, assignment) || apply(node.middle, assignment)
   }
 
   def apply(node: lazyNode, assignment: Map[Int, Boolean]): Boolean = {

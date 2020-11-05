@@ -53,15 +53,18 @@ object Or extends BinaryOperations {
     if (b1.label == b2.label)
       LBdd(b1.label, apply(b1.positive, b2.positive),
                      apply(b1.middle, b2.middle),
-                     apply(b1.negative, b2.negative))
+                     apply(b1.negative, b2.negative),
+                     b1.negation)
     else if (b1.label < b2.label)
       LBdd(b1.label, b1.positive,
                      apply(l = b1.middle, b = b2),
-                     b1.negative)
+                     b1.negative,
+                     b1.negation)
     else
       LBdd(b2.label, b2.positive,
                      apply(b = b1, l = b2.middle),
-                     b2.negative)
+                     b2.negative,
+                     b2.negation)
   }
 
 
@@ -107,15 +110,18 @@ object And extends BinaryOperations {
                            Or(b2.positive, b2.middle)),
                      None,
                      apply(Or(b1.negative, b1.middle),
-                           Or(b2.negative, b2.middle)))
+                           Or(b2.negative, b2.middle)),
+                     b1.negation)
     else if (b1.label < b2.label)
       LBdd(b1.label, apply(b1.positive, b2),
                      apply(l = b1.middle, b = b2),
-                     apply(b1.negative, b2))
+                     apply(b1.negative, b2),
+                     b1.negation)
     else
       LBdd(b2.label, apply(b1, b2.positive),
                      apply(b = b1, l = b2.middle),
-                     apply(b1, b2.negative))
+                     apply(b1, b2.negative),
+                     b2.negation)
   }
 
   def apply(b: LBdd, l: lazyNode): lazyNode = {
@@ -148,6 +154,23 @@ object And extends BinaryOperations {
   }
 }
 
+
+//object Not {
+//  def apply(): LBdd = LBddFalse
+//
+//  // TODO : Do not unlazify ! Change return type
+//  def apply(l: lazyNode): LBdd = {
+//    unlazify(lazyNode(l.f, !l.negation))
+//  }
+//
+//  def apply(b: LBdd): LBdd = {
+//    b match {
+//      case LBddFalse => LBddTrue
+//      case LBddTrue => LBddFalse
+//      case b: LBddNode => LBdd(b.label, b.positive, b.middle, b.negative, !b.negation)
+//    }
+//  }
+//}
 
 object Not {
   def apply(): LBdd = LBddFalse
@@ -182,15 +205,18 @@ object AndNot extends BinaryOperations {
     if (b1.label == b2.label)
       LBdd(b1.label, apply(b1.positive, b2.positive),
                      apply(b1.middle, b2.middle),
-                     apply(b1.negative, b2.negative))
+                     apply(b1.negative, b2.negative),
+                     b1.negation)
     else if (b1.label < b2.label)
       LBdd(b1.label, apply(Or(b1.positive, b1.middle), b2),
                      None,
-                     apply(Or(b1.negative, b1.middle), b2))
+                     apply(Or(b1.negative, b1.middle), b2),
+                     b1.negation)
     else
       LBdd(b2.label, apply(b1, Or(b2.positive, b2.middle)),
                      None,
-                     apply(b1, Or(b2.negative, b2.middle)))
+                     apply(b1, Or(b2.negative, b2.middle)),
+                     b2.negation)
   }
 
   def apply(l1: lazyNode, l2: lazyNode): lazyNode = {

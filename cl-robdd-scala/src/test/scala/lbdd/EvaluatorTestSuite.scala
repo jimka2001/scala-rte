@@ -50,6 +50,11 @@ class EvaluatorTestSuite extends FunSuite {
     val b2 = And(Not(1), Not(2))
 
     for (l <- allValues) {
+      if (Evaluator(b1, l) != Evaluator(b2, l)) {
+        b1.bddView(true, "b1")
+        b2.bddView(true, "b2")
+        println(l)
+      }
       assert(Evaluator(b1, l) == Evaluator(b2, l))
     }
   }

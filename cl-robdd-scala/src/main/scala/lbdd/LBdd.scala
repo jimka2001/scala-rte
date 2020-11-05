@@ -32,7 +32,7 @@ sealed abstract class LBdd {
       b match {
         case LBddFalse => scala.None
         case LBddTrue => scala.Some((assignTrue, assignFalse))
-        case LBddNode(label, positive, middle, negative) =>
+        case LBddNode(label, positive, middle, negative, _) =>
           recur(positive, Assignment(assignTrue.trueVariables + label), assignFalse) orElse
           recur(negative, assignTrue, Assignment(assignTrue.trueVariables + label)) orElse
           recur(unlazify(middle), assignTrue, assignFalse)
@@ -54,8 +54,8 @@ sealed abstract class LBdd {
             f(h)
             recur(tail,
               h match {
-                case LBddNode(_, pos, None, neg) => pos :: neg :: nextGeneration
-                case LBddNode(_, pos, mid, neg) => pos :: mid() :: neg :: nextGeneration
+                case LBddNode(_, pos, None, neg, _) => pos :: neg :: nextGeneration
+                case LBddNode(_, pos, mid, neg, _) => pos :: mid() :: neg :: nextGeneration
                 case _ => nextGeneration
               },
               done + h
@@ -100,8 +100,7 @@ sealed abstract class LBdd {
 // LBdd Terminal nodes
 ///////////////////////////////
 
-sealed abstract class LBddTerm extends LBdd {
-}
+sealed abstract class LBddTerm extends LBdd
 
 object LBddTrue extends LBddTerm {
   override def toString = "T"
@@ -128,7 +127,8 @@ object LBddFalse extends LBddTerm {
 
 
 case class LBddNode(label: Int, positive: LBdd,
-                    middle: lazyNode, negative: LBdd) extends LBdd {
+                    middle: lazyNode, negative: LBdd,
+                    negation: Boolean = false) extends LBdd {
   override def equals(that: Any): Boolean = {
     that match {
       case b: LBdd => this eq b
@@ -150,9 +150,11 @@ case class LBddNode(label: Int, positive: LBdd,
 
   def apply(assignment: Assignment): Boolean = {
     if (assignment.value(label))
-      positive(assignment) || unlazify(middle)(assignment)
+      if (negation) ! positive(assignment) && ! unlazify(middle)(assignment)
+      else positive(assignment) || unlazify(middle)(assignment)
     else
-      negative(assignment) || unlazify(middle)(assignment)
+      if (negation) ! negative(assignment) && ! unlazify(middle)(assignment)
+      else negative(assignment) || unlazify(middle)(assignment)
   }
 
   override def toString: String = {
@@ -197,6 +199,15 @@ object LBdd {
       positive
     else
       LBddNode(label, positive, middle, negative)
+  }
+
+  def apply(label: Int, positive: LBdd,
+            middle: lazyNode, negative: LBdd,
+            negation: Boolean): LBdd = {
+    if (positive == negative && middle.isEmpty)
+      positive
+    else
+      LBddNode(label, positive, middle, negative, negation)
   }
 }
 

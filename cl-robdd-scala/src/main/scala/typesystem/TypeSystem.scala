@@ -104,9 +104,6 @@ object SuperType extends Type {
   */
 case class AtomicType(T: Class[_]) extends Type {
   override def typep(a: Any): Boolean = {
-    // TODO : Java Int vs Scala Int
-    // TODO : Typep of a List[Something]
-    println("type of a in typep = " + a.getClass)
     T.isInstance(a)
   }
 
@@ -204,7 +201,9 @@ case class NotType(T: Type) extends Type {
     else None
   }
 
-  override def subtypep(t: Type): Option[Boolean] = ???
+  override def subtypep(t: Type): Option[Boolean] = {
+    this.T.disjoint(t)
+  }
 }
 
 
@@ -221,7 +220,10 @@ case class MemberType(M: Any*) extends Type {
     else Some(true)
   }
 
-  override def subtypep(t: Type): Option[Boolean] = ???
+  override def subtypep(t: Type): Option[Boolean] = {
+    if (M.forall(t.typep)) Some(true)
+    else Some(false)
+  }
 }
 
 
@@ -259,6 +261,11 @@ case class CustomType(f: Any => Boolean) extends Type {
   override def subtypep(t: Type): Option[Boolean] = ???
 }
 
+
+// TODO
+//object withbdd {
+//  // typeasbdd, intersect, union, disjoint...
+//}
 
 
 object TypeSystem {
