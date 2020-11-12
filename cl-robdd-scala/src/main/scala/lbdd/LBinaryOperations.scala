@@ -178,7 +178,7 @@ object Not {
   def apply(l: lazyNode): LBdd = {
     l match {
       case None => LBddFalse
-      case f => apply(f())
+      case f => apply(f.get())
     }
   }
 

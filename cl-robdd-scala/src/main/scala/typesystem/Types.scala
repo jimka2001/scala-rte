@@ -262,13 +262,7 @@ case class CustomType(f: Any => Boolean) extends Type {
 }
 
 
-// TODO
-//object withbdd {
-//  // typeasbdd, intersect, union, disjoint...
-//}
-
-
-object TypeSystem {
+object Types {
 
   val anyType = AtomicType(classOf[Any])
   val nothingType = AtomicType(classOf[Nothing])

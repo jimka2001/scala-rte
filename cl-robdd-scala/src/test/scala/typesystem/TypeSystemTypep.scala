@@ -23,7 +23,7 @@
 package typesystem
 
 import org.scalatest._
-import typesystem.TypeSystem._
+import typesystem.Types._
 
 
 class TypeSystemTypep extends FunSuite {

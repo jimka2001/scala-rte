@@ -27,29 +27,31 @@ package object lbdd {
   //  returning a lazy binary decision diagram.
 
 
-  case class lazyNode(f: Option[() => LBdd], negation: Boolean = false) {
-    def apply(): LBdd = {
-      f.get()
-    }
+//  case class lazyNode(f: Option[() => LBdd], negation: Boolean = false) {
+//    def apply(): LBdd = {
+//      f.get()
+//    }
+//
+//    def isEmpty: Boolean = {
+//      f.isEmpty
+//    }
+//
+//    def nonEmpty: Boolean = {
+//      f.nonEmpty
+//    }
+//
+//    def get: () => LBdd = {
+//      f.get
+//    }
+//  }
+//
+//  object None extends lazyNode(scala.None)
 
-    def isEmpty: Boolean = {
-      f.isEmpty
-    }
+//  def Some(f: () => LBdd): lazyNode = {
+//    lazyNode(scala.Some(f))
+//  }
 
-    def nonEmpty: Boolean = {
-      f.nonEmpty
-    }
-
-    def get: () => LBdd = {
-      f.get
-    }
-  }
-
-  object None extends lazyNode(scala.None)
-
-  def Some(f: () => LBdd): lazyNode = {
-    lazyNode(scala.Some(f))
-  }
+  type lazyNode = Option[() => LBdd]
 
 
   /** lazification function

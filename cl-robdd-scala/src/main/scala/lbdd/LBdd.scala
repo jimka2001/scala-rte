@@ -55,7 +55,7 @@ sealed abstract class LBdd {
             recur(tail,
               h match {
                 case LBddNode(_, pos, None, neg, _) => pos :: neg :: nextGeneration
-                case LBddNode(_, pos, mid, neg, _) => pos :: mid() :: neg :: nextGeneration
+                case LBddNode(_, pos, mid, neg, _) => pos :: mid.get() :: neg :: nextGeneration
                 case _ => nextGeneration
               },
               done + h
