@@ -70,6 +70,12 @@ sealed abstract class Type {
 }
 
 
+/** Trait representing types that have to be stored in the HashMap in the
+  * LBdd representation.
+  */
+sealed trait TerminalType
+
+
 /** The empty type, subtype of all types. */
 object EmptyType extends Type {
   override def typep(a: Any): Boolean = false
@@ -102,7 +108,7 @@ object SuperType extends Type {
   *
   * @param T the class of a Scala or Java type this class will wrap (call it with `classOf[native_type]`)
   */
-case class AtomicType(T: Class[_]) extends Type {
+case class AtomicType(T: Class[_]) extends Type with TerminalType {
   override def typep(a: Any): Boolean = {
     T.isInstance(a)
   }
@@ -212,7 +218,7 @@ case class NotType(T: Type) extends Type {
   *
   * @param M var-arg, the members of the type
   */
-case class MemberType(M: Any*) extends Type {
+case class MemberType(M: Any*) extends Type with TerminalType {
   override def typep(a: Any): Boolean = M.contains(a)
 
   override protected def disjointDown(t: Type): Option[Boolean] = {
@@ -231,7 +237,7 @@ case class MemberType(M: Any*) extends Type {
   *
   * @param a the object defining the type
   */
-case class EqlType(a: Any) extends Type {
+case class EqlType(a: Any) extends Type with TerminalType {
   override def typep(b: Any): Boolean = {
     a == b
   }
@@ -253,7 +259,7 @@ case class EqlType(a: Any) extends Type {
   *
   * @param f a function taking an object Any and returning a Boolean defining the type
   */
-case class CustomType(f: Any => Boolean) extends Type {
+case class CustomType(f: Any => Boolean) extends Type with TerminalType {
   override def typep(a: Any): Boolean = f(a)
 
   override protected def disjointDown(t: Type): Option[Boolean] = ???

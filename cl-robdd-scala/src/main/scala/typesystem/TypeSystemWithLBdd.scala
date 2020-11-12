@@ -29,7 +29,7 @@ import scala.util.DynamicVariable
 
 object TypeSystemWithLBdd {
 
-  type TYPE_HASH = scala.collection.mutable.Map[AtomicType, Int]
+  type TYPE_HASH = scala.collection.mutable.Map[TerminalType, Int]
   val maybeHash = new DynamicVariable[Option[TYPE_HASH]](None)
   var numAllocations = new DynamicVariable[Int](0)
 
@@ -37,7 +37,7 @@ object TypeSystemWithLBdd {
     import org.jboss.util.collection._
 
     import scala.collection.JavaConverters._
-    new WeakValueHashMap[AtomicType, Int].asScala
+    new WeakValueHashMap[TerminalType, Int].asScala
   }
 
   def withNewTypeHash[A](code: => A): A = {
@@ -56,9 +56,9 @@ object TypeSystemWithLBdd {
     * @param at the atomic type from which we want to create a LBdd
     * @return the created LBdd
     */
-  protected def typeAsLBdd(at: AtomicType): LBdd = {
+  protected def typeAsLBdd[T <: TerminalType](at: T): LBdd = {
     maybeHash.value match {
-      case None => sys.error("Called outside dynamic extent of withNewTypeHash(...)")
+      case None => sys.error("typeAsLBdd: Called outside dynamic extent of withNewTypeHash(...)")
       case Some(hash) =>
         hash.get(at) match {
           case Some(k) => LBdd(k)
@@ -80,15 +80,14 @@ object TypeSystemWithLBdd {
     t match {
       case x if x == EmptyType => LBddFalse
       case x if x == SuperType => LBddTrue
-      case x: AtomicType => typeAsLBdd(x)
+      case x: AtomicType => typeAsLBdd[AtomicType](x)
       case x: UnionType => Or(x.U.map(typeAsLBdd).toList)
       case x: IntersectionType => And(x.U.map(typeAsLBdd).toList)
       case x: NotType => Not(typeAsLBdd(x.T))
-        // TODO : Exhaustive pattern matching
-      case x: MemberType => ???
-      case x: EqlType => ???
-      case x: CustomType => ???
-      case _ => ???
+      case x: MemberType => typeAsLBdd[MemberType](x)
+      case x: EqlType => typeAsLBdd[EqlType](x)
+      case x: CustomType => typeAsLBdd[CustomType](x)
+      case _ => sys.error("typeAsLBdd: unknown type")
     }
   }
 
