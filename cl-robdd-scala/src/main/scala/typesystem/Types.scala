@@ -87,7 +87,7 @@ object EmptyType extends Type {
 
 
 /** The super type, super type of all types. */
-object SuperType extends Type {
+object TopType extends Type {
   override def typep(a: Any): Boolean = true
 
   override protected def disjointDown(t: Type): Option[Boolean] = {
@@ -98,7 +98,7 @@ object SuperType extends Type {
   }
 
   override def subtypep(t: Type): Option[Boolean] = {
-    if (t == SuperType) Some(true)
+    if (t == TopType) Some(true)
     else Some(false)
   }
 }
@@ -116,7 +116,7 @@ case class AtomicType(T: Class[_]) extends Type with TerminalType {
   override protected def disjointDown(t: Type): Option[Boolean] = {
     t match {
       case EmptyType => Some(true)
-      case SuperType => Some(false)
+      case TopType => Some(false)
       case _ if t == this => Some(false)
       case tp: AtomicType
         if this.T.isAssignableFrom(tp.T) || tp.T.isAssignableFrom(this.T) => Some(false)
@@ -135,12 +135,12 @@ case class AtomicType(T: Class[_]) extends Type with TerminalType {
 
 
 /** The AtomicType object, implementing an apply method in order to
-  * deal with EmptyType and SuperType construction.
+  * deal with EmptyType and TopType construction.
   */
 object AtomicType {
   def apply(T: Class[_]): Type = {
     if (T == classOf[Nothing]) EmptyType
-    else if (T == classOf[Any]) SuperType
+    else if (T == classOf[Any]) TopType
     else new AtomicType(T)
   }
 }

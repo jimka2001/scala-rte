@@ -79,7 +79,7 @@ object TypeSystemWithLBdd {
   def typeAsLBdd(t: Type): LBdd = {
     t match {
       case x if x == EmptyType => LBddFalse
-      case x if x == SuperType => LBddTrue
+      case x if x == TopType => LBddTrue
       case x: AtomicType => typeAsLBdd[AtomicType](x)
       case x: UnionType => Or(x.U.map(typeAsLBdd).toList)
       case x: IntersectionType => And(x.U.map(typeAsLBdd).toList)

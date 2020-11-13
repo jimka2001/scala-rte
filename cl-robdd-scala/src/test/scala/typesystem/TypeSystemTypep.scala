@@ -34,8 +34,8 @@ class TypeSystemTypep extends FunSuite {
 
     assert(EmptyType == newEmpty)
     assert(EmptyType == nothingType)
-    assert(SuperType == newSuper)
-    assert(SuperType == anyType)
+    assert(TopType == newSuper)
+    assert(TopType == anyType)
   }
 
   test("typep of any") {

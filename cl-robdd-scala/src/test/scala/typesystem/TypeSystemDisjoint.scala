@@ -32,14 +32,14 @@ class TypeSystemDisjoint extends FunSuite {
     assert(atomicTypesSeq.forall(_.disjoint(EmptyType).get))
     assert(atomicTypesSeq.forall(EmptyType.disjoint(_).get))
     assert(EmptyType.disjoint(EmptyType).get)
-    assert(EmptyType.disjoint(SuperType).get)
+    assert(EmptyType.disjoint(TopType).get)
   }
 
   test("disjoint SuperType") {
-    assert(atomicTypesSeq.forall(! SuperType.disjoint(_).get))
-    assert(atomicTypesSeq.forall(! _.disjoint(SuperType).get))
-    assert(SuperType.disjoint(EmptyType).get)
-    assert(! SuperType.disjoint(SuperType).get)
+    assert(atomicTypesSeq.forall(! TopType.disjoint(_).get))
+    assert(atomicTypesSeq.forall(! _.disjoint(TopType).get))
+    assert(TopType.disjoint(EmptyType).get)
+    assert(! TopType.disjoint(TopType).get)
   }
 
   test("disjoint AtomicType") {
