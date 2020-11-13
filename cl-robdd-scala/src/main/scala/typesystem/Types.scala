@@ -21,8 +21,11 @@
 
 package typesystem
 
+import java.lang
+
 import scala.math.abs
 import scala.math.sqrt
+import scala.runtime.BoxedUnit
 
 /** A general type of our type system. */
 sealed abstract class Type {
@@ -123,14 +126,14 @@ object TopType extends Type {
 
 /** The atoms of our type system: a simple type built from a native Scala/Java type.
   *
-  * @param T the class of a Scala or Java type this class will wrap (call it with `classOf[native_type]`)
+  * @param ct the class of a Scala or Java type this class will wrap (call it with `classOf[native_type]`)
   */
-case class AtomicType(T: Class[_]) extends Type with TerminalType {
+case class AtomicType(ct: Class[_]) extends Type with TerminalType {
   override def typep(a: Any): Boolean = {
-    T.isInstance(a)
+    ct.isInstance(a)
   }
   override def inhabited:Some[Boolean] = {
-    if (T.isAssignableFrom(classOf[Nothing]))
+    if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
     else
       Some(true)
@@ -141,7 +144,7 @@ case class AtomicType(T: Class[_]) extends Type with TerminalType {
       case TopType => Some(false)
       case _ if t == this => Some(false)
       case tp: AtomicType
-        if this.T.isAssignableFrom(tp.T) || tp.T.isAssignableFrom(this.T) => Some(false)
+        if this.ct.isAssignableFrom(tp.ct) || tp.ct.isAssignableFrom(this.ct) => Some(false)
       case _ => super.disjointDown(t)
     }
   }
@@ -149,7 +152,8 @@ case class AtomicType(T: Class[_]) extends Type with TerminalType {
   override def subtypep(s: Type): Option[Boolean] = {
     s match {
       // super.isAssignableFrom(sub) means sub is subtype of super
-      case tp: AtomicType if tp.T.isAssignableFrom(this.T) => Some(true)
+      case tp: AtomicType if tp.ct.isAssignableFrom(this.ct) => Some(true)
+
       // TODO : Other cases ? Interfaces ?
       case _ => None
     }
@@ -161,10 +165,10 @@ case class AtomicType(T: Class[_]) extends Type with TerminalType {
   * deal with EmptyType and TopType construction.
   */
 object AtomicType {
-  def apply(T: Class[_]): Type = {
-    if (T == classOf[Nothing]) EmptyType
-    else if (T == classOf[Any]) TopType
-    else new AtomicType(T)
+  def apply(ct: Class[_]): Type = {
+    if (ct == classOf[Nothing]) EmptyType
+    else if (ct == classOf[Any]) TopType
+    else new AtomicType(ct)
   }
 }
 
@@ -232,17 +236,17 @@ case class IntersectionType(U: Type*) extends Type {
 
 /** A negation of a type.
   *
-  * @param T the type we want to get the complement
+  * @param s the type we want to get the complement
   */
-case class NotType(T: Type) extends Type {
+case class NotType(s: Type) extends Type {
   override def typep(a: Any): Boolean = {
-    ! T.typep(a)
+    ! s.typep(a)
   }
 
   override def inhabited:Option[Boolean] = {
     val nothing = classOf[Nothing]
     val any = classOf[AnyRef]
-    T match {
+    s match {
       case NotType(x) => x.inhabited
       case AtomicType(`nothing`) => Some(true)
       case AtomicType(`any`) => Some(false)
@@ -255,13 +259,13 @@ case class NotType(T: Type) extends Type {
     }
   }
   override protected def disjointDown(t: Type): Option[Boolean] = {
-    if (t.subtypep(T).getOrElse(false))
+    if (t.subtypep(s).getOrElse(false))
       Some(true)
     else super.disjointDown(t)
   }
 
   override def subtypep(t: Type): Option[Boolean] = {
-    this.T.disjoint(t)
+    this.s.disjoint(t)
   }
 }
 
@@ -325,22 +329,36 @@ case class CustomType(f: Any => Boolean) extends Type with TerminalType {
 
 object Types {
 
-  val anyType = AtomicType(classOf[Any])
-  val nothingType = AtomicType(classOf[Nothing])
+  val Any: Class[Any] = classOf[Any]
+  val Nothing: Class[Nothing] = classOf[Nothing]
+  val Int: Class[Int] = classOf[Int]
+  val Integer: Class[Integer] = classOf[lang.Integer]
+  val Double: Class[lang.Double] = classOf[lang.Double]
+  val String: Class[String] = classOf[lang.String]
+  val ListAny: Class[List[Any]] = classOf[List[Any]]
+  val Boolean: Class[lang.Boolean] = classOf[lang.Boolean]
+  val Unit: Class[BoxedUnit] = classOf[scala.runtime.BoxedUnit]
+  val Char: Class[Character] = classOf[lang.Character]
+  val AnyRef: Class[AnyRef] = classOf[AnyRef]
+  val AnyVal: Class[AnyVal] = classOf[AnyVal]
+  val Numeric: Class[Number] = classOf[lang.Number]
 
-  val intType = AtomicType(classOf[Int])
-  val intJavaType = AtomicType(classOf[java.lang.Integer])
-  val doubleJavaType = AtomicType(classOf[java.lang.Double])
-  val stringType = AtomicType(classOf[String])
-  val listIntType = AtomicType(classOf[List[Int]])
-  val booleanJavaType = AtomicType(classOf[java.lang.Boolean])
-  val unitRuntimeType = AtomicType(classOf[scala.runtime.BoxedUnit])
-  val charJavaType = AtomicType(classOf[java.lang.Character])
-  val anyRefType = AtomicType(classOf[AnyRef])
-  val numericType = AtomicType(classOf[java.lang.Number])
+  val anyType = AtomicType(Any)
+  val nothingType = AtomicType(Nothing)
+
+  val intType = AtomicType(Int)
+  val intJavaType = AtomicType(Integer)
+  val doubleJavaType = AtomicType(Double)
+  val stringType = AtomicType(String)
+  val listAnyType = AtomicType(ListAny)
+  val booleanJavaType = AtomicType(Boolean)
+  val unitRuntimeType = AtomicType(Unit)
+  val charJavaType = AtomicType(Char)
+  val anyRefType = AtomicType(AnyRef)
+  val numericType = AtomicType(Numeric)
 
   val atomicTypesSeq: Seq[Type] =
-    Seq(intType, intJavaType, doubleJavaType, stringType, listIntType, booleanJavaType, unitRuntimeType,
+    Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanJavaType, unitRuntimeType,
       charJavaType, anyRefType, numericType)
 
 
