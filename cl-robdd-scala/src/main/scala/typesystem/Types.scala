@@ -48,8 +48,14 @@ sealed abstract class Type {
     }
   }
 
-  protected def disjointDown(t: Type): Option[Boolean]
   def inhabited: Option[Boolean] = None
+
+  protected def disjointDown(t: Type): Option[Boolean] = {
+    if (inhabited.contains(false)) // an empty type is disjoint to every other type
+      Some(true)
+    else
+      None
+  }
 
   /** Returns whether this type is a recognizable subtype of another given type.
     * It is a subset test. This might be undecidable.
@@ -92,7 +98,6 @@ object EmptyType extends Type {
   override def typep(a: Any): Boolean = false
   override def inhabited:Some[Boolean] = Some(false)
   override protected def disjointDown(t: Type): Option[Boolean] = Some(true)
-
   override def subtypep(t: Type): Option[Boolean] = Some(true)
 }
 
@@ -137,7 +142,7 @@ case class AtomicType(T: Class[_]) extends Type with TerminalType {
       case _ if t == this => Some(false)
       case tp: AtomicType
         if this.T.isAssignableFrom(tp.T) || tp.T.isAssignableFrom(this.T) => Some(false)
-      case _ => None
+      case _ => super.disjointDown(t)
     }
   }
 
@@ -183,7 +188,7 @@ case class UnionType(U: Type*) extends Type {
   override protected def disjointDown(t: Type): Option[Boolean] = {
     if (U.forall(_.disjoint(t).nonEmpty))
       Some(U.forall(_.disjoint(t).get))
-    else None
+    else super.disjointDown(t)
   }
 
   override def subtypep(t: Type): Option[Boolean] = {
@@ -215,7 +220,7 @@ case class IntersectionType(U: Type*) extends Type {
   override protected def disjointDown(t: Type): Option[Boolean] = {
     if (U.exists(_.disjoint(t).getOrElse(false)))
       Some(true)
-    else None
+    else super.disjointDown(t)
   }
 
   override def subtypep(t: Type): Option[Boolean] = {
@@ -252,7 +257,7 @@ case class NotType(T: Type) extends Type {
   override protected def disjointDown(t: Type): Option[Boolean] = {
     if (t.subtypep(T).getOrElse(false))
       Some(true)
-    else None
+    else super.disjointDown(t)
   }
 
   override def subtypep(t: Type): Option[Boolean] = {
@@ -312,7 +317,7 @@ case class EqlType(a: Any) extends Type with TerminalType {
 case class CustomType(f: Any => Boolean) extends Type with TerminalType {
   override def typep(a: Any): Boolean = f(a)
 
-  override protected def disjointDown(t: Type): Option[Boolean] = ???
+  override protected def disjointDown(t: Type): Option[Boolean] = super.disjointDown(t)
   override def inhabited:Option[Boolean] = None
   override def subtypep(t: Type): Option[Boolean] = super.subtypep(t)
 }
