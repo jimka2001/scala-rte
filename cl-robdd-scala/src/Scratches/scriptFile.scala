@@ -1,0 +1,1 @@
+println(classOf[String].isAssignableFrom(classOf[Nothing]))
