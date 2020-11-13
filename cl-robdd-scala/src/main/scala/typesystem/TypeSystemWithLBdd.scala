@@ -23,6 +23,7 @@
 package typesystem
 
 import lbdd._
+import lbdd.GraphViz._
 
 import scala.util.DynamicVariable
 
@@ -79,14 +80,17 @@ object TypeSystemWithLBdd {
   def typeAsLBdd(t: Type): LBdd = {
     t match {
       case x if x == EmptyType => LBddFalse
-      case x if x == SuperType => LBddTrue
+      case x if x == TopType => LBddTrue
       case x: AtomicType => typeAsLBdd[AtomicType](x)
-      case x: UnionType => Or(x.U.map(typeAsLBdd).toList)
-      case x: IntersectionType => And(x.U.map(typeAsLBdd).toList)
-      case x: NotType => Not(typeAsLBdd(x.T))
       case x: MemberType => typeAsLBdd[MemberType](x)
       case x: EqlType => typeAsLBdd[EqlType](x)
       case x: CustomType => typeAsLBdd[CustomType](x)
+
+        // TODO : Reduction and ordering
+      case x: UnionType => Or(x.U.map(typeAsLBdd).toList)
+      case x: IntersectionType => And(x.U.map(typeAsLBdd).toList)
+      case x: NotType => Not(typeAsLBdd(x.s))
+
       case _ => sys.error("typeAsLBdd: unknown type")
     }
   }
@@ -100,7 +104,12 @@ object TypeSystemWithLBdd {
     * @return an optional Boolean which is true if b1 and b2 are disjoint.
     */
   def disjoint(b1: LBdd, b2: LBdd): Option[Boolean] = {
-    if (And(b1, b2) == LBddFalse || And(b2, b1) == LBddFalse) Some(true)
+    val and12 = And(b1, b2)
+    val and21 = And(b2, b1)
+
+    if (and12 == LBddFalse || and21 == LBddFalse) Some(true)
+    else if (and12 == b1 || and21 == b1) Some(false)
+    else if (and12 == b2 || and21 == b2) Some(false)
     else None
   }
 
@@ -132,5 +141,20 @@ object TypeSystemWithLBdd {
     else if (And(b2, b1) == b2) Some(true)
     else if (disjoint(b1, b2).getOrElse(false)) Some(false)
     else None
+  }
+
+
+  def main(args: Array[String]): Unit = {
+    TypeSystemWithLBdd.withNewTypeHash {
+      val numericType = AtomicType(classOf[java.lang.Number])
+      val numericLBdd = typeAsLBdd(numericType)
+
+      val Number = classOf[java.lang.Number]
+
+      numericLBdd.bddView(true, "numericTypeLBdd")
+
+      val b2 = typeAsLBdd(UnionType(IntersectionType(numericType, Types.intJavaType), Types.stringType))
+      b2.bddView(true, "string or (num and int)")
+    }
   }
 }

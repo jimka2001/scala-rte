@@ -34,8 +34,8 @@ class TypeSystemTypep extends FunSuite {
 
     assert(EmptyType == newEmpty)
     assert(EmptyType == nothingType)
-    assert(SuperType == newSuper)
-    assert(SuperType == anyType)
+    assert(TopType == newSuper)
+    assert(TopType == anyType)
   }
 
   test("typep of any") {
@@ -65,10 +65,10 @@ class TypeSystemTypep extends FunSuite {
   }
 
   test("typep of list int") {
-    assert(listIntType.typep(List(1, 2, 3)))
+    assert(listAnyType.typep(List(1, 2, 3)))
     // Because of type erasure
-    assert(listIntType.typep(List[Double](1.1, 0.42)))
-    assert(listIntType.typep(List[Any]("test", 2, "coucou")))
+    assert(listAnyType.typep(List[Double](1.1, 0.42)))
+    assert(listAnyType.typep(List[Any]("test", 2, "coucou")))
   }
 
   test("typep of a UnionType") {
@@ -95,9 +95,9 @@ class TypeSystemTypep extends FunSuite {
   }
 
   test("typep of an IntersectionType") {
-    val interAnyRefList = IntersectionType(anyRefType, listIntType)
+    val interAnyRefList = IntersectionType(anyRefType, listAnyType)
     val interIntStringUnit = IntersectionType(intJavaType, stringType, unitRuntimeType)
-    val interAnyRefListNothing = IntersectionType(anyRefType, listIntType, nothingType)
+    val interAnyRefListNothing = IntersectionType(anyRefType, listAnyType, nothingType)
     val interStringAny = IntersectionType(stringType, anyType)
     val interNumericJavaInt = IntersectionType(numericType, intJavaType)
 
