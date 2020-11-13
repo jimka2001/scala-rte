@@ -57,7 +57,19 @@ sealed abstract class Type {
     * @param t the type we want to check whether this type is included in
     * @return an optional Boolean which is true if this type is a subtype of t
     */
-  def subtypep(t: Type): Option[Boolean]
+  def subtypep(t: Type): Option[Boolean] = {
+    if ( (t.getClass eq this.getClass)
+         && (t == this))
+      Some(true)
+      else
+      (inhabited,t.inhabited) match {
+        case (None,_) => None
+        case (_,None) => None
+        case (Some(false),Some(false)) => Some(true) // empty set is a subset of the empty set
+        case (_,Some(false)) => Some(false) // no inhabited type is a subtype of the empty type
+        case _ => None
+      }
+  }
 
   /** Returns whether this type is a recognizable supertype of another given type.
     * It is a superset test. This might be undecidable.
@@ -129,9 +141,10 @@ case class AtomicType(T: Class[_]) extends Type with TerminalType {
     }
   }
 
-  override def subtypep(t: Type): Option[Boolean] = {
-    t match {
-      case tp: AtomicType if this.T.isAssignableFrom(tp.T) => Some(true)
+  override def subtypep(s: Type): Option[Boolean] = {
+    s match {
+      // super.isAssignableFrom(sub) means sub is subtype of super
+      case tp: AtomicType if tp.T.isAssignableFrom(this.T) => Some(true)
       // TODO : Other cases ? Interfaces ?
       case _ => None
     }
@@ -300,9 +313,8 @@ case class CustomType(f: Any => Boolean) extends Type with TerminalType {
   override def typep(a: Any): Boolean = f(a)
 
   override protected def disjointDown(t: Type): Option[Boolean] = ???
-
-  override def subtypep(t: Type): Option[Boolean] = ???
   override def inhabited:Option[Boolean] = None
+  override def subtypep(t: Type): Option[Boolean] = super.subtypep(t)
 }
 
 
