@@ -85,4 +85,53 @@ class TypeSystemSubtypep extends FunSuite {
     assert(AtomicType(classOf[Test1]).subtypep(AtomicType(classOf[Test3])) == Some(false))
     assert(AtomicType(classOf[Trait1]).subtypep(AtomicType(classOf[Trait2])) == Some(false))
   }
+
+  test("AtomicType subtype of union"){
+    assert(AtomicType(classOf[Test3]).subtypep(UnionType(AtomicType(classOf[Trait1]),
+                                                         AtomicType(classOf[Trait2]),
+                                                         AtomicType(classOf[Test1]))) == Some(true))
+
+    assert(AtomicType(classOf[Trait2]).subtypep(UnionType(AtomicType(classOf[Test2]),
+                                                          AtomicType(classOf[Trait1]))) == Some(true))
+
+    assert(AtomicType(classOf[Test1]).subtypep(UnionType(AtomicType(classOf[Test2]),
+                                                         AtomicType(classOf[Trait1]))) != Some(true))
+
+    // Test1 is disjoint from Integer and also from Long, so it is not a subtype of their union.
+    // TODO currently failing, need to fix.
+    assert(AtomicType(classOf[Test1]).subtypep(UnionType(AtomicType(Integer),
+                                                         AtomicType(Long))) == Some(false))
+  }
+  test("AtomicType subtype of intersection"){
+
+    //  Test2 < Test1
+    // Trait2 < Trait1
+    //  Test3 < Test2
+    //  Test3 < Trait2
+    class Test3 extends Test2 with Trait2
+    assert(AtomicType(classOf[Test3]).subtypep(IntersectionType(AtomicType(classOf[Trait1]),
+                                                                AtomicType(classOf[Trait2]),
+                                                                AtomicType(classOf[Test1]))) == Some(true))
+
+    assert(AtomicType(classOf[Trait2]).subtypep(IntersectionType(AtomicType(classOf[Test2]),
+                                                                 AtomicType(classOf[Trait1]))) != Some(true))
+
+    assert(AtomicType(classOf[Test1]).subtypep(IntersectionType(AtomicType(classOf[Test2]),
+                                                                AtomicType(classOf[Trait1]))) != Some(true))
+
+    // Test1 is disjoint from Integer and also from Long, so it is not a subtype of their intersection.
+    // TODO currently failing, need to fix.
+    assert(AtomicType(classOf[Test1]).subtypep(IntersectionType(AtomicType(Integer),
+                                                                AtomicType(Number),
+                                                                AtomicType(Long))) == Some(false))
+  }
+  test("AtomicType subtype of member"){
+    assert(AtomicType(classOf[Test1]).subtypep(MemberType(1,2,3)) == Some(false))
+  }
+  test("AtomicType subtype of eql"){
+    assert(AtomicType(classOf[Test1]).subtypep(EqlType(1)) == Some(false))
+  }
+  test("AtomicType subtype of Not"){
+
+  }
 }

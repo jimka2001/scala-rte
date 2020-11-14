@@ -142,9 +142,13 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
     t match {
       case EmptyType => Some(true)
       case TopType => Some(false)
-      case _ if t == this => Some(false)
-      case tp: AtomicType
-        if this.ct.isAssignableFrom(tp.ct) || tp.ct.isAssignableFrom(this.ct) => Some(false)
+      case AtomicType(tp) =>
+        if (tp == ct)
+           Some(false)
+        else if (ct.isAssignableFrom(tp) || tp.isAssignableFrom(ct))
+          Some(false)
+        else
+          None
       case _ => super.disjointDown(t)
     }
   }
@@ -152,11 +156,41 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
   override def subtypep(s: Type): Option[Boolean] = {
     s match {
       // super.isAssignableFrom(sub) means sub is subtype of super
-      case tp: AtomicType => {
-        Some(tp.ct.isAssignableFrom(ct))}
+      case AtomicType(tp) =>
+        Some(tp.isAssignableFrom(ct))
 
-      // TODO : Other cases ? Member, Eql, 
-      case _ => None
+      case MemberType(_) =>
+        Some(false) // no member type exhausts all the values of an Atomic Type
+
+      case EqlType(_) =>
+        Some(false)
+
+      case NotType(_) =>
+        super.subtypep(s)
+
+      case UnionType(tp @ _*) =>
+        if (tp.exists(x => subtypep(x).contains(true)))
+          // A < A union X,
+          // and A < B => A < B union X
+          // if this happens to be a subtype of one of the components of the union type, then it is
+          //   a subtype of the union type, but if this fails to be a subtype of every component
+          //   we can not reach any conclusion
+          Some(true)
+        else if (tp.forall(x => disjoint(x).contains(true)))
+          Some(false)
+        else
+          super.subtypep(s)
+
+      case IntersectionType(tp @ _*) =>
+        if(tp.forall(x => subtypep(x).contains(true)))
+          Some(true)
+        else if (tp.forall(x => disjoint(x).contains(true)))
+          Some(false)
+        else
+          super.subtypep(s)
+
+      case CustomType(_) =>
+        super.subtypep(s)
     }
   }
 }
