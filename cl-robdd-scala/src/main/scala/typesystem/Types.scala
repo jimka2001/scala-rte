@@ -174,7 +174,7 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
       case AtomicType(tp) =>
         Some(tp.isAssignableFrom(ct))
 
-      case MemberType(_) =>
+      case MemberType(_ @ _*) =>
         Some(false) // no member type exhausts all the values of an Atomic Type
 
       case EqlType(_) =>
