@@ -100,4 +100,45 @@ class TypeSystemDisjoint extends FunSuite {
     println(UnionType(intJavaType, stringType).disjoint(UnionType(charJavaType, booleanJavaType)))
     println(IntersectionType(UnionType(intJavaType, doubleJavaType), stringType).disjoint(stringType))
   }
+  class Test1
+  class Test2 extends Test1
+  trait Trait1
+  trait Trait2 extends Trait1
+  trait Trait3
+  trait Trait4
+  class Test3 extends Test2 with Trait2
+  case class Test4()
+  case class Test5() extends Test3
+  class Test6
+  class Test7
+
+  //  Test2 < Test1
+  // Trait2 < Trait1
+  //  Test3 < Test2
+  //  Test3 < Trait2
+  test("disjoint AtomicType with inheritance"){
+    // one assignable from the other
+    assert(AtomicType(classOf[Test2]).disjoint(AtomicType(classOf[Test1])) == Some(false))
+    assert(AtomicType(classOf[Test1]).disjoint(AtomicType(classOf[Test2])) == Some(false))
+    assert(AtomicType(classOf[Test3]).disjoint(AtomicType(classOf[Test2])) == Some(false))
+    assert(AtomicType(classOf[Test3]).disjoint(AtomicType(classOf[Trait2])) == Some(false))
+    assert(AtomicType(classOf[Trait1]).disjoint(AtomicType(classOf[Trait2])) == Some(false))
+
+    // either is final
+    assert(AtomicType(classOf[Test5]).disjoint(AtomicType(classOf[Test5])) == Some(false))
+    assert(AtomicType(classOf[Test5]).disjoint(AtomicType(classOf[Test3])) == Some(false))
+    assert(AtomicType(classOf[Test4]).disjoint(AtomicType(classOf[Test3])) == Some(true))
+    assert(AtomicType(classOf[Test3]).disjoint(AtomicType(classOf[Test4])) == Some(true))
+    
+    // either is a trait
+    assert(AtomicType(classOf[Trait2]).disjoint(AtomicType(classOf[Test1])) == Some(false))
+    assert(AtomicType(classOf[Trait2]).disjoint(AtomicType(classOf[Trait3])) == Some(false))
+    assert(AtomicType(classOf[Test4]).disjoint(AtomicType(classOf[Test5])) == Some(true))
+    assert(AtomicType(classOf[Test4]).disjoint(AtomicType(classOf[Test4])) == Some(false))
+    assert(AtomicType(classOf[Test1]).disjoint(AtomicType(classOf[Trait3])) == Some(false))
+    assert(AtomicType(classOf[Trait4]).disjoint(AtomicType(classOf[Trait3])) == Some(false))
+
+    // neither is trait nor superclass nor final
+    assert(AtomicType(classOf[Test6]).disjoint(AtomicType(classOf[Test7])) == Some(true))
+  }
 }
