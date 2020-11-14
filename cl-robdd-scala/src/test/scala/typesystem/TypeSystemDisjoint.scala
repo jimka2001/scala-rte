@@ -129,7 +129,7 @@ class TypeSystemDisjoint extends FunSuite {
     assert(AtomicType(classOf[Test5]).disjoint(AtomicType(classOf[Test3])) == Some(false))
     assert(AtomicType(classOf[Test4]).disjoint(AtomicType(classOf[Test3])) == Some(true))
     assert(AtomicType(classOf[Test3]).disjoint(AtomicType(classOf[Test4])) == Some(true))
-    
+
     // either is a trait
     assert(AtomicType(classOf[Trait2]).disjoint(AtomicType(classOf[Test1])) == Some(false))
     assert(AtomicType(classOf[Trait2]).disjoint(AtomicType(classOf[Trait3])) == Some(false))

@@ -139,15 +139,12 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
       Some(true)
   }
   override protected def disjointDown(t: Type): Option[Boolean] = {
-    val FINAL = 0x0010
-    val INTERFACE = 0x0200
-    //val ABSTRACT = 0x0400
-    //val PUBLIC = 0x0001
+    import java.lang.reflect.Modifier
     def isFinal(cl:Class[_]):Boolean = {
-      0 != (cl.getModifiers() & FINAL)
+      Modifier.isFinal(cl.getModifiers())
     }
     def isInterface(cl:Class[_]):Boolean = {
-      0 != (cl.getModifiers() & INTERFACE)
+      Modifier.isInterface(cl.getModifiers())
     }
 
     t match {
