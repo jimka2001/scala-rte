@@ -98,7 +98,6 @@ class TypeSystemSubtypep extends FunSuite {
                                                          AtomicType(classOf[Trait1]))) != Some(true))
 
     // Test1 is disjoint from Integer and also from Long, so it is not a subtype of their union.
-    // TODO currently failing, need to fix.
     assert(AtomicType(classOf[Test1]).subtypep(UnionType(AtomicType(Integer),
                                                          AtomicType(Long))) == Some(false))
   }
@@ -120,7 +119,6 @@ class TypeSystemSubtypep extends FunSuite {
                                                                 AtomicType(classOf[Trait1]))) != Some(true))
 
     // Test1 is disjoint from Integer and also from Long, so it is not a subtype of their intersection.
-    // TODO currently failing, need to fix.
     assert(AtomicType(classOf[Test1]).subtypep(IntersectionType(AtomicType(Integer),
                                                                 AtomicType(Number),
                                                                 AtomicType(Long))) == Some(false))
