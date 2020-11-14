@@ -152,9 +152,10 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
   override def subtypep(s: Type): Option[Boolean] = {
     s match {
       // super.isAssignableFrom(sub) means sub is subtype of super
-      case tp: AtomicType if tp.ct.isAssignableFrom(this.ct) => Some(true)
+      case tp: AtomicType => {
+        Some(tp.ct.isAssignableFrom(ct))}
 
-      // TODO : Other cases ? Interfaces ?
+      // TODO : Other cases ? Member, Eql, 
       case _ => None
     }
   }
