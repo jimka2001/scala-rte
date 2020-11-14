@@ -139,6 +139,17 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
       Some(true)
   }
   override protected def disjointDown(t: Type): Option[Boolean] = {
+    val FINAL = 0x0010
+    val INTERFACE = 0x0200
+    //val ABSTRACT = 0x0400
+    //val PUBLIC = 0x0001
+    def isFinal(cl:Class[_]):Boolean = {
+      0 != (cl.getModifiers() & FINAL)
+    }
+    def isInterface(cl:Class[_]):Boolean = {
+      0 != (cl.getModifiers() & INTERFACE)
+    }
+
     t match {
       case EmptyType => Some(true)
       case TopType => Some(false)
@@ -147,8 +158,12 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
            Some(false)
         else if (ct.isAssignableFrom(tp) || tp.isAssignableFrom(ct))
           Some(false)
-        else
-          None
+        else if (isFinal(ct) || isFinal(tp)) // if either is final
+          Some(true)
+        else if (isInterface(ct) || isInterface(tp) ) // if either is an interface
+          Some(false)
+        else // neither is final, and neither is an interface, and neither is a subclass of the other, so disjoint.
+          Some(true)
       case _ => super.disjointDown(t)
     }
   }
@@ -357,7 +372,7 @@ case class CustomType(f: Any => Boolean) extends Type with TerminalType {
   override def typep(a: Any): Boolean = f(a)
 
   override protected def disjointDown(t: Type): Option[Boolean] = super.disjointDown(t)
-  override def inhabited:Option[Boolean] = None
+  override def inhabited:Option[Boolean] = super.inhabited
   override def subtypep(t: Type): Option[Boolean] = super.subtypep(t)
 }
 
