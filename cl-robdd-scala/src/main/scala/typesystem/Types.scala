@@ -270,12 +270,12 @@ case class IntersectionType(U: Type*) extends Type {
     U.forall(_.typep(a))
   }
   override def inhabited: Option[Boolean] = {
-    if(U.exists(false == _.inhabited.getOrElse(true))) {
+    if(U.exists(_.inhabited.contains(false))) {
       // if one of an intersection is empty, then the intersection is empty
       Some(false)
     } else {
       // we don't know anything about whether the intersection is empty
-      None
+      super.inhabited
     }
   }
   override protected def disjointDown(t: Type): Option[Boolean] = {
@@ -285,8 +285,10 @@ case class IntersectionType(U: Type*) extends Type {
   }
 
   override def subtypep(t: Type): Option[Boolean] = {
-    if (U.exists(_.subtypep(t).getOrElse(false))) Some(true)
-    else None
+    if (U.exists(_.subtypep(t).contains(true)))
+      Some(true)
+    else
+      super.subtypep(t)
   }
 }
 
