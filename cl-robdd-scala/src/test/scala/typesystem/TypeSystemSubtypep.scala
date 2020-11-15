@@ -132,4 +132,22 @@ class TypeSystemSubtypep extends FunSuite {
   test("AtomicType subtype of Not"){
 
   }
+
+  test("Union subtype of Union"){
+    val union1 = UnionType(AtomicType(Integer),
+                           AtomicType(Long))
+    // A subtype of A
+    assert(union1.subtypep(union1).contains(true))
+  }
+
+  test("Union subtype of AtomicType"){
+    val union1 = UnionType(AtomicType(Integer),
+                           AtomicType(Long))
+    assert(AtomicType(Integer).subtypep(AtomicType(Number)).contains(true))
+    assert(AtomicType(Integer).subtypep(AtomicType(Number)).contains(true))
+    assert(union1.subtypep(AtomicType(Number)).contains(true))
+
+    assert(AtomicType(Integer).subtypep(AtomicType(classOf[Test1])).contains(false))
+    assert(union1.subtypep(AtomicType(classOf[Test1])).contains(false))
+  }
 }
