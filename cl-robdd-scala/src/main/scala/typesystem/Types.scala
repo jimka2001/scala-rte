@@ -229,24 +229,34 @@ case class UnionType(U: Type*) extends Type {
     U.exists(_.typep(a))
   }
   override def inhabited:Option[Boolean] = {
-    if (U.exists(_.inhabited.getOrElse(false)))
+    // TODO : Only a single pass ?
+    if (U.exists(_.inhabited.contains(true)))
       Some(true)
-    else if (U.forall(false == _.inhabited.getOrElse(true)))
+    else if (U.forall(_.inhabited.contains(false)))
       Some(false)
     else
-      None
+      super.inhabited
   }
+  // UnionType(U: Type*)
   override protected def disjointDown(t: Type): Option[Boolean] = {
-    if (U.forall(_.disjoint(t).nonEmpty))
-      Some(U.forall(_.disjoint(t).get))
-    else super.disjointDown(t)
+    // TODO : Only a single pass ?
+    if (U.forall(_.disjoint(t).contains(true)))
+      Some(true)
+    else if (U.exists(_.disjoint(t).contains(false)))
+      Some(false)
+    else
+      super.disjointDown(t)
   }
 
+  // UnionType(U: Type*)
   override def subtypep(t: Type): Option[Boolean] = {
     // TODO : Only a single pass ?
-    if (U.forall(_.subtypep(t).getOrElse(false))) Some(true)
-    else if (U.exists(! _.subtypep(t).getOrElse(true))) Some(false)
-    else None
+    if (U.forall(_.subtypep(t).contains(true)))
+      Some(true)
+    else if (U.exists(_.subtypep(t).contains(false)))
+      Some(false)
+    else
+      super.subtypep(t)
   }
 }
 
