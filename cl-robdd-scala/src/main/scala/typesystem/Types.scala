@@ -380,7 +380,7 @@ case class IntersectionType(U: Type*) extends Type {
           case _ => false
         } match {
           case Some(MemberType(xs@_*)) =>
-            MemberType.apply(xs.filter(typep(_)))
+            MemberType.apply(xs.filter(typep))
           case _ => this
         }
       },
@@ -436,9 +436,7 @@ case class IntersectionType(U: Type*) extends Type {
           }
           val memberValues = notMember.flatMap { case NotType(MemberType(xs@_*)) => xs }
           val eqlValues = notEql.map { case NotType(EqlType(x)) => x }
-          val newMemberValues = (memberValues ++ eqlValues).filter {
-            typep(_)
-          }
+          val newMemberValues = (memberValues ++ eqlValues).filter(typep)
           IntersectionType(others ++ Seq(NotType(MemberType.apply(newMemberValues))) : _*)
         }
       },
