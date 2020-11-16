@@ -376,7 +376,7 @@ case class IntersectionType(tds: Type*) extends Type {
       () => { // IntersectionType(MemberType(42,43,44), A, B, C)
         //  ==> MemberType(42,44)
         tds.find {
-          case MemberType(_) => true
+          case MemberType(_*) => true
           case _ => false
         } match {
           case Some(MemberType(xs@_*)) =>
@@ -394,7 +394,7 @@ case class IntersectionType(tds: Type*) extends Type {
         // (and Long (not (member 1 2)) (not (member 3 4)))
         //  --> (and Long (not (member 1 2 3 4)))
         val notMembers = tds.filter {
-          case NotType(MemberType(_)) => true
+          case NotType(MemberType(_*)) => true
           case _ => false
         }
         val notEqls = tds.filter {
@@ -403,7 +403,7 @@ case class IntersectionType(tds: Type*) extends Type {
         }
         val others: Seq[Type] = tds.filter {
           case NotType(EqlType(_)) => false
-          case NotType(MemberType(_)) => false
+          case NotType(MemberType(_*)) => false
           case _ => true
         }
         if (notEqls.isEmpty && notMembers.isEmpty)
@@ -430,8 +430,8 @@ case class IntersectionType(tds: Type*) extends Type {
           this
         else {
           val others = tds.filter {
-            case NotType(MemberType(_@_*)) => false
-            case NotType(EqlType(_@_*)) => false
+            case NotType(MemberType(_*)) => false
+            case NotType(EqlType(_)) => false
             case _ => true
           }
           val memberValues = notMember.flatMap { case NotType(MemberType(xs@_*)) => xs }
@@ -443,7 +443,7 @@ case class IntersectionType(tds: Type*) extends Type {
       () => {
         // (and A (and B C) D) --> (and A B C D)
         val ands = tds.find {
-          case IntersectionType(_) => true
+          case IntersectionType(_*) => true
           case _ => false
         }
         if (ands.isEmpty)
