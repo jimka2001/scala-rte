@@ -23,10 +23,6 @@ package typesystem
 
 import java.lang
 
-import scala.math.abs
-import scala.math.sqrt
-import scala.runtime.BoxedUnit
-
 /** A general type of our type system. */
 sealed abstract class Type {
   // The memoize method is inspired by
@@ -574,7 +570,8 @@ case class CustomType(f: Any => Boolean) extends Type with TerminalType {
 
 
 object Types {
-
+  import scala.runtime.BoxedUnit
+  
   val Any: Class[Any] = classOf[Any]
   val Nothing: Class[Nothing] = classOf[Nothing]
   val Int: Class[Int] = classOf[Int]
@@ -617,6 +614,7 @@ object Types {
   val evenType:CustomType = CustomType(isEven)
 
   def isOdd(x: Any): Boolean = {
+    import scala.math.abs
     x match {
       case y: Int => abs(y % 2) == 1
       case _ => false
@@ -627,6 +625,8 @@ object Types {
   def isPrime(x: Any): Boolean = {
     @scala.annotation.tailrec
     def go(k: Int, y: Int): Boolean = {
+      import scala.math.sqrt
+
       if (k > sqrt(y)) true
       else if (y % k == 0) false
       else go(k + 1, y)
