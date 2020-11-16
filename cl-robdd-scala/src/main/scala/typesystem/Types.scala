@@ -102,7 +102,7 @@ sealed abstract class Type {
       fixedPoint(v2,f,goodEnough)
   }
 
-  def findSimplifier(simplifiers:List[( () => Type)]):Type = {
+  def findSimplifier(simplifiers:List[() => Type]):Type = {
     simplifiers match {
       case Nil => this
       case s::ss =>
@@ -340,7 +340,7 @@ case class IntersectionType(U: Type*) extends Type {
 
   // IntersectionType(U: Type*)
   override def canonicalizeOnce: Type = {
-    findSimplifier(List[(() => Type)](
+    findSimplifier(List[() => Type](
       () => {
         if (U.contains(EmptyType))
           EmptyType
@@ -386,7 +386,7 @@ case class IntersectionType(U: Type*) extends Type {
       },
       () => { // IntersectionType(A,TopType,B) ==> IntersectionType(A,B)
         if (U.contains(TopType))
-          IntersectionType((U.filterNot(_ == TopType)) : _*)
+          IntersectionType(U.filterNot(_ == TopType) : _*)
         else
           this
       },
@@ -412,7 +412,7 @@ case class IntersectionType(U: Type*) extends Type {
           val newEqls = notEqls.map { case NotType(EqlType(x)) => x }
           val newMembers = notMembers.flatMap { case NotType(MemberType(xs@_*)) => xs }
           val newElements: Seq[Any] = newEqls ++ newMembers
-          IntersectionType((others ++ Seq(MemberType.apply(newElements))) : _*)
+          IntersectionType(others ++ Seq(MemberType.apply(newElements)) : _*)
         }
       },
       () => {
@@ -439,7 +439,7 @@ case class IntersectionType(U: Type*) extends Type {
           val newMemberValues = (memberValues ++ eqlValues).filter {
             typep(_)
           }
-          IntersectionType((others ++ Seq(NotType(MemberType.apply(newMemberValues)))) : _*)
+          IntersectionType(others ++ Seq(NotType(MemberType.apply(newMemberValues))) : _*)
         }
       },
       () => {
@@ -451,14 +451,14 @@ case class IntersectionType(U: Type*) extends Type {
         if (ands.isEmpty)
           this
         else {
-          IntersectionType((U.flatMap {
+          IntersectionType(U.flatMap {
             case IntersectionType(xs@_*) => xs
             case x => Seq(x)
-          }) : _*)
+          } : _*)
         }
       },
       () => {
-        IntersectionType((U.map((t: Type) => t.canonicalize)) : _*)
+        IntersectionType(U.map((t: Type) => t.canonicalize) : _*)
     }
      ))
 
