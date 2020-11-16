@@ -159,10 +159,10 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
   override protected def disjointDown(t: Type): Option[Boolean] = {
     import java.lang.reflect.Modifier
     def isFinal(cl:Class[_]):Boolean = {
-      Modifier.isFinal(cl.getModifiers())
+      Modifier.isFinal(cl.getModifiers)
     }
     def isInterface(cl:Class[_]):Boolean = {
-      Modifier.isInterface(cl.getModifiers())
+      Modifier.isInterface(cl.getModifiers)
     }
 
     t match {
@@ -420,19 +420,19 @@ object Types {
   val AnyVal: Class[AnyVal] = classOf[AnyVal]
   val Numeric: Class[Number] = classOf[lang.Number]
 
-  val anyType = AtomicType(Any)
-  val nothingType = AtomicType(Nothing)
+  val anyType:Type = AtomicType(Any)
+  val nothingType:Type = AtomicType(Nothing)
 
-  val intType = AtomicType(Int)
-  val intJavaType = AtomicType(Integer)
-  val doubleJavaType = AtomicType(Double)
-  val stringType = AtomicType(String)
-  val listAnyType = AtomicType(ListAny)
-  val booleanJavaType = AtomicType(Boolean)
-  val unitRuntimeType = AtomicType(Unit)
-  val charJavaType = AtomicType(Char)
-  val anyRefType = AtomicType(AnyRef)
-  val numericType = AtomicType(Numeric)
+  val intType:Type = AtomicType(Int)
+  val intJavaType:Type = AtomicType(Integer)
+  val doubleJavaType:Type = AtomicType(Double)
+  val stringType:Type = AtomicType(String)
+  val listAnyType:Type = AtomicType(ListAny)
+  val booleanJavaType:Type = AtomicType(Boolean)
+  val unitRuntimeType:Type = AtomicType(Unit)
+  val charJavaType:Type = AtomicType(Char)
+  val anyRefType:Type = AtomicType(AnyRef)
+  val numericType:Type = AtomicType(Numeric)
 
   val atomicTypesSeq: Seq[Type] =
     Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanJavaType, unitRuntimeType,
@@ -445,7 +445,7 @@ object Types {
       case _ => false
     }
   }
-  val evenType = CustomType(isEven)
+  val evenType:CustomType = CustomType(isEven)
 
   def isOdd(x: Any): Boolean = {
     x match {
@@ -453,7 +453,7 @@ object Types {
       case _ => false
     }
   }
-  val oddType = CustomType(isOdd)
+  val oddType:CustomType = CustomType(isOdd)
 
   def isPrime(x: Any): Boolean = {
     @scala.annotation.tailrec
@@ -467,7 +467,7 @@ object Types {
       case _ => false
     }
   }
-  val primeType = CustomType(isPrime)
+  val primeType:CustomType = CustomType(isPrime)
 
 
   def main(args: Array[String]): Unit = {
