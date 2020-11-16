@@ -29,6 +29,24 @@ import scala.runtime.BoxedUnit
 
 /** A general type of our type system. */
 sealed abstract class Type {
+  // The memoize method is inspired by
+  //  https://clojuredocs.org/clojure.core/memoize
+  // Returning a memoized version of a referentially transparent function. The
+  // memoized version of the function keeps a cache of the mapping from arguments
+  // to results and, when calls with the same arguments are repeated often, has
+  // higher performance at the expense of higher memory use.
+  def memoize[F,T](f:F=>T):F=>T = {
+    val hash = scala.collection.mutable.Map[F,T]()
+    def mem(i:F):T = {
+      hash.getOrElse(i, locally{
+        val v:T = f(i)
+        hash(i) = v
+        v
+      })
+    }
+    mem
+  }
+
   /** Returns whether a given object belongs to this type.
     * It is a set membership test.
     *
@@ -229,20 +247,20 @@ case class UnionType(U: Type*) extends Type {
     U.exists(_.typep(a))
   }
   override def inhabited:Option[Boolean] = {
-    // TODO : Only a single pass ?
-    if (U.exists(_.inhabited.contains(true)))
+    val i = memoize((s:Type) => s.inhabited)
+    if (U.exists(i(_).contains(true)))
       Some(true)
-    else if (U.forall(_.inhabited.contains(false)))
+    else if (U.forall(i(_).contains(false)))
       Some(false)
     else
       super.inhabited
   }
   // UnionType(U: Type*)
   override protected def disjointDown(t: Type): Option[Boolean] = {
-    // TODO : Only a single pass ?
-    if (U.forall(_.disjoint(t).contains(true)))
+    val d = memoize((s:Type) => s.disjoint(t))
+    if (U.forall(d(_).contains(true)))
       Some(true)
-    else if (U.exists(_.disjoint(t).contains(false)))
+    else if (U.exists(d(_).contains(false)))
       Some(false)
     else
       super.disjointDown(t)
@@ -250,10 +268,10 @@ case class UnionType(U: Type*) extends Type {
 
   // UnionType(U: Type*)
   override def subtypep(t: Type): Option[Boolean] = {
-    // TODO : Only a single pass ?
-    if (U.forall(_.subtypep(t).contains(true)))
+    val s = memoize((s:Type) => s.subtypep(t))
+    if (U.forall(s(_).contains(true)))
       Some(true)
-    else if (U.exists(_.subtypep(t).contains(false)))
+    else if (U.exists(s(_).contains(false)))
       Some(false)
     else
       super.subtypep(t)
