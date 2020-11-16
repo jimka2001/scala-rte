@@ -419,11 +419,11 @@ case class IntersectionType(U: Type*) extends Type {
         // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
         // (and Double (not (= "a"))) --> (and Double  (not (member)))
         val notMember = U.filter {
-          case NotType(MemberType(xs@_*)) => true
+          case NotType(MemberType(_*)) => true
           case _ => false
         }
         val notEql = U.filter {
-          case NotType(EqlType(x)) => true
+          case NotType(EqlType(_)) => true
           case _ => false
         }
         if (notEql.isEmpty && notMember.isEmpty)
