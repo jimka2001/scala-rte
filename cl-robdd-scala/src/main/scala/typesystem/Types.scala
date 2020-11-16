@@ -98,6 +98,26 @@ sealed abstract class Type {
       }
   }
 
+  def fixedPoint[T](v:T, f:T=>T, goodEnough:(T,T)=>Boolean):T = {
+    val v2 = f(v)
+    if (goodEnough(v,v2))
+      v
+    else
+      fixedPoint(v2,f,goodEnough)
+  }
+
+  def findSimplifier(simplifiers:List[( () => Type)]):Type = {
+    simplifiers match {
+      case Nil => this
+      case s::ss =>
+        val t2 = s()
+        if ( this == t2)
+          findSimplifier(ss)
+        else
+          t2
+    }
+  }
+
   /** Returns whether this type is a recognizable supertype of another given type.
     * It is a superset test. This might be undecidable.
     *
