@@ -137,6 +137,7 @@ sealed trait TerminalType
 
 /** The empty type, subtype of all types. */
 object EmptyType extends Type {
+  override def toString = "Empty"
   override def typep(a: Any): Boolean = false
   override def inhabited:Some[Boolean] = Some(false)
   override protected def disjointDown(t: Type): Option[Boolean] = Some(true)
@@ -146,6 +147,7 @@ object EmptyType extends Type {
 
 /** The super type, super type of all types. */
 object TopType extends Type {
+  override def toString = "Top"
   override def typep(a: Any): Boolean = true
   override def inhabited:Some[Boolean] = Some(true)
 
@@ -168,6 +170,15 @@ object TopType extends Type {
   * @param ct the class of a Scala or Java type this class will wrap (call it with `classOf[native_type]`)
   */
 case class AtomicType(ct: Class[_]) extends Type with TerminalType {
+  override def toString = {
+    val fullName = ct.getName()
+
+    val shortName = fullName.dropWhile(_ != '$')
+    if (shortName == "")
+      fullName
+    else
+      shortName.drop(1)
+  }
   override def typep(a: Any): Boolean = {
     ct.isInstance(a)
   }
@@ -270,6 +281,7 @@ object AtomicType {
   * @param tds var-arg, zero or more types
   */
 case class UnionType(tds: Type*) extends Type {
+  override def toString =  tds.map(_.toString).mkString("[Or ",",","]")
   override def typep(a: Any): Boolean = {
     tds.exists(_.typep(a))
   }
@@ -311,6 +323,7 @@ case class UnionType(tds: Type*) extends Type {
   * @param tds var-arg, zero or more types
   */
 case class IntersectionType(tds: Type*) extends Type {
+  override def toString =  tds.map(_.toString).mkString("[And ",",","]")
   override def typep(a: Any): Boolean = {
     tds.forall(_.typep(a))
   }
@@ -469,6 +482,7 @@ case class IntersectionType(tds: Type*) extends Type {
   * @param s the type we want to get the complement
   */
 case class NotType(s: Type) extends Type {
+  override def toString = "[Not " + s.toString + "]"
   override def typep(a: Any): Boolean = {
     ! s.typep(a)
   }
@@ -513,18 +527,19 @@ case class NotType(s: Type) extends Type {
 /** The member type is an exhaustive type, all object composing it are
   * given at construction time.
   *
-  * @param M var-arg, the members of the type
+  * @param xs var-arg, the members of the type
   */
-case class MemberType(M: Any*) extends Type with TerminalType {
-  override def typep(a: Any): Boolean = M.contains(a)
+case class MemberType(xs: Any*) extends Type with TerminalType {
+  override def toString = xs.map(_.toString).mkString("[=", "," ,"]")
+  override def typep(a: Any): Boolean = xs.contains(a)
   override def inhabited:Option[Boolean] = Some(true)
   override protected def disjointDown(t: Type): Option[Boolean] = {
-    if (M.exists(t.typep)) Some(false)
+    if (xs.exists(t.typep)) Some(false)
     else Some(true)
   }
 
   override def subtypep(t: Type): Option[Boolean] = {
-    if (M.forall(t.typep)) Some(true)
+    if (xs.forall(t.typep)) Some(true)
     else Some(false)
   }
 }
@@ -535,6 +550,7 @@ case class MemberType(M: Any*) extends Type with TerminalType {
   * @param a the object defining the type
   */
 case class EqlType(a: Any) extends Type with TerminalType {
+  override def toString = s"[= $a]"
   override def typep(b: Any): Boolean = {
     a == b
   }
