@@ -267,17 +267,17 @@ object AtomicType {
 
 /** A union type, which is the union of zero or more types.
   *
-  * @param U var-arg, zero or more types
+  * @param tds var-arg, zero or more types
   */
-case class UnionType(U: Type*) extends Type {
+case class UnionType(tds: Type*) extends Type {
   override def typep(a: Any): Boolean = {
-    U.exists(_.typep(a))
+    tds.exists(_.typep(a))
   }
   override def inhabited:Option[Boolean] = {
     val i = memoize((s:Type) => s.inhabited)
-    if (U.exists(i(_).contains(true)))
+    if (tds.exists(i(_).contains(true)))
       Some(true)
-    else if (U.forall(i(_).contains(false)))
+    else if (tds.forall(i(_).contains(false)))
       Some(false)
     else
       super.inhabited
@@ -285,9 +285,9 @@ case class UnionType(U: Type*) extends Type {
   // UnionType(U: Type*)
   override protected def disjointDown(t: Type): Option[Boolean] = {
     val d = memoize((s:Type) => s.disjoint(t))
-    if (U.forall(d(_).contains(true)))
+    if (tds.forall(d(_).contains(true)))
       Some(true)
-    else if (U.exists(d(_).contains(false)))
+    else if (tds.exists(d(_).contains(false)))
       Some(false)
     else
       super.disjointDown(t)
@@ -296,9 +296,9 @@ case class UnionType(U: Type*) extends Type {
   // UnionType(U: Type*)
   override def subtypep(t: Type): Option[Boolean] = {
     val s = memoize((s:Type) => s.subtypep(t))
-    if (U.forall(s(_).contains(true)))
+    if (tds.forall(s(_).contains(true)))
       Some(true)
-    else if (U.exists(s(_).contains(false)))
+    else if (tds.exists(s(_).contains(false)))
       Some(false)
     else
       super.subtypep(t)
@@ -308,15 +308,15 @@ case class UnionType(U: Type*) extends Type {
 
 /** An intersection type, which is the intersection of zero or more types.
   *
-  * @param U var-arg, zero or more types
+  * @param tds var-arg, zero or more types
   */
-case class IntersectionType(U: Type*) extends Type {
+case class IntersectionType(tds: Type*) extends Type {
   override def typep(a: Any): Boolean = {
-    U.forall(_.typep(a))
+    tds.forall(_.typep(a))
   }
 
   override def inhabited: Option[Boolean] = {
-    if (U.exists(_.inhabited.contains(false))) {
+    if (tds.exists(_.inhabited.contains(false))) {
       // if one of an intersection is empty, then the intersection is empty
       Some(false)
     } else {
@@ -326,13 +326,13 @@ case class IntersectionType(U: Type*) extends Type {
   }
 
   override protected def disjointDown(t: Type): Option[Boolean] = {
-    if (U.exists(_.disjoint(t).getOrElse(false)))
+    if (tds.exists(_.disjoint(t).getOrElse(false)))
       Some(true)
     else super.disjointDown(t)
   }
 
   override def subtypep(t: Type): Option[Boolean] = {
-    if (U.exists(_.subtypep(t).contains(true)))
+    if (tds.exists(_.subtypep(t).contains(true)))
       Some(true)
     else
       super.subtypep(t)
@@ -342,26 +342,26 @@ case class IntersectionType(U: Type*) extends Type {
   override def canonicalizeOnce: Type = {
     findSimplifier(List[() => Type](
       () => {
-        if (U.contains(EmptyType))
+        if (tds.contains(EmptyType))
           EmptyType
         else
           this
       },
       () => {
-        IntersectionType.apply(U.distinct :_*)
+        IntersectionType.apply(tds.distinct :_*)
       },
       () => {
-        if (U.isEmpty)
+        if (tds.isEmpty)
           TopType
-        else if (U.tail.isEmpty)
-          U.head
+        else if (tds.tail.isEmpty)
+          tds.head
         else
           this
       },
       () => { // IntersectionType(EqlType(42), A, B, C)
         //  ==> EqlType(42)
         //  or EmptyType
-        U.find {
+        tds.find {
           case EqlType(_) => true
           case _ => false
         } match {
@@ -375,7 +375,7 @@ case class IntersectionType(U: Type*) extends Type {
       },
       () => { // IntersectionType(MemberType(42,43,44), A, B, C)
         //  ==> MemberType(42,44)
-        U.find {
+        tds.find {
           case MemberType(_) => true
           case _ => false
         } match {
@@ -385,23 +385,23 @@ case class IntersectionType(U: Type*) extends Type {
         }
       },
       () => { // IntersectionType(A,TopType,B) ==> IntersectionType(A,B)
-        if (U.contains(TopType))
-          IntersectionType(U.filterNot(_ == TopType) : _*)
+        if (tds.contains(TopType))
+          IntersectionType(tds.filterNot(_ == TopType) : _*)
         else
           this
       },
       () => {
         // (and Long (not (member 1 2)) (not (member 3 4)))
         //  --> (and Long (not (member 1 2 3 4)))
-        val notMembers = U.filter {
+        val notMembers = tds.filter {
           case NotType(MemberType(_)) => true
           case _ => false
         }
-        val notEqls = U.filter {
+        val notEqls = tds.filter {
           case NotType(EqlType(_)) => true
           case _ => false
         }
-        val others: Seq[Type] = U.filter {
+        val others: Seq[Type] = tds.filter {
           case NotType(EqlType(_)) => false
           case NotType(MemberType(_)) => false
           case _ => true
@@ -418,18 +418,18 @@ case class IntersectionType(U: Type*) extends Type {
       () => {
         // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
         // (and Double (not (= "a"))) --> (and Double  (not (member)))
-        val notMember = U.filter {
+        val notMember = tds.filter {
           case NotType(MemberType(_*)) => true
           case _ => false
         }
-        val notEql = U.filter {
+        val notEql = tds.filter {
           case NotType(EqlType(_)) => true
           case _ => false
         }
         if (notEql.isEmpty && notMember.isEmpty)
           this
         else {
-          val others = U.filter {
+          val others = tds.filter {
             case NotType(MemberType(_@_*)) => false
             case NotType(EqlType(_@_*)) => false
             case _ => true
@@ -442,21 +442,21 @@ case class IntersectionType(U: Type*) extends Type {
       },
       () => {
         // (and A (and B C) D) --> (and A B C D)
-        val ands = U.find {
+        val ands = tds.find {
           case IntersectionType(_) => true
           case _ => false
         }
         if (ands.isEmpty)
           this
         else {
-          IntersectionType(U.flatMap {
+          IntersectionType(tds.flatMap {
             case IntersectionType(xs@_*) => xs
             case x => Seq(x)
           } : _*)
         }
       },
       () => {
-        IntersectionType(U.map((t: Type) => t.canonicalize) : _*)
+        IntersectionType(tds.map((t: Type) => t.canonicalize) : _*)
     }
      ))
 
@@ -569,7 +569,7 @@ case class CustomType(f: Any => Boolean) extends Type with TerminalType {
 
 object Types {
   import scala.runtime.BoxedUnit
-  
+
   val Any: Class[Any] = classOf[Any]
   val Nothing: Class[Nothing] = classOf[Nothing]
   val Int: Class[Int] = classOf[Int]

@@ -87,8 +87,8 @@ object TypeSystemWithLBdd {
       case x: CustomType => typeAsLBdd[CustomType](x)
 
         // TODO : Reduction and ordering
-      case x: UnionType => Or(x.U.map(typeAsLBdd).toList)
-      case x: IntersectionType => And(x.U.map(typeAsLBdd).toList)
+      case x: UnionType => Or(x.tds.map(typeAsLBdd).toList)
+      case x: IntersectionType => And(x.tds.map(typeAsLBdd).toList)
       case x: NotType => Not(typeAsLBdd(x.s))
 
       case _ => sys.error("typeAsLBdd: unknown type")
