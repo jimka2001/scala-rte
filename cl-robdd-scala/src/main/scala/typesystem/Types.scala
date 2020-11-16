@@ -118,6 +118,10 @@ sealed abstract class Type {
     }
   }
 
+  def canonicalize:Type = fixedPoint(this,
+                                     (t:Type)=>t.canonicalizeOnce,
+                                     (a:Type,b:Type) => a.getClass == b.getClass && a==b)
+
   /** Returns whether this type is a recognizable supertype of another given type.
     * It is a superset test. This might be undecidable.
     *
