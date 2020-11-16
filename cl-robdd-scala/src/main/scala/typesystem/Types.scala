@@ -118,6 +118,7 @@ sealed abstract class Type {
     }
   }
 
+  def canonicalizeOnce:Type = this
   def canonicalize:Type = fixedPoint(this,
                                      (t:Type)=>t.canonicalizeOnce,
                                      (a:Type,b:Type) => a.getClass == b.getClass && a==b)
@@ -209,6 +210,8 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
 
   override def subtypep(s: Type): Option[Boolean] = {
     s match {
+      case EmptyType => Some(false)
+      case TopType => Some(true)
       // super.isAssignableFrom(sub) means sub is subtype of super
       case AtomicType(tp) =>
         Some(tp.isAssignableFrom(ct))
@@ -246,6 +249,10 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
       case CustomType(_) =>
         super.subtypep(s)
     }
+  }
+  // AtomicType(ct: Class[_])
+  override def canonicalizeOnce:Type = {
+    AtomicType(ct)
   }
 }
 
@@ -311,8 +318,9 @@ case class IntersectionType(U: Type*) extends Type {
   override def typep(a: Any): Boolean = {
     U.forall(_.typep(a))
   }
+
   override def inhabited: Option[Boolean] = {
-    if(U.exists(_.inhabited.contains(false))) {
+    if (U.exists(_.inhabited.contains(false))) {
       // if one of an intersection is empty, then the intersection is empty
       Some(false)
     } else {
@@ -320,6 +328,7 @@ case class IntersectionType(U: Type*) extends Type {
       super.inhabited
     }
   }
+
   override protected def disjointDown(t: Type): Option[Boolean] = {
     if (U.exists(_.disjoint(t).getOrElse(false)))
       Some(true)
@@ -331,6 +340,132 @@ case class IntersectionType(U: Type*) extends Type {
       Some(true)
     else
       super.subtypep(t)
+  }
+
+  // IntersectionType(U: Type*)
+  override def canonicalizeOnce: Type = {
+    findSimplifier(List[(() => Type)](
+      () => {
+        if (U.contains(EmptyType))
+          EmptyType
+        else
+          this
+      },
+      () => {
+        IntersectionType.apply(U.distinct :_*)
+      },
+      () => {
+        if (U.isEmpty)
+          TopType
+        else if (U.tail.isEmpty)
+          U.head
+        else
+          this
+      },
+      () => { // IntersectionType(EqlType(42), A, B, C)
+        //  ==> EqlType(42)
+        //  or EmptyType
+        U.find {
+          case EqlType(_) => true
+          case _ => false
+        } match {
+          case Some(e@EqlType(x)) =>
+            if (typep(x))
+              e
+            else
+              EmptyType
+          case _ => this
+        }
+      },
+      () => { // IntersectionType(MemberType(42,43,44), A, B, C)
+        //  ==> MemberType(42,44)
+        U.find {
+          case MemberType(_) => true
+          case _ => false
+        } match {
+          case Some(MemberType(xs@_*)) =>
+            MemberType.apply(xs.filter(typep(_)))
+          case _ => this
+        }
+      },
+      () => { // IntersectionType(A,TopType,B) ==> IntersectionType(A,B)
+        if (U.contains(TopType))
+          IntersectionType((U.filterNot(_ == TopType)) : _*)
+        else
+          this
+      },
+      () => {
+        // (and Long (not (member 1 2)) (not (member 3 4)))
+        //  --> (and Long (not (member 1 2 3 4)))
+        val notMembers = U.filter {
+          case NotType(MemberType(_)) => true
+          case _ => false
+        }
+        val notEqls = U.filter {
+          case NotType(EqlType(_)) => true
+          case _ => false
+        }
+        val others: Seq[Type] = U.filter {
+          case NotType(EqlType(_)) => false
+          case NotType(MemberType(_)) => false
+          case _ => true
+        }
+        if (notEqls.isEmpty && notMembers.isEmpty)
+          this
+        else {
+          val newEqls = notEqls.map { case NotType(EqlType(x)) => x }
+          val newMembers = notMembers.flatMap { case NotType(MemberType(xs@_*)) => xs }
+          val newElements: Seq[Any] = newEqls ++ newMembers
+          IntersectionType((others ++ Seq(MemberType.apply(newElements))) : _*)
+        }
+      },
+      () => {
+        // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
+        // (and Double (not (= "a"))) --> (and Double  (not (member)))
+        val notMember = U.filter {
+          case NotType(MemberType(xs@_*)) => true
+          case _ => false
+        }
+        val notEql = U.filter {
+          case NotType(EqlType(x)) => true
+          case _ => false
+        }
+        if (notEql.isEmpty && notMember.isEmpty)
+          this
+        else {
+          val others = U.filter {
+            case NotType(MemberType(_@_*)) => false
+            case NotType(EqlType(_@_*)) => false
+            case _ => true
+          }
+          val memberValues = notMember.flatMap { case NotType(MemberType(xs@_*)) => xs }
+          val eqlValues = notEql.map { case NotType(EqlType(x)) => x }
+          val newMemberValues = (memberValues ++ eqlValues).filter {
+            typep(_)
+          }
+          IntersectionType((others ++ Seq(NotType(MemberType.apply(newMemberValues)))) : _*)
+        }
+      },
+      () => {
+        // (and A (and B C) D) --> (and A B C D)
+        val ands = U.find {
+          case IntersectionType(_) => true
+          case _ => false
+        }
+        if (ands.isEmpty)
+          this
+        else {
+          IntersectionType((U.flatMap {
+            case IntersectionType(xs@_*) => xs
+            case x => Seq(x)
+          }) : _*)
+        }
+      },
+      () => {
+        IntersectionType((U.map((t: Type) => t.canonicalize)) : _*)
+    }
+     ))
+
   }
 }
 
@@ -348,14 +483,14 @@ case class NotType(s: Type) extends Type {
     val nothing = classOf[Nothing]
     val any = classOf[AnyRef]
     s match {
-      case NotType(x) => x.inhabited
+      case TopType => Some(false)
+      case EmptyType => Some(true)
       case AtomicType(`nothing`) => Some(true)
       case AtomicType(`any`) => Some(false)
       case AtomicType(_) => Some(true)
-      case TopType => Some(false)
-      case EmptyType => Some(true)
       case MemberType(_) => Some(true)
       case EqlType(_) => Some(true)
+      case NotType(x) => x.inhabited
       case _ => None
     }
   }
@@ -367,6 +502,16 @@ case class NotType(s: Type) extends Type {
 
   override def subtypep(t: Type): Option[Boolean] = {
     this.s.disjoint(t)
+  }
+
+  // NotType(s: Type)
+  override def canonicalizeOnce:Type = {
+    s match {
+      case NotType(s1) => s1.canonicalizeOnce
+      case TopType => EmptyType
+      case EmptyType => TopType
+      case s2:Type => NotType(s2.canonicalizeOnce)
+    }
   }
 }
 
