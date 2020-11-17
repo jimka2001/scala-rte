@@ -89,5 +89,21 @@ class TypeSystemCanonicalize extends FunSuite {
                                 AtomicType(C),
                                 AtomicType(D))))
   }
+  test("canonicalize children of and"){
+    assert(IntersectionType(MemberType("1")).canonicalize
+      == EqlType("1"))
+  }
+  test("canonicalize member"){
+    assert(MemberType().canonicalize
+           == EmptyType)
+    assert(MemberType("hello").canonicalize
+           == EqlType("hello"))
+    assert(MemberType("hello").canonicalize
+           != EqlType("world"))
+    assert(MemberType("hello","world").canonicalize
+           == MemberType("hello","world"))
+    assert(MemberType("hello","world","world","hello").canonicalize
+           == MemberType("hello","world"))
+  }
 
 }

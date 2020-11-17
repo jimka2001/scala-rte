@@ -43,4 +43,13 @@ case class MemberType(xs: Any*) extends Type with TerminalType {
     if (xs.forall(t.typep)) Some(true)
     else Some(false)
   }
+
+  // MemberType(xs: Any*)
+  override def canonicalizeOnce: Type = {
+    xs match {
+      case Seq() => EmptyType
+      case Seq(x) => EqlType(x)
+      case xs => MemberType(xs.distinct: _*)
+    }
+  }
 }
