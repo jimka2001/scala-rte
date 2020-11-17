@@ -59,14 +59,27 @@ abstract class Type {
    * This might be undecidable. The disjointDown method is used to avoid
    * infinite loops.
    *
-   * @param t the type we want to check whether it is disjoint to this type
+   * @param td the type we want to check whether it is disjoint to this type
    * @return an optional Boolean which is true if t and this type are disjoint
    */
-  def disjoint(t: Type): Option[Boolean] = {
-    disjointDown(t) match {
-      case None => t.disjointDown(this)
-      case x => x
-    }
+  def disjoint(td: Type): Option[Boolean] = {
+    val d1 = disjointDown(td)
+    lazy val d2 = td.disjointDown(this)
+    lazy val c1 = this.canonicalize
+    lazy val c2 = td.canonicalize
+    lazy val dc12 = c1.disjointDown(c2)
+    lazy val dc21 = c2.disjointDown(c1)
+
+    if (d1.nonEmpty)
+      d1
+    else if (d2.nonEmpty)
+      d2
+    else if (c1 == c2)
+      None
+    else if (dc12.nonEmpty)
+      dc12
+    else
+      dc21
   }
 
   def inhabited: Option[Boolean] = None
