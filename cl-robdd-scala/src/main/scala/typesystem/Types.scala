@@ -530,7 +530,7 @@ case class NotType(s: Type) extends Type {
   * @param xs var-arg, the members of the type
   */
 case class MemberType(xs: Any*) extends Type with TerminalType {
-  override def toString = xs.map(_.toString).mkString("[=", "," ,"]")
+  override def toString = xs.map(_.toString).mkString("[Member ", "," ,"]")
   override def typep(a: Any): Boolean = xs.contains(a)
   override def inhabited:Option[Boolean] = Some(true)
   override protected def disjointDown(t: Type): Option[Boolean] = {
