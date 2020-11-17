@@ -23,8 +23,6 @@
 package typesystem
 
 import org.scalatest._
-import typesystem.Type
-import typesystem.Type
 
 class TypeSystemCanonicalize extends FunSuite {
 
