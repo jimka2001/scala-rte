@@ -393,7 +393,7 @@ case class IntersectionType(tds: Type*) extends Type {
           case _ => false
         } match {
           case Some(MemberType(xs@_*)) =>
-            MemberType.apply(xs.filter(typep))
+            MemberType(xs.filter(typep) : _*)
           case _ => this
         }
       },
@@ -406,6 +406,9 @@ case class IntersectionType(tds: Type*) extends Type {
       () => {
         // (and Long (not (member 1 2)) (not (member 3 4)))
         //  --> (and Long (not (member 1 2 3 4)))
+        // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
+        // (and Double (not (= "a"))) --> (and Double  (not (member)))
+
         val notMembers = tds.filter {
           case NotType(MemberType(_*)) => true
           case _ => false
@@ -422,35 +425,14 @@ case class IntersectionType(tds: Type*) extends Type {
         if (notEqls.isEmpty && notMembers.isEmpty)
           this
         else {
+          // the intersection type omitting the (not (=...) and (not (member ...)
+          val lessStrict = IntersectionType(others : _*)
           val newEqls = notEqls.map { case NotType(EqlType(x)) => x }
           val newMembers = notMembers.flatMap { case NotType(MemberType(xs@_*)) => xs }
-          val newElements: Seq[Any] = newEqls ++ newMembers
-          IntersectionType(others ++ Seq(MemberType.apply(newElements)) : _*)
-        }
-      },
-      () => {
-        // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
-        // (and Double (not (= "a"))) --> (and Double  (not (member)))
-        val notMember = tds.filter {
-          case NotType(MemberType(_*)) => true
-          case _ => false
-        }
-        val notEql = tds.filter {
-          case NotType(EqlType(_)) => true
-          case _ => false
-        }
-        if (notEql.isEmpty && notMember.isEmpty)
-          this
-        else {
-          val others = tds.filter {
-            case NotType(MemberType(_*)) => false
-            case NotType(EqlType(_)) => false
-            case _ => true
-          }
-          val memberValues = notMember.flatMap { case NotType(MemberType(xs@_*)) => xs }
-          val eqlValues = notEql.map { case NotType(EqlType(x)) => x }
-          val newMemberValues = (memberValues ++ eqlValues).filter(typep)
-          IntersectionType(others ++ Seq(NotType(MemberType.apply(newMemberValues))) : _*)
+          val newElements: Seq[Any] = (newEqls ++ newMembers).filter(x => lessStrict.typep(x))
+          val newNotMember = NotType(MemberType(newElements : _*))
+
+          IntersectionType(others ++ Seq(newNotMember) : _*)
         }
       },
       () => {
