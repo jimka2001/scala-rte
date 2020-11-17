@@ -38,7 +38,8 @@ class TypeSystemCanonicalize extends FunSuite {
     // (and A EmptyType) -> EmptyType
     assert(IntersectionType(AtomicType(A), EmptyType, AtomicType(B)).canonicalize
            == EmptyType)
-
+    assert(IntersectionType().canonicalize
+           == TopType)
     // (and A A B) --> (and A B)
     assert(IntersectionType(AtomicType(A),
                             AtomicType(A),
@@ -104,6 +105,43 @@ class TypeSystemCanonicalize extends FunSuite {
            == MemberType("hello","world"))
     assert(MemberType("hello","world","world","hello").canonicalize
            == MemberType("hello","world"))
+  }
+
+  test("canonicalize or"){
+    assert(UnionType(AtomicType(A),
+                     EmptyType,
+                     AtomicType(B)).canonicalize
+      == UnionType(AtomicType(A),
+                   AtomicType(B)))
+    assert(UnionType(AtomicType(A),
+                     MemberType(),
+                     AtomicType(B)).canonicalize
+           == UnionType(AtomicType(A),AtomicType(B)))
+    assert(UnionType().canonicalize == EmptyType)
+    assert(UnionType(AtomicType(A)).canonicalize
+      == AtomicType(A))
+    assert(UnionType(AtomicType(A),
+                     AtomicType(A),
+                     AtomicType(B),
+                     AtomicType(A)).canonicalize
+      == UnionType(AtomicType(A),AtomicType(B)))
+    assert(UnionType(AtomicType(A),TopType).canonicalize
+           == TopType)
+    assert(UnionType(AtomicType(A),
+                     MemberType(1,2,3),
+                     MemberType(3,4,5)).canonicalize
+      == UnionType(AtomicType(A),
+                   MemberType(1,2,3,4,5)))
+    // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
+    assert(UnionType(AtomicType(Types.String),
+                     MemberType(1,2,"hello"),
+                     MemberType(2,3,4,"world")).canonicalize
+      == UnionType(AtomicType(Types.String),
+                   MemberType(1,2,3,4)))
+    // (or (or A B) (or C D)) --> (or A B C D)
+    assert(UnionType(UnionType(AtomicType(A),AtomicType(B)),
+                     UnionType(AtomicType(C),AtomicType(D))).canonicalize
+           == UnionType(AtomicType(A),AtomicType(B),AtomicType(C),AtomicType(D)))
   }
 
 }

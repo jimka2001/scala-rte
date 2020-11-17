@@ -26,7 +26,7 @@ package typesystem
  * @param tds var-arg, zero or more types
  */
 case class UnionType(tds: Type*) extends Type {
-  override def toString = tds.map(_.toString).mkString("[Or ", ",", "]")
+  override def toString:String = tds.map(_.toString).mkString("[Or ", ",", "]")
 
   override def typep(a: Any): Boolean = {
     tds.exists(_.typep(a))
@@ -42,7 +42,7 @@ case class UnionType(tds: Type*) extends Type {
       super.inhabited
   }
 
-  // UnionType(U: Type*)
+  // UnionType(tds: Type*)
   override protected def disjointDown(t: Type): Option[Boolean] = {
     val d = memoize((s: Type) => s.disjoint(t))
     if (tds.forall(d(_).contains(true)))
@@ -53,7 +53,7 @@ case class UnionType(tds: Type*) extends Type {
       super.disjointDown(t)
   }
 
-  // UnionType(U: Type*)
+  // UnionType(tds: Type*)
   override def subtypep(t: Type): Option[Boolean] = {
     val s = memoize((s: Type) => s.subtypep(t))
     if (tds.forall(s(_).contains(true)))
@@ -62,5 +62,66 @@ case class UnionType(tds: Type*) extends Type {
       Some(false)
     else
       super.subtypep(t)
+  }
+
+  // UnionType(tds: Type*)
+  override def canonicalizeOnce: Type = {
+    findSimplifier(List[() => Type](
+      () => {
+        if (tds.contains(EmptyType)) {
+          UnionType(tds.filter {
+            _ != EmptyType
+          }: _*)
+        }
+        else if (tds.contains(TopType)){
+          TopType
+        }
+        else
+          this
+      },
+      () => {
+        tds match {
+          case Seq() => EmptyType
+          case Seq(x) => x
+          case xs => UnionType(xs.distinct : _*)
+        }
+      },
+      () => {
+        // (or (member 1 2 3) (member 2 3 4 5)) --> (member 1 2 3 4 5)
+        // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
+        def memberp(t:Type):Boolean = t match {
+          case MemberType( _*) => true
+          case _ => false
+        }
+        val members = tds.filter(memberp)
+        if (members.size <= 1)
+          this
+        else {
+          val others = tds.filterNot(memberp)
+          val stricter = UnionType(others : _*)
+          val content = members.flatMap{
+            case MemberType(xs @ _*) => xs.filterNot(stricter.typep)
+            case _ => Seq()
+          }
+          UnionType(others ++ Seq(MemberType(content : _*)) :_*)
+        }
+      },
+      () => {
+        // (or (or A B) (or C D)) --> (or A B C D)
+        if (!tds.exists {
+          case UnionType(_*) => true
+          case _ => false
+        })
+          this
+        else
+          UnionType(tds.flatMap{
+            case UnionType(xs @ _*) => xs
+            case x => Seq(x)
+          } : _*)
+      },
+      () => {
+        UnionType(tds.map((t: Type) => t.canonicalize): _*)
+      }
+    ))
   }
 }
