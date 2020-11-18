@@ -87,9 +87,12 @@ case class IntersectionType(tds: Type*) extends Type {
       super.disjointDown(t2)
   }
 
+  // IntersectionType(tds: Type*)
   override def subtypep(t: Type): Option[Boolean] = {
     if (tds.exists(_.subtypep(t).contains(true)))
       Some(true)
+    else if (tds.forall(_.disjoint(t).contains(true)))
+      Some(false)
     else
       super.subtypep(t)
   }

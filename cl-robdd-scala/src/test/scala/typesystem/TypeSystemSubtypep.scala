@@ -123,6 +123,12 @@ class TypeSystemSubtypep extends FunSuite {
                                                                 AtomicType(Number),
                                                                 AtomicType(Long))) == Some(false))
   }
+  test("AtomicType subtype of intersection 2"){
+    trait Trait1
+    trait Trait2
+    assert(IntersectionType(AtomicType(classOf[Trait1]),
+                            AtomicType(classOf[Trait2])).subtypep(EqlType(1)).contains(false))
+  }
   test("AtomicType subtype of member"){
     assert(AtomicType(classOf[Test1]).subtypep(MemberType(1,2,3)) == Some(false))
   }
