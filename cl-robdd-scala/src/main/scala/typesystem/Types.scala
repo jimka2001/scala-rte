@@ -88,7 +88,7 @@ object Types {
 
   def conj[T](obj:T, seq:Seq[T]):Seq[T] = seq match {
     case Seq() => Seq(obj)
-    case l @ List(_::_) => obj +: seq
+    case l @ _::_ => obj :: l
     case _ => seq :+ obj
   }
 
