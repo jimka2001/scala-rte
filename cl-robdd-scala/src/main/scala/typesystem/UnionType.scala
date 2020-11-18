@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package typesystem
+import Types._
 
 /** A union type, which is the union of zero or more types.
  *

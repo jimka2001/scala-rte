@@ -89,6 +89,24 @@ object Types {
     }
   }
 
+  // The memoize method is inspired by
+  //  https://clojuredocs.org/clojure.core/memoize
+  // Returning a memoized version of a referentially transparent function. The
+  // memoized version of the function keeps a cache of the mapping from arguments
+  // to results and, when calls with the same arguments are repeated often, has
+  // higher performance at the expense of higher memory use.
+  def memoize[F,T](f:F=>T):F=>T = {
+    val hash = scala.collection.mutable.Map[F,T]()
+    def mem(i:F):T = {
+      hash.getOrElse(i, locally{
+        val v:T = f(i)
+        hash(i) = v
+        v
+      })
+    }
+    mem
+  }
+
   def conj[T](obj:T, seq:Seq[T]):Seq[T] = seq match {
     case Seq() => Seq(obj)
     case l @ _::_ => obj :: l

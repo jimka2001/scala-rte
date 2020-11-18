@@ -29,23 +29,6 @@ trait TerminalType
 
 /** A general type of our type system. */
 abstract class Type {
-  // The memoize method is inspired by
-  //  https://clojuredocs.org/clojure.core/memoize
-  // Returning a memoized version of a referentially transparent function. The
-  // memoized version of the function keeps a cache of the mapping from arguments
-  // to results and, when calls with the same arguments are repeated often, has
-  // higher performance at the expense of higher memory use.
-  def memoize[F,T](f:F=>T):F=>T = {
-    val hash = scala.collection.mutable.Map[F,T]()
-    def mem(i:F):T = {
-      hash.getOrElse(i, locally{
-        val v:T = f(i)
-        hash(i) = v
-        v
-      })
-    }
-    mem
-  }
 
   def ||(t:Type):Type = UnionType(this,t).canonicalize()
   def &&(t:Type):Type = IntersectionType(this,t).canonicalize()
