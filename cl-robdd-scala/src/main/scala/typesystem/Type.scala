@@ -47,6 +47,10 @@ abstract class Type {
     mem
   }
 
+  def ||(t:Type):Type = UnionType(this,t)
+  def &&(t:Type):Type = IntersectionType(this,t)
+  def unary_! : Type = NotType(this)
+
   /** Returns whether a given object belongs to this type.
    * It is a set membership test.
    *

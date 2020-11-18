@@ -194,5 +194,11 @@ object Types {
       println(s"$i:" + t)
       println("   " + t.canonicalize())
     }
+
+    println(t1 || t2)
+    println(t1 && t2)
+    println(!t1)
+
+    println(classOf[String] || classOf[Integer])
   }
 }
