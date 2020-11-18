@@ -120,5 +120,24 @@ object Types {
     println("class of Int = " + classOf[Int])
 
     println(t.typep(a))
+    class Abstract1
+    class Abstract2
+    trait Trait1
+    trait Trait2
+    trait Trait3
+    val t1 = IntersectionType(AtomicType(classOf[Trait1]),
+                              UnionType(AtomicType(classOf[Abstract1]),
+                                        AtomicType(classOf[Abstract2])),
+                              AtomicType(classOf[Trait2]))
+    val t2 = IntersectionType(AtomicType(classOf[Trait1]),
+                              NotType(UnionType(AtomicType(classOf[Abstract1]),
+                                                AtomicType(classOf[Abstract2]))),
+                              AtomicType(classOf[Trait2]))
+    println(t1)
+    println(t2)
+    println(t2.canonicalize(dnf=true))
+    println(t1.canonicalize())
+    println(t1.canonicalize(dnf=true))
+    println(NotType(t1).canonicalize(dnf=true))
   }
 }

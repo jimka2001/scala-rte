@@ -119,7 +119,7 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
   }
 
   // AtomicType(ct: Class[_])
-  override def canonicalizeOnce: Type = {
+  override def canonicalizeOnce(dnf:Boolean = false): Type = {
     AtomicType(ct)
   }
 }

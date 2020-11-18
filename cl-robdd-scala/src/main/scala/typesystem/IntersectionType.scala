@@ -35,10 +35,13 @@ case class IntersectionType(tds: Type*) extends Type {
 
   // IntersectionType(tds: Type*)
   override def inhabited: Option[Boolean] = {
+    lazy val dnf = canonicalize(dnf=true)
+    lazy val inhabitedDnf = dnf.inhabited
+
     if (tds.exists(_.inhabited.contains(false))) {
       // if one of an intersection is empty, then the intersection is empty
       Some(false)
-    } else if ( tds.forall(atomicp)) {
+    } else if (tds.forall(atomicp)) {
       // if we have all atomic types (e.g. traits and abstract)
       //  and none are disjoint with another, then we assume
       //  the intersection is inhabited.
@@ -48,6 +51,8 @@ case class IntersectionType(tds: Type*) extends Type {
         case List(t1: Type, t2: Type) =>
           t1.disjoint(t2).contains(false)
       })
+    } else if (dnf != this && inhabitedDnf.nonEmpty) {
+      inhabitedDnf
     } else {
       // we don't know anything about whether the intersection is empty
       super.inhabited
@@ -90,7 +95,7 @@ case class IntersectionType(tds: Type*) extends Type {
   }
 
   // IntersectionType(tds: Type*)
-  override def canonicalizeOnce: Type = {
+  override def canonicalizeOnce(dnf: Boolean = false): Type = {
     findSimplifier(List[() => Type](
       () => {
         if (tds.contains(EmptyType))
@@ -183,10 +188,21 @@ case class IntersectionType(tds: Type*) extends Type {
         }
       },
       () => {
-        IntersectionType(tds.map((t: Type) => t.canonicalize): _*)
+        IntersectionType(tds.map((t: Type) => t.canonicalize(dnf = dnf)): _*).maybeDnf(dnf)
       }
       ))
   }
 
+  // IntersectionType(tds: Type*)
+  override def toDnf: Type = {
+    val oo = tds.find(orp)
+    tds.find(orp) match {
+      case Some(td @ UnionType(orArgs @ _*)) =>
+        val others = tds.filterNot (_== td)
+        UnionType( orArgs.map{x => IntersectionType(x +: others : _*)} :_*)
+      case None => this
+    }
 
+
+  }
 }

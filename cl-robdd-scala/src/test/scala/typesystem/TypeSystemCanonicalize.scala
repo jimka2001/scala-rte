@@ -36,27 +36,27 @@ class TypeSystemCanonicalize extends FunSuite {
   val D = classOf[TraitD]
   test("and canonicalize") {
     // (and A EmptyType) -> EmptyType
-    assert(IntersectionType(AtomicType(A), EmptyType, AtomicType(B)).canonicalize
+    assert(IntersectionType(AtomicType(A), EmptyType, AtomicType(B)).canonicalize()
            == EmptyType)
-    assert(IntersectionType().canonicalize
+    assert(IntersectionType().canonicalize()
            == TopType)
     // (and A A B) --> (and A B)
     assert(IntersectionType(AtomicType(A),
                             AtomicType(A),
-                            AtomicType(B)).canonicalize
+                            AtomicType(B)).canonicalize()
            == IntersectionType(AtomicType(A),
                                AtomicType(B)))
 
     // IntersectionType(EqlType(42), AtomicType(Integer)) --> EqlType(42)
-    assert(IntersectionType(EqlType(42), AtomicType(Types.Integer)).canonicalize
+    assert(IntersectionType(EqlType(42), AtomicType(Types.Integer)).canonicalize()
            == EqlType(42))
 
     // IntersectionType(MemberType(42,43,"hello"), AtomicType(Integer)) --> MemberType(42,43)
-    assert(IntersectionType(MemberType(42, 43, "hello"), AtomicType(Types.Integer)).canonicalize
+    assert(IntersectionType(MemberType(42, 43, "hello"), AtomicType(Types.Integer)).canonicalize()
            == MemberType(42, 43))
 
     // IntersectionType(A,TopType,B) ==> IntersectionType(A,B)
-    assert(IntersectionType(AtomicType(A), TopType, AtomicType(B)).canonicalize
+    assert(IntersectionType(AtomicType(A), TopType, AtomicType(B)).canonicalize()
            == IntersectionType(AtomicType(A), AtomicType(B)))
   }
   test("and canonicalize 2") {
@@ -68,13 +68,13 @@ class TypeSystemCanonicalize extends FunSuite {
     //  --> (and Int (not (member 1 2 3 4)))
     assert(IntersectionType(AtomicType(Types.String),
                             NotType(MemberType("1", "2")),
-                            NotType(MemberType("3", "4"))).canonicalize
+                            NotType(MemberType("3", "4"))).canonicalize()
            == IntersectionType(AtomicType(Types.String),
                                NotType(MemberType("1", "2", "3", "4")))
            )
     assert(IntersectionType(AtomicType(Types.String),
                             NotType(MemberType("1", 2)),
-                            NotType(MemberType("3", 4))).canonicalize
+                            NotType(MemberType("3", 4))).canonicalize()
            == IntersectionType(AtomicType(Types.String),
                                NotType(MemberType("1", "3")))
            )
@@ -84,64 +84,63 @@ class TypeSystemCanonicalize extends FunSuite {
     assert(IntersectionType(IntersectionType(AtomicType(A),
                                              AtomicType(B)),
                             IntersectionType(AtomicType(C),
-                                             AtomicType(D))).canonicalize
+                                             AtomicType(D))).canonicalize()
            == (IntersectionType(AtomicType(A),
                                 AtomicType(B),
                                 AtomicType(C),
                                 AtomicType(D))))
   }
   test("canonicalize children of and"){
-    assert(IntersectionType(MemberType("1")).canonicalize
+    assert(IntersectionType(MemberType("1")).canonicalize()
       == EqlType("1"))
   }
   test("canonicalize member"){
-    assert(MemberType().canonicalize
+    assert(MemberType().canonicalize()
            == EmptyType)
-    assert(MemberType("hello").canonicalize
+    assert(MemberType("hello").canonicalize()
            == EqlType("hello"))
-    assert(MemberType("hello").canonicalize
+    assert(MemberType("hello").canonicalize()
            != EqlType("world"))
-    assert(MemberType("hello","world").canonicalize
+    assert(MemberType("hello","world").canonicalize()
            == MemberType("hello","world"))
-    assert(MemberType("hello","world","world","hello").canonicalize
+    assert(MemberType("hello","world","world","hello").canonicalize()
            == MemberType("hello","world"))
   }
 
   test("canonicalize or"){
     assert(UnionType(AtomicType(A),
                      EmptyType,
-                     AtomicType(B)).canonicalize
+                     AtomicType(B)).canonicalize()
       == UnionType(AtomicType(A),
                    AtomicType(B)))
     assert(UnionType(AtomicType(A),
                      MemberType(),
-                     AtomicType(B)).canonicalize
+                     AtomicType(B)).canonicalize()
            == UnionType(AtomicType(A),AtomicType(B)))
-    assert(UnionType().canonicalize == EmptyType)
-    assert(UnionType(AtomicType(A)).canonicalize
+    assert(UnionType().canonicalize() == EmptyType)
+    assert(UnionType(AtomicType(A)).canonicalize()
       == AtomicType(A))
     assert(UnionType(AtomicType(A),
                      AtomicType(A),
                      AtomicType(B),
-                     AtomicType(A)).canonicalize
+                     AtomicType(A)).canonicalize()
       == UnionType(AtomicType(A),AtomicType(B)))
-    assert(UnionType(AtomicType(A),TopType).canonicalize
+    assert(UnionType(AtomicType(A),TopType).canonicalize()
            == TopType)
     assert(UnionType(AtomicType(A),
                      MemberType(1,2,3),
-                     MemberType(3,4,5)).canonicalize
+                     MemberType(3,4,5)).canonicalize()
       == UnionType(AtomicType(A),
                    MemberType(1,2,3,4,5)))
     // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
     assert(UnionType(AtomicType(Types.String),
                      MemberType(1,2,"hello"),
-                     MemberType(2,3,4,"world")).canonicalize
+                     MemberType(2,3,4,"world")).canonicalize()
       == UnionType(AtomicType(Types.String),
                    MemberType(1,2,3,4)))
     // (or (or A B) (or C D)) --> (or A B C D)
     assert(UnionType(UnionType(AtomicType(A),AtomicType(B)),
-                     UnionType(AtomicType(C),AtomicType(D))).canonicalize
+                     UnionType(AtomicType(C),AtomicType(D))).canonicalize()
            == UnionType(AtomicType(A),AtomicType(B),AtomicType(C),AtomicType(D)))
   }
-
 }

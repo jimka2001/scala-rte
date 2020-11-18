@@ -65,8 +65,8 @@ abstract class Type {
   def disjoint(td: Type): Option[Boolean] = {
     val d1 = disjointDown(td)
     lazy val d2 = td.disjointDown(this)
-    lazy val c1 = this.canonicalize
-    lazy val c2 = td.canonicalize
+    lazy val c1 = this.canonicalize()
+    lazy val c2 = td.canonicalize()
     lazy val dc12 = c1.disjointDown(c2)
     lazy val dc21 = c2.disjointDown(c1)
 
@@ -134,9 +134,16 @@ abstract class Type {
     }
   }
 
-  def canonicalizeOnce:Type = this
-  def canonicalize:Type = fixedPoint(this,
-                                     (t:Type)=>t.canonicalizeOnce,
+  def toDnf:Type = this
+  def maybeDnf(dnf:Boolean=false):Type = {
+    if (dnf)
+      toDnf
+    else
+      this
+  }
+  def canonicalizeOnce(dnf:Boolean=false):Type = this
+  def canonicalize(dnf:Boolean=false):Type = fixedPoint(this,
+                                     (t:Type)=>t.canonicalizeOnce(dnf=dnf),
                                      (a:Type,b:Type) => a.getClass == b.getClass && a==b)
 
   /** Returns whether this type is a recognizable supertype of another given type.

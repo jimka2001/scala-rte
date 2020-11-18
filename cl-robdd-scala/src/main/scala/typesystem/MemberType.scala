@@ -45,7 +45,7 @@ case class MemberType(xs: Any*) extends Type with TerminalType {
   }
 
   // MemberType(xs: Any*)
-  override def canonicalizeOnce: Type = {
+  override def canonicalizeOnce(dnf:Boolean = false): Type = {
     xs match {
       case Seq() => EmptyType
       case Seq(x) => EqlType(x)

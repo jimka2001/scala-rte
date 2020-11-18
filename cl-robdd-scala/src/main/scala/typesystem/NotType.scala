@@ -59,12 +59,23 @@ case class NotType(s: Type) extends Type {
   }
 
   // NotType(s: Type)
-  override def canonicalizeOnce: Type = {
+  override def canonicalizeOnce(dnf:Boolean=false): Type = {
     s match {
-      case NotType(s1) => s1.canonicalizeOnce
+      case NotType(s1) => s1.canonicalizeOnce(dnf=dnf)
       case TopType => EmptyType
       case EmptyType => TopType
-      case s2: Type => NotType(s2.canonicalizeOnce)
+      case s2: Type => NotType(s2.canonicalizeOnce(dnf=true)).maybeDnf(dnf=dnf)
+    }
+  }
+
+  // NotType(s: Type)
+  override def toDnf: Type = {
+    s match {
+      case IntersectionType(xs @ _*) =>
+        UnionType(xs.map(x => NotType(x)) : _*)
+      case UnionType(xs @ _*) =>
+        IntersectionType(xs.map(x => NotType(x)) : _*)
+      case _ => this
     }
   }
 }

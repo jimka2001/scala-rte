@@ -65,7 +65,7 @@ case class UnionType(tds: Type*) extends Type {
   }
 
   // UnionType(tds: Type*)
-  override def canonicalizeOnce: Type = {
+  override def canonicalizeOnce(dnf:Boolean=false): Type = {
     findSimplifier(List[() => Type](
       () => {
         if (tds.contains(EmptyType)) {
@@ -120,7 +120,7 @@ case class UnionType(tds: Type*) extends Type {
           } : _*)
       },
       () => {
-        UnionType(tds.map((t: Type) => t.canonicalize): _*)
+        UnionType(tds.map((t: Type) => t.canonicalize(dnf=dnf)): _*)
       }
     ))
   }
