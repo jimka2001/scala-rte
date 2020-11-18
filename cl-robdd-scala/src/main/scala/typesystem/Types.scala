@@ -46,6 +46,46 @@ object Types {
     case _ => false
   }
 
+  def randomType(depth:Int):Type = {
+    import scala.util.Random
+    val random = new Random
+    trait Trait1
+    trait Trait2
+    trait Trait3 extends Trait2
+    abstract class Abstract1
+    abstract class Abstract2 extends Trait3
+    val interestingTypes:Vector[Type] = Vector(
+      TopType,
+      EmptyType,
+      MemberType(1,2,3,4),
+      MemberType(4,5,6),
+      EqlType(0),
+      EqlType(1),
+      EqlType(-1),
+      MemberType("a","b","c"),
+      AtomicType(classOf[lang.Number]),
+      AtomicType(classOf[String]),
+      AtomicType(classOf[Integer]),
+      AtomicType(classOf[Trait1]),
+      AtomicType(classOf[Trait2]),
+      AtomicType(classOf[Trait3]),
+      AtomicType(classOf[Abstract1]),
+      AtomicType(classOf[Abstract2])
+    )
+    val maxCompoundSize = 3
+    val generators:Seq[()=>Type] = Vector(
+      () => NotType(randomType(depth - 1)),
+      () => IntersectionType(0 until random.nextInt(maxCompoundSize) map {_ => randomType(depth-1)} : _*),
+      () => UnionType(0 until random.nextInt(maxCompoundSize) map {_ => randomType(depth-1)} : _*)
+    )
+    if (depth <= 0)
+      interestingTypes(random.nextInt(interestingTypes.length))
+    else {
+      val g = generators(random.nextInt(generators.length))
+      g()
+    }
+  }
+
   def conj[T](obj:T, seq:Seq[T]):Seq[T] = seq match {
     case Seq() => Seq(obj)
     case l @ List(_::_) => obj +: seq
@@ -146,5 +186,10 @@ object Types {
     println(t1.canonicalize())
     println(t1.canonicalize(dnf=true))
     println(NotType(t1).canonicalize(dnf=true))
+    (0 to 10). foreach { i =>
+      val t = randomType(6)
+      println(s"$i:" + t)
+      println("   " + t.canonicalize())
+    }
   }
 }
