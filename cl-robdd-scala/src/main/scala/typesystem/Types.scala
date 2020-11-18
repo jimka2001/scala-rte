@@ -25,7 +25,26 @@ import java.lang
 
 object Types {
   import scala.runtime.BoxedUnit
-
+  val atomicp: Type=>Boolean = {
+    case AtomicType(_) => true
+    case _ => false
+  }
+  val eqlp: Type=>Boolean = {
+    case EqlType(_) => true
+    case _ => false
+  }
+  val memberp: Type=>Boolean = {
+    case MemberType(_*) => true
+    case _ => false
+  }
+  val andp: Type=>Boolean = {
+    case IntersectionType(_*) => true
+    case _ => false
+  }
+  val orp: Type=>Boolean = {
+    case UnionType(_*) => true
+    case _ => false
+  }
   val Any: Class[Any] = classOf[Any]
   val Nothing: Class[Nothing] = classOf[Nothing]
   val Int: Class[Int] = classOf[Int]

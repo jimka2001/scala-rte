@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package typesystem
+import Types._
 
 /** An intersection type, which is the intersection of zero or more types.
  *
@@ -32,20 +33,53 @@ case class IntersectionType(tds: Type*) extends Type {
     tds.forall(_.typep(a))
   }
 
+  // IntersectionType(tds: Type*)
   override def inhabited: Option[Boolean] = {
     if (tds.exists(_.inhabited.contains(false))) {
       // if one of an intersection is empty, then the intersection is empty
       Some(false)
+    } else if ( tds.forall(atomicp)) {
+      // if we have all atomic types (e.g. traits and abstract)
+      //  and none are disjoint with another, then we assume
+      //  the intersection is inhabited.
+      //  however, if some pair is disjoint, the the intersection is
+      //  empty, thus not inhabited
+      Some(tds.toSet.subsets(2).map(_.toList).forall {
+        case List(t1: Type, t2: Type) =>
+          t1.disjoint(t2).contains(false)
+      })
     } else {
       // we don't know anything about whether the intersection is empty
       super.inhabited
     }
   }
 
-  override protected def disjointDown(t: Type): Option[Boolean] = {
-    if (tds.exists(_.disjoint(t).getOrElse(false)))
+  // IntersectionType(tds: Type*)
+  override protected def disjointDown(t2: Type): Option[Boolean] = {
+    lazy val inhabited_t2 = t2.inhabited.contains(true)
+    lazy val inhabited_this = this.inhabited.contains(true)
+
+    // (disjoint? (and A B C) D)   where B disjoint with D
+    if (tds.exists(_.disjoint(t2).getOrElse(false)))
       Some(true)
-    else super.disjointDown(t)
+
+    // (disjoint? (and A B C) B)
+    else if (tds.contains(t2)
+             && inhabited_t2
+             && inhabited_this)
+      Some(false)
+
+    // (disjoint? (and B C) A)
+    // (disjoint? (and String (not (member a b c 1 2 3))) java.lang.Comparable)
+    else if (inhabited_t2
+             && inhabited_this
+             && tds.exists(t1 =>
+                             t1.subtypep(t2).contains(true)
+                             || t2.subtypep(t1).contains(true)))
+      Some(false)
+
+    else
+      super.disjointDown(t2)
   }
 
   override def subtypep(t: Type): Option[Boolean] = {
@@ -55,7 +89,7 @@ case class IntersectionType(tds: Type*) extends Type {
       super.subtypep(t)
   }
 
-  // IntersectionType(U: Type*)
+  // IntersectionType(tds: Type*)
   override def canonicalizeOnce: Type = {
     findSimplifier(List[() => Type](
       () => {
@@ -78,10 +112,7 @@ case class IntersectionType(tds: Type*) extends Type {
       () => { // IntersectionType(EqlType(42), A, B, C)
         //  ==> EqlType(42)
         //  or EmptyType
-        tds.find {
-          case EqlType(_) => true
-          case _ => false
-        } match {
+        tds.find(eqlp) match {
           case Some(e@EqlType(x)) =>
             if (typep(x))
               e
@@ -92,10 +123,7 @@ case class IntersectionType(tds: Type*) extends Type {
       },
       () => { // IntersectionType(MemberType(42,43,44), A, B, C)
         //  ==> MemberType(42,44)
-        tds.find {
-          case MemberType(_*) => true
-          case _ => false
-        } match {
+        tds.find(memberp) match {
           case Some(MemberType(xs@_*)) =>
             MemberType(xs.filter(typep): _*)
           case _ => this
@@ -158,6 +186,7 @@ case class IntersectionType(tds: Type*) extends Type {
         IntersectionType(tds.map((t: Type) => t.canonicalize): _*)
       }
       ))
-
   }
+
+
 }

@@ -78,8 +78,11 @@ abstract class Type {
       None
     else if (dc12.nonEmpty)
       dc12
-    else
+    else {
       dc21
+      // TODO we can also check whether c1.subtypep(c2) and c1.inhabited
+      //    careful not to cause an infinite loop
+    }
   }
 
   def inhabited: Option[Boolean] = None

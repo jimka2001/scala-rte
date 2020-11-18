@@ -29,17 +29,17 @@ import typesystem.Types._
 class TypeSystemDisjoint extends FunSuite {
 
   test("disjoint EmptyType") {
-    assert(atomicTypesSeq.forall(_.disjoint(EmptyType).get))
-    assert(atomicTypesSeq.forall(EmptyType.disjoint(_).get))
-    assert(EmptyType.disjoint(EmptyType).get)
-    assert(EmptyType.disjoint(TopType).get)
+    assert(atomicTypesSeq.forall(_.disjoint(EmptyType).contains(true)))
+    assert(atomicTypesSeq.forall(EmptyType.disjoint(_).contains(true)))
+    assert(EmptyType.disjoint(EmptyType).contains(true))
+    assert(EmptyType.disjoint(TopType).contains(true))
   }
 
   test("disjoint SuperType") {
-    assert(atomicTypesSeq.forall(! TopType.disjoint(_).get))
-    assert(atomicTypesSeq.forall(! _.disjoint(TopType).get))
-    assert(TopType.disjoint(EmptyType).get)
-    assert(! TopType.disjoint(TopType).get)
+    assert(atomicTypesSeq.forall( TopType.disjoint(_).contains(false)))
+    assert(atomicTypesSeq.forall( _.disjoint(TopType).contains(false)))
+    assert(TopType.disjoint(EmptyType).contains(true))
+    assert(TopType.disjoint(TopType).contains(false))
   }
 
   test("disjoint AtomicType") {
@@ -111,6 +111,35 @@ class TypeSystemDisjoint extends FunSuite {
   case class Test5() extends Test3
   class Test6
   class Test7
+  abstract class Abstract1
+  abstract class Abstract2
+
+  test("disjoint and with classes"){
+    assert(IntersectionType(AtomicType(classOf[Trait1]),
+                            AtomicType(classOf[Trait2]),
+                            AtomicType(classOf[Trait4])).inhabited.contains(true))
+    assert(IntersectionType(AtomicType(classOf[Trait1]),
+                            AtomicType(classOf[Trait2]),
+                            AtomicType(classOf[Trait4]))
+           .disjoint(AtomicType(classOf[Trait2])).contains(false))
+
+    // (disjoint? (and A B C) D)   where B disjoint with D
+    assert(IntersectionType(AtomicType(classOf[Trait1]),
+                            AtomicType(classOf[Abstract1]),
+                            AtomicType(classOf[Trait2]))
+      // disjoint because Abstract1 and Abstract2 are disjoint
+           .disjoint(AtomicType(classOf[Abstract2])).contains(true))
+
+    // (disjoint? (and B C) A)
+    // (disjoint? (and String (not (member a b c 1 2 3))) java.lang.Comparable)
+    assert(AtomicType(classOf[Abstract1]).subtypep(UnionType(AtomicType(classOf[Abstract1]),
+                                                             AtomicType(classOf[Abstract2]))).contains(true))
+
+    assert(IntersectionType(AtomicType(classOf[Trait1]),
+                            UnionType(AtomicType(classOf[Abstract1]),
+                                      AtomicType(classOf[Abstract2])),
+                            AtomicType(classOf[Trait2])).disjoint(AtomicType(classOf[Abstract1])).contains(false))
+  }
 
   //  Test2 < Test1
   // Trait2 < Trait1
