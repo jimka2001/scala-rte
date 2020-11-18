@@ -45,6 +45,13 @@ object Types {
     case UnionType(_*) => true
     case _ => false
   }
+
+  def conj[T](obj:T, seq:Seq[T]):Seq[T] = seq match {
+    case Seq() => Seq(obj)
+    case l @ List(_::_) => obj +: seq
+    case _ => seq :+ obj
+  }
+
   val Any: Class[Any] = classOf[Any]
   val Nothing: Class[Nothing] = classOf[Nothing]
   val Int: Class[Int] = classOf[Int]

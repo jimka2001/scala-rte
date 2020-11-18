@@ -199,7 +199,7 @@ case class IntersectionType(tds: Type*) extends Type {
     tds.find(orp) match {
       case Some(td @ UnionType(orArgs @ _*)) =>
         val others = tds.filterNot (_== td)
-        UnionType( orArgs.map{x => IntersectionType(x +: others : _*)} :_*)
+        UnionType( orArgs.map{x => IntersectionType(conj(x, others) : _*)} :_*)
       case None => this
     }
 
