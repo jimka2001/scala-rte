@@ -25,6 +25,9 @@ import java.lang
 
 object Types {
   import scala.runtime.BoxedUnit
+
+  implicit def class2type(c:Class[_]): Type = AtomicType(c)
+
   val atomicp: Type=>Boolean = {
     case AtomicType(_) => true
     case _ => false
