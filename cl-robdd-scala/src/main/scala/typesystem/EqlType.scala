@@ -44,4 +44,20 @@ case class EqlType(a: Any) extends Type with TerminalType {
     else if (t == EmptyType) Some(true)
     else Some(false)
   }
+
+  // EqlType(a: Any)
+  override def cmp(t:Type):Boolean = {
+    if (this == t)
+      false
+    else t match {
+      case EqlType(b: Any) =>
+        if( ! (a.getClass eq b.getClass))
+          a.getClass.toString <= b.getClass.toString
+        else if (a.toString != b.toString)
+          a.toString <= b.toString
+        else
+          throw new Exception(s"cannot compare $this vs $t because they are different yet print the same")
+      case _ => super.cmp(t)
+    }
+  }
 }

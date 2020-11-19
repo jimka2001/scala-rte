@@ -198,7 +198,7 @@ case class IntersectionType(tds: Type*) extends Type {
         }
       },
       () => {
-        IntersectionType(tds.map((t: Type) => t.canonicalize(dnf = dnf)): _*).maybeDnf(dnf)
+        IntersectionType(tds.map((t: Type) => t.canonicalize(dnf = dnf)).sortWith(cmpTypeDesignators): _*).maybeDnf(dnf)
       }
       ))
   }
@@ -213,6 +213,15 @@ case class IntersectionType(tds: Type*) extends Type {
       case None => this
     }
 
-
+  // IntersectionType(tds: Type*)
+  override def cmp(td:Type):Boolean = {
+    if (this == td)
+      false
+    else td match {
+      // this <= td ?
+      case IntersectionType(tds @ _*) =>
+        compareSequence(this.tds,tds)
+      case _ => super.cmp(td)
+    }
   }
 }

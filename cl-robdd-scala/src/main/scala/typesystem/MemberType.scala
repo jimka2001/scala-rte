@@ -46,10 +46,45 @@ case class MemberType(xs: Any*) extends Type with TerminalType {
 
   // MemberType(xs: Any*)
   override def canonicalizeOnce(dnf:Boolean = false): Type = {
+    def cmp(a:Any,b:Any):Boolean = {
+      if (a == b)
+        false
+      else if (a.getClass != b.getClass)
+        a.getClass.toString < b.getClass.toString
+      else if (a.toString != b.toString)
+        a.toString < b.toString
+      else
+        throw new Exception(s"cannot canonicalize $this because it contains two different elements which print the same ${a.toString}")
+    }
     xs match {
       case Seq() => EmptyType
       case Seq(x) => EqlType(x)
-      case xs => MemberType(xs.distinct: _*)
+      case xs => MemberType(xs.distinct.sortWith(cmp): _*)
+    }
+  }
+
+  // MemberType(xs: Any*)
+  override def cmp(t:Type):Boolean = {
+    if (this == t)
+      false
+    else t match {
+      case MemberType(ys @ _*) =>
+        def comp(as:List[Any],bs:List[Any]):Boolean = {
+          (as,bs) match {
+            case (Nil,Nil) => throw new Exception(s"not expecting equal sequences $xs, $ys")
+            case (Nil,_) => true
+            case (_,Nil) => false
+            case (a::as,b::bs) =>
+              if (a == b)
+                comp(as,bs)
+              else if ( a.toString != b.toString)
+                a.toString < b.toString
+              else
+                throw new Exception(s"cannot compare $this vs $t because two unequal elements print the same: $a{.toString}")
+          }
+        }
+        comp(xs.toList, ys.toList)
+      case _ => super.cmp(t)
     }
   }
 }

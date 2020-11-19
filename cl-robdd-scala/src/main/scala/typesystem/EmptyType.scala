@@ -33,4 +33,6 @@ object EmptyType extends Type {
   override protected def disjointDown(t: Type): Option[Boolean] = Some(true)
 
   override def subtypep(t: Type): Option[Boolean] = Some(true)
+
+  override def cmp(t:Type):Boolean = false
 }

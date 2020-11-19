@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package typesystem
+import Types._
 
 /** A negation of a type.
  *
@@ -76,6 +77,15 @@ case class NotType(s: Type) extends Type {
       case UnionType(xs @ _*) =>
         IntersectionType(xs.map(x => NotType(x)) : _*)
       case _ => this
+    }
+  }
+  // NotType(s: Type)
+  override def cmp(td:Type) = {
+    if( this == td)
+      false
+    else td match {
+      case NotType(td) => cmpTypeDesignators(s,td)
+      case _ => super.cmp(td)
     }
   }
 }

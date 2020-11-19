@@ -41,4 +41,6 @@ object TopType extends Type {
     if (t == TopType) Some(true)
     else Some(false)
   }
+
+  override def cmp(t:Type):Boolean = false
 }

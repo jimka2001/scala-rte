@@ -121,8 +121,21 @@ case class UnionType(tds: Type*) extends Type {
           } : _*)
       },
       () => {
-        UnionType(tds.map((t: Type) => t.canonicalize(dnf=dnf)): _*)
+      () => {
+        UnionType(tds.map((t: Type) => t.canonicalize(dnf=dnf)).sortWith(cmpTypeDesignators): _*)
       }
     ))
+  }
+
+  // UnionType(tds: Type*)
+  override def cmp(td:Type):Boolean = {
+    if (this == td)
+      false
+    else td match {
+      // this <= td ?
+      case UnionType(tds @ _*) =>
+        compareSequence(this.tds,tds)
+      case _ => super.cmp(td)
+    }
   }
 }

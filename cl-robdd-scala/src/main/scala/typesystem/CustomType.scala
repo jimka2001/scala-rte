@@ -33,4 +33,8 @@ case class CustomType(f: Any => Boolean) extends Type with TerminalType {
   override def inhabited: Option[Boolean] = super.inhabited
 
   override def subtypep(t: Type): Option[Boolean] = super.subtypep(t)
+
+  override def cmp(t:Type):Boolean = {
+    s"$this" < s"$t"
+  }
 }

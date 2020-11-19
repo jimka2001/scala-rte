@@ -112,6 +112,33 @@ object Types {
     case l @ _::_ => obj :: l
     case _ => seq :+ obj
   }
+  def compareSequence(tds1:Seq[Type],tds2:Seq[Type]):Boolean = {
+    def comp(as:List[Type],bs:List[Type]):Boolean = {
+      (as,bs) match {
+        case (Nil,Nil) => throw new Exception(s"not expecting equal sequences $tds1, $tds2")
+        case (Nil,_) => true
+        case (_,Nil) => false
+        case (a::as,b::bs) =>
+          if (a == b)
+            comp(as,bs)
+          else
+            cmpTypeDesignators(a,b)
+      }
+    }
+    comp(tds1.toList, tds2.toList)
+  }
+
+  def cmpTypeDesignators(a:Type,b:Type):Boolean = {
+    if( a == b )
+      true
+    else if (a.getClass eq b.getClass) {
+      a.cmp(b)
+    }
+    else {
+      // just compare the classes alphabetically
+      s"$a.getClass" < s"$b.getClass"
+    }
+  }
 
   val Any: Class[Any] = classOf[Any]
   val Nothing: Class[Nothing] = classOf[Nothing]

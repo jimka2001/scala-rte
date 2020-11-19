@@ -140,4 +140,8 @@ abstract class Type {
    * @return an optional Boolean which is true if this type is a supertype of t
    */
   def supertypep(t: Type): Option[Boolean] = t.subtypep(this)
+
+  def cmp(t:Type):Boolean = {
+    throw new Exception(s"cannot cmpare type designators ${this.getClass} vs ${t.getClass}")
+  }
 }

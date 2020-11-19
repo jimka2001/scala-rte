@@ -122,6 +122,17 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
   override def canonicalizeOnce(dnf:Boolean = false): Type = {
     AtomicType(ct)
   }
+
+  // AtomicType(ct: Class[_])
+  override def cmp(td:Type):Boolean = {
+    if (this == td)
+      false
+    else td match {
+      // this <= td ?
+      case AtomicType(cl) => s"$ct" < s"$cl"
+      case _ => super.cmp(td)
+    }
+  }
 }
 
 /** The AtomicType object, implementing an apply method in order to
