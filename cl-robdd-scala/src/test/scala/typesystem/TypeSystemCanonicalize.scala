@@ -70,14 +70,16 @@ class TypeSystemCanonicalize extends FunSuite {
     assert(IntersectionType(AtomicType(Types.String),
                             NotType(MemberType("1", "2")),
                             NotType(MemberType("3", "4"))).canonicalize()
-           == IntersectionType(AtomicType(Types.String),
-                               NotType(MemberType("1", "2", "3", "4")))
+           == IntersectionType(NotType(MemberType("1", "2", "3", "4")),
+                               AtomicType(Types.String)
+                               )
            )
     assert(IntersectionType(AtomicType(Types.String),
                             NotType(MemberType("1", 2)),
                             NotType(MemberType("3", 4))).canonicalize()
-           == IntersectionType(AtomicType(Types.String),
-                               NotType(MemberType("1", "3")))
+           == IntersectionType(NotType(MemberType("1", "3")),
+                               AtomicType(Types.String)
+                               )
            )
   }
   test("(and (and A B) (and C D)) -> (and A B C D)"){
@@ -160,10 +162,27 @@ class TypeSystemCanonicalize extends FunSuite {
     // (or A (and A B C) D) --> (or A D)
     assert(UnionType(A, IntersectionType(A,B,C), D).canonicalize()
            == UnionType(A,D))
+
+    // (or X (not Y)) --> Top   if Y is subtype of X
+    abstract class X
+    class Y extends X
+    assert(UnionType(classOf[X],NotType(classOf[Y])).canonicalize()
+           == TopType)
+    assert(UnionType(classOf[Y],NotType(classOf[X])).canonicalize()
+           == UnionType(classOf[Y],NotType(classOf[X])))
+
+    // AXBC + !X = ABC + !X
+    assert(UnionType(IntersectionType(A,classOf[X],B,C), NotType(classOf[X])).canonicalize()
+           == UnionType(IntersectionType(A,B,C), NotType(classOf[X])))
   }
   test("discovered errors"){
     abstract class Abstract1
 
+    trait Trait2
+    abstract class Abstract2 extends Trait2
+    assert(classOf[Abstract2].subtypep(classOf[Trait2]).contains(true))
+    assert(IntersectionType(classOf[Abstract2],NotType(classOf[Trait2])).canonicalize()
+           == EmptyType)
     NotType(UnionType(UnionType(classOf[Abstract1],EqlType(1)))).canonicalize(dnf=true)
 
     // [And [Not java.lang.String],
@@ -182,16 +201,49 @@ class TypeSystemCanonicalize extends FunSuite {
     UnionType( UnionType( UnionType( NotType( UnionType( EqlType(1)))),
                           NotType( UnionType(UnionType(classOf[Abstract1],
                                                        EqlType(1)))))).canonicalize(dnf=true)
+    locally{
+      // union: converted [Or [Not [Not java.lang.Integer]],[Not [Not Abstract1$1]]] to Top
+      val t1 = UnionType(NotType(NotType(classOf[java.lang.Integer])),
+                         NotType(NotType(classOf[Abstract1]))).canonicalize()
+      assert(t1.canonicalize() != TopType)
+    }
+    locally {
+      val t1 = IntersectionType(NotType(classOf[Abstract1]),
+                                NotType(classOf[Abstract2]))
+      val dnf = t1.canonicalize(dnf = true)
+      assert(t1 - dnf == EmptyType)
+      // println(List(t1,dnf,t1 - dnf))
+    }
+    locally{
+      val t1 = NotType(IntersectionType(NotType(classOf[java.lang.Integer]),
+                                        NotType(classOf[Abstract1])))
+      assert(t1.canonicalize() != TopType)
+    }
+    locally {
+      val t1 = IntersectionType(NotType(classOf[Abstract1]),
+                                NotType(classOf[java.lang.Integer]))
+      val dnf = t1.canonicalize(dnf = true)
+      assert(t1 - dnf == EmptyType)
+    }
+
   }
   test("randomized testing of canonicalize"){
 
     for{r <- 0 to 100
         td = randomType(5)
-        _ = println(td)
         can = td.canonicalize(dnf=false)
-        dnf = td.canonicalize(dnf=true)}{
-      assert(td.inhabited == can.inhabited)
-      assert(td.inhabited == dnf.inhabited)
+        dnf = td.canonicalize(dnf=true)
+        td_inhabited = td.inhabited
+        can_inhabited = can.inhabited
+        dnf_inhabited = dnf.inhabited}{
+      assert(can_inhabited.isEmpty
+               || td_inhabited.isEmpty
+               || td.inhabited == can.inhabited,
+             s"td=$td  can=$can, inhabited = $td_inhabited vs $can_inhabited")
+      assert(td_inhabited.isEmpty
+               || dnf_inhabited.isEmpty
+               || td.inhabited == dnf.inhabited,
+             s"td=$td  dnf=$dnf inhabited = $td_inhabited vs $dnf_inhabited")
     }
   }
   test("randomized testing of inversion"){
