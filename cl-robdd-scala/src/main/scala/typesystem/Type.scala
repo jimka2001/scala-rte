@@ -30,9 +30,12 @@ trait TerminalType
 /** A general type of our type system. */
 abstract class Type {
 
-  def ||(t:Type):Type = UnionType(this,t).canonicalize()
-  def &&(t:Type):Type = IntersectionType(this,t).canonicalize()
-  def unary_! : Type = NotType(this).canonicalize()
+  def ||(t:Type):Type = UnionType(this,t).canonicalize(dnf=true)
+  def &&(t:Type):Type = IntersectionType(this,t).canonicalize(dnf=true)
+  def unary_! : Type = NotType(this).canonicalize(dnf=true)
+  def -(t:Type):Type = IntersectionType(this,NotType(t)).canonicalize(dnf=true)
+  def ^^(t:Type):Type = UnionType(IntersectionType(this,NotType(t)),
+                                  IntersectionType(NotType(this),t)).canonicalize(dnf=true)
 
   /** Returns whether a given object belongs to this type.
    * It is a set membership test.
