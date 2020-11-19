@@ -198,7 +198,28 @@ case class IntersectionType(tds: Type*) extends Type {
         }
       },
       () => {
-        IntersectionType(tds.map((t: Type) => t.canonicalize(dnf = dnf)).sortWith(cmpTypeDesignators): _*).maybeDnf(dnf)
+        // (and A (not B)) --> Empty where A is subtype of B
+        if (tds.exists(a => tds.exists {
+          case NotType(b) if a.subtypep(b).contains(true) => true
+          case _ => false
+        })) EmptyType
+        else
+          this
+      },
+      () => {
+        // TODO this checks n^2 times, need to change to n^2 / 2
+        if (tds.exists(a => tds.exists(b => a.disjoint(b).contains(true))))
+          EmptyType
+        else
+          this
+      },
+      () => {
+        val i2 = IntersectionType(tds.map((t: Type) => t.canonicalize(dnf = dnf)).sortWith(cmpTypeDesignators): _*).maybeDnf(dnf)
+        if (this == i2)
+          this // return the older object, hoping the newer one is more easily GC'ed
+        else {
+          i2
+        }
       }
       ))
   }
