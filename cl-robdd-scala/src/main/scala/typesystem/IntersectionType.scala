@@ -179,7 +179,7 @@ case class IntersectionType(tds: Type*) extends Type {
           val newElements: Seq[Any] = (newEqls ++ newMembers).filter(x => lessStrict.typep(x))
           val newNotMember = NotType(MemberType(newElements: _*).canonicalize())
 
-          IntersectionType(others ++ Seq(newNotMember): _*)
+          IntersectionType((others ++ Seq(newNotMember)).sortWith(cmpTypeDesignators): _*)
         }
       },
       () => {
