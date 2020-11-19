@@ -112,6 +112,7 @@ object Types {
     case l @ _::_ => obj :: l
     case _ => seq :+ obj
   }
+  
   def compareSequence(tds1:Seq[Type],tds2:Seq[Type]):Boolean = {
     def comp(as:List[Type],bs:List[Type]):Boolean = {
       (as,bs) match {

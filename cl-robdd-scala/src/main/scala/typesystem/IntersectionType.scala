@@ -207,11 +207,12 @@ case class IntersectionType(tds: Type*) extends Type {
   override def toDnf: Type = {
     val oo = tds.find(orp)
     tds.find(orp) match {
-      case Some(td @ UnionType(orArgs @ _*)) =>
-        val others = tds.filterNot (_== td)
-        UnionType( orArgs.map{x => IntersectionType(conj(x, others) : _*)} :_*)
+      case Some(td@UnionType(orArgs@_*)) =>
+        val others = tds.filterNot(_ == td)
+        UnionType(orArgs.map { x => IntersectionType(conj(x, others): _*) }: _*)
       case None => this
     }
+  }
 
   // IntersectionType(tds: Type*)
   override def cmp(td:Type):Boolean = {
