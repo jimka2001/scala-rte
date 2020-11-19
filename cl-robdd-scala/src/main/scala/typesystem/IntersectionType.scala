@@ -144,6 +144,13 @@ case class IntersectionType(tds: Type*) extends Type {
           this
       },
       () => {
+        // (and A (not A)) --> Empty
+        if (tds.exists(td => tds.contains(NotType(td))))
+          EmptyType
+        else
+          this
+      },
+      () => {
         // (and Long (not (member 1 2)) (not (member 3 4)))
         //  --> (and Long (not (member 1 2 3 4)))
         // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
