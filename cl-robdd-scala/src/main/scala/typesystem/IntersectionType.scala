@@ -177,7 +177,7 @@ case class IntersectionType(tds: Type*) extends Type {
           val newEqls = notEqls.map { case NotType(EqlType(x)) => x }
           val newMembers = notMembers.flatMap { case NotType(MemberType(xs@_*)) => xs }
           val newElements: Seq[Any] = (newEqls ++ newMembers).filter(x => lessStrict.typep(x))
-          val newNotMember = NotType(MemberType(newElements: _*))
+          val newNotMember = NotType(MemberType(newElements: _*).canonicalize())
 
           IntersectionType(others ++ Seq(newNotMember): _*)
         }
