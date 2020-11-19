@@ -40,9 +40,7 @@ case class EqlType(a: Any) extends Type with TerminalType {
   }
 
   override def subtypep(t: Type): Option[Boolean] = {
-    if (t == this) Some(true)
-    else if (t == EmptyType) Some(true)
-    else Some(false)
+    Some(t.typep(a))
   }
 
   // EqlType(a: Any)

@@ -40,8 +40,7 @@ case class MemberType(xs: Any*) extends Type with TerminalType {
   }
 
   override def subtypep(t: Type): Option[Boolean] = {
-    if (xs.forall(t.typep)) Some(true)
-    else Some(false)
+    Some(xs.forall(t.typep))
   }
 
   // MemberType(xs: Any*)

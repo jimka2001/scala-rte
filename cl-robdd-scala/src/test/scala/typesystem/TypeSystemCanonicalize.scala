@@ -174,6 +174,11 @@ class TypeSystemCanonicalize extends FunSuite {
     // AXBC + !X = ABC + !X
     assert(UnionType(IntersectionType(A,classOf[X],B,C), NotType(classOf[X])).canonicalize()
            == UnionType(IntersectionType(A,B,C), NotType(classOf[X])))
+
+
+    assert(EqlType(1).subtypep(classOf[java.lang.Integer]).contains(true))
+    assert(UnionType(classOf[java.lang.Integer],NotType(EqlType(1))).canonicalize()
+           == TopType)
   }
   test("discovered errors"){
     abstract class Abstract1
