@@ -105,11 +105,18 @@ abstract class Type {
   }
 
   def fixedPoint[T](v:T, f:T=>T, goodEnough:(T,T)=>Boolean):T = {
-    val v2 = f(v)
-    if (goodEnough(v,v2))
-      v
-    else
-      fixedPoint(v2,f,goodEnough)
+    def fixed(v:T,history:List[T]):T = {
+      val v2 = f(v)
+      if (goodEnough(v, v2))
+        v
+      else if (history.contains(v2)) {
+        history.zipWithIndex.foreach{case (td,i) => println(s"$i: $td")}
+        throw new Exception("Failed: fixedPoint encountered the same value twice: " + v2)
+      }
+      else
+        fixed(v2, v::history)
+    }
+    fixed(v,List[T]())
   }
 
   def findSimplifier(simplifiers:List[() => Type]):Type = {
@@ -132,9 +139,11 @@ abstract class Type {
       this
   }
   def canonicalizeOnce(dnf:Boolean=false):Type = this
-  def canonicalize(dnf:Boolean=false):Type = fixedPoint(this,
-                                     (t:Type)=>t.canonicalizeOnce(dnf=dnf),
-                                     (a:Type,b:Type) => a.getClass == b.getClass && a==b)
+  def canonicalize(dnf:Boolean=false):Type = {
+    fixedPoint(this,
+               (t:Type)=>t.canonicalizeOnce(dnf=dnf),
+               (a:Type,b:Type) => a.getClass == b.getClass && a==b)
+  }
 
   /** Returns whether this type is a recognizable supertype of another given type.
    * It is a superset test. This might be undecidable.
