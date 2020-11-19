@@ -121,6 +121,37 @@ case class UnionType(tds: Type*) extends Type {
           } : _*)
       },
       () => {
+        // (or A (not A)) --> Top
+        if (tds.exists(td => tds.contains(NotType(td))))
+          TopType
+        else
+          this
+      },
+      () => {
+        // A + A!B -> A + B
+        // A + A!BX + Y = (A + BX + Y)
+        // A + ABX + Y = (A + Y)
+        val ao = tds.find(a =>
+                            tds.exists {
+                              case IntersectionType(td2s@_*) =>
+                                td2s.exists {
+                                  case NotType(b) if a == b => true
+                                  case b if a == b => true
+                                  case _ => false
+                                }
+                              case _ => false
+                            })
+        ao match {
+          case None => this
+          case Some(a) => // remove NotType(a) from every intersection, and if a is in intersection, replace with EmptyType
+            UnionType(
+              tds.flatMap {
+                case IntersectionType(tds@_*) if tds.contains(a) => Seq()
+                case IntersectionType(tds@_*) if tds.contains(NotType(a)) => Seq(IntersectionType(tds.filterNot(_ == NotType(a)): _*))
+                case b => Seq(b)
+              }: _*)
+        }
+      },
       () => {
         UnionType(tds.map((t: Type) => t.canonicalize(dnf=dnf)).sortWith(cmpTypeDesignators): _*)
       }

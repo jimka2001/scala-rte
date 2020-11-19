@@ -23,6 +23,7 @@
 package typesystem
 
 import org.scalatest._
+import Types._
 
 class TypeSystemCanonicalize extends FunSuite {
 
@@ -107,40 +108,102 @@ class TypeSystemCanonicalize extends FunSuite {
            == MemberType("hello","world"))
   }
 
-  test("canonicalize or"){
+  test("canonicalize or") {
     assert(UnionType(AtomicType(A),
                      EmptyType,
                      AtomicType(B)).canonicalize()
-      == UnionType(AtomicType(A),
-                   AtomicType(B)))
+           == UnionType(AtomicType(A),
+                        AtomicType(B)))
     assert(UnionType(AtomicType(A),
                      MemberType(),
                      AtomicType(B)).canonicalize()
-           == UnionType(AtomicType(A),AtomicType(B)))
+           == UnionType(AtomicType(A), AtomicType(B)))
     assert(UnionType().canonicalize() == EmptyType)
     assert(UnionType(AtomicType(A)).canonicalize()
-      == AtomicType(A))
+           == AtomicType(A))
     assert(UnionType(AtomicType(A),
                      AtomicType(A),
                      AtomicType(B),
                      AtomicType(A)).canonicalize()
-      == UnionType(AtomicType(A),AtomicType(B)))
-    assert(UnionType(AtomicType(A),TopType).canonicalize()
+           == UnionType(AtomicType(A), AtomicType(B)))
+    assert(UnionType(AtomicType(A), TopType).canonicalize()
            == TopType)
     assert(UnionType(AtomicType(A),
-                     MemberType(1,2,3),
-                     MemberType(3,4,5)).canonicalize()
-      == UnionType(AtomicType(A),
-                   MemberType(1,2,3,4,5)))
+                     MemberType(1, 2, 3),
+                     MemberType(3, 4, 5)).canonicalize()
+           == UnionType(AtomicType(A),
+                        MemberType(1, 2, 3, 4, 5)))
     // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
     assert(UnionType(AtomicType(Types.String),
-                     MemberType(1,2,"hello"),
-                     MemberType(2,3,4,"world")).canonicalize()
-      == UnionType(AtomicType(Types.String),
-                   MemberType(1,2,3,4)))
+                     MemberType(1, 2, "hello"),
+                     MemberType(2, 3, 4, "world")).canonicalize()
+           == UnionType(MemberType(1, 2, 3, 4),
+                        AtomicType(Types.String)
+                        ))
     // (or (or A B) (or C D)) --> (or A B C D)
-    assert(UnionType(UnionType(AtomicType(A),AtomicType(B)),
-                     UnionType(AtomicType(C),AtomicType(D))).canonicalize()
-           == UnionType(AtomicType(A),AtomicType(B),AtomicType(C),AtomicType(D)))
+    assert(UnionType(UnionType(AtomicType(A), AtomicType(B)),
+                     UnionType(AtomicType(C), AtomicType(D))).canonicalize()
+           == UnionType(AtomicType(A), AtomicType(B), AtomicType(C), AtomicType(D)))
+  }
+  test("canonicalize or 2"){
+    assert(UnionType(A,NotType(A)).canonicalize()
+           == TopType)
+    // (or A (and (not A) B) ==> (or A B)
+    assert(UnionType(A,IntersectionType(!A,B)).canonicalize()
+           == UnionType(A,B))
+    // (or A (and A B)) ==> A
+    assert(UnionType(A,A&&B).canonicalize()
+           == AtomicType(A))
+    // (or A (and (not A) B C) D) --> (or A (and B C) D)
+     assert(UnionType(A, IntersectionType(!A, B, C), D).canonicalize()
+           == UnionType(A, D, B&&C))
+    // (or A (and A B C) D) --> (or A D)
+    assert(UnionType(A, IntersectionType(A,B,C), D).canonicalize()
+           == UnionType(A,D))
+  }
+  test("discovered errors"){
+    abstract class Abstract1
+
+    NotType(UnionType(UnionType(classOf[Abstract1],EqlType(1)))).canonicalize(dnf=true)
+
+    // [And [Not java.lang.String],
+    //      [Not [= 0]]]
+    UnionType(NotType(String),
+              NotType(EqlType(0))).canonicalize(dnf=true)
+    // [Not [Or [Not
+    //           [Or
+    //             [Not java.lang.Integer]]],
+    //          [And ]]]
+    NotType(UnionType(NotType(UnionType(NotType(classOf[Integer]))),
+                      IntersectionType())).canonicalize(dnf=true)
+
+    // [Or [Or [Or [Not [Or [= 1]]]],
+    //         [Not [Or [Or Abstract1$1,[= 0]]]]]]
+    UnionType( UnionType( UnionType( NotType( UnionType( EqlType(1)))),
+                          NotType( UnionType(UnionType(classOf[Abstract1],
+                                                       EqlType(1)))))).canonicalize(dnf=true)
+  }
+  test("randomized testing of canonicalize"){
+
+    for{r <- 0 to 100
+        td = randomType(5)
+        _ = println(td)
+        can = td.canonicalize(dnf=false)
+        dnf = td.canonicalize(dnf=true)}{
+      assert(td.inhabited == can.inhabited)
+      assert(td.inhabited == dnf.inhabited)
+    }
+  }
+  test("randomized testing of inversion"){
+    for{r <- 0 to 100
+        td = randomType(2)
+        dnf = td.canonicalize(dnf=true)
+        inverse= NotType(dnf)}{
+
+      assert(td - dnf == EmptyType,
+             s"td=$td dnf=$dnf, td-dnf=${td-dnf}, expecting EmptyType")
+      assert((td || inverse) == TopType,
+             s"td=$td inverse=$inverse, td || inverse=${td || inverse}, expecting TopType")
+    }
   }
 }
