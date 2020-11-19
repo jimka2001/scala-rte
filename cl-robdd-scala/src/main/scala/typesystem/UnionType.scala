@@ -128,9 +128,28 @@ case class UnionType(tds: Type*) extends Type {
           this
       },
       () => {
+        // AXBC + !X = ABC + !X
+        tds.find{
+          case NotType(x) => tds.exists{
+            case IntersectionType(td2s @ _*) => td2s.contains(x)
+            case _ => false
+          }
+          case _ => false
+        } match {
+          case Some(NotType(x)) => UnionType(tds.map{
+            case IntersectionType(td2s @ _*) => IntersectionType(td2s.filter(_ != x) : _*)
+            case a => a
+          } :_*)
+          case _ => this
+        }
+      },
+      () => {
         // A + A!B -> A + B
         // A + A!BX + Y = (A + BX + Y)
         // A + ABX + Y = (A + Y)
+
+        // TODO need to look at these relations if A < B or B < A,
+        //  I'm not yet sure what will happen, but I think there are some simplifications to be made
         val ao = tds.find(a =>
                             tds.exists {
                               case IntersectionType(td2s@_*) =>
@@ -153,11 +172,21 @@ case class UnionType(tds: Type*) extends Type {
         }
       },
       () => {
+        // (or A (not B)) --> Top   if B is subtype of A
+        tds.find{a => tds.exists{
+          case NotType(b) if b.subtypep(a).contains(true) => true
+          case _ => false
+        }} match {
+          case None => this
+          case Some(a) => TopType
+        }
+      },
+      () => {
         UnionType(tds.map((t: Type) => t.canonicalize(dnf=dnf)).sortWith(cmpTypeDesignators): _*)
       }
     ))
   }
-
+  
   // UnionType(tds: Type*)
   override def cmp(td:Type):Boolean = {
     if (this == td)
