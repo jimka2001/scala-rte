@@ -48,7 +48,10 @@ object Types {
     case UnionType(_*) => true
     case _ => false
   }
-
+  val notp: Type=>Boolean = {
+    case NotType(_) => true
+    case _ => false
+  }
   def randomType(depth:Int):Type = {
     import scala.util.Random
     val random = new Random
