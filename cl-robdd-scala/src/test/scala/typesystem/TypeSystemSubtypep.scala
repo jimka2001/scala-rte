@@ -136,7 +136,20 @@ class TypeSystemSubtypep extends FunSuite {
     assert(AtomicType(classOf[Test1]).subtypep(EqlType(1)) == Some(false))
   }
   test("AtomicType subtype of Not"){
+    trait Abstract1
 
+    assert(classOf[java.lang.Integer].disjoint(classOf[Abstract1]).contains(true))
+    assert(classOf[Abstract1].subtypep(NotType(classOf[java.lang.Integer])).contains(true))
+    assert(classOf[java.lang.Integer].subtypep(NotType(classOf[Abstract1])).contains(true))
+    assert(! NotType(classOf[java.lang.Integer]).subtypep(classOf[Abstract1]).contains(true))
+    assert(! NotType(classOf[Abstract1]).subtypep(classOf[java.lang.Integer]).contains(true))
+
+    trait Abstract2 extends Abstract1
+
+    assert(classOf[Abstract2].subtypep(classOf[Abstract1]).contains(true))
+    assert(NotType(classOf[Abstract1]).subtypep(NotType(classOf[Abstract2])).contains(true))
+
+    assert(NotType(classOf[Abstract2]).subtypep(classOf[Abstract1]).contains(false))
   }
 
   test("Union subtype of Union"){

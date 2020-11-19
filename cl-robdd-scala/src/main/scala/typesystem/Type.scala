@@ -21,6 +21,7 @@
 
 package typesystem
 
+import Types._
 
 /** Trait representing types that have to be stored in the HashMap in the
  * LBdd representation.
@@ -94,6 +95,11 @@ abstract class Type {
     if ( (t.getClass eq this.getClass)
          && (t == this))
       Some(true)
+    else if ( t match {
+      case NotType(b) if disjoint(b).contains(true) => true
+      case _ => false}) {
+      Some(true)
+    }
     else
       (inhabited,t.inhabited) match {
         case (None,_) => None

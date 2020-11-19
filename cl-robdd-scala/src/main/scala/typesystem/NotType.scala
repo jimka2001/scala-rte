@@ -55,8 +55,20 @@ case class NotType(s: Type) extends Type {
     else super.disjointDown(t)
   }
 
+  // NotType(s: Type)
   override def subtypep(t: Type): Option[Boolean] = {
-    this.s.disjoint(t)
+    lazy val os = t match {
+      case NotType(b) => b.subtypep(s)
+      case _ => None
+    }
+    if (s.inhabited.contains(true)
+        && s.subtypep(t).contains(true))
+      Some(false)
+    else if (os.nonEmpty)
+      os
+    else
+      super.subtypep(t)
+
   }
 
   // NotType(s: Type)
