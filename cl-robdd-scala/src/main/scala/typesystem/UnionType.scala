@@ -91,21 +91,20 @@ case class UnionType(tds: Type*) extends Type {
       () => {
         // (or (member 1 2 3) (member 2 3 4 5)) --> (member 1 2 3 4 5)
         // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
-        def memberp(t:Type):Boolean = t match {
-          case MemberType( _*) => true
-          case _ => false
-        }
+
         val members = tds.filter(memberp)
-        if (members.size <= 1)
+        val eqls = tds.filter(eqlp)
+        if (members.size + eqls.size <= 1)
           this
         else {
-          val others = tds.filterNot(memberp)
+          val others = tds.filterNot(td => memberp(td) || eqlp(td))
           val stricter = UnionType(others : _*)
-          val content = members.flatMap{
+          val content = (members ++ eqls).flatMap{
             case MemberType(xs @ _*) => xs.filterNot(stricter.typep)
+            case EqlType(x) => Seq(x).filterNot(stricter.typep)
             case _ => Seq()
           }
-          UnionType(others ++ Seq(MemberType(content : _*)) :_*)
+          UnionType(others ++ Seq(MemberType(content : _*).canonicalize()) :_*)
         }
       },
       () => {

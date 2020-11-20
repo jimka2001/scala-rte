@@ -180,6 +180,12 @@ class TypeSystemCanonicalize extends FunSuite {
     assert(EqlType(1).subtypep(classOf[java.lang.Integer]).contains(true))
     assert(UnionType(classOf[java.lang.Integer],NotType(EqlType(1))).canonicalize()
            == TopType)
+
+    assert(UnionType(EqlType(1),EqlType(2)).canonicalize()
+           == MemberType(1,2))
+    // [Or [= -1],[= 0],[Not [Member -1,0]]]
+    assert(UnionType(EqlType(-1),EqlType(0),NotType(MemberType(-1,0))).canonicalize()
+           == TopType)
   }
   test("discovered errors"){
     abstract class Abstract1
