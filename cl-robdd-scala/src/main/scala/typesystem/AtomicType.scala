@@ -69,7 +69,7 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
         else if (isFinal(ct) || isFinal(tp)) // if either is final
           Some(true)
         else if (isInterface(ct) || isInterface(tp)) // if either is an interface
-          Some(false)
+          Some(false) // TODO justify this choice.
         else // neither is final, and neither is an interface, and neither is a subclass of the other, so disjoint.
           Some(true)
       case _ => super.disjointDown(t)

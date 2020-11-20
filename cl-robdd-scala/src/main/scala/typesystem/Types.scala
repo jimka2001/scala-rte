@@ -36,6 +36,7 @@ object Types {
 
   // allow implicit conversions from c:Class[_] to AtomicType(c)
   //    thus allowing Types such as classOf[java.lang.Integer] && !EqlType(0)
+  //    classOf[A] && classOf[B]
   implicit def class2type(c:Class[_]): Type = AtomicType(c)
 
   val atomicp: Type=>Boolean = {

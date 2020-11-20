@@ -106,18 +106,22 @@ case class IntersectionType(tds: Type*) extends Type {
   override def canonicalizeOnce(nf:Option[NormalForm]=None): Type = {
     findSimplifier(List[() => Type](
       () => {
+        // (and A B EmptyType C D) -> EmptyType
         if (tds.contains(EmptyType))
           EmptyType
         else
           this
       },
       () => {
+        // (and A B A C) -> (and A B C)
         IntersectionType.apply(tds.distinct: _*)
       },
       () => {
-        if (tds.isEmpty)
+        if (tds.isEmpty) {
+          // (and) -> TopType
           TopType
-        else if (tds.tail.isEmpty)
+          // (and A) -> A
+        } else if (tds.tail.isEmpty)
           tds.head
         else
           this
