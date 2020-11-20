@@ -23,13 +23,15 @@
 package typesystem
 import NormalForm._
 
+import scala.annotation.tailrec
+
 /** The member type is an exhaustive type, all object composing it are
  * given at construction time.
  *
  * @param xs var-arg, the members of the type
  */
 case class MemberType(xs: Any*) extends Type with TerminalType {
-  override def toString = xs.map(_.toString).mkString("[Member ", ",", "]")
+  override def toString:String = xs.map(_.toString).mkString("[Member ", ",", "]")
 
   override def typep(a: Any): Boolean = xs.contains(a)
 
@@ -69,7 +71,8 @@ case class MemberType(xs: Any*) extends Type with TerminalType {
       false
     else t match {
       case MemberType(ys @ _*) =>
-        def comp(as:List[Any],bs:List[Any]):Boolean = {
+        @tailrec
+        def comp(as:List[Any], bs:List[Any]):Boolean = {
           (as,bs) match {
             case (Nil,Nil) => throw new Exception(s"not expecting equal sequences $xs, $ys")
             case (Nil,_) => true

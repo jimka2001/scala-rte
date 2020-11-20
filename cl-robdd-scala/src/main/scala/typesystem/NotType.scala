@@ -28,7 +28,7 @@ import NormalForm._
  * @param s the type we want to get the complement
  */
 case class NotType(s: Type) extends Type {
-  override def toString = "[Not " + s.toString + "]"
+  override def toString:String = "[Not " + s.toString + "]"
 
   override def typep(a: Any): Boolean = {
     !s.typep(a)
@@ -97,7 +97,7 @@ case class NotType(s: Type) extends Type {
     toDnf
   }
   // NotType(s: Type)
-  override def cmp(td:Type) = {
+  override def cmp(td:Type):Boolean = {
     if( this == td)
       false
     else td match {

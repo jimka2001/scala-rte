@@ -28,7 +28,7 @@ import NormalForm._
  * @param tds var-arg, zero or more types
  */
 case class IntersectionType(tds: Type*) extends Type {
-  override def toString = tds.map(_.toString).mkString("[And ", ",", "]")
+  override def toString:String = tds.map(_.toString).mkString("[And ", ",", "]")
 
   override def typep(a: Any): Boolean = {
     tds.forall(_.typep(a))

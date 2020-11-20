@@ -27,8 +27,8 @@ import NormalForm._
  * @param ct the class of a Scala or Java type this class will wrap (call it with `classOf[native_type]`)
  */
 case class AtomicType(ct: Class[_]) extends Type with TerminalType {
-  override def toString = {
-    val fullName = ct.getName()
+  override def toString:String = {
+    val fullName = ct.getName
 
     val shortName = fullName.dropWhile(_ != '$')
     if (shortName == "")

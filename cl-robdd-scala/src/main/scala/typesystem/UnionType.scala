@@ -178,7 +178,7 @@ case class UnionType(tds: Type*) extends Type {
           case _ => false
         }} match {
           case None => this
-          case Some(a) => TopType
+          case Some(_) => TopType
         }
       },
       () => {

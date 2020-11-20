@@ -23,6 +23,8 @@ package typesystem
 
 import java.lang
 
+import scala.annotation.tailrec
+
 object NormalForm extends Enumeration {
   type NormalForm = Value
   val Dnf, Cnf = Value
@@ -32,6 +34,8 @@ import NormalForm._
 object Types {
   import scala.runtime.BoxedUnit
 
+  // allow implicit conversions from c:Class[_] to AtomicType(c)
+  //    thus allowing Types such as classOf[java.lang.Integer] && !EqlType(0)
   implicit def class2type(c:Class[_]): Type = AtomicType(c)
 
   val atomicp: Type=>Boolean = {
@@ -123,7 +127,8 @@ object Types {
   }
   
   def compareSequence(tds1:Seq[Type],tds2:Seq[Type]):Boolean = {
-    def comp(as:List[Type],bs:List[Type]):Boolean = {
+    @tailrec
+    def comp(as:List[Type], bs:List[Type]):Boolean = {
       (as,bs) match {
         case (Nil,Nil) => throw new Exception(s"not expecting equal sequences $tds1, $tds2")
         case (Nil,_) => true

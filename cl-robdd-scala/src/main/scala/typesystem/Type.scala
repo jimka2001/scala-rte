@@ -21,8 +21,9 @@
 
 package typesystem
 
-import Types._
 import NormalForm._
+
+import scala.annotation.tailrec
 
 /** Trait representing types that have to be stored in the HashMap in the
  * LBdd representation.
@@ -49,7 +50,8 @@ abstract class Type {
 
   /** Returns whether a given type and this type are disjoint.
    * This might be undecidable. The disjointDown method is used to avoid
-   * infinite loops.
+   * infinite loops.  Subclasses are expected to override disjointDown,
+   * not disjoint.
    *
    * @param td the type we want to check whether it is disjoint to this type
    * @return an optional Boolean which is true if t and this type are disjoint
@@ -112,7 +114,8 @@ abstract class Type {
   }
 
   def fixedPoint[T](v:T, f:T=>T, goodEnough:(T,T)=>Boolean):T = {
-    def fixed(v:T,history:List[T]):T = {
+    @tailrec
+    def fixed(v:T, history:List[T]):T = {
       val v2 = f(v)
       if (goodEnough(v, v2))
         v
@@ -169,6 +172,6 @@ abstract class Type {
   def supertypep(t: Type): Option[Boolean] = t.subtypep(this)
 
   def cmp(t:Type):Boolean = {
-    throw new Exception(s"cannot cmpare type designators ${this.getClass} vs ${t.getClass}")
+    throw new Exception(s"cannot compare type designators ${this.getClass} vs ${t.getClass}")
   }
 }
