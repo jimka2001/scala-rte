@@ -20,7 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-package typesystem
+package genus
 
 import lbdd._
 import lbdd.GraphViz._
@@ -77,19 +77,19 @@ object TypeSystemWithLBdd {
     * @param t the type from which we want to create a LBdd
     * @return the created LBdd
     */
-  def typeAsLBdd(t: Type): LBdd = {
+  def typeAsLBdd(t: SimpleTypeD): LBdd = {
     t match {
-      case x if x == EmptyType => LBddFalse
-      case x if x == TopType => LBddTrue
-      case x: AtomicType => typeAsLBdd[AtomicType](x)
-      case x: MemberType => typeAsLBdd[MemberType](x)
-      case x: EqlType => typeAsLBdd[EqlType](x)
-      case x: CustomType => typeAsLBdd[CustomType](x)
+      case x if x == SEmpty => LBddFalse
+      case x if x == STop => LBddTrue
+      case x: SAtomic => typeAsLBdd[SAtomic](x)
+      case x: SMember => typeAsLBdd[SMember](x)
+      case x: SEql => typeAsLBdd[SEql](x)
+      case x: SCustom => typeAsLBdd[SCustom](x)
 
         // TODO : Reduction and ordering
-      case x: UnionType => Or(x.tds.map(typeAsLBdd).toList)
-      case x: IntersectionType => And(x.tds.map(typeAsLBdd).toList)
-      case x: NotType => Not(typeAsLBdd(x.s))
+      case x: SOr => Or(x.tds.map(typeAsLBdd).toList)
+      case x: SAnd => And(x.tds.map(typeAsLBdd).toList)
+      case x: SNot => Not(typeAsLBdd(x.s))
 
       case _ => sys.error("typeAsLBdd: unknown type")
     }
@@ -146,14 +146,14 @@ object TypeSystemWithLBdd {
 
   def main(args: Array[String]): Unit = {
     TypeSystemWithLBdd.withNewTypeHash {
-      val numericType = AtomicType(classOf[java.lang.Number])
+      val numericType = SAtomic(classOf[java.lang.Number])
       val numericLBdd = typeAsLBdd(numericType)
 
       val Number = classOf[java.lang.Number]
 
       numericLBdd.bddView(true, "numericTypeLBdd")
 
-      val b2 = typeAsLBdd(UnionType(IntersectionType(numericType, Types.intJavaType), Types.stringType))
+      val b2 = typeAsLBdd(SOr(SAnd(numericType, Types.intJavaType), Types.stringType))
       b2.bddView(true, "string or (num and int)")
     }
   }

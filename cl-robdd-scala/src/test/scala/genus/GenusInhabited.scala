@@ -20,13 +20,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-package typesystem
+package genus
 
 import org.scalatest._
-import typesystem.Types._
 
 
-class TypeSystemInhabited extends FunSuite {
+class GenusInhabited extends FunSuite {
   class Abstract1
   class Abstract2
   trait Trait1
@@ -34,23 +33,23 @@ class TypeSystemInhabited extends FunSuite {
   trait Trait3
 
   test("inhabited intersection") {
-    assert(IntersectionType(AtomicType(classOf[Trait1]),
-                            AtomicType(classOf[Abstract1]),
-                            AtomicType(classOf[Abstract2]),
-                            AtomicType(classOf[Trait2])
-                            ).inhabited.contains(false))
-    assert(IntersectionType(AtomicType(classOf[Trait1]),
-                            AtomicType(classOf[Trait2]),
-                            AtomicType(classOf[Trait3])).inhabited.contains(true))
-    assert(IntersectionType(AtomicType(classOf[Trait1]),
-                            AtomicType(classOf[Abstract1]),
-                            AtomicType(classOf[Trait2]),
-                            AtomicType(classOf[Trait3])).inhabited.contains(true))
+    assert(SAnd(SAtomic(classOf[Trait1]),
+                SAtomic(classOf[Abstract1]),
+                SAtomic(classOf[Abstract2]),
+                SAtomic(classOf[Trait2])
+                ).inhabited.contains(false))
+    assert(SAnd(SAtomic(classOf[Trait1]),
+                SAtomic(classOf[Trait2]),
+                SAtomic(classOf[Trait3])).inhabited.contains(true))
+    assert(SAnd(SAtomic(classOf[Trait1]),
+                SAtomic(classOf[Abstract1]),
+                SAtomic(classOf[Trait2]),
+                SAtomic(classOf[Trait3])).inhabited.contains(true))
 
-    assert(IntersectionType(AtomicType(classOf[Trait1]),
-                            UnionType(AtomicType(classOf[Abstract1]),
-                                      AtomicType(classOf[Abstract2])),
-                            AtomicType(classOf[Trait2])).inhabited.contains(true))
+    assert(SAnd(SAtomic(classOf[Trait1]),
+                SOr(SAtomic(classOf[Abstract1]),
+                    SAtomic(classOf[Abstract2])),
+                SAtomic(classOf[Trait2])).inhabited.contains(true))
   }
 
 }

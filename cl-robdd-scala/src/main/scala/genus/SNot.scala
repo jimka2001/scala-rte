@@ -19,7 +19,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package typesystem
+package genus
+
 import Types._
 import NormalForm._
 
@@ -27,7 +28,7 @@ import NormalForm._
  *
  * @param s the type we want to get the complement
  */
-case class NotType(s: Type) extends Type {
+case class SNot(s: SimpleTypeD) extends SimpleTypeD {
   override def toString:String = "[Not " + s.toString + "]"
 
   override def typep(a: Any): Boolean = {
@@ -38,28 +39,28 @@ case class NotType(s: Type) extends Type {
     val nothing = classOf[Nothing]
     val any = classOf[AnyRef]
     s match {
-      case TopType => Some(false)
-      case EmptyType => Some(true)
-      case AtomicType(`nothing`) => Some(true)
-      case AtomicType(`any`) => Some(false)
-      case AtomicType(_) => Some(true)
-      case MemberType(_) => Some(true)
-      case EqlType(_) => Some(true)
-      case NotType(x) => x.inhabited
+      case STop => Some(false)
+      case SEmpty => Some(true)
+      case SAtomic(`nothing`) => Some(true)
+      case SAtomic(`any`) => Some(false)
+      case SAtomic(_) => Some(true)
+      case SMember(_) => Some(true)
+      case SEql(_) => Some(true)
+      case SNot(x) => x.inhabited
       case _ => None
     }
   }
 
-  override protected def disjointDown(t: Type): Option[Boolean] = {
+  override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     if (t.subtypep(s).getOrElse(false))
       Some(true)
     else super.disjointDown(t)
   }
 
   // NotType(s: Type)
-  override def subtypep(t: Type): Option[Boolean] = {
+  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
     lazy val os = t match {
-      case NotType(b) => b.subtypep(s)
+      case SNot(b) => b.subtypep(s)
       case _ => None
     }
     if (s.inhabited.contains(true)
@@ -73,35 +74,35 @@ case class NotType(s: Type) extends Type {
   }
 
   // NotType(s: Type)
-  override def canonicalizeOnce(nf:Option[NormalForm]=None): Type = {
+  override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     s match {
-      case NotType(s1) => s1.canonicalizeOnce(nf=nf)
-      case TopType => EmptyType
-      case EmptyType => TopType
-      case s2: Type => NotType(s2.canonicalizeOnce(nf=nf)).maybeDnf(nf).maybeCnf(nf)
+      case SNot(s1) => s1.canonicalizeOnce(nf=nf)
+      case STop => SEmpty
+      case SEmpty => STop
+      case s2: SimpleTypeD => SNot(s2.canonicalizeOnce(nf=nf)).maybeDnf(nf).maybeCnf(nf)
     }
   }
 
   // NotType(s: Type)
-  override def toDnf: Type = {
+  override def toDnf: SimpleTypeD = {
     s match {
-      case IntersectionType(xs @ _*) =>
-        UnionType(xs.map(x => NotType(x)) : _*)
-      case UnionType(xs @ _*) =>
-        IntersectionType(xs.map(x => NotType(x)) : _*)
+      case SAnd(xs @ _*) =>
+        SOr(xs.map(x => SNot(x)) : _*)
+      case SOr(xs @ _*) =>
+        SAnd(xs.map(x => SNot(x)) : _*)
       case _ => this
     }
   }
   // NotType(s: Type)
-  override def toCnf: Type = {
+  override def toCnf: SimpleTypeD = {
     toDnf
   }
   // NotType(s: Type)
-  override def cmp(td:Type):Boolean = {
+  override def cmp(td:SimpleTypeD):Boolean = {
     if( this == td)
       false
     else td match {
-      case NotType(td) => cmpTypeDesignators(s,td)
+      case SNot(td) => cmpTypeDesignators(s, td)
       case _ => super.cmp(td)
     }
   }

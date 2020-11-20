@@ -20,19 +20,27 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-package typesystem
+package genus
 
-/** The empty type, subtype of all types. */
-object EmptyType extends Type {
-  override def toString = "Empty"
+import org.scalatest._
+import genus.Types._
 
-  override def typep(a: Any): Boolean = false
+class TypesTest extends FunSuite {
 
-  override def inhabited: Some[Boolean] = Some(false)
+  test("conj"){
+    val l1 = List( 1, 2, 3)
+    val v1 = Vector(1,2,3)
+    val s1 = Seq(1,2,3)
 
-  override protected def disjointDown(t: Type): Option[Boolean] = Some(true)
+    assert(conj(4,l1).contains(2))
+    assert(conj(4,l1).contains(4))
 
-  override def subtypep(t: Type): Option[Boolean] = Some(true)
+    assert(conj(4,v1).contains(2))
+    assert(conj(4,v1).contains(4))
 
-  override def cmp(t:Type):Boolean = false
+    assert(conj(4,s1).contains(2))
+    assert(conj(4,s1).contains(4))
+
+  }
 }
+

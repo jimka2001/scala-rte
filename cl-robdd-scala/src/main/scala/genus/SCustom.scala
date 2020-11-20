@@ -19,22 +19,22 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package typesystem
+package genus
 
 /** A custom type, build by a function defined by the user.
  *
  * @param f a function taking an object Any and returning a Boolean defining the type
  */
-case class CustomType(f: Any => Boolean) extends Type with TerminalType {
+case class SCustom(f   : Any => Boolean) extends SimpleTypeD with TerminalType {
   override def typep(a: Any): Boolean = f(a)
 
-  override protected def disjointDown(t: Type): Option[Boolean] = super.disjointDown(t)
+  override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = super.disjointDown(t)
 
   override def inhabited: Option[Boolean] = super.inhabited
 
-  override def subtypep(t: Type): Option[Boolean] = super.subtypep(t)
+  override def subtypep(t: SimpleTypeD): Option[Boolean] = super.subtypep(t)
 
-  override def cmp(t:Type):Boolean = {
+  override def cmp(t:SimpleTypeD):Boolean = {
     s"$this" < s"$t"
   }
 }

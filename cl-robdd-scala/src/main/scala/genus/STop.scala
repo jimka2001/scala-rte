@@ -20,27 +20,27 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-package typesystem
+package genus
 
 /** The super type, super type of all types. */
-object TopType extends Type {
+object STop extends SimpleTypeD {
   override def toString = "Top"
 
   override def typep(a: Any): Boolean = true
 
   override def inhabited: Some[Boolean] = Some(true)
 
-  override protected def disjointDown(t: Type): Option[Boolean] = {
+  override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     t match {
-      case EmptyType => Some(true)
+      case SEmpty => Some(true)
       case _ => Some(false)
     }
   }
 
-  override def subtypep(t: Type): Option[Boolean] = {
-    if (t == TopType) Some(true)
+  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
+    if (t == STop) Some(true)
     else Some(false)
   }
 
-  override def cmp(t:Type):Boolean = false
+  override def cmp(t:SimpleTypeD):Boolean = false
 }

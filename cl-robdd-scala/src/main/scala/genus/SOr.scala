@@ -19,7 +19,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package typesystem
+package genus
+
 import Types._
 import NormalForm._
 
@@ -27,7 +28,7 @@ import NormalForm._
  *
  * @param tds var-arg, zero or more types
  */
-case class UnionType(tds: Type*) extends Type {
+case class SOr(tds: SimpleTypeD*) extends SimpleTypeD {
   override def toString:String = tds.map(_.toString).mkString("[Or ", ",", "]")
 
   override def typep(a: Any): Boolean = {
@@ -35,7 +36,7 @@ case class UnionType(tds: Type*) extends Type {
   }
 
   override def inhabited: Option[Boolean] = {
-    val i = memoize((s: Type) => s.inhabited)
+    val i = memoize((s: SimpleTypeD) => s.inhabited)
     if (tds.exists(i(_).contains(true)))
       Some(true)
     else if (tds.forall(i(_).contains(false)))
@@ -45,8 +46,8 @@ case class UnionType(tds: Type*) extends Type {
   }
 
   // UnionType(tds: Type*)
-  override protected def disjointDown(t: Type): Option[Boolean] = {
-    val d = memoize((s: Type) => s.disjoint(t))
+  override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
+    val d = memoize((s: SimpleTypeD) => s.disjoint(t))
     if (tds.forall(d(_).contains(true)))
       Some(true)
     else if (tds.exists(d(_).contains(false)))
@@ -56,8 +57,8 @@ case class UnionType(tds: Type*) extends Type {
   }
 
   // UnionType(tds: Type*)
-  override def subtypep(t: Type): Option[Boolean] = {
-    val s = memoize((s: Type) => s.subtypep(t))
+  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
+    val s = memoize((s: SimpleTypeD) => s.subtypep(t))
     if (tds.forall(s(_).contains(true)))
       Some(true)
     else if (tds.exists(s(_).contains(false)))
@@ -67,25 +68,25 @@ case class UnionType(tds: Type*) extends Type {
   }
 
   // UnionType(tds: Type*)
-  override def canonicalizeOnce(nf:Option[NormalForm]=None): Type = {
-    findSimplifier(List[() => Type](
+  override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
+    findSimplifier(List[() => SimpleTypeD](
       () => {
-        if (tds.contains(EmptyType)) {
-          UnionType(tds.filter {
-            _ != EmptyType
+        if (tds.contains(SEmpty)) {
+          SOr(tds.filter {
+            _ != SEmpty
           }: _*)
         }
-        else if (tds.contains(TopType)){
-          TopType
+        else if (tds.contains(STop)){
+          STop
         }
         else
           this
       },
       () => {
         tds match {
-          case Seq() => EmptyType
+          case Seq() => SEmpty
           case Seq(x) => x
-          case xs => UnionType(xs.distinct : _*)
+          case xs => SOr(xs.distinct : _*)
         }
       },
       () => {
@@ -98,46 +99,46 @@ case class UnionType(tds: Type*) extends Type {
           this
         else {
           val others = tds.filterNot(td => memberp(td) || eqlp(td))
-          val stricter = UnionType(others : _*)
+          val stricter = SOr(others : _*)
           val content = (members ++ eqls).flatMap{
-            case MemberType(xs @ _*) => xs.filterNot(stricter.typep)
-            case EqlType(x) => Seq(x).filterNot(stricter.typep)
+            case SMember(xs @ _*) => xs.filterNot(stricter.typep)
+            case SEql(x) => Seq(x).filterNot(stricter.typep)
             case _ => Seq()
           }
-          UnionType(others ++ Seq(MemberType(content : _*).canonicalize()) :_*)
+          SOr(others ++ Seq(SMember(content : _*).canonicalize()) :_*)
         }
       },
       () => {
         // (or (or A B) (or C D)) --> (or A B C D)
         if (!tds.exists {
-          case UnionType(_*) => true
+          case SOr(_*) => true
           case _ => false
         })
           this
         else
-          UnionType(tds.flatMap{
-            case UnionType(xs @ _*) => xs
+          SOr(tds.flatMap{
+            case SOr(xs @ _*) => xs
             case x => Seq(x)
           } : _*)
       },
       () => {
         // (or A (not A)) --> Top
-        if (tds.exists(td => tds.contains(NotType(td))))
-          TopType
+        if (tds.exists(td => tds.contains(SNot(td))))
+          STop
         else
           this
       },
       () => {
         // AXBC + !X = ABC + !X
         tds.find{
-          case NotType(x) => tds.exists{
-            case IntersectionType(td2s @ _*) => td2s.contains(x)
+          case SNot(x) => tds.exists{
+            case SAnd(td2s @ _*) => td2s.contains(x)
             case _ => false
           }
           case _ => false
         } match {
-          case Some(NotType(x)) => UnionType(tds.map{
-            case IntersectionType(td2s @ _*) => IntersectionType(td2s.filter(_ != x) : _*)
+          case Some(SNot(x)) => SOr(tds.map{
+            case SAnd(td2s @ _*) => SAnd(td2s.filter(_ != x) : _*)
             case a => a
           } :_*)
           case _ => this
@@ -152,9 +153,9 @@ case class UnionType(tds: Type*) extends Type {
         //  I'm not yet sure what will happen, but I think there are some simplifications to be made
         val ao = tds.find(a =>
                             tds.exists {
-                              case IntersectionType(td2s@_*) =>
+                              case SAnd(td2s@_*) =>
                                 td2s.exists {
-                                  case NotType(b) if a == b => true
+                                  case SNot(b) if a == b => true
                                   case b if a == b => true
                                   case _ => false
                                 }
@@ -163,10 +164,10 @@ case class UnionType(tds: Type*) extends Type {
         ao match {
           case None => this
           case Some(a) => // remove NotType(a) from every intersection, and if a is in intersection, replace with EmptyType
-            UnionType(
+            SOr(
               tds.flatMap {
-                case IntersectionType(tds@_*) if tds.contains(a) => Seq()
-                case IntersectionType(tds@_*) if tds.contains(NotType(a)) => Seq(IntersectionType(tds.filterNot(_ == NotType(a)): _*))
+                case SAnd(tds@_*) if tds.contains(a) => Seq()
+                case SAnd(tds@_*) if tds.contains(SNot(a)) => Seq(SAnd(tds.filterNot(_ == SNot(a)): _*))
                 case b => Seq(b)
               }: _*)
         }
@@ -174,37 +175,37 @@ case class UnionType(tds: Type*) extends Type {
       () => {
         // (or A (not B)) --> Top   if B is subtype of A
         tds.find{a => tds.exists{
-          case NotType(b) if b.subtypep(a).contains(true) => true
+          case SNot(b) if b.subtypep(a).contains(true) => true
           case _ => false
         }} match {
           case None => this
-          case Some(_) => TopType
+          case Some(_) => STop
         }
       },
       () => {
-        UnionType(tds.map((t: Type) => t.canonicalize(nf=nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
+        SOr(tds.map((t: SimpleTypeD) => t.canonicalize(nf=nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
       }
     ))
   }
-  
+
   // UnionType(tds: Type*)
-  override def toCnf: Type = {
+  override def toCnf: SimpleTypeD = {
     tds.find(andp) match {
-      case Some(td@IntersectionType(andArgs@_*)) =>
+      case Some(td@SAnd(andArgs@_*)) =>
         val others = tds.filterNot(_ == td)
-        IntersectionType(andArgs.map { x => UnionType(conj(x, others): _*) }: _*)
+        SAnd(andArgs.map { x => SOr(conj(x, others): _*) }: _*)
       case None => this
     }
   }
 
 
   // UnionType(tds: Type*)
-  override def cmp(td:Type):Boolean = {
+  override def cmp(td:SimpleTypeD):Boolean = {
     if (this == td)
       false
     else td match {
       // this <= td ?
-      case UnionType(tds @ _*) =>
+      case SOr(tds @ _*) =>
         compareSequence(this.tds,tds)
       case _ => super.cmp(td)
     }

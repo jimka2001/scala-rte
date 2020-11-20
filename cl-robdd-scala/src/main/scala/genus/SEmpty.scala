@@ -19,43 +19,20 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package typesystem
 
-/** The equal type, a type which is equal to a given object.
- *
- * @param a the object defining the type
- */
-case class EqlType(a: Any) extends Type with TerminalType {
-  override def toString = s"[= $a]"
+package genus
 
-  override def typep(b: Any): Boolean = {
-    a == b
-  }
+/** The empty type, subtype of all types. */
+object SEmpty extends SimpleTypeD {
+  override def toString = "Empty"
 
-  override def inhabited: Option[Boolean] = Some(true)
+  override def typep(a: Any): Boolean = false
 
-  override protected def disjointDown(t: Type): Option[Boolean] = {
-    if (t.typep(a)) Some(false)
-    else Some(true)
-  }
+  override def inhabited: Some[Boolean] = Some(false)
 
-  override def subtypep(t: Type): Option[Boolean] = {
-    Some(t.typep(a))
-  }
+  override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = Some(true)
 
-  // EqlType(a: Any)
-  override def cmp(t:Type):Boolean = {
-    if (this == t)
-      false
-    else t match {
-      case EqlType(b: Any) =>
-        if( ! (a.getClass eq b.getClass))
-          a.getClass.toString <= b.getClass.toString
-        else if (a.toString != b.toString)
-          a.toString <= b.toString
-        else
-          throw new Exception(s"cannot compare $this vs $t because they are different yet print the same")
-      case _ => super.cmp(t)
-    }
-  }
+  override def subtypep(t: SimpleTypeD): Option[Boolean] = Some(true)
+
+  override def cmp(t:SimpleTypeD):Boolean = false
 }

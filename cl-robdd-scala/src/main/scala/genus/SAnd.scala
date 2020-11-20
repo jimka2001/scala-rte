@@ -19,7 +19,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package typesystem
+package genus
+
 import Types._
 import NormalForm._
 
@@ -27,7 +28,7 @@ import NormalForm._
  *
  * @param tds var-arg, zero or more types
  */
-case class IntersectionType(tds: Type*) extends Type {
+case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
   override def toString:String = tds.map(_.toString).mkString("[And ", ",", "]")
 
   override def typep(a: Any): Boolean = {
@@ -51,7 +52,7 @@ case class IntersectionType(tds: Type*) extends Type {
       //  however, if some pair is disjoint, the the intersection is
       //  empty, thus not inhabited
       Some(tds.toSet.subsets(2).map(_.toList).forall {
-        case List(t1: Type, t2: Type) =>
+        case List(t1: SimpleTypeD, t2: SimpleTypeD) =>
           t1.disjoint(t2).contains(false)
       })
     } else if (dnf != this && inhabitedDnf.nonEmpty) {
@@ -65,7 +66,7 @@ case class IntersectionType(tds: Type*) extends Type {
   }
 
   // IntersectionType(tds: Type*)
-  override protected def disjointDown(t2: Type): Option[Boolean] = {
+  override protected def disjointDown(t2: SimpleTypeD): Option[Boolean] = {
     lazy val inhabited_t2 = t2.inhabited.contains(true)
     lazy val inhabited_this = this.inhabited.contains(true)
 
@@ -93,7 +94,7 @@ case class IntersectionType(tds: Type*) extends Type {
   }
 
   // IntersectionType(tds: Type*)
-  override def subtypep(t: Type): Option[Boolean] = {
+  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
     if (tds.exists(_.subtypep(t).contains(true)))
       Some(true)
     else if (tds.forall(_.disjoint(t).contains(true)))
@@ -103,23 +104,23 @@ case class IntersectionType(tds: Type*) extends Type {
   }
 
   // IntersectionType(tds: Type*)
-  override def canonicalizeOnce(nf:Option[NormalForm]=None): Type = {
-    findSimplifier(List[() => Type](
+  override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
+    findSimplifier(List[() => SimpleTypeD](
       () => {
         // (and A B EmptyType C D) -> EmptyType
-        if (tds.contains(EmptyType))
-          EmptyType
+        if (tds.contains(SEmpty))
+          SEmpty
         else
           this
       },
       () => {
         // (and A B A C) -> (and A B C)
-        IntersectionType.apply(tds.distinct: _*)
+        SAnd.apply(tds.distinct: _*)
       },
       () => {
         if (tds.isEmpty) {
           // (and) -> TopType
-          TopType
+          STop
           // (and A) -> A
         } else if (tds.tail.isEmpty)
           tds.head
@@ -130,32 +131,32 @@ case class IntersectionType(tds: Type*) extends Type {
         //  ==> EqlType(42)
         //  or EmptyType
         tds.find(eqlp) match {
-          case Some(e@EqlType(x)) =>
+          case Some(e@SEql(x)) =>
             if (typep(x))
               e
             else
-              EmptyType
+              SEmpty
           case _ => this
         }
       },
       () => { // IntersectionType(MemberType(42,43,44), A, B, C)
         //  ==> MemberType(42,44)
         tds.find(memberp) match {
-          case Some(MemberType(xs@_*)) =>
-            MemberType(xs.filter(typep): _*)
+          case Some(SMember(xs@_*)) =>
+            SMember(xs.filter(typep): _*)
           case _ => this
         }
       },
       () => { // IntersectionType(A,TopType,B) ==> IntersectionType(A,B)
-        if (tds.contains(TopType))
-          IntersectionType(tds.filterNot(_ == TopType): _*)
+        if (tds.contains(STop))
+          SAnd(tds.filterNot(_ == STop): _*)
         else
           this
       },
       () => {
         // (and A (not A)) --> Empty
-        if (tds.exists(td => tds.contains(NotType(td))))
-          EmptyType
+        if (tds.exists(td => tds.contains(SNot(td))))
+          SEmpty
         else
           this
       },
@@ -166,42 +167,42 @@ case class IntersectionType(tds: Type*) extends Type {
         // (and Double (not (= "a"))) --> (and Double  (not (member)))
 
         val notMembers = tds.filter {
-          case NotType(MemberType(_*)) => true
+          case SNot(SMember(_*)) => true
           case _ => false
         }
         val notEqls = tds.filter {
-          case NotType(EqlType(_)) => true
+          case SNot(SEql(_)) => true
           case _ => false
         }
-        val others: Seq[Type] = tds.filter {
-          case NotType(EqlType(_)) => false
-          case NotType(MemberType(_*)) => false
+        val others: Seq[SimpleTypeD] = tds.filter {
+          case SNot(SEql(_)) => false
+          case SNot(SMember(_*)) => false
           case _ => true
         }
         if (notEqls.isEmpty && notMembers.isEmpty)
           this
         else {
           // the intersection type omitting the (not (=...) and (not (member ...)
-          val lessStrict = IntersectionType(others: _*)
-          val newEqls = notEqls.map { case NotType(EqlType(x)) => x }
-          val newMembers = notMembers.flatMap { case NotType(MemberType(xs@_*)) => xs }
+          val lessStrict = SAnd(others: _*)
+          val newEqls = notEqls.map { case SNot(SEql(x)) => x }
+          val newMembers = notMembers.flatMap { case SNot(SMember(xs@_*)) => xs }
           val newElements: Seq[Any] = (newEqls ++ newMembers).filter(x => lessStrict.typep(x))
-          val newNotMember = NotType(MemberType(newElements: _*).canonicalize())
+          val newNotMember = SNot(SMember(newElements: _*).canonicalize())
 
-          IntersectionType((others ++ Seq(newNotMember)).sortWith(cmpTypeDesignators): _*)
+          SAnd((others ++ Seq(newNotMember)).sortWith(cmpTypeDesignators): _*)
         }
       },
       () => {
         // (and A (and B C) D) --> (and A B C D)
         val ands = tds.find {
-          case IntersectionType(_*) => true
+          case SAnd(_*) => true
           case _ => false
         }
         if (ands.isEmpty)
           this
         else {
-          IntersectionType(tds.flatMap {
-            case IntersectionType(xs@_*) => xs
+          SAnd(tds.flatMap {
+            case SAnd(xs@_*) => xs
             case x => Seq(x)
           }: _*)
         }
@@ -209,21 +210,21 @@ case class IntersectionType(tds: Type*) extends Type {
       () => {
         // (and A (not B)) --> Empty where A is subtype of B
         if (tds.exists(a => tds.exists {
-          case NotType(b) if a.subtypep(b).contains(true) => true
+          case SNot(b) if a.subtypep(b).contains(true) => true
           case _ => false
-        })) EmptyType
+        })) SEmpty
         else
           this
       },
       () => {
         // TODO this checks n^2 times, need to change to n^2 / 2
         if (tds.exists(a => tds.exists(b => a.disjoint(b).contains(true))))
-          EmptyType
+          SEmpty
         else
           this
       },
       () => {
-        val i2 = IntersectionType(tds.map((t: Type) => t.canonicalize(nf=nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
+        val i2 = SAnd(tds.map((t: SimpleTypeD) => t.canonicalize(nf=nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
         if (this == i2)
           this // return the older object, hoping the newer one is more easily GC'ed
         else {
@@ -234,22 +235,22 @@ case class IntersectionType(tds: Type*) extends Type {
   }
 
   // IntersectionType(tds: Type*)
-  override def toDnf: Type = {
+  override def toDnf: SimpleTypeD = {
     tds.find(orp) match {
-      case Some(td@UnionType(orArgs@_*)) =>
+      case Some(td@SOr(orArgs@_*)) =>
         val others = tds.filterNot(_ == td)
-        UnionType(orArgs.map { x => IntersectionType(conj(x, others): _*) }: _*)
+        SOr(orArgs.map { x => SAnd(conj(x, others): _*) }: _*)
       case None => this
     }
   }
 
   // IntersectionType(tds: Type*)
-  override def cmp(td:Type):Boolean = {
+  override def cmp(td:SimpleTypeD):Boolean = {
     if (this == td)
       false
     else td match {
       // this <= td ?
-      case IntersectionType(tds @ _*) =>
+      case SAnd(tds @ _*) =>
         compareSequence(this.tds,tds)
       case _ => super.cmp(td)
     }

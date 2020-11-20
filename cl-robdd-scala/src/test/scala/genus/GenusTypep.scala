@@ -20,22 +20,21 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-package typesystem
+package genus
 
 import org.scalatest._
-import typesystem.Types._
+import Types._
 
-
-class TypeSystemTypep extends FunSuite {
+class GenusTypep extends FunSuite {
 
   test("AtomicType any and nothing") {
-    val newEmpty = AtomicType(classOf[Nothing])
-    val newSuper = AtomicType(classOf[Any])
+    val newEmpty = SAtomic(classOf[Nothing])
+    val newSuper = SAtomic(classOf[Any])
 
-    assert(EmptyType == newEmpty)
-    assert(EmptyType == nothingType)
-    assert(TopType == newSuper)
-    assert(TopType == anyType)
+    assert(SEmpty == newEmpty)
+    assert(SEmpty == nothingType)
+    assert(STop == newSuper)
+    assert(STop == anyType)
   }
 
   test("typep of any") {
@@ -72,10 +71,10 @@ class TypeSystemTypep extends FunSuite {
   }
 
   test("typep of a UnionType") {
-    val unionIntType = UnionType(intJavaType, intType)
-    val unionAnyString = UnionType(stringType, anyType, nothingType)
-    val unionStringUnitBoolean = UnionType(stringType, unitRuntimeType, booleanJavaType)
-    val unionCharInt = UnionType(charJavaType, intJavaType)
+    val unionIntType = SOr(intJavaType, intType)
+    val unionAnyString = SOr(stringType, anyType, nothingType)
+    val unionStringUnitBoolean = SOr(stringType, unitRuntimeType, booleanJavaType)
+    val unionCharInt = SOr(charJavaType, intJavaType)
 
     val x: Unit = {}
 
@@ -95,11 +94,11 @@ class TypeSystemTypep extends FunSuite {
   }
 
   test("typep of an IntersectionType") {
-    val interAnyRefList = IntersectionType(anyRefType, listAnyType)
-    val interIntStringUnit = IntersectionType(intJavaType, stringType, unitRuntimeType)
-    val interAnyRefListNothing = IntersectionType(anyRefType, listAnyType, nothingType)
-    val interStringAny = IntersectionType(stringType, anyType)
-    val interNumericJavaInt = IntersectionType(numericType, intJavaType)
+    val interAnyRefList = SAnd(anyRefType, listAnyType)
+    val interIntStringUnit = SAnd(intJavaType, stringType, unitRuntimeType)
+    val interAnyRefListNothing = SAnd(anyRefType, listAnyType, nothingType)
+    val interStringAny = SAnd(stringType, anyType)
+    val interNumericJavaInt = SAnd(numericType, intJavaType)
 
     val javaString: java.lang.String = "coucou"
 
@@ -115,7 +114,7 @@ class TypeSystemTypep extends FunSuite {
   }
 
   test("typep EqlType and Union") {
-    val t = UnionType(stringType, EqlType(42))
+    val t = SOr(stringType, SEql(42))
 
     assert(t.typep("test"))
     assert(t.typep(42))
@@ -132,8 +131,8 @@ class TypeSystemTypep extends FunSuite {
     assert(even.forall(! oddType.typep(_)))
     assert(! oddType.typep("test"))
     assert(! evenType.typep("test"))
-    assert((even ++ odd).forall(UnionType(oddType, evenType).typep(_)))
-    assert((even ++ odd).forall(! IntersectionType(oddType, evenType).typep(_)))
+    assert((even ++ odd).forall(SOr(oddType, evenType).typep(_)))
+    assert((even ++ odd).forall(! SAnd(oddType, evenType).typep(_)))
   }
 
   test("typep prime type") {
@@ -146,10 +145,10 @@ class TypeSystemTypep extends FunSuite {
 
   test("typep member") {
     val all = Seq(1, 2, 3, 4, 42, "test")
-    val m1 = MemberType(1, 2, 3, 4)
-    val m2 = MemberType(42, "test", 1, 2)
-    val u = UnionType(m1, m2)
-    val n = IntersectionType(m1, m2)
+    val m1 = SMember(1, 2, 3, 4)
+    val m2 = SMember(42, "test", 1, 2)
+    val u = SOr(m1, m2)
+    val n = SAnd(m1, m2)
 
     assert(m1.typep(1) && m1.typep(2))
     assert(m1.typep(3) && m1.typep(4))
@@ -162,8 +161,8 @@ class TypeSystemTypep extends FunSuite {
   }
 
   test("typep not") {
-    val m1 = MemberType(1, 2, 3)
-    val m_ = NotType(m1)
+    val m1 = SMember(1, 2, 3)
+    val m_ = SNot(m1)
 
     assert(! m_.typep(1) && ! m_.typep(2) && ! m_.typep(3))
     assert(m_.typep("test") && m_.typep(0))

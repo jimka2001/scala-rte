@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package typesystem
+package genus
 
 import NormalForm._
 
@@ -31,14 +31,14 @@ import scala.annotation.tailrec
 trait TerminalType
 
 /** A general type of our type system. */
-abstract class Type {
+abstract class SimpleTypeD { // SimpleTypeD
 
-  def ||(t:Type):Type = UnionType(this,t).canonicalize(nf=Some(Dnf))
-  def &&(t:Type):Type = IntersectionType(this,t).canonicalize(nf=Some(Dnf))
-  def unary_! : Type = NotType(this).canonicalize(nf=Some(Dnf))
-  def -(t:Type):Type = IntersectionType(this,NotType(t)).canonicalize(nf=Some(Dnf))
-  def ^^(t:Type):Type = UnionType(IntersectionType(this,NotType(t)),
-                                  IntersectionType(NotType(this),t)).canonicalize(nf=Some(Dnf))
+  def ||(t:SimpleTypeD):SimpleTypeD = SOr(this, t).canonicalize(nf=Some(Dnf))
+  def &&(t:SimpleTypeD):SimpleTypeD = SAnd(this, t).canonicalize(nf=Some(Dnf))
+  def unary_! : SimpleTypeD = SNot(this).canonicalize(nf=Some(Dnf))
+  def -(t:SimpleTypeD):SimpleTypeD = SAnd(this, SNot(t)).canonicalize(nf=Some(Dnf))
+  def ^^(t:SimpleTypeD):SimpleTypeD = SOr(SAnd(this, SNot(t)),
+                                          SAnd(SNot(this), t)).canonicalize(nf=Some(Dnf))
 
   /** Returns whether a given object belongs to this type.
    * It is a set membership test.
@@ -56,7 +56,7 @@ abstract class Type {
    * @param td the type we want to check whether it is disjoint to this type
    * @return an optional Boolean which is true if t and this type are disjoint
    */
-  def disjoint(td: Type): Option[Boolean] = {
+  def disjoint(td: SimpleTypeD): Option[Boolean] = {
     val d1 = disjointDown(td)
     lazy val d2 = td.disjointDown(this)
     lazy val c1 = this.canonicalize()
@@ -81,7 +81,7 @@ abstract class Type {
 
   def inhabited: Option[Boolean] = None
 
-  protected def disjointDown(t: Type): Option[Boolean] = {
+  protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     if (inhabited.contains(false)) // an empty type is disjoint to every other type
       Some(true)
     else
@@ -94,12 +94,12 @@ abstract class Type {
    * @param t the type we want to check whether this type is included in
    * @return an optional Boolean which is true if this type is a subtype of t
    */
-  def subtypep(t: Type): Option[Boolean] = {
+  def subtypep(t: SimpleTypeD): Option[Boolean] = {
     if ( (t.getClass eq this.getClass)
          && (t == this))
       Some(true)
     else if ( t match {
-      case NotType(b) if disjoint(b).contains(true) => true
+      case SNot(b) if disjoint(b).contains(true) => true
       case _ => false}) {
       Some(true)
     }
@@ -129,7 +129,7 @@ abstract class Type {
     fixed(v,List[T]())
   }
 
-  def findSimplifier(simplifiers:List[() => Type]):Type = {
+  def findSimplifier(simplifiers:List[() => SimpleTypeD]):SimpleTypeD = {
     simplifiers match {
       case Nil => this
       case s::ss =>
@@ -141,26 +141,26 @@ abstract class Type {
     }
   }
 
-  def toDnf:Type = this
-  def toCnf:Type = this
-  
-  def maybeDnf(nf:Option[NormalForm]=None):Type = {
+  def toDnf:SimpleTypeD = this
+  def toCnf:SimpleTypeD = this
+
+  def maybeDnf(nf:Option[NormalForm]=None):SimpleTypeD = {
     if (nf.contains(Dnf))
       toDnf
     else
       this
   }
-  def maybeCnf(nf:Option[NormalForm]=None):Type = {
+  def maybeCnf(nf:Option[NormalForm]=None):SimpleTypeD = {
     if (nf.contains(Cnf))
       toCnf
     else
       this
   }
-  def canonicalizeOnce(nf:Option[NormalForm]=None):Type = this
-  def canonicalize(nf:Option[NormalForm]=None):Type = {
+  def canonicalizeOnce(nf:Option[NormalForm]=None):SimpleTypeD = this
+  def canonicalize(nf:Option[NormalForm]=None):SimpleTypeD = {
     fixedPoint(this,
-               (t:Type)=>t.canonicalizeOnce(nf=nf),
-               (a:Type,b:Type) => a.getClass == b.getClass && a==b)
+               (t:SimpleTypeD)=>t.canonicalizeOnce(nf=nf),
+               (a:SimpleTypeD, b:SimpleTypeD) => a.getClass == b.getClass && a == b)
   }
 
   /** Returns whether this type is a recognizable supertype of another given type.
@@ -169,9 +169,9 @@ abstract class Type {
    * @param t the type we want to check the inclusion in this type
    * @return an optional Boolean which is true if this type is a supertype of t
    */
-  def supertypep(t: Type): Option[Boolean] = t.subtypep(this)
+  def supertypep(t: SimpleTypeD): Option[Boolean] = t.subtypep(this)
 
-  def cmp(t:Type):Boolean = {
+  def cmp(t:SimpleTypeD):Boolean = {
     throw new Exception(s"cannot compare type designators ${this.getClass} vs ${t.getClass}")
   }
 }

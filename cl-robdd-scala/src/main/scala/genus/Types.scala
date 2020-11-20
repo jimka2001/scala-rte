@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package typesystem
+package genus
 
 import java.lang
 
@@ -37,33 +37,33 @@ object Types {
   // allow implicit conversions from c:Class[_] to AtomicType(c)
   //    thus allowing Types such as classOf[java.lang.Integer] && !EqlType(0)
   //    classOf[A] && classOf[B]
-  implicit def class2type(c:Class[_]): Type = AtomicType(c)
+  implicit def class2type(c:Class[_]): SimpleTypeD = SAtomic(c)
 
-  val atomicp: Type=>Boolean = {
-    case AtomicType(_) => true
+  val atomicp: SimpleTypeD=>Boolean = {
+    case SAtomic(_) => true
     case _ => false
   }
-  val eqlp: Type=>Boolean = {
-    case EqlType(_) => true
+  val eqlp: SimpleTypeD=>Boolean = {
+    case SEql(_) => true
     case _ => false
   }
-  val memberp: Type=>Boolean = {
-    case MemberType(_*) => true
+  val memberp: SimpleTypeD=>Boolean = {
+    case SMember(_*) => true
     case _ => false
   }
-  val andp: Type=>Boolean = {
-    case IntersectionType(_*) => true
+  val andp: SimpleTypeD=>Boolean = {
+    case SAnd(_*) => true
     case _ => false
   }
-  val orp: Type=>Boolean = {
-    case UnionType(_*) => true
+  val orp: SimpleTypeD=>Boolean = {
+    case SOr(_*) => true
     case _ => false
   }
-  val notp: Type=>Boolean = {
-    case NotType(_) => true
+  val notp: SimpleTypeD=>Boolean = {
+    case SNot(_) => true
     case _ => false
   }
-  def randomType(depth:Int):Type = {
+  def randomType(depth:Int):SimpleTypeD = {
     import scala.util.Random
     val random = new Random
     trait Trait1
@@ -71,30 +71,30 @@ object Types {
     trait Trait3 extends Trait2
     abstract class Abstract1
     abstract class Abstract2 extends Trait3
-    val interestingTypes:Vector[Type] = Vector(
-      TopType,
-      EmptyType,
-      MemberType(1,2,3,4),
-      MemberType(4,5,6),
-      EqlType(0),
-      EqlType(1),
-      EqlType(-1),
-      MemberType("a","b","c"),
-      AtomicType(classOf[lang.Number]),
-      AtomicType(classOf[String]),
-      AtomicType(classOf[Integer]),
-      AtomicType(classOf[Trait1]),
-      AtomicType(classOf[Trait2]),
-      AtomicType(classOf[Trait3]),
-      AtomicType(classOf[Abstract1]),
-      AtomicType(classOf[Abstract2])
-    )
+    val interestingTypes:Vector[SimpleTypeD] = Vector(
+      STop,
+      SEmpty,
+      SMember(1, 2, 3, 4),
+      SMember(4, 5, 6),
+      SEql(0),
+      SEql(1),
+      SEql(-1),
+      SMember("a", "b", "c"),
+      SAtomic(classOf[lang.Number]),
+      SAtomic(classOf[String]),
+      SAtomic(classOf[Integer]),
+      SAtomic(classOf[Trait1]),
+      SAtomic(classOf[Trait2]),
+      SAtomic(classOf[Trait3]),
+      SAtomic(classOf[Abstract1]),
+      SAtomic(classOf[Abstract2])
+      )
     val maxCompoundSize = 3
-    val generators:Seq[()=>Type] = Vector(
-      () => NotType(randomType(depth - 1)),
-      () => IntersectionType(0 until random.nextInt(maxCompoundSize) map {_ => randomType(depth-1)} : _*),
-      () => UnionType(0 until random.nextInt(maxCompoundSize) map {_ => randomType(depth-1)} : _*)
-    )
+    val generators:Seq[()=>SimpleTypeD] = Vector(
+      () => SNot(randomType(depth - 1)),
+      () => SAnd(0 until random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*),
+      () => SOr(0 until random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*)
+      )
     if (depth <= 0)
       interestingTypes(random.nextInt(interestingTypes.length))
     else {
@@ -127,9 +127,9 @@ object Types {
     case _ => seq :+ obj
   }
   
-  def compareSequence(tds1:Seq[Type],tds2:Seq[Type]):Boolean = {
+  def compareSequence(tds1:Seq[SimpleTypeD], tds2:Seq[SimpleTypeD]):Boolean = {
     @tailrec
-    def comp(as:List[Type], bs:List[Type]):Boolean = {
+    def comp(as:List[SimpleTypeD], bs:List[SimpleTypeD]):Boolean = {
       (as,bs) match {
         case (Nil,Nil) => throw new Exception(s"not expecting equal sequences $tds1, $tds2")
         case (Nil,_) => true
@@ -144,7 +144,7 @@ object Types {
     comp(tds1.toList, tds2.toList)
   }
 
-  def cmpTypeDesignators(a:Type,b:Type):Boolean = {
+  def cmpTypeDesignators(a:SimpleTypeD, b:SimpleTypeD):Boolean = {
     if( a == b )
       true
     else if (a.getClass eq b.getClass) {
@@ -170,21 +170,21 @@ object Types {
   val AnyVal: Class[AnyVal] = classOf[AnyVal]
   val Numeric: Class[Number] = classOf[lang.Number]
 
-  val anyType:Type = AtomicType(Any)
-  val nothingType:Type = AtomicType(Nothing)
+  val anyType:SimpleTypeD = SAtomic(Any)
+  val nothingType:SimpleTypeD = SAtomic(Nothing)
 
-  val intType:Type = AtomicType(Int)
-  val intJavaType:Type = AtomicType(Integer)
-  val doubleJavaType:Type = AtomicType(Double)
-  val stringType:Type = AtomicType(String)
-  val listAnyType:Type = AtomicType(ListAny)
-  val booleanJavaType:Type = AtomicType(Boolean)
-  val unitRuntimeType:Type = AtomicType(Unit)
-  val charJavaType:Type = AtomicType(Char)
-  val anyRefType:Type = AtomicType(AnyRef)
-  val numericType:Type = AtomicType(Numeric)
+  val intType:SimpleTypeD = SAtomic(Int)
+  val intJavaType:SimpleTypeD = SAtomic(Integer)
+  val doubleJavaType:SimpleTypeD = SAtomic(Double)
+  val stringType:SimpleTypeD = SAtomic(String)
+  val listAnyType:SimpleTypeD = SAtomic(ListAny)
+  val booleanJavaType:SimpleTypeD = SAtomic(Boolean)
+  val unitRuntimeType:SimpleTypeD = SAtomic(Unit)
+  val charJavaType:SimpleTypeD = SAtomic(Char)
+  val anyRefType:SimpleTypeD = SAtomic(AnyRef)
+  val numericType:SimpleTypeD = SAtomic(Numeric)
 
-  val atomicTypesSeq: Seq[Type] =
+  val atomicTypesSeq: Seq[SimpleTypeD] =
     Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanJavaType, unitRuntimeType,
       charJavaType, anyRefType, numericType)
 
@@ -195,7 +195,7 @@ object Types {
       case _ => false
     }
   }
-  val evenType:CustomType = CustomType(isEven)
+  val evenType:SCustom = SCustom(isEven)
 
   def isOdd(x: Any): Boolean = {
     import scala.math.abs
@@ -204,7 +204,7 @@ object Types {
       case _ => false
     }
   }
-  val oddType:CustomType = CustomType(isOdd)
+  val oddType:SCustom = SCustom(isOdd)
 
   def isPrime(x: Any): Boolean = {
     @scala.annotation.tailrec
@@ -220,12 +220,12 @@ object Types {
       case _ => false
     }
   }
-  val primeType:CustomType = CustomType(isPrime)
+  val primeType:SCustom = SCustom(isPrime)
 
 
   def main(args: Array[String]): Unit = {
     val a = 2
-    val t = AtomicType(classOf[Int])
+    val t = SAtomic(classOf[Int])
 
     println("type of a = " + a.getClass)
     println("class of Int = " + classOf[Int])
@@ -236,20 +236,20 @@ object Types {
     trait Trait1
     trait Trait2
     trait Trait3
-    val t1 = IntersectionType(AtomicType(classOf[Trait1]),
-                              UnionType(AtomicType(classOf[Abstract1]),
-                                        AtomicType(classOf[Abstract2])),
-                              AtomicType(classOf[Trait2]))
-    val t2 = IntersectionType(AtomicType(classOf[Trait1]),
-                              NotType(UnionType(AtomicType(classOf[Abstract1]),
-                                                AtomicType(classOf[Abstract2]))),
-                              AtomicType(classOf[Trait2]))
+    val t1 = SAnd(SAtomic(classOf[Trait1]),
+                  SOr(SAtomic(classOf[Abstract1]),
+                      SAtomic(classOf[Abstract2])),
+                  SAtomic(classOf[Trait2]))
+    val t2 = SAnd(SAtomic(classOf[Trait1]),
+                  SNot(SOr(SAtomic(classOf[Abstract1]),
+                           SAtomic(classOf[Abstract2]))),
+                  SAtomic(classOf[Trait2]))
     println(t1)
     println(t2)
     println(t2.canonicalize(nf=Some(Dnf)))
     println(t1.canonicalize())
     println(t1.canonicalize(nf=Some(Dnf)))
-    println(NotType(t1).canonicalize(nf=Some(Dnf)))
+    println(SNot(t1).canonicalize(nf=Some(Dnf)))
     (0 to 10). foreach { i =>
       val t = randomType(6)
       println(s"$i:" + t)

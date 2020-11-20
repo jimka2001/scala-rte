@@ -19,14 +19,16 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package typesystem
+package genus
+
+// genus
 import NormalForm._
 
 /** The atoms of our type system: a simple type built from a native Scala/Java type.
  *
  * @param ct the class of a Scala or Java type this class will wrap (call it with `classOf[native_type]`)
  */
-case class AtomicType(ct: Class[_]) extends Type with TerminalType {
+case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   override def toString:String = {
     val fullName = ct.getName
 
@@ -48,7 +50,8 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
       Some(true)
   }
 
-  override protected def disjointDown(t: Type): Option[Boolean] = {
+  // AtomicType(ct: Class[_])
+  override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     import java.lang.reflect.Modifier
     def isFinal(cl: Class[_]): Boolean = {
       Modifier.isFinal(cl.getModifiers)
@@ -59,9 +62,9 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
     }
 
     t match {
-      case EmptyType => Some(true)
-      case TopType => Some(this == EmptyType)
-      case AtomicType(tp) =>
+      case SEmpty => Some(true)
+      case STop => Some(this == SEmpty)
+      case SAtomic(tp) =>
         if (tp == ct)
           Some(false)
         else if (ct.isAssignableFrom(tp) || tp.isAssignableFrom(ct))
@@ -76,24 +79,25 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
     }
   }
 
-  override def subtypep(s: Type): Option[Boolean] = {
+  // AtomicType(ct: Class[_])
+  override def subtypep(s: SimpleTypeD): Option[Boolean] = {
     s match {
-      case EmptyType => Some(false)
-      case TopType => Some(true)
+      case SEmpty => Some(false)
+      case STop => Some(true)
       // super.isAssignableFrom(sub) means sub is subtype of super
-      case AtomicType(tp) =>
+      case SAtomic(tp) =>
         Some(tp.isAssignableFrom(ct))
 
-      case MemberType(_@_*) =>
+      case SMember(_@_*) =>
         Some(false) // no member type exhausts all the values of an Atomic Type
 
-      case EqlType(_) =>
+      case SEql(_) =>
         Some(false)
 
-      case NotType(_) =>
+      case SNot(_) =>
         super.subtypep(s)
 
-      case UnionType(tp@_*) =>
+      case SOr(tp@_*) =>
         if (tp.exists(x => subtypep(x).contains(true)))
         // A < A union X,
         // and A < B => A < B union X
@@ -106,7 +110,7 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
         else
           super.subtypep(s)
 
-      case IntersectionType(tp@_*) =>
+      case SAnd(tp@_*) =>
         if (tp.forall(x => subtypep(x).contains(true)))
           Some(true)
         else if (tp.forall(x => disjoint(x).contains(true)))
@@ -114,23 +118,23 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
         else
           super.subtypep(s)
 
-      case CustomType(_) =>
+      case SCustom(_) =>
         super.subtypep(s)
     }
   }
 
   // AtomicType(ct: Class[_])
-  override def canonicalizeOnce(nf:Option[NormalForm]=None): Type = {
-    AtomicType(ct)
+  override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
+    SAtomic(ct)
   }
 
   // AtomicType(ct: Class[_])
-  override def cmp(td:Type):Boolean = {
+  override def cmp(td:SimpleTypeD):Boolean = {
     if (this == td)
       false
     else td match {
       // this <= td ?
-      case AtomicType(cl) => s"$ct" < s"$cl"
+      case SAtomic(cl) => s"$ct" < s"$cl"
       case _ => super.cmp(td)
     }
   }
@@ -139,10 +143,10 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
 /** The AtomicType object, implementing an apply method in order to
  * deal with EmptyType and TopType construction.
  */
-object AtomicType {
-  def apply(ct: Class[_]): Type = {
-    if (ct == classOf[Nothing]) EmptyType
-    else if (ct == classOf[Any]) TopType
-    else new AtomicType(ct)
+object SAtomic {
+  def apply(ct: Class[_]): SimpleTypeD = {
+    if (ct == classOf[Nothing]) SEmpty
+    else if (ct == classOf[Any]) STop
+    else new SAtomic(ct)
   }
 }

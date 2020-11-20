@@ -20,7 +20,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-package typesystem
+package genus
+
 import NormalForm._
 
 import scala.annotation.tailrec
@@ -30,24 +31,24 @@ import scala.annotation.tailrec
  *
  * @param xs var-arg, the members of the type
  */
-case class MemberType(xs: Any*) extends Type with TerminalType {
+case class SMember(xs: Any*) extends SimpleTypeD with TerminalType {
   override def toString:String = xs.map(_.toString).mkString("[Member ", ",", "]")
 
   override def typep(a: Any): Boolean = xs.contains(a)
 
   override def inhabited: Option[Boolean] = Some(true)
 
-  override protected def disjointDown(t: Type): Option[Boolean] = {
+  override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     if (xs.exists(t.typep)) Some(false)
     else Some(true)
   }
 
-  override def subtypep(t: Type): Option[Boolean] = {
+  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
     Some(xs.forall(t.typep))
   }
 
   // MemberType(xs: Any*)
-  override def canonicalizeOnce(nf:Option[NormalForm]=None): Type = {
+  override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     def cmp(a:Any,b:Any):Boolean = {
       if (a == b)
         false
@@ -59,18 +60,18 @@ case class MemberType(xs: Any*) extends Type with TerminalType {
         throw new Exception(s"cannot canonicalize $this because it contains two different elements which print the same ${a.toString}")
     }
     xs match {
-      case Seq() => EmptyType
-      case Seq(x) => EqlType(x)
-      case xs => MemberType(xs.distinct.sortWith(cmp): _*)
+      case Seq() => SEmpty
+      case Seq(x) => SEql(x)
+      case xs => SMember(xs.distinct.sortWith(cmp): _*)
     }
   }
 
   // MemberType(xs: Any*)
-  override def cmp(t:Type):Boolean = {
+  override def cmp(t:SimpleTypeD):Boolean = {
     if (this == t)
       false
     else t match {
-      case MemberType(ys @ _*) =>
+      case SMember(ys @ _*) =>
         @tailrec
         def comp(as:List[Any], bs:List[Any]):Boolean = {
           (as,bs) match {

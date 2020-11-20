@@ -19,28 +19,43 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+package genus
 
-package typesystem
+/** The equal type, a type which is equal to a given object.
+ *
+ * @param a the object defining the type
+ */
+case class SEql(a: Any) extends SimpleTypeD with TerminalType {
+  override def toString = s"[= $a]"
 
-import org.scalatest._
-import Types._
+  override def typep(b: Any): Boolean = {
+    a == b
+  }
 
-class TypesTest extends FunSuite {
+  override def inhabited: Option[Boolean] = Some(true)
 
-  test("conj"){
-    val l1 = List( 1, 2, 3)
-    val v1 = Vector(1,2,3)
-    val s1 = Seq(1,2,3)
+  override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
+    if (t.typep(a)) Some(false)
+    else Some(true)
+  }
 
-    assert(conj(4,l1).contains(2))
-    assert(conj(4,l1).contains(4))
+  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
+    Some(t.typep(a))
+  }
 
-    assert(conj(4,v1).contains(2))
-    assert(conj(4,v1).contains(4))
-
-    assert(conj(4,s1).contains(2))
-    assert(conj(4,s1).contains(4))
-
+  // EqlType(a: Any)
+  override def cmp(t:SimpleTypeD):Boolean = {
+    if (this == t)
+      false
+    else t match {
+      case SEql(b: Any) =>
+        if( ! (a.getClass eq b.getClass))
+          a.getClass.toString <= b.getClass.toString
+        else if (a.toString != b.toString)
+          a.toString <= b.toString
+        else
+          throw new Exception(s"cannot compare $this vs $t because they are different yet print the same")
+      case _ => super.cmp(t)
+    }
   }
 }
-
