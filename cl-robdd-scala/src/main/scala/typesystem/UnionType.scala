@@ -21,6 +21,7 @@
 
 package typesystem
 import Types._
+import NormalForm._
 
 /** A union type, which is the union of zero or more types.
  *
@@ -66,7 +67,7 @@ case class UnionType(tds: Type*) extends Type {
   }
 
   // UnionType(tds: Type*)
-  override def canonicalizeOnce(dnf:Boolean=false): Type = {
+  override def canonicalizeOnce(nf:Option[NormalForm]=None): Type = {
     findSimplifier(List[() => Type](
       () => {
         if (tds.contains(EmptyType)) {
@@ -182,11 +183,22 @@ case class UnionType(tds: Type*) extends Type {
         }
       },
       () => {
-        UnionType(tds.map((t: Type) => t.canonicalize(dnf=dnf)).sortWith(cmpTypeDesignators): _*)
+        UnionType(tds.map((t: Type) => t.canonicalize(nf=nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
       }
     ))
   }
   
+  // UnionType(tds: Type*)
+  override def toCnf: Type = {
+    tds.find(andp) match {
+      case Some(td@IntersectionType(andArgs@_*)) =>
+        val others = tds.filterNot(_ == td)
+        IntersectionType(andArgs.map { x => UnionType(conj(x, others): _*) }: _*)
+      case None => this
+    }
+  }
+
+
   // UnionType(tds: Type*)
   override def cmp(td:Type):Boolean = {
     if (this == td)

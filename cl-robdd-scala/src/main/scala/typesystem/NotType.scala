@@ -21,6 +21,7 @@
 
 package typesystem
 import Types._
+import NormalForm._
 
 /** A negation of a type.
  *
@@ -72,12 +73,12 @@ case class NotType(s: Type) extends Type {
   }
 
   // NotType(s: Type)
-  override def canonicalizeOnce(dnf:Boolean=false): Type = {
+  override def canonicalizeOnce(nf:Option[NormalForm]=None): Type = {
     s match {
-      case NotType(s1) => s1.canonicalizeOnce(dnf=dnf)
+      case NotType(s1) => s1.canonicalizeOnce(nf=nf)
       case TopType => EmptyType
       case EmptyType => TopType
-      case s2: Type => NotType(s2.canonicalizeOnce(dnf=true)).maybeDnf(dnf=dnf)
+      case s2: Type => NotType(s2.canonicalizeOnce(nf=nf)).maybeDnf(nf).maybeCnf(nf)
     }
   }
 
@@ -90,6 +91,10 @@ case class NotType(s: Type) extends Type {
         IntersectionType(xs.map(x => NotType(x)) : _*)
       case _ => this
     }
+  }
+  // NotType(s: Type)
+  override def toCnf: Type = {
+    toDnf
   }
   // NotType(s: Type)
   override def cmp(td:Type) = {

@@ -21,6 +21,7 @@
 
 package typesystem
 import Types._
+import NormalForm._
 
 /** An intersection type, which is the intersection of zero or more types.
  *
@@ -35,8 +36,10 @@ case class IntersectionType(tds: Type*) extends Type {
 
   // IntersectionType(tds: Type*)
   override def inhabited: Option[Boolean] = {
-    lazy val dnf = canonicalize(dnf=true)
+    lazy val dnf = canonicalize(nf=Some(Dnf))
+    lazy val cnf = canonicalize(nf=Some(Cnf))
     lazy val inhabitedDnf = dnf.inhabited
+    lazy val inhabitedCnf = cnf.inhabited
 
     if (tds.exists(_.inhabited.contains(false))) {
       // if one of an intersection is empty, then the intersection is empty
@@ -53,6 +56,8 @@ case class IntersectionType(tds: Type*) extends Type {
       })
     } else if (dnf != this && inhabitedDnf.nonEmpty) {
       inhabitedDnf
+    } else if (cnf != this && inhabitedCnf.nonEmpty) {
+      inhabitedCnf
     } else {
       // we don't know anything about whether the intersection is empty
       super.inhabited
@@ -98,7 +103,7 @@ case class IntersectionType(tds: Type*) extends Type {
   }
 
   // IntersectionType(tds: Type*)
-  override def canonicalizeOnce(dnf: Boolean = false): Type = {
+  override def canonicalizeOnce(nf:Option[NormalForm]=None): Type = {
     findSimplifier(List[() => Type](
       () => {
         if (tds.contains(EmptyType))
@@ -214,7 +219,7 @@ case class IntersectionType(tds: Type*) extends Type {
           this
       },
       () => {
-        val i2 = IntersectionType(tds.map((t: Type) => t.canonicalize(dnf = dnf)).sortWith(cmpTypeDesignators): _*).maybeDnf(dnf)
+        val i2 = IntersectionType(tds.map((t: Type) => t.canonicalize(nf=nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
         if (this == i2)
           this // return the older object, hoping the newer one is more easily GC'ed
         else {
@@ -226,7 +231,6 @@ case class IntersectionType(tds: Type*) extends Type {
 
   // IntersectionType(tds: Type*)
   override def toDnf: Type = {
-    val oo = tds.find(orp)
     tds.find(orp) match {
       case Some(td@UnionType(orArgs@_*)) =>
         val others = tds.filterNot(_ == td)

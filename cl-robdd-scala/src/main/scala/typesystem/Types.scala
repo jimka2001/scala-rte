@@ -23,6 +23,12 @@ package typesystem
 
 import java.lang
 
+object NormalForm extends Enumeration {
+  type NormalForm = Value
+  val Dnf, Cnf = Value
+}
+import NormalForm._
+
 object Types {
   import scala.runtime.BoxedUnit
 
@@ -234,10 +240,10 @@ object Types {
                               AtomicType(classOf[Trait2]))
     println(t1)
     println(t2)
-    println(t2.canonicalize(dnf=true))
+    println(t2.canonicalize(nf=Some(Dnf)))
     println(t1.canonicalize())
-    println(t1.canonicalize(dnf=true))
-    println(NotType(t1).canonicalize(dnf=true))
+    println(t1.canonicalize(nf=Some(Dnf)))
+    println(NotType(t1).canonicalize(nf=Some(Dnf)))
     (0 to 10). foreach { i =>
       val t = randomType(6)
       println(s"$i:" + t)

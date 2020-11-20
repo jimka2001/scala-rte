@@ -24,6 +24,7 @@ package typesystem
 
 import org.scalatest._
 import Types._
+import NormalForm._
 
 class TypeSystemCanonicalize extends FunSuite {
 
@@ -188,24 +189,24 @@ class TypeSystemCanonicalize extends FunSuite {
     assert(classOf[Abstract2].subtypep(classOf[Trait2]).contains(true))
     assert(IntersectionType(classOf[Abstract2],NotType(classOf[Trait2])).canonicalize()
            == EmptyType)
-    NotType(UnionType(UnionType(classOf[Abstract1],EqlType(1)))).canonicalize(dnf=true)
+    NotType(UnionType(UnionType(classOf[Abstract1],EqlType(1)))).canonicalize(Some(Dnf))
 
     // [And [Not java.lang.String],
     //      [Not [= 0]]]
     UnionType(NotType(String),
-              NotType(EqlType(0))).canonicalize(dnf=true)
+              NotType(EqlType(0))).canonicalize(Some(Dnf))
     // [Not [Or [Not
     //           [Or
     //             [Not java.lang.Integer]]],
     //          [And ]]]
     NotType(UnionType(NotType(UnionType(NotType(classOf[Integer]))),
-                      IntersectionType())).canonicalize(dnf=true)
+                      IntersectionType())).canonicalize(Some(Dnf))
 
     // [Or [Or [Or [Not [Or [= 1]]]],
     //         [Not [Or [Or Abstract1$1,[= 0]]]]]]
     UnionType( UnionType( UnionType( NotType( UnionType( EqlType(1)))),
                           NotType( UnionType(UnionType(classOf[Abstract1],
-                                                       EqlType(1)))))).canonicalize(dnf=true)
+                                                       EqlType(1)))))).canonicalize(Some(Dnf))
     locally{
       // union: converted [Or [Not [Not java.lang.Integer]],[Not [Not Abstract1$1]]] to Top
       val t1 = UnionType(NotType(NotType(classOf[java.lang.Integer])),
@@ -215,7 +216,7 @@ class TypeSystemCanonicalize extends FunSuite {
     locally {
       val t1 = IntersectionType(NotType(classOf[Abstract1]),
                                 NotType(classOf[Abstract2]))
-      val dnf = t1.canonicalize(dnf = true)
+      val dnf = t1.canonicalize(Some(Dnf))
       assert(t1 - dnf == EmptyType)
       // println(List(t1,dnf,t1 - dnf))
     }
@@ -227,17 +228,67 @@ class TypeSystemCanonicalize extends FunSuite {
     locally {
       val t1 = IntersectionType(NotType(classOf[Abstract1]),
                                 NotType(classOf[java.lang.Integer]))
-      val dnf = t1.canonicalize(dnf = true)
+      val dnf = t1.canonicalize(Some(Dnf))
       assert(t1 - dnf == EmptyType)
     }
-
+    // Expected :Top td=[And [Not [= -1]],
+    //                       [Or java.lang.Number,
+    //                           [Member a,b,c]]]
+    //          inverse=[Not [Or [And [Not [= -1]],
+    //                                java.lang.Number],
+    //                           [Member a,b,c]]],
+    //          td || inverse=[Or [And [Not [= -1]],
+    //                                 java.lang.Number],
+    //                            [And [Not [Member a,b,c]],
+    //                                 [Not java.lang.Number]],
+    //                            [Member -1,a,b,c]],
+    //     expecting TopType
+    // Actual   :[Or [And [Not [= -1]],
+    //                    java.lang.Number],
+    //               [And [Not [Member a,b,c]],
+    //                    [Not java.lang.Number]],
+    //               [Member -1,a,b,c]]
+    locally{
+      val t1 = UnionType(IntersectionType(NotType(EqlType(-1)),
+                                          classOf[java.lang.Number]),
+                         IntersectionType(NotType(MemberType("a","b","c")),
+                                          NotType(classOf[java.lang.Number])),
+                         MemberType(-1,"a","b","c"))
+      assert(t1.inhabited.contains(true))
+      println("dnf =" + t1.canonicalize(Some(Dnf)))
+      println("cnf =" + t1.canonicalize(Some(Cnf)))
+      assert(t1.canonicalize(Some(Cnf)) == TopType)
+    }
   }
+  test("dnf vs cnf"){
+    val dnf1 = UnionType(IntersectionType(A,B),
+                         NotType(IntersectionType(C,D)))
+    val cnf2 = dnf1.toCnf
+    val cnf3 = dnf1.canonicalize(Some(Cnf))
+
+    assert(cnf2 - dnf1 == EmptyType, "test 1")
+    assert(dnf1 - cnf2 == EmptyType, "test 2")
+    assert(cnf3 - dnf1 == EmptyType, "test 5")
+    assert(dnf1 - cnf3 == EmptyType, "test 6")
+
+
+    val cnf1 = IntersectionType(UnionType(A,B),
+                                NotType(UnionType(C,D)))
+    val dnf2 = cnf1.toDnf
+    val dnf3 = cnf1.canonicalize(Some(Dnf))
+
+    assert(dnf2 - cnf1 == EmptyType, "test 3")
+    assert(cnf1 - dnf2 == EmptyType, "test 4")
+    assert(cnf1 - dnf3 == EmptyType, "test 7")
+    assert(dnf3 - cnf1 == EmptyType, "test 8")
+  }
+  
   test("randomized testing of canonicalize"){
 
-    for{r <- 0 to 100
+    for{r <- 0 to 500
         td = randomType(5)
-        can = td.canonicalize(dnf=false)
-        dnf = td.canonicalize(dnf=true)
+        can = td.canonicalize(Some(Dnf))
+        dnf = td.canonicalize(Some(Dnf))
         td_inhabited = td.inhabited
         can_inhabited = can.inhabited
         dnf_inhabited = dnf.inhabited}{
@@ -254,7 +305,7 @@ class TypeSystemCanonicalize extends FunSuite {
   test("randomized testing of inversion"){
     for{r <- 0 to 100
         td = randomType(2)
-        dnf = td.canonicalize(dnf=true)
+        dnf = td.canonicalize(Some(Dnf))
         inverse= NotType(dnf)}{
 
       assert(td - dnf == EmptyType,

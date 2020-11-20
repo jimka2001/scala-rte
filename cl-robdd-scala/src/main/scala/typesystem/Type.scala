@@ -22,6 +22,7 @@
 package typesystem
 
 import Types._
+import NormalForm._
 
 /** Trait representing types that have to be stored in the HashMap in the
  * LBdd representation.
@@ -31,12 +32,12 @@ trait TerminalType
 /** A general type of our type system. */
 abstract class Type {
 
-  def ||(t:Type):Type = UnionType(this,t).canonicalize(dnf=true)
-  def &&(t:Type):Type = IntersectionType(this,t).canonicalize(dnf=true)
-  def unary_! : Type = NotType(this).canonicalize(dnf=true)
-  def -(t:Type):Type = IntersectionType(this,NotType(t)).canonicalize(dnf=true)
+  def ||(t:Type):Type = UnionType(this,t).canonicalize(nf=Some(Dnf))
+  def &&(t:Type):Type = IntersectionType(this,t).canonicalize(nf=Some(Dnf))
+  def unary_! : Type = NotType(this).canonicalize(nf=Some(Dnf))
+  def -(t:Type):Type = IntersectionType(this,NotType(t)).canonicalize(nf=Some(Dnf))
   def ^^(t:Type):Type = UnionType(IntersectionType(this,NotType(t)),
-                                  IntersectionType(NotType(this),t)).canonicalize(dnf=true)
+                                  IntersectionType(NotType(this),t)).canonicalize(nf=Some(Dnf))
 
   /** Returns whether a given object belongs to this type.
    * It is a set membership test.
@@ -138,16 +139,24 @@ abstract class Type {
   }
 
   def toDnf:Type = this
-  def maybeDnf(dnf:Boolean=false):Type = {
-    if (dnf)
+  def toCnf:Type = this
+  
+  def maybeDnf(nf:Option[NormalForm]=None):Type = {
+    if (nf.contains(Dnf))
       toDnf
     else
       this
   }
-  def canonicalizeOnce(dnf:Boolean=false):Type = this
-  def canonicalize(dnf:Boolean=false):Type = {
+  def maybeCnf(nf:Option[NormalForm]=None):Type = {
+    if (nf.contains(Cnf))
+      toCnf
+    else
+      this
+  }
+  def canonicalizeOnce(nf:Option[NormalForm]=None):Type = this
+  def canonicalize(nf:Option[NormalForm]=None):Type = {
     fixedPoint(this,
-               (t:Type)=>t.canonicalizeOnce(dnf=dnf),
+               (t:Type)=>t.canonicalizeOnce(nf=nf),
                (a:Type,b:Type) => a.getClass == b.getClass && a==b)
   }
 

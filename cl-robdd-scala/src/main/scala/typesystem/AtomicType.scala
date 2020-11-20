@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package typesystem
+import NormalForm._
 
 /** The atoms of our type system: a simple type built from a native Scala/Java type.
  *
@@ -119,7 +120,7 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
   }
 
   // AtomicType(ct: Class[_])
-  override def canonicalizeOnce(dnf:Boolean = false): Type = {
+  override def canonicalizeOnce(nf:Option[NormalForm]=None): Type = {
     AtomicType(ct)
   }
 

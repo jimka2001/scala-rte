@@ -21,6 +21,7 @@
 
 
 package typesystem
+import NormalForm._
 
 /** The member type is an exhaustive type, all object composing it are
  * given at construction time.
@@ -44,7 +45,7 @@ case class MemberType(xs: Any*) extends Type with TerminalType {
   }
 
   // MemberType(xs: Any*)
-  override def canonicalizeOnce(dnf:Boolean = false): Type = {
+  override def canonicalizeOnce(nf:Option[NormalForm]=None): Type = {
     def cmp(a:Any,b:Any):Boolean = {
       if (a == b)
         false
