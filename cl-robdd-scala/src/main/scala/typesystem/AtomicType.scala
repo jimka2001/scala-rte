@@ -60,7 +60,7 @@ case class AtomicType(ct: Class[_]) extends Type with TerminalType {
 
     t match {
       case EmptyType => Some(true)
-      case TopType => Some(false)
+      case TopType => Some(this == EmptyType)
       case AtomicType(tp) =>
         if (tp == ct)
           Some(false)
