@@ -309,7 +309,7 @@ class TypeSystemCanonicalize extends FunSuite {
     }
   }
   test("randomized testing of inversion"){
-    for{r <- 0 to 100
+    for{r <- 0 to 500
         td = randomType(2)
         dnf = td.canonicalize(Some(Dnf))
         inverse= NotType(dnf)}{
