@@ -247,14 +247,14 @@ object Bdd {
     }
   }
 
-  val maybeHash = new DynamicVariable[Option[Cache]](None)
+  val maybeNodeHash = new DynamicVariable[Option[Cache]](None)
 
   // wrapper for all code which needs to calculate with Bdds.  The Bdd
   //   calculations need a hash map to enforce structural identity.
   //   Attempt to construct a Bdd outside the dynamic extend of this
   //   function results in an error.
   def withNewBddHash[A](code: => A): A = {
-    maybeHash.withValue(Some(newCache())) {
+    maybeNodeHash.withValue(Some(newCache())) {
       code
     }
   }
@@ -263,7 +263,7 @@ object Bdd {
   def newCache(): Cache = CacheByWeakRef()
 
   def getBddSizeCount():(Long,Long) = {
-    maybeHash.value.get.getBddSizeCount()
+    maybeNodeHash.value.get.getBddSizeCount()
   }
 
   // constructor Bdd(var,bddPositive,bddNegative)
@@ -271,7 +271,7 @@ object Bdd {
     if (positive eq negative)
       positive
     else {
-      maybeHash.value match {
+      maybeNodeHash.value match {
         case None => sys.error("Bdd constructor called outside dynamic extent of withNewBddHash(...)")
         case Some(hash) => hash.getOrCreate(label,positive,negative)
       }
