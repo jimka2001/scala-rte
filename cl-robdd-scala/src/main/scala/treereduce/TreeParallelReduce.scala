@@ -25,7 +25,6 @@ import scala.language.higherKinds // prevents IntelliJ from warning about [M[_]]
 import scala.collection.parallel.immutable.ParSeq
 import scala.collection.parallel.mutable.ParArray
 
-
 object TreeParallelReduce {
   def id[A](a: A): A = a
 
@@ -95,7 +94,7 @@ object TreeParallelReduce {
     else {
       @scala.annotation.tailrec
       def recur(li: List[(B, B)], maybeB: Option[B]): B = {
-        val reduced: List[B] = li.map { case (b1: B, b2: B) => combOp(b1, b2) }
+        val reduced: List[B] = li.map { case (b1, b2) => combOp(b1, b2) }
         if (reduced.tail.isEmpty)
           maybeB match {
             case None => reduced.head
@@ -128,7 +127,7 @@ object TreeParallelReduce {
     println("result ParList  =" + pairMapReduce(data.par)(init = 0, id, addInt))
     println("result ParArray=" + pairMapReduce(data.toArray.par)(init = 0, id, addInt))
     //println("result ?? range=" + pairMapReduce(1 to 100)(init = 0, id, addInt))
-    println("result Iterator=" + pairMapReduce((1 to 100).toIterator)(init = 0, id, addInt))
+    println("result Iterator=" + pairMapReduce((1 to 100).iterator)(init = 0, id, addInt))
     println("result Intern3 =" + pairMapReduce(data)(0, id, addInt))
   }
 }

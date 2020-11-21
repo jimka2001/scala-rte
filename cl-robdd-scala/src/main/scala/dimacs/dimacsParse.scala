@@ -84,14 +84,14 @@ object dimacsParse {
   }
 
   def parseStringContent(content: String): DimacsFile = {
-    parseBufferedContent(content.toIterator.buffered)
+    parseBufferedContent(content.iterator.buffered)
   }
 
   private val digits = Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
   private val numeric = digits + '-'
   private val endOfLine = Set('\r', '\n')
   private val whiteSpace = Set(' ', '\t') ++ endOfLine
-
+  import scala.collection.BufferedIterator
   def dropWhile(it: BufferedIterator[Char], p: Char => Boolean): BufferedIterator[Char] = {
     while (it.hasNext && p(it.head)) {
       it.next()

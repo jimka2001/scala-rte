@@ -75,7 +75,7 @@ object dimacsSimplify {
   //   rather than one large one.
   def crossCompatiblize(cla: Set[ClauseAsBitSet], clb: Set[ClauseAsBitSet], posCount: Int, length: Int, rectified: ClauseAsList): RemoveAdd = {
     val compatiblePairs = for {
-      aa <- cla.toIterator
+      aa <- cla.iterator
       bb <- clb
       if isCompatible(aa, bb)
     } yield (aa, bb)

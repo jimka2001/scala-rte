@@ -18,6 +18,10 @@ libraryDependencies += "org.sameersingh.scalaplot" % "scalaplot" % "0.0.4"
 //libraryDependencies += "org.typelevel" %% "spire" % "0.14.1"
 libraryDependencies += "org.typelevel" %% "spire" % "0.17.0-RC1"
 
+scalacOptions ++= Seq(
+  "-feature",
+  "-deprecation"
+)
 
 resolvers += "Sonatype OSS Snapshots" at
              "https://oss.sonatype.org/content/repositories/releases"

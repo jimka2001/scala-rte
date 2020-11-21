@@ -195,6 +195,7 @@ case class SOr(tds: SimpleTypeD*) extends SimpleTypeD {
         val others = tds.filterNot(_ == td)
         SAnd(andArgs.map { x => SOr(conj(x, others): _*) }: _*)
       case None => this
+      case _ => ???
     }
   }
 

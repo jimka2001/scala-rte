@@ -24,27 +24,28 @@ package dimacs
 import cl.CLcompat._
 import dimacs.QmVec._
 
+import scala.annotation.tailrec
 import scala.collection.immutable.BitSet
-import scala.collection.mutable.HashMap
+import scala.collection.mutable
 import scala.math._
 
 case class ClauseDesignator(clause:ClauseAsBitSet, posCount:Int, length:Int, rectified:ClauseAsList)
 case class RemoveAdd(removes:List[ClauseDesignator], adds:List[ClauseDesignator])
 object RemoveAdd {
-  val nil = RemoveAdd(Nil, Nil)
+  val nil: RemoveAdd = RemoveAdd(Nil, Nil)
 }
 
 case class Problem(problemType:String, numVars:Int, numClauses:Int)
 object Problem {
-  val nil = Problem("",0,0)
+  val nil: Problem = Problem("", 0, 0)
 }
 case class DimacsFile(problem:Problem, clauses:List[ClauseAsList])
 
 class QmVec() {
 
-  type RECTHASH = HashMap[ClauseAsList, Set[ClauseAsBitSet]]
-  type LENGTHHASH = HashMap[Int, RECTHASH]
-  val hash: HashMap[Int, LENGTHHASH] = new HashMap
+  type RECTHASH = mutable.HashMap[ClauseAsList, Set[ClauseAsBitSet]]
+  type LENGTHHASH = mutable.HashMap[Int, RECTHASH]
+  val hash: mutable.HashMap[Int, LENGTHHASH] = new mutable.HashMap
 
   // Add the given clause, in the correct place, into hash.   This function,
   // addClause, takes redundant information in its arguments.  We assume this redundant
@@ -56,8 +57,8 @@ class QmVec() {
   //        E.g., if addMe=List(1,-2,-3), then rectified=List(1,2,3)
   def addClause(designator:ClauseDesignator): Unit = {
     val ClauseDesignator(addMe, posCount, length, rectified) = designator
-    val lengthHash = hash.getOrElseUpdate(posCount, new HashMap)
-    val rectHash = lengthHash.getOrElseUpdate(length, new HashMap)
+    val lengthHash = hash.getOrElseUpdate(posCount, new mutable.HashMap)
+    val rectHash = lengthHash.getOrElseUpdate(length, new mutable.HashMap)
 
     rectHash(rectified) = rectHash.get(rectified) match {
       case None => Set(addMe)
@@ -184,6 +185,7 @@ class QmVec() {
       adds.map { case ClauseDesignator(_, posCount, length, rectified) => (posCount, length, rectified) }.toSet
     }
 
+    @tailrec
     def loop(posCounts: Set[(Int, Int, ClauseAsList)]): Unit = {
 
       if (posCounts.nonEmpty) {
@@ -216,7 +218,7 @@ class QmVec() {
     val numVars:Int = withSetCollector{collect:(Int =>Unit) => for {
       (_, lengthHash) <- hash
       (_, rectHash) <- lengthHash
-      (rectified, set: Set[ClauseAsBitSet]) <- rectHash
+      (rectified, _) <- rectHash
       literal <- rectified
     } collect(literal) }.size
     val numClauses:Int = withSummer(0, (a:Int,b:Int)=>a+b)(sum => for {
@@ -232,7 +234,7 @@ class QmVec() {
     // write problem line
     bw.write(s"p cnf $numVars $numClauses\n")
     def writeClause(clause:ClauseAsList):Unit = {
-      bw.write(clause.toList.mkString(" ") + " 0\n")
+      bw.write(clause.mkString(" ") + " 0\n")
     }
     for {
       (_, lengthHash) <- hash
@@ -296,6 +298,7 @@ object QmVec {
   // some examples: (1 2 -3) < (1 2 3)
   //                (-1 2 3) < (1 2 3)
   //                (1 2 3) < (1 -3 4)
+  @tailrec
   def clauseLess(clause1: ClauseAsList, clause2: ClauseAsList): Boolean = {
     (clause1, clause2) match {
       case (Nil, Nil) => false
