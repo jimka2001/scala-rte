@@ -63,7 +63,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
     t match {
       case SEmpty => Some(true)
-      case STop => Some(this == SEmpty)
+      case STop => Some(false) // STop is only disjoint with SEmpty, but this != SEmpty
       case SAtomic(tp) =>
         if (tp == ct)
           Some(false)
