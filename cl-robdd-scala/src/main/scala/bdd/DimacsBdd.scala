@@ -175,8 +175,9 @@ object ReducePerf {
       ms: Double = time(3, s"maxNumBits=$maxNumBits num-terms=$numTerms algo=$text", {
         withNewBddHash {
           f(dnf)
-          size = bdd.Bdd.maybeNodeHash.value.get.count { case (_, bdd) => bdd != null }
-          count = bdd.Bdd.numAllocations.value
+          // (size,count) = bdd.Bdd.getBddSizeCount()
+          size = bdd.Bdd.getBddSizeCount()._1
+          count = bdd.Bdd.getBddSizeCount()._2
         }
       })
     } yield (text // _1
@@ -237,12 +238,12 @@ object ReducePerf {
               // we must generate (text, List[x], List[y])
               // at each step in the iteration get the size, delta-size, count, and delta-count
               //println(s"iteration=$iteration numLiteralsPerTerm=$numLiteralsPerTerm  text=$text")
-              for {(size, count) <- getBddSizeCount()} {
-                collect((text, numLiteralsPerTerm, iteration, size, oldSize - size, count, oldCount - count))
-                iteration = iteration + 1
-                oldCount = count
-                oldSize = size
-              }
+              val (size, count) = getBddSizeCount()
+              collect((text, numLiteralsPerTerm, iteration, size, oldSize - size, count, oldCount - count))
+              iteration = iteration + 1
+              oldCount = count
+              oldSize = size
+
             })
           }
         }}

@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2019,20 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -79,7 +79,8 @@ object USAgraph extends PoliticalMap {
                                   "WI",
                                   "WY"
                                   )
-
+  val statePositions:Map[String,(Double,Double)] = Map()
+  val symbols:Map[String,String] = allStates.map{ st => (st -> st)}.toMap
   // Uni-directional graph so that if x is a member of stateUniGraph(y)
   //   then y is NOT a member of stateUniGraph(x)
   val stateUniGraph:Map[String,Set[String]] = Map(
