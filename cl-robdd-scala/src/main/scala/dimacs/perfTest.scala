@@ -21,6 +21,8 @@
 
 package dimacs
 
+import scala.annotation.tailrec
+
 object perfTest{
   import dimacs.QmVec._
 
@@ -29,6 +31,7 @@ object perfTest{
     // density = number of terms per clause
     val prng = scala.util.Random
 
+    @tailrec
     def randomList[A](size: Int, acc: Set[A], gen: () => A): List[A] = {
       if (size == acc.size)
         acc.toList
