@@ -225,12 +225,26 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
       },
       () => {
         // (and A B C) --> (and A C) if  A is subtype of B
-        tds.find(sup => tds.exists{sub =>
-          //println(s"subtype?  $sub  $sup")
+        tds.find(sub => tds.exists{sup =>
           ((sub != sup)
            && ( sub.subtypep(sup).contains(true)) )}) match {
           case None => this
-          case Some(sup) => SAnd(tds.filter( sub => (sub == sup) || ! (sub.subtypep(sup).contains(true))) : _*)
+          case Some(sub) => {
+            println(s"found subclass to keep $sub in $this")
+              // [Or TraitC,[Not TraitB]] in [And [Or TraitC,[Not TraitB]]
+              //      TraitC]
+            tds.foreach{sup => if ((sub != sup) && (sub.subtypep(sup).contains(true)))
+              println(s"   keeping $sub < removing $sup ")
+            }
+
+            // [And [Not [And [Not TraitC],TraitB]],
+            //      [Not [And [Not TraitC],[Not TraitC]]],
+            //      [Not [And [Not TraitC],[Not TraitD]]]]
+
+            println(s"  converting to "+ SAnd(tds.filterNot( sup => (sub != sup)
+                                                                    && (sub.subtypep(sup).contains(true))) : _*))
+            SAnd(tds.filter( sup => (sub != sup) && ! (sub.subtypep(sup).contains(true))) : _*)
+          }
         }
       },
       () => {
