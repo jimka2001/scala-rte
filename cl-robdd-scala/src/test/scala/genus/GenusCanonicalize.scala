@@ -267,6 +267,15 @@ class GenusCanonicalize extends FunSuite {
     }
   }
   test("dnf vs cnf"){
+    trait TraitA
+    trait TraitB
+    trait TraitC
+    trait TraitD
+    val A = classOf[TraitA]
+    val B = classOf[TraitB]
+    val C = classOf[TraitC]
+    val D = classOf[TraitD]
+
     val dnf1 = SOr(SAnd(A, B),
                    SNot(SAnd(C, D)))
     val cnf2 = dnf1.toCnf
