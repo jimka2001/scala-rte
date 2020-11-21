@@ -195,7 +195,7 @@ object Types {
       case _ => false
     }
   }
-  val evenType:SCustom = SCustom(isEven)
+  val evenType:SCustom = SCustom(isEven,"even")
 
   def isOdd(x: Any): Boolean = {
     import scala.math.abs
@@ -204,7 +204,7 @@ object Types {
       case _ => false
     }
   }
-  val oddType:SCustom = SCustom(isOdd)
+  val oddType:SCustom = SCustom(isOdd,"odd")
 
   def isPrime(x: Any): Boolean = {
     @scala.annotation.tailrec

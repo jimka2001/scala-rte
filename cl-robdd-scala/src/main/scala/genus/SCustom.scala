@@ -25,9 +25,11 @@ package genus
  *
  * @param f a function taking an object Any and returning a Boolean defining the type
  */
-case class SCustom(f   : Any => Boolean) extends SimpleTypeD with TerminalType {
+case class SCustom(f   : Any => Boolean, printable:String) extends SimpleTypeD with TerminalType {
   override def typep(a: Any): Boolean = f(a)
 
+  override def toString = printable + "?"
+  
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = super.disjointDown(t)
 
   override def inhabited: Option[Boolean] = super.inhabited
@@ -37,4 +39,8 @@ case class SCustom(f   : Any => Boolean) extends SimpleTypeD with TerminalType {
   override def cmp(t:SimpleTypeD):Boolean = {
     s"$this" < s"$t"
   }
+}
+
+object SCustom {
+  def apply(f:Any=>Boolean):SCustom = new SCustom(f,f.toString)
 }
