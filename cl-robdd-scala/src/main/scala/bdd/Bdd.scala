@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2019,20 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -22,6 +22,7 @@
 package bdd
 
 import scala.annotation.tailrec
+import scala.util.DynamicVariable
 
 sealed abstract class Bdd {
 
@@ -49,9 +50,10 @@ sealed abstract class Bdd {
       bdd match {
         case BddFalse => ()
         case BddTrue => client(assignTrue,assignFalse)
-        case BddNode(label, positive, negative) =>
+        case BddNode(label, positive, negative) => {
           recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse)
           recur(negative, assignTrue, Assignment(assignFalse.trueVariables + label))
+        }
       }
     }
     recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))
@@ -62,9 +64,10 @@ sealed abstract class Bdd {
       bdd match {
         case BddFalse => None
         case BddTrue => Some((assignTrue,assignFalse))
-        case BddNode(label, positive, negative) =>
+        case BddNode(label, positive, negative) => {
           recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse) orElse
             recur(negative, assignTrue, Assignment(assignFalse.trueVariables + label))
+        }
       }
     }
     recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))
@@ -164,18 +167,18 @@ object BddFalse extends BddTerm {
 /////////////////////////////
 
 
-case class BddNode(label:Int, positive:Bdd, negative:Bdd) extends Bdd {
+case class BddNode(label:Short, positive:Bdd, negative:Bdd) extends Bdd {
   // equals and hashCode methods copied from here:
   //   https://users.scala-lang.org/t/what-does-equivalence-of-instances-mean/4368/11?u=jimka
   override def equals(that: Any): Boolean = {
     that match {
-      case b: Bdd => this eq b
+      case BddNode(l2:Short,p2:Bdd,n2:Bdd) => ( p2 eq positive) && (n2 eq negative) && (l2 == label)
       case _ => false
     }
   }
 
   override def hashCode(): Int =
-    System.identityHashCode(this)
+    label.## ^ System.identityHashCode(positive) ^ ~System.identityHashCode(negative)
 
   def validateChild(child: Bdd): Unit = {
     // a BddTerm may be a child of any BddNode
@@ -220,14 +223,29 @@ case class BddNode(label:Int, positive:Bdd, negative:Bdd) extends Bdd {
 //////////////////////////////
 
 object Bdd {
-  implicit def int2bdd(raw: Int): Bdd = Bdd(raw) // allow varargs And,Or,etc e.g., And(1), Or(1,2,3), And(1,Or(2,3))
+  implicit def int2bdd(raw: Int): Bdd = {
+    if (raw > scala.Short.MaxValue)
+      sys.error(s"int2bdd cannot convert $raw to Bdd because $raw > ${scala.Short.MaxValue}")
+    else if (raw < scala.Short.MinValue)
+      sys.error(s"int2bdd cannot convert $raw to Bdd because $raw < ${scala.Short.MinValue}")
+    else
+      Bdd(raw.toShort) // allow varargs And,Or,etc e.g., And(1), Or(1,2,3), And(1,Or(2,3))
+  }
+  implicit def short2bdd(raw: Short): Bdd = Bdd(raw) // allow varargs And,Or,etc e.g., And(1), Or(1,2,3), And(1,Or(2,3))
 
-  def apply(label: Int): Bdd = {
+  def apply(label:Int):Bdd = {
+    int2bdd(label)
+  }
+
+  def apply(label: Short): Bdd = {
     require(label != 0)
     if (label > 0)
       Bdd(label, BddTrue, BddFalse) // calls Bdd.apply 3-arg version
-    else // ( label < 0)
-      Bdd(-label, BddFalse, BddTrue) // calls Bdd.apply 3-arg version
+    else if (-label > scala.Short.MaxValue)
+      sys.error(s"cannot convert $label to Bdd because -$label > ${scala.Short.MaxValue}")
+    else { // ( label < 0)
+      Bdd((-label).toShort, BddFalse, BddTrue) // calls Bdd.apply 3-arg version
+    }
   }
 
   import scala.util.DynamicVariable
