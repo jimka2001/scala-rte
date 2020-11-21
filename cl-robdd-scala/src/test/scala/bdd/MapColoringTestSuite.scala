@@ -47,7 +47,13 @@ class MapColoringTestSuite extends AnyFunSuite {
                                                              "d" -> Set("c", "b"))
 
       val colors = Array("red", "green", "blue", "yellow")
-      val (colorization, bdd) = graphToBdd(nodes, uniDirectionalGraph,biDirectionalGraph,4,(n,size)=>println(s"plot $n $size"),List(),1)
+      val (colorization, bdd) = graphToBdd(nodes,
+                                           uniDirectionalGraph,
+                                           biDirectionalGraph,
+                                           4,
+                                           (n,size)=>println(s"plot $n $size"),
+                                           List(),
+                                           1)
       bdd.visitSatisfyingAssignments { (assignTrue,assignFalse) =>
         val colorMapping: Map[String, String] = assignColors(colorization, assignTrue,assignFalse, colors)
         colors.foreach { color =>
@@ -65,8 +71,9 @@ class MapColoringTestSuite extends AnyFunSuite {
       }
     }
   }
+  import scala.ref.WeakReference
   test("europe"){
-    mapColoringTest(30)
+    europeMapColoringTest(15)
   }
 
   test("usa"){

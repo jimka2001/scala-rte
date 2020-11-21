@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2019,20 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -43,7 +43,7 @@ class Dfa[L,E](Qids:Set[Int],
   // each element of Fids is in Qids
   require(Fids.subsetOf(Qids))
   // each triple in protoDelta is of the form (x,_,y) where x and y are elements of Qids
-  require(protoDelta.forall { case (from: Int, label: L, to: Int) => Qids.contains(from) && Qids.contains(to) })
+  require(protoDelta.forall { case (from: Int, _, to: Int) => Qids.contains(from) && Qids.contains(to) })
   // fMap maps each element of Fids to some object of type E
   require(fMap.map{case (q,_) => q}.toSet == Fids)
 
