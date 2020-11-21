@@ -235,13 +235,13 @@ object Bdd {
   import scala.util.DynamicVariable
 
   type BDD_HASH = scala.collection.mutable.Map[(Int, Bdd, Bdd), BddNode]
-  val maybeHash = new DynamicVariable[Option[BDD_HASH]](None)
+  val maybeNodeHash = new DynamicVariable[Option[BDD_HASH]](None)
   var numAllocations = new DynamicVariable[Long](0L)
 
   // this function is provided for debug purposes, to allow memory allocation
   // monitoring during intense computations.
   def getBddSizeCount():Option[(Long,Long)] = {
-    for{ hash <- maybeHash.value}
+    for{ hash <- maybeNodeHash.value}
       yield (hash.size, numAllocations.value)
   }
 
@@ -251,7 +251,7 @@ object Bdd {
   //   function results in an error.
   def withNewBddHash[A](code: => A): A = {
     numAllocations.withValue(0L) {
-      maybeHash.withValue(Some(newHash())) {
+      maybeNodeHash.withValue(Some(newHash())) {
         code
       }
     }
@@ -271,7 +271,7 @@ object Bdd {
     if (positive == negative)
       positive
     else {
-      maybeHash.value match {
+      maybeNodeHash.value match {
         case None => sys.error("Bdd constructor called outside dynamic extent of withNewBddHash(...)")
         case Some(hash) =>
           hash.get((label, positive, negative)) match {

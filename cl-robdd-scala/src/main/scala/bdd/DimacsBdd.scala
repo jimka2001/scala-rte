@@ -175,7 +175,7 @@ object ReducePerf {
       ms: Double = time(3, s"maxNumBits=$maxNumBits num-terms=$numTerms algo=$text", {
         withNewBddHash {
           f(dnf)
-          size = bdd.Bdd.maybeHash.value.get.count { case (_, bdd) => bdd != null }
+          size = bdd.Bdd.maybeNodeHash.value.get.count { case (_, bdd) => bdd != null }
           count = bdd.Bdd.numAllocations.value
         }
       })
