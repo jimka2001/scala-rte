@@ -224,6 +224,16 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
           this
       },
       () => {
+        // (and A B C) --> (and A C) if  A is subtype of B
+        tds.find(sup => tds.exists{sub =>
+          //println(s"subtype?  $sub  $sup")
+          ((sub != sup)
+           && ( sub.subtypep(sup).contains(true)) )}) match {
+          case None => this
+          case Some(sup) => SAnd(tds.filter( sub => (sub == sup) || ! (sub.subtypep(sup).contains(true))) : _*)
+        }
+      },
+      () => {
         val i2 = SAnd(tds.map((t: SimpleTypeD) => t.canonicalize(nf=nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
         if (this == i2)
           this // return the older object, hoping the newer one is more easily GC'ed
