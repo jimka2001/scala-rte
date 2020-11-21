@@ -41,8 +41,8 @@ object TreeReducible {
   // suggestion by sangamon, Patrick Römer
   // to use GenTraversableOnce to encompass Seq, ParSeq, and TraversableOnce
   // https://users.scala-lang.org/t/which-implicit-will-be-used/4863/9?u=jimka
-  implicit def traversableOnceTreeReducible[T[X] <: scala.collection.GenTraversableOnce[X]]: TreeReducible[T] = new TreeReducible[T] {
-    override def foldLeft[A, B](m: T[A])(z: B)(op: (B, A) => B): B = m.foldLeft(z)(op)
+  implicit def traversableOnceTreeReducible[T[X] <: IterableOnce[X]]: TreeReducible[T] = new TreeReducible[T] {
+    override def foldLeft[A, B](m: T[A])(z: B)(op: (B, A) => B): B = m.iterator.foldLeft(z)(op)
   }
 
   implicit val arrayTreeReducible: TreeReducible[Array] = new TreeReducible[Array] {

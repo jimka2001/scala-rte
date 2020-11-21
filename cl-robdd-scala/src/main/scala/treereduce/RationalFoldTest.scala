@@ -46,6 +46,7 @@ object RationalFoldTest {
                       , 1000, 2000, 3000, 4000, 5000, 7500
                       , 10000
                       )
+
     rationalFoldTest(bounds=bounds,randomize=true)
     rationalFoldTest(bounds=bounds,randomize=false)
   }
