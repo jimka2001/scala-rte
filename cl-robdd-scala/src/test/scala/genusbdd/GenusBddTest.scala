@@ -27,8 +27,9 @@ import genus.Types._
 import org.scalatest._
 
 import scala.collection.{Seq, mutable}
+import org.scalatest.funsuite.AnyFunSuite
 
-class GenusBddTest extends FunSuite {
+class GenusBddTest extends AnyFunSuite {
   Bdd.withNewBddHash {
     trait Trait1
     trait Trait2

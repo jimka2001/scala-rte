@@ -23,6 +23,8 @@
 package genus
 
 import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
+
 import Types._
 
 class Test1
@@ -35,7 +37,7 @@ trait Trait2 extends Trait1
 
 class Test3 extends Test2 with Trait2
 
-class GenusSubtypep extends FunSuite {
+class GenusSubtypep extends AnyFunSuite {
   val Long = classOf[java.lang.Long]
   val Integer = classOf[java.lang.Integer]
   val Number = classOf[java.lang.Number]

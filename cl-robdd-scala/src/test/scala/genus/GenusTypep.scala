@@ -24,8 +24,9 @@ package genus
 
 import org.scalatest._
 import Types._
+import org.scalatest.funsuite.AnyFunSuite
 
-class GenusTypep extends FunSuite {
+class GenusTypep extends AnyFunSuite {
 
   test("AtomicType any and nothing") {
     val newEmpty = SAtomic(classOf[Nothing])

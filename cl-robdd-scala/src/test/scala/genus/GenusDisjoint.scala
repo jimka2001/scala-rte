@@ -24,8 +24,9 @@ package genus
 
 import org.scalatest._
 import Types._
+import org.scalatest.funsuite.AnyFunSuite
 
-class GenusDisjoint extends FunSuite {
+class GenusDisjoint extends AnyFunSuite {
 
   test("disjoint EmptyType") {
     assert(atomicTypesSeq.forall(_.disjoint(SEmpty).contains(true)))

@@ -149,6 +149,7 @@ object MapColoring {
   }
 
   def colorizeMap(numNodes:Int,
+                  baseName:String,
                   start:String,
                   uniGraph:Map[String,Set[String]],
                   biGraph:Map[String,Set[String]],
@@ -213,7 +214,7 @@ object MapColoring {
   def mapColoringTest(numRegions:Int) = {
     import EuropeGraph._
     biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions")(symbols = symbols)
-    val colors = colorizeMap(numRegions, "Greece",
+    val colors = colorizeMap(numRegions, "europe", "Greece",
                              removeStates(List("Russia"), stateUniGraph),
                              removeStates(List("Russia"), stateBiGraph),
                              List("Croatia", "Bosnia", "Serbia", "Montenegro"))

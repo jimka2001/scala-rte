@@ -47,7 +47,7 @@ sealed abstract class LBdd {
       def recur(generation: List[LBdd], nextGeneration: List[LBdd], done: Set[LBdd]): Unit = {
         // BFS walk of bdd, calling f exactly once on each node
         (generation, nextGeneration) match {
-          case (Nil, Nil) => Unit
+          case (Nil, Nil) => ()
           case (Nil, _) => recur(nextGeneration, Nil, done)
           case (h :: tail, _) if done.contains(h) => recur(tail, nextGeneration, done)
           case (h :: tail, _) =>
@@ -141,7 +141,7 @@ case class LBddNode(label: Int, positive: LBdd,
   def validateChild(child: LBdd): Unit = {
     child match {
       case child: LBddNode => assert(child.label > label)
-      case _: LBddTerm => Unit
+      case _: LBddTerm => ()
     }
   }
 

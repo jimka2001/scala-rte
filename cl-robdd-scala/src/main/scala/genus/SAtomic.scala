@@ -118,7 +118,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
         else
           super.subtypep(s)
 
-      case SCustom(_) =>
+      case SCustom(_,_) =>
         super.subtypep(s)
     }
   }

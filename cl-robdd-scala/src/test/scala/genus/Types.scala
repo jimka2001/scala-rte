@@ -24,8 +24,9 @@ package genus
 
 import org.scalatest._
 import genus.Types._
+import org.scalatest.funsuite.AnyFunSuite
 
-class TypesTest extends FunSuite {
+class TypesTest extends AnyFunSuite {
 
   test("conj"){
     val l1 = List( 1, 2, 3)

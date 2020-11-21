@@ -23,9 +23,10 @@
 package genus
 
 import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
 
-class GenusInhabited extends FunSuite {
+class GenusInhabited extends AnyFunSuite {
   class Abstract1
   class Abstract2
   trait Trait1

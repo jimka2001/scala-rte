@@ -25,8 +25,9 @@ package genus
 import org.scalatest._
 import genus.Types._
 import genus.NormalForm._
+import org.scalatest.funsuite.AnyFunSuite
 
-class GenusCanonicalize extends FunSuite {
+class GenusCanonicalize extends AnyFunSuite {
 
   trait TraitA
   trait TraitB

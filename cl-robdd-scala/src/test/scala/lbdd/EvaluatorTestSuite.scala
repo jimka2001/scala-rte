@@ -2,9 +2,9 @@ package lbdd
 
 import org.scalatest._
 import lbdd.GraphViz._
+import org.scalatest.funsuite.AnyFunSuite
 
-
-class EvaluatorTestSuite extends FunSuite {
+class EvaluatorTestSuite extends AnyFunSuite {
 
   test("basic tests") {
     // Or truth table
