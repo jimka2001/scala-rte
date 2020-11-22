@@ -24,7 +24,6 @@ package bdd
 import scala.annotation.tailrec
 import scala.util.DynamicVariable
 
-
 sealed abstract class Bdd {
 
   def subsetp(that: Bdd): Boolean = {
@@ -51,9 +50,10 @@ sealed abstract class Bdd {
       bdd match {
         case BddFalse => ()
         case BddTrue => client(assignTrue,assignFalse)
-        case BddNode(label, positive, negative) =>
+        case BddNode(label, positive, negative) => {
           recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse)
           recur(negative, assignTrue, Assignment(assignFalse.trueVariables + label))
+        }
       }
     }
     recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))
@@ -64,9 +64,10 @@ sealed abstract class Bdd {
       bdd match {
         case BddFalse => None
         case BddTrue => Some((assignTrue,assignFalse))
-        case BddNode(label, positive, negative) =>
+        case BddNode(label, positive, negative) => {
           recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse) orElse
             recur(negative, assignTrue, Assignment(assignFalse.trueVariables + label))
+        }
       }
     }
     recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))

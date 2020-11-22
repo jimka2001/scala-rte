@@ -24,9 +24,10 @@ package lbdd
 import lbdd.LBdd._
 import org.scalatest._
 import lbdd.GraphViz._
+import org.scalatest.funsuite.AnyFunSuite
 
 
-class BinaryOperationsTestSuite extends FunSuite {
+class BinaryOperationsTestSuite extends AnyFunSuite {
 
   def genSamples(): Set[LBdd] = {
     val b1 = LBdd(3, LBddTrue, LBddFalse)

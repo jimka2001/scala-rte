@@ -22,31 +22,31 @@
 package lbdd.benchmarks.scalameter.benchmark
 
 import java.io.File
-
-import lbdd.benchmarks.Targets._
-import org.scalameter.persistence.SerializationPersistor
-import org.scalameter.{Bench, Gen}
-
-
-object PerformanceBenchmark extends Bench.OfflineReport {
-
-  override lazy val persistor = SerializationPersistor(new File("target/scalameter/performance/results"))
-
-  val nbGen: Gen[Int] = Gen.range("nbVariables")(1, 3000,20)
-
-  performance of "inputs" in {
-    measure method "bddSamples" in {
-      using(nbGen) in {
-        n => bddSamples(n)
-      }
-    }
-  }
-
-  performance of "inputs" in {
-    measure method "lazyBddSamples" in {
-      using(nbGen) in {
-        n => lazyBddSamples(n)
-      }
-    }
-  }
-}
+//
+//import lbdd.benchmarks.Targets._
+//import org.scalameter.persistence.SerializationPersistor
+//import org.scalameter.{Bench, Gen}
+//
+//
+//object PerformanceBenchmark extends Bench.OfflineReport {
+//
+//  override lazy val persistor = SerializationPersistor(new File("target/scalameter/performance/results"))
+//
+//  val nbGen: Gen[Int] = Gen.range("nbVariables")(1, 3000,20)
+//
+//  performance of "inputs" in {
+//    measure method "bddSamples" in {
+//      using(nbGen) in {
+//        n => bddSamples(n)
+//      }
+//    }
+//  }
+//
+//  performance of "inputs" in {
+//    measure method "lazyBddSamples" in {
+//      using(nbGen) in {
+//        n => lazyBddSamples(n)
+//      }
+//    }
+//  }
+//}

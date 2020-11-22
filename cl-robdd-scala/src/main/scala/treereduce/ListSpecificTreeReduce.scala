@@ -43,10 +43,7 @@ object ListSpecificTreeReduce{
     else {
       @scala.annotation.tailrec
       def recur(li: List[(A, A)], maybeB: Option[A]): A = {
-        // val reduced: List[A] = li.map { case (b1: A, b2: A) => f(b1, b2) }
-        def f1(aa:(A,A)):A = f(aa._1, aa._2)
-        val reduced: List[A] = li.map(f1)
-
+        val reduced: List[A] = li.map { case (b1, b2) => f(b1, b2) }
         if (reduced.tail.isEmpty)
           maybeB match {
             case None => reduced.head
