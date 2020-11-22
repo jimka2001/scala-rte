@@ -280,9 +280,10 @@ class GenusCanonicalize extends FunSuite {
                    SNot(SAnd(C, D)))
     val cnf2 = dnf1.toCnf
     val cnf3 = dnf1.canonicalize(Some(Cnf))
-
     assert(cnf2 - dnf1 == SEmpty, "test 1")
+
     assert(dnf1 - cnf2 == SEmpty, "test 2")
+
     assert(cnf3 - dnf1 == SEmpty, "test 5")
     assert(dnf1 - cnf3 == SEmpty, "test 6")
 
