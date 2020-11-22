@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2020 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,37 +19,34 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dimacs
+package lbdd.benchmarks.scalameter.benchmark
 
-import scala.annotation.tailrec
+import java.io.File
 
-object perfTest{
-  import dimacs.QmVec._
+import lbdd.benchmarks.Targets._
+import org.scalameter.persistence.SerializationPersistor
+import org.scalameter.{Bench, Gen}
 
-  def genCNF(numVars: Int, numClauses: Int, density: Int): CNF = {
-    //println(s"generating $numClauses of $density terms each using $numVars variables")
-    // density = number of terms per clause
-    val prng = scala.util.Random
 
-    @tailrec
-    def randomList[A](size: Int, acc: Set[A], gen: () => A): List[A] = {
-      if (size == acc.size)
-        acc.toList
-      else
-        randomList(size, acc + gen(), gen)
+object PerformanceBenchmark extends Bench.OfflineReport {
+
+  override lazy val persistor = SerializationPersistor(new File("target/scalameter/performance/results"))
+
+  val nbGen: Gen[Int] = Gen.range("nbVariables")(1, 3000,20)
+
+  performance of "inputs" in {
+    measure method "bddSamples" in {
+      using(nbGen) in {
+        n => bddSamples(n)
+      }
     }
-
-    def randomClause:ClauseAsList = {
-      canonicalizeClause(for {
-        i <- randomList(density, Set[Int](), () => 1 + prng.nextInt(numVars))
-        sign = if (0 == prng.nextInt(2)) 1 else -1
-      } yield sign * i)
-    }
-
-    randomList(numClauses, Set[ClauseAsList](), randomClause _)
   }
 
-
-  def main(args: Array[String]): Unit = {
-
-  }}
+  performance of "inputs" in {
+    measure method "lazyBddSamples" in {
+      using(nbGen) in {
+        n => lazyBddSamples(n)
+      }
+    }
+  }
+}

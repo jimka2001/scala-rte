@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2020 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,37 +19,46 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dimacs
+package lbdd.benchmarks
 
-import scala.annotation.tailrec
+import bdd.Bdd
+import lbdd.LBdd
+import bdd.GraphViz._
 
-object perfTest{
-  import dimacs.QmVec._
 
-  def genCNF(numVars: Int, numClauses: Int, density: Int): CNF = {
-    //println(s"generating $numClauses of $density terms each using $numVars variables")
-    // density = number of terms per clause
-    val prng = scala.util.Random
+object Targets {
 
-    @tailrec
-    def randomList[A](size: Int, acc: Set[A], gen: () => A): List[A] = {
-      if (size == acc.size)
-        acc.toList
-      else
-        randomList(size, acc + gen(), gen)
+  // TODO : def bddSamples(n: Int, f: (Int, Bdd) => Bdd): Bdd (check several methods)
+
+  def bddSamples(n: Int): Bdd = {
+    Bdd.withNewBddHash {
+      @scala.annotation.tailrec
+      def construct(k: Int, b: Bdd): Bdd = {
+        k match {
+          case 0 => b
+          case i if i > 0 => construct(i - 1, bdd.Or(bdd.And(i, b, i+1), i + 2))
+        }
+      }
+      construct(n - 1, Bdd(n))//.findSatisfyingAssignment()
     }
-
-    def randomClause:ClauseAsList = {
-      canonicalizeClause(for {
-        i <- randomList(density, Set[Int](), () => 1 + prng.nextInt(numVars))
-        sign = if (0 == prng.nextInt(2)) 1 else -1
-      } yield sign * i)
-    }
-
-    randomList(numClauses, Set[ClauseAsList](), randomClause _)
   }
 
 
-  def main(args: Array[String]): Unit = {
+  // TODO : def lazyBddSamples(n: Int, f: (Int, LBdd) => LBdd): LBdd (check several methods)
 
-  }}
+  def lazyBddSamples(n: Int): Any = {
+    @scala.annotation.tailrec
+    def construct(k: Int, b: LBdd): LBdd = {
+      k match {
+        case 0 => b
+        case i if i > 0 => construct(i - 1, lbdd.Or(lbdd.And(i, b, i + 1), i + 2))
+      }
+    }
+    construct(n - 1, LBdd(n)).findSatisfyingAssignment()
+  }
+
+  def main(args: Array[String]): Unit = {
+    val bdd = bddSamples(500)
+    bdd.bddView(true, "test")
+  }
+}

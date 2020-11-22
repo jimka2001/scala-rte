@@ -22,6 +22,8 @@
 
 package treereduce
 
+import scala.annotation.tailrec
+
 object ListSpecificTreeReduce{
   def paired[A](data: List[A]): (List[(A, A)], Option[A]) = {
     val none: Option[A] = None
@@ -67,7 +69,8 @@ object ListSpecificTreeReduce{
   }
 
   def treeFold[A](m: List[A])(z: A)(f: (A, A) => A): A = {
-    @scala.annotation.tailrec
+
+    @tailrec
     def consumeStack(stack: List[(Int, A)]): List[(Int, A)] = {
       stack match {
         case (i, b1) :: (j, b2) :: tail if i == j => consumeStack((i + 1, f(b2, b1)) :: tail)

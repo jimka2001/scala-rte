@@ -225,12 +225,15 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
       },
       () => {
         // (and A B C) --> (and A C) if  A is subtype of B
-        tds.find(sup => tds.exists{sub =>
-          //println(s"subtype?  $sub  $sup")
+        tds.find(sub => tds.exists{sup =>
           ((sub != sup)
            && ( sub.subtypep(sup).contains(true)) )}) match {
           case None => this
-          case Some(sup) => SAnd(tds.filter( sub => (sub == sup) || ! (sub.subtypep(sup).contains(true))) : _*)
+          case Some(sub) =>
+            // throw away all proper superclasses of sub, i.e., keep everything that is not a superclass
+            // of sub and also keep sub itself.
+            val keep = tds.filter(sup => sup == sub || sub.subtypep(sup).contains(false))
+            SAnd(keep: _*)
         }
       },
       () => {

@@ -51,10 +51,9 @@ sealed abstract class Bdd {
       bdd match {
         case BddFalse => ()
         case BddTrue => client(assignTrue,assignFalse)
-        case BddNode(label, positive, negative) => {
+        case BddNode(label, positive, negative) =>
           recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse)
           recur(negative, assignTrue, Assignment(assignFalse.trueVariables + label))
-        }
       }
     }
     recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))
@@ -65,10 +64,9 @@ sealed abstract class Bdd {
       bdd match {
         case BddFalse => None
         case BddTrue => Some((assignTrue,assignFalse))
-        case BddNode(label, positive, negative) => {
+        case BddNode(label, positive, negative) =>
           recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse) orElse
             recur(negative, assignTrue, Assignment(assignFalse.trueVariables + label))
-        }
       }
     }
     recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))
@@ -87,6 +85,7 @@ sealed abstract class Bdd {
 
   def fold[R](z: R)(f: (R, Bdd) => R): R = {
     def bfsWalk(f: Bdd => Unit): Unit = {
+      @tailrec
       def recur(generation: List[Bdd], nextGeneration: List[Bdd], done: Set[Bdd]): Unit = {
         // BFS walk of bdd, calling f exactly once on each node
         (generation, nextGeneration) match {
@@ -125,9 +124,8 @@ sealed abstract class Bdd {
         visited = visited + bdd
         bdd match {
           case _: BddTerm => 1 + n
-          case bdd: BddNode => {
+          case bdd: BddNode =>
             recur(bdd.negative, recur(bdd.positive, 1 + n))
-          }
         }
       }
     }

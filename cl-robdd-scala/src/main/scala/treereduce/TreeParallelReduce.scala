@@ -76,7 +76,7 @@ object TreeParallelReduce {
     override def foldLeft[A, B](seq: ParArray[A], z: B)(f: (B, A) => B): B = seq.foldLeft(z)(f)
   }
   implicit val arrayPairable: Pairable[Array] = new Pairable[Array] {
-    override def map[A, B: scala.reflect.ClassTag](arr: Array[A], f: A => B): Array[B] = arr.map(f).toArray[B]
+    override def map[A, B: scala.reflect.ClassTag](arr: Array[A], f: A => B): Array[B] = arr.map(f)
 
     override def foldLeft[A, B](arr: Array[A], z: B)(f: (B, A) => B): B = arr.foldLeft(z)(f)
   }
@@ -119,7 +119,7 @@ object TreeParallelReduce {
   def main(argv: Array[String]): Unit = {
     import scala.collection.parallel.CollectionConverters._
 
-    var data = (1 to 100).toList
+    val data = (1 to 100).toList
 
     println("result Nil List = " + pairMapReduce(List[Int]())(init = 0, id, addInt))
     println("result Nil Array = " + pairMapReduce(Array[Int]())(init = 0, id, addInt))
@@ -128,7 +128,7 @@ object TreeParallelReduce {
     println("result ParList  =" + pairMapReduce(data.par)(init = 0, id, addInt))
     println("result ParArray=" + pairMapReduce(data.toArray.par)(init = 0, id, addInt))
     //println("result ?? range=" + pairMapReduce(1 to 100)(init = 0, id, addInt))
-    println("result Iterator=" + pairMapReduce((1 to 100).toIterator)(init = 0, id, addInt))
+    println("result Iterator=" + pairMapReduce((1 to 100).iterator)(init = 0, id, addInt))
     println("result Intern3 =" + pairMapReduce(data)(0, id, addInt))
   }
 }

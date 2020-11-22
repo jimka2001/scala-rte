@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2020 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,32 +19,29 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package bdd
+package lbdd
 
 object GraphViz {
 
   import java.io.{File, OutputStream}
 
-  def bddView(bdd: Bdd, drawFalseLeaf: Boolean, title:String=""): String = {
+  def bddView(bdd: LBdd, drawFalseLeaf: Boolean, title:String=""): String = {
     import sys.process._
     val png = bddToPng(bdd,drawFalseLeaf,title)
     val cmd = Seq("open", png)
-    if ("Mac OS X" == System.getProperty("os.name"))
-      cmd.!
-    else
-      sys.error(s"bddView($bdd) cannot evoking open because OS = ${System.getProperty("os.name")}")
+    cmd.!
     png
   }
 
   val dotProgram:String = locally{
-    import java.nio.file.{Paths, Files}
-    Seq("/usr/local/bin/dot","/opt/local/bin/dot").find(p => Files.exists(Paths.get(p))) match {
-      case None => "dot"
+    import java.nio.file.{Files, Paths}
+    Seq("/usr/local/bin/dot").find(p => Files.exists(Paths.get(p))) match {
+      case scala.None => "dot"
       case Some(path) => path
     }
   }
 
-  def bddToPng(bdd:Bdd,drawFalseLeaf: Boolean, title:String): String = {
+  def bddToPng(bdd: LBdd,drawFalseLeaf: Boolean, title:String): String = {
     val png = File.createTempFile("bdd", ".png")
     val pngPath = png.getAbsolutePath
     val dot = File.createTempFile("bdd", ".dot")
@@ -62,14 +59,14 @@ object GraphViz {
     pngPath
   }
 
-  def bddToPng(bdd:Bdd,pathname: String, drawFalseLeaf: Boolean, title:String): String = {
+  def bddToPng(bdd: LBdd,pathname: String, drawFalseLeaf: Boolean, title:String): String = {
     val stream = new java.io.FileOutputStream(new java.io.File(pathname))
     bddToDot(bdd,stream, drawFalseLeaf, title)
     stream.close()
     pathname
   }
 
-  def bddToDot(bdd:Bdd,stream: OutputStream, drawFalseLeaf: Boolean, title:String): Unit = {
+  def bddToDot(bdd: LBdd,stream: OutputStream, drawFalseLeaf: Boolean, title:String): Unit = {
     val penWidth = 2
 
     def write(str: String): Unit = {
@@ -87,19 +84,20 @@ object GraphViz {
     }
 
     write("digraph G {\n")
-    val (_, names) = bdd.fold((1, Map[Bdd, Int]())) { case ((n: Int, names: Map[Bdd, Int]), bdd: Bdd) =>
+    val (_, names) = bdd.fold((1, Map[LBdd, Int]())) { case ((n: Int, names: Map[LBdd, Int]), bdd: LBdd) =>
       bdd match {
-        case BddTrue => dotTrue(n)
-        case BddFalse => dotFalse(n, drawFalseLeaf)
-        case bdd: BddNode => write(s""" $n [shape="ellipse",label="x${bdd.label}",penWidth=$penWidth]\n""")
+        case LBddTrue => dotTrue(n)
+        case LBddFalse => dotFalse(n, drawFalseLeaf)
+        case bdd: LBddNode => write(s""" $n [shape="ellipse",label="x${bdd.label}",penWidth=$penWidth]\n""")
       }
       (n + 1, names + (bdd -> n))
     }
 
-    def drawConnection(parent: Bdd, child: Bdd, style: String, color: String,
+    def drawConnection(parent: LBdd, child: LBdd, style: String, color: String,
                        arrowHead: Option[String], arrowTail: Option[String], dir: Option[String]): Unit = {
-      if ((child != BddFalse) || drawFalseLeaf) {
-        write(s" ${names(parent)} -> ${names(child)} [")
+      if ((child != LBddFalse) || drawFalseLeaf) {
+
+        write(s" ${names.getOrElse(parent, 0)} -> ${names.getOrElse(child, 0)} [")
         write(s"style=$style,color=$color,penwidth=$penWidth")
         for {a <- arrowHead} {
           write(s",arrowhead=$a")
@@ -116,14 +114,16 @@ object GraphViz {
 
     for {(bdd, n) <- names} yield {
       bdd match {
-        case bdd: BddNode =>
-          drawConnection(bdd, bdd.positive, style = """"solid"""", color = """"green"""", arrowHead = None, arrowTail = None, dir = None)
-          drawConnection(bdd, bdd.negative, style = """"dashed"""", color = """"red"""", arrowHead = Some("normal"), arrowTail = Some("odot"), dir = Some("both"))
+        case bdd: LBddNode =>
+          drawConnection(bdd, bdd.positive, style = """"solid"""", color = """"green"""", arrowHead = scala.None, arrowTail = scala.None, dir = scala.None)
+          if (bdd.middle.nonEmpty)
+            drawConnection(bdd, bdd.middle.get(), style = """"dashed"""", color = """"blue"""", arrowHead = scala.None, arrowTail = scala.None, dir = scala.None)
+          drawConnection(bdd, bdd.negative, style = """"solid"""", color = """"red"""", arrowHead = scala.Some("normal"), arrowTail = scala.Some("odot"), dir = scala.Some("both"))
         case _ => ()
       }
     }
 
-    if (bdd == BddFalse) {
+    if (bdd == LBddFalse) {
       // if drawFalseLeaf is false, we need to avoid drawing nothing, in this
       // case we draw the bot node even though drawFalseLeaf indicates otherwise.
       dotFalse(1, !drawFalseLeaf)
@@ -138,7 +138,7 @@ object GraphViz {
   }
 
   // TYPE CLASS
-  implicit class GraphVizOps(val givenBdd: Bdd) extends AnyVal {
+  implicit class GraphVizOps(val givenBdd: LBdd) extends AnyVal {
     // this implicit class allows the syntax
     //   bdd.bddView(...),
     //   bdd.bddToPng(...), and
@@ -155,24 +155,21 @@ object GraphViz {
   }
 
   def main(argv: Array[String]): Unit = {
-    val drawFalse = false
-    Bdd.withNewBddHash {
-      val bdd3 = Bdd(3)
-      val bdd2 = Bdd(2)
-      Bdd(1, bdd2, bdd3).bddToDot(System.out, drawFalseLeaf=drawFalse,"")
-      Bdd(1, bdd2, bdd3).bddView(drawFalseLeaf=drawFalse,"")
-      Or(1, 2, -3, And(-1, 4), And(2, Not(Or(1, 3)))).bddView(drawFalseLeaf=drawFalse,"")
+    val drawFalse = true
+    val bdd3 = LBdd(3)
+    val bdd2 = LBdd(2)
+    LBdd(1).bddToDot(System.out, drawFalseLeaf=drawFalse,"")
+    //LBdd(1, bdd2, bdd3).bddView(drawFalseLeaf=drawFalse,"")
+    Or(1, 2, -3, And(-1, 4), And(2, Not(Or(1, 3)))).bddView(drawFalseLeaf=drawFalse,"")
+    Or(1, 2).bddView(true, "Or(1, 2)")
+    Or(1, 3).bddView(true, "Or(1, 3)")
 
-      Not(Or(Xor(1, And(-2, -3)),
-             AndNot(2, 3))).bddView(drawFalseLeaf=drawFalse,title="")
-      Not(Or(-2,
-             3,
-             Xor(1, 2, And(-2, -3, 4)),
-             AndNot(2, 3))).bddView(drawFalseLeaf=drawFalse,title="")
-
-      Or(1, 2).bddToDot(System.out, drawFalseLeaf = true, title="")
-
-    }
-    BddTrue.bddView(drawFalse,title="")
+    //Not(Or(Or(1, And(-2, -3)),
+    //       AndNot(2, 3))).bddView(drawFalseLeaf=drawFalse,title="")
+    //Not(Or(-2,
+    //       3,
+    //       Or(1, 2, And(-2, -3, 4)),
+    //       AndNot(2, 3))).bddView(drawFalseLeaf=drawFalse,title="")
+    //LBddTrue.bddView(drawFalse,title="")
   }
 }

@@ -27,6 +27,7 @@ import dimacs.QmVec._
 import scala.annotation.tailrec
 import scala.collection.immutable.BitSet
 import scala.collection.mutable
+import scala.collection.mutable.HashMap
 import scala.math._
 
 case class ClauseDesignator(clause:ClauseAsBitSet, posCount:Int, length:Int, rectified:ClauseAsList)
@@ -218,7 +219,7 @@ class QmVec() {
     val numVars:Int = withSetCollector{collect:(Int =>Unit) => for {
       (_, lengthHash) <- hash
       (_, rectHash) <- lengthHash
-      (rectified, _: Set[ClauseAsBitSet]) <- rectHash
+      (rectified, _) <- rectHash
       literal <- rectified
     } collect(literal) }.size
     val numClauses:Int = withSummer(0, (a:Int,b:Int)=>a+b)(sum => for {

@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2020 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -32,18 +32,13 @@ class State[L,E](dfa:Dfa[L,E], val id:Int) {
 
 case class Transition[L,E](source:State[L,E], label:L, destination:State[L,E]) {}
 
-class Dfa[L,E](Qids:Set[Int],
-               q0id:Int,
-               Fids:Set[Int],
-               protoDelta:Set[(Int,L,Int)],
-               val combineLabels:(L,L)=>L,
-               fMap:Map[Int,E]) {
+class Dfa[L,E](Qids:Set[Int], q0id:Int, Fids:Set[Int], protoDelta:Set[(Int,L,Int)], val combineLabels:(L,L)=>L, fMap:Map[Int,E]) {
   // q0id is in Qids
   require(Qids.contains(q0id))
   // each element of Fids is in Qids
   require(Fids.subsetOf(Qids))
   // each triple in protoDelta is of the form (x,_,y) where x and y are elements of Qids
-  require(protoDelta.forall { case (from: Int, _, to: Int) => Qids.contains(from) && Qids.contains(to) })
+  require(protoDelta.forall { case (from: Int, label: L, to: Int) => Qids.contains(from) && Qids.contains(to) })
   // fMap maps each element of Fids to some object of type E
   require(fMap.map{case (q,_) => q}.toSet == Fids)
 
