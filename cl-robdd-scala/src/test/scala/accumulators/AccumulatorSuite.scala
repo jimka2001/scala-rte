@@ -23,8 +23,9 @@ package accumulators
 
 import accumulators.Accumulators._
 import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class AccumulatorSuite extends FunSuite {
+class AccumulatorSuite extends AnyFunSuite {
   
   test("successor"){
 
