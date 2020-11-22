@@ -73,11 +73,11 @@ class MapColoringTestSuite extends AnyFunSuite {
   }
   import scala.ref.WeakReference
   test("europe"){
-    europeMapColoringTest(15)
+    europeMapColoringTest(12)
   }
 
   test("usa"){
-    colorizeMap(30, "test-us", "AL",
+    colorizeMap(20, "test-us", "AL",
                 USAgraph.stateUniGraph,USAgraph.stateBiGraph,List("MS","AL","TN"))
   }
   def sanityCheck(numNodes:Int):Unit = {
