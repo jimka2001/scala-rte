@@ -27,6 +27,7 @@ import dimacs.QmVec._
 import scala.annotation.tailrec
 import scala.collection.immutable.BitSet
 import scala.collection.mutable
+import scala.collection.mutable.HashMap
 import scala.math._
 
 case class ClauseDesignator(clause:ClauseAsBitSet, posCount:Int, length:Int, rectified:ClauseAsList)
