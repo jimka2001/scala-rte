@@ -318,6 +318,37 @@ class GenusCanonicalize extends AnyFunSuite {
              s"td=$td  dnf=$dnf inhabited = $td_inhabited vs $dnf_inhabited")
     }
   }
+
+  //    [Or java.lang.Number,Trait1$1] did not equal Empty
+  //    td=[And [Not [= 1]],
+  //            [Or java.lang.Number,
+  //                Trait1$1]]
+  //    dnf=[Or Trait1$1,
+  //            [And [Not [= 1]],
+  //                 java.lang.Number]],
+  //    td-dnf=[Or java.lang.Number,
+  //               Trait1$1],
+  //    expecting EmptyType
+  //                                                                                                                                                                                                        ScalaTestFailureLocation: genus.GenusCanonicalize at (GenusCanonicalize.scala:327)
+  //  Expected :Empty
+  //  td=[And [Not [= 1]],
+  //          [Or java.lang.Number,
+  //              Trait1$1]]
+  //  dnf=[Or Trait1$1,
+  //          [And [Not [= 1]],
+  //               java.lang.Number]],
+  //  td-dnf=[Or java.lang.Number,
+  //             Trait1$1],
+  //  expecting EmptyType
+  //                                                                                                                                                                   Actual   :[Or java.lang.Number,Trait1$1]
+  //
+  //  org.scalatest.exceptions.TestFailedException: [Or java.lang.Number,Trait1$1] did not equal Empty td=[And [Not [= 1]],[Or java.lang.Number,Trait1$1]] dnf=[Or Trait1$1,[And [Not [= 1]],java.lang.Number]], td-dnf=[Or java.lang.Number,Trait1$1], expecting EmptyType
+  //                                                                                                                                                                                                                                                    at org.scalatest.Assertions.newAssertionFailedException(Assertions.scala:472)
+  //  at org.scalatest.Assertions.newAssertionFailedException$(Assertions.scala:471)
+  //  at org.scalatest.Assertions$.newAssertionFailedException(Assertions.scala:1231)
+  //  at org.scalatest.Assertions$AssertionsHelper.macroAssert(Assertions.scala:1295)
+  //  at genus.GenusCanonicalize.$anonfun$new$19(GenusCanonicalize.scala:327)
+
   test("randomized testing of inversion"){
     for{r <- 0 to 500
         td = randomType(2)
