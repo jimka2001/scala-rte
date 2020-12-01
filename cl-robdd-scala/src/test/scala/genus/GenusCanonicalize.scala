@@ -357,17 +357,10 @@ class GenusCanonicalize extends AnyFunSuite {
     val dnf = td.canonicalize(Some(Dnf))
     val inverse = SNot(dnf)
 
-    println(s"td      = $td")
-    println("        = " + td.canonicalize(Some(Dnf)))
-    println(s"dnf     = $dnf")
-    println("        = " + dnf.canonicalize(Some(Dnf)))
-    println(s"inverse = $inverse")
-    println("        = " + inverse.canonicalize(Some(Dnf)))
-
     assert(td - dnf == SEmpty,
-           s"td=$td dnf=$dnf, dnf inverse=$inverse, td-dnf=${td - dnf}, expecting EmptyType")
-    assert((td || inverse) == STop,
-           s"td=$td inverse=$inverse, td || inverse=${td || inverse}, expecting TopType")
+           s"td=$td dnf=$dnf, dnf inverse=$inverse, td-dnf=${td - dnf}, expecting SEmpty")
+    assert(((td || inverse) == STop) || (!(td || inverse) == SEmpty),
+           s"td=$td inverse=$inverse, td || inverse=${td || inverse}, expecting SEmpty")
   }
 
   test("issue 5"){
@@ -387,13 +380,14 @@ class GenusCanonicalize extends AnyFunSuite {
     val A = SMember(4,5,6)
     val B = classOf[java.lang.Integer]
     val C = SMember("a","b","c")
-    val D = SAnd( SOr(C,B),SAnd(SNot( C),SNot(B)))
+    val D = SAnd( SNot(SEmpty), SNot(C), SNot(B), SOr(C,B))
     assert(D.canonicalize(Some(Dnf)) == SEmpty)
 
     //[And [Not [Member 4,5,6]],[Or [Member a,b,c],java.lang.Integer],[And [Not [Member a,b,c]],[Not java.lang.Integer]]]
     val E = SAnd( SNot(A),SOr(C,B),SAnd(SNot( C),SNot(B)))
-    testDnfInverse(SAnd(SOr(B,
-                            C),
+    assert(E.canonicalize(Some(Dnf)) == SEmpty)
+
+    testDnfInverse(SAnd(SOr(B, C),
                         SNot(A)))
 
     // [And [And [Or java.lang.Integer,
