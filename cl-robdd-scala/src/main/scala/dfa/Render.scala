@@ -62,7 +62,6 @@ object Render {
   }
 
   def dfaToDot[L,E](dfa:Dfa[L,E],stream: OutputStream, title:String): Unit = {
-    val penWidth = 2
     val qarr=dfa.Q.toArray
 
     def write(str: String): Unit = {

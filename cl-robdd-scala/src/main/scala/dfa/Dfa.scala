@@ -25,7 +25,7 @@ class State[L,E](dfa:Dfa[L,E], val id:Int) {
   var transitions:Set[Transition[L,E]] = Set()
   def delta(label:L):State[L,E] = dfa.delta(this,label)
 
-  override def toString():String = {
+  override def toString:String = {
     s"q:$id"
   }
 }
@@ -61,10 +61,10 @@ class Dfa[L,E](Qids:Set[Int],
     (to, toFromTriples) <- fromTriples.groupBy(_._3)
     toState = findState(to)
     label = toFromTriples.map(_._2).reduce(combineLabels)
-  } fromState.transitions += new Transition(fromState,label,toState)
+  } fromState.transitions += Transition(fromState,label,toState)
 
   val q0: State[L,E] = findState(q0id)
   val F: Set[State[L,E]] = Fids.map(findState)
 
-  override def toString():String = Serialize.serializeToString(dfa=this)
+  override def toString:String = Serialize.serializeToString(dfa=this)
 }

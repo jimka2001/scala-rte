@@ -27,7 +27,6 @@ import dimacs.QmVec._
 import scala.annotation.tailrec
 import scala.collection.immutable.BitSet
 import scala.collection.mutable
-import scala.collection.mutable.HashMap
 import scala.math._
 
 case class ClauseDesignator(clause:ClauseAsBitSet, posCount:Int, length:Int, rectified:ClauseAsList)
@@ -211,12 +210,11 @@ class QmVec() {
   }
   def writeDimacs(fileName:String, comment:Option[List[String]]):(Int,Int) = {
     import java.io._
-
     import accumulators.Accumulators.{withSetCollector, withSummer}
 
     val file = new File(fileName)
     val bw = new BufferedWriter(new FileWriter(file))
-    val numVars:Int = withSetCollector{collect:(Int =>Unit) => for {
+    val numVars:Int = withSetCollector{collect: Int =>Unit => for {
       (_, lengthHash) <- hash
       (_, rectHash) <- lengthHash
       (rectified, _) <- rectHash

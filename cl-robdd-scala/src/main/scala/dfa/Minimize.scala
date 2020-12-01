@@ -88,7 +88,7 @@ object Minimize {
     def minState(eqvClass:Set[State[L,E]]):Int = {
       eqvClass.map(_.id).reduce( (a:Int,b:Int) => a.min(b))
     }
-    val ids:Map[Set[State[L,E]],Int] = PiMinimized.map{(eqvClass)=>(eqvClass -> minState(eqvClass))}.toMap
+    val ids:Map[Set[State[L,E]],Int] = PiMinimized.map{eqvClass=> eqvClass -> minState(eqvClass) }.toMap
     def eqvClassOf(s:State[L,E]):Set[State[L,E]] = {
       PiMinimized.find(eqvClass => eqvClass.contains(s)).get
     }
@@ -109,9 +109,9 @@ object Minimize {
       (eqv,id) <- ids
       if newFids.contains(id)
       q = eqv.head
-    } yield (id -> dfa.exitValue(q))
+    } yield id -> dfa.exitValue(q)
 
     // return a newly constructed Dfa extracted from the Hopcroft partition minimization
-    new Dfa[L, E](newIds, newQ0, newFids, newProtoDelta.toSet, dfa.combineLabels, newFmap.toMap)
+    new Dfa[L, E](newIds, newQ0, newFids, newProtoDelta, dfa.combineLabels, newFmap)
   }
 }

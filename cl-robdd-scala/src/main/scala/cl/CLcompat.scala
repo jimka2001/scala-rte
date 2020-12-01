@@ -21,16 +21,19 @@
 
 package cl
 
+import scala.annotation.tailrec
+
 object CLcompat {
 
   def prog1[A,B](val1:A, code2: => B):A = {
     code2 // eval for side effect
     val1
   }
-  def prog2[A,B,C](val1:A, val2:B, code2: => C):B = {
+  def prog2[A,B,C](_unused : A, val2:B, code2: => C):B = {
     code2 // eval for side effect
     val2
   }
+  @tailrec
   def every[A, B](L1: List[A], L2: List[B])(f: (A, B) => Boolean): Boolean = {
     (L1, L2) match {
       case (a :: as, b :: bs) => f(a, b) && every(as, bs)(f)
@@ -41,6 +44,7 @@ object CLcompat {
   def merge[A](clauses1: List[A], clauses2: List[A], clauseLess:(A,A)=>Boolean): List[A] = {
     // Merge two lists which are already in sorted order, according to clauseLess
     //   into a new list which is likewise in sorted order.
+    @tailrec
     def loop(clauses1: List[A], clauses2: List[A], acc: List[A]): List[A] = {
       (clauses1, clauses2) match {
         case (Nil, Nil) => acc.reverse
@@ -55,7 +59,7 @@ object CLcompat {
   }
 
   def mapcan[A1, A2, B](f: (A1, A2) => List[B], L1: List[A1], L2: List[A2]): List[B] = {
-    (L1, L2).zipped.flatMap(f)
+    L1.lazyZip(L2).flatMap(f)
   }
 
   def block[A](body:(A=>Nothing)=>A):A = {
@@ -75,5 +79,8 @@ object CLcompat {
     catch{
       case nonLocalExit: NonLocalExit => nonLocalExit.data
     }
+  }
+  def main(argv:Array[String]):Unit = {
+
   }
 }

@@ -23,6 +23,8 @@ package dimacs
 
 import dimacs.QmVec.{CNF, ClauseAsList, canonicalizeClause}
 
+import scala.annotation.tailrec
+
 object dimacsParse {
 
   import scala.io.Source
@@ -100,6 +102,7 @@ object dimacsParse {
   }
 
   def takeWhile(it: BufferedIterator[Char], p: Char => Boolean): List[Char] = {
+    @tailrec
     def loop(buf: List[Char]): List[Char] = {
       if (it.hasNext && p(it.head))
         loop(it.next() :: buf)
@@ -137,14 +140,14 @@ object dimacsParse {
   }
 
   def consumeBufferedContent(it: BufferedIterator[Char], consumeClause: ClauseAsList => Unit, consumeProblem: Problem => Unit): Unit = {
+    @tailrec
     def recur(partialClause: ClauseAsList): Unit = {
 
       if (it.hasNext)
         it.head match {
-          case 'p' => {
+          case 'p' =>
             consumeProblem(parseProblem(it))
             recur(partialClause)
-          }
           case 'c' =>
             skipComment(it)
             recur(partialClause)
@@ -243,7 +246,7 @@ object dimacsParse {
     consumeFileByName(inFileName,
                       clause => vec.addClause1(canonicalizeClause(clause)),
                       problem => {
-                        numVars1 = problem.numVars;
+                        numVars1 = problem.numVars
                         numClauses1 = problem.numClauses
                       })
 
