@@ -21,7 +21,8 @@
 
 package cl
 
-import scala.annotation.tailrec
+import scala.annotation.{tailrec, unused}
+
 
 object CLcompat {
 
@@ -29,10 +30,12 @@ object CLcompat {
     code2 // eval for side effect
     val1
   }
-  def prog2[A,B,C](_unused : A, val2:B, code2: => C):B = {
+
+  def prog2[A,B,C](@unused _unused : A, val2:B, code2: => C):B = {
     code2 // eval for side effect
     val2
   }
+
   @tailrec
   def every[A, B](L1: List[A], L2: List[B])(f: (A, B) => Boolean): Boolean = {
     (L1, L2) match {
@@ -83,4 +86,6 @@ object CLcompat {
   def main(argv:Array[String]):Unit = {
 
   }
+
+
 }

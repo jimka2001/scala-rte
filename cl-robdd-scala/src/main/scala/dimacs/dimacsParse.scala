@@ -23,7 +23,7 @@ package dimacs
 
 import dimacs.QmVec.{CNF, ClauseAsList, canonicalizeClause}
 
-import scala.annotation.tailrec
+import scala.annotation.{tailrec, unused}
 
 object dimacsParse {
 
@@ -206,7 +206,7 @@ object dimacsParse {
     }
   }
 
-  def dimacsConvertDirectory(suffix: String, inputDirectory: String, getOutputName: String => String, fileNames: List[String]): Unit = {
+  def dimacsConvertDirectory(@unused suffix: String, inputDirectory: String, getOutputName: String => String, fileNames: List[String]): Unit = {
     fileNames.foreach { fName =>
       dimacsConvertFile(fName,
                         fName => s"$inputDirectory/$fName",
