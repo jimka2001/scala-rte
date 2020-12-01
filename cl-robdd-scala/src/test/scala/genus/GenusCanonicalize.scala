@@ -22,21 +22,25 @@
 
 package genus
 
-import org.scalatest._
 import genus.Types._
 import genus.NormalForm._
+import org.scalatest.Assertion
 import org.scalatest.funsuite.AnyFunSuite
 
 class GenusCanonicalize extends AnyFunSuite {
 
   trait TraitA
+
   trait TraitB
+
   trait TraitC
+
   trait TraitD
-  val A = classOf[TraitA]
-  val B = classOf[TraitB]
-  val C = classOf[TraitC]
-  val D = classOf[TraitD]
+
+  val A: Class[TraitA] = classOf[TraitA]
+  val B: Class[TraitB] = classOf[TraitB]
+  val C: Class[TraitC] = classOf[TraitC]
+  val D: Class[TraitD] = classOf[TraitD]
   test("and canonicalize") {
     // (and A EmptyType) -> EmptyType
     assert(SAnd(SAtomic(A), SEmpty, SAtomic(B)).canonicalize()
@@ -84,22 +88,22 @@ class GenusCanonicalize extends AnyFunSuite {
                    )
            )
   }
-  test("(and (and A B) (and C D)) -> (and A B C D)"){
+  test("(and (and A B) (and C D)) -> (and A B C D)") {
     // (and (and A B) (and C D)) -> (and A B C D)
     assert(SAnd(SAnd(SAtomic(A),
                      SAtomic(B)),
                 SAnd(SAtomic(C),
                      SAtomic(D))).canonicalize()
-           == (SAnd(SAtomic(A),
+           == SAnd(SAtomic(A),
                     SAtomic(B),
                     SAtomic(C),
-                    SAtomic(D))))
+                    SAtomic(D)))
   }
-  test("canonicalize children of and"){
+  test("canonicalize children of and") {
     assert(SAnd(SMember("1")).canonicalize()
            == SEql("1"))
   }
-  test("canonicalize member"){
+  test("canonicalize member") {
     assert(SMember().canonicalize()
            == SEmpty)
     assert(SMember("hello").canonicalize()
@@ -149,7 +153,7 @@ class GenusCanonicalize extends AnyFunSuite {
                SOr(SAtomic(C), SAtomic(D))).canonicalize()
            == SOr(SAtomic(A), SAtomic(B), SAtomic(C), SAtomic(D)))
   }
-  test("canonicalize or 2"){
+  test("canonicalize or 2") {
     assert(SOr(A, SNot(A)).canonicalize()
            == STop)
     // (or A (and (not A) B) ==> (or A B)
@@ -159,8 +163,8 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SOr(A, A && B).canonicalize()
            == SAtomic(A))
     // (or A (and (not A) B C) D) --> (or A (and B C) D)
-     assert(SOr(A, SAnd(!A, B, C), D).canonicalize()
-            == SOr(A, D, B && C))
+    assert(SOr(A, SAnd(!A, B, C), D).canonicalize()
+           == SOr(A, D, B && C))
     // (or A (and A B C) D) --> (or A D)
     assert(SOr(A, SAnd(A, B, C), D).canonicalize()
            == SOr(A, D))
@@ -188,7 +192,7 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SOr(SEql(-1), SEql(0), SNot(SMember(-1, 0))).canonicalize()
            == STop)
   }
-  test("discovered errors"){
+  test("discovered errors") {
     abstract class Abstract1
 
     trait Trait2
@@ -214,7 +218,7 @@ class GenusCanonicalize extends AnyFunSuite {
     SOr(SOr(SOr(SNot(SOr(SEql(1)))),
             SNot(SOr(SOr(classOf[Abstract1],
                          SEql(1)))))).canonicalize(Some(Dnf))
-    locally{
+    locally {
       // union: converted [Or [Not [Not java.lang.Integer]],[Not [Not Abstract1$1]]] to Top
       val t1 = SOr(SNot(SNot(classOf[java.lang.Integer])),
                    SNot(SNot(classOf[Abstract1]))).canonicalize()
@@ -227,7 +231,7 @@ class GenusCanonicalize extends AnyFunSuite {
       assert(t1 - dnf == SEmpty)
       // println(List(t1,dnf,t1 - dnf))
     }
-    locally{
+    locally {
       val t1 = SNot(SAnd(SNot(classOf[java.lang.Integer]),
                          SNot(classOf[Abstract1])))
       assert(t1.canonicalize() != STop)
@@ -255,11 +259,11 @@ class GenusCanonicalize extends AnyFunSuite {
     //               [And [Not [Member a,b,c]],
     //                    [Not java.lang.Number]],
     //               [Member -1,a,b,c]]
-    locally{
+    locally {
       val t1 = SOr(SAnd(SNot(SEql(-1)),
                         classOf[java.lang.Number]),
                    SAnd(SNot(SMember("a", "b", "c")),
-                              SNot(classOf[java.lang.Number])),
+                        SNot(classOf[java.lang.Number])),
                    SMember(-1, "a", "b", "c"))
       assert(t1.inhabited.contains(true))
       println("dnf =" + t1.canonicalize(Some(Dnf)))
@@ -267,7 +271,7 @@ class GenusCanonicalize extends AnyFunSuite {
       assert(t1.canonicalize(Some(Cnf)) == STop)
     }
   }
-  test("dnf vs cnf"){
+  test("dnf vs cnf") {
     trait TraitA
     trait TraitB
     trait TraitC
@@ -298,23 +302,23 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(cnf1 - dnf3 == SEmpty, "test 7")
     assert(dnf3 - cnf1 == SEmpty, "test 8")
   }
-  
-  test("randomized testing of canonicalize"){
 
-    for{r <- 0 to 500
-        td = randomType(5)
-        can = td.canonicalize(Some(Dnf))
-        dnf = td.canonicalize(Some(Dnf))
-        td_inhabited = td.inhabited
-        can_inhabited = can.inhabited
-        dnf_inhabited = dnf.inhabited}{
+  test("randomized testing of canonicalize") {
+
+    for {_ <- 0 to 500
+         td = randomType(5)
+         can = td.canonicalize(Some(Dnf))
+         dnf = td.canonicalize(Some(Dnf))
+         td_inhabited = td.inhabited
+         can_inhabited = can.inhabited
+         dnf_inhabited = dnf.inhabited} {
       assert(can_inhabited.isEmpty
-               || td_inhabited.isEmpty
-               || td.inhabited == can.inhabited,
+             || td_inhabited.isEmpty
+             || td.inhabited == can.inhabited,
              s"td=$td  can=$can, inhabited = $td_inhabited vs $can_inhabited")
       assert(td_inhabited.isEmpty
-               || dnf_inhabited.isEmpty
-               || td.inhabited == dnf.inhabited,
+             || dnf_inhabited.isEmpty
+             || td.inhabited == dnf.inhabited,
              s"td=$td  dnf=$dnf inhabited = $td_inhabited vs $dnf_inhabited")
     }
   }
@@ -349,16 +353,59 @@ class GenusCanonicalize extends AnyFunSuite {
   //  at org.scalatest.Assertions$AssertionsHelper.macroAssert(Assertions.scala:1295)
   //  at genus.GenusCanonicalize.$anonfun$new$19(GenusCanonicalize.scala:327)
 
-  test("randomized testing of inversion"){
-    for{r <- 0 to 500
-        td = randomType(2)
-        dnf = td.canonicalize(Some(Dnf))
-        inverse= SNot(dnf)}{
+  def testDnfInverse(td: SimpleTypeD): Assertion = {
+    val dnf = td.canonicalize(Some(Dnf))
+    val inverse = SNot(dnf)
 
-      assert(td - dnf == SEmpty,
-             s"td=$td dnf=$dnf, td-dnf=${td-dnf}, expecting EmptyType")
-      assert((td || inverse) == STop,
-             s"td=$td inverse=$inverse, td || inverse=${td || inverse}, expecting TopType")
-    }
+    println(s"td      = $td")
+    println("        = " + td.canonicalize(Some(Dnf)))
+    println(s"dnf     = $dnf")
+    println("        = " + dnf.canonicalize(Some(Dnf)))
+    println(s"inverse = $inverse")
+    println("        = " + inverse.canonicalize(Some(Dnf)))
+
+    assert(td - dnf == SEmpty,
+           s"td=$td dnf=$dnf, dnf inverse=$inverse, td-dnf=${td - dnf}, expecting EmptyType")
+    assert((td || inverse) == STop,
+           s"td=$td inverse=$inverse, td || inverse=${td || inverse}, expecting TopType")
+  }
+
+  test("issue 5"){
+    //  td=[And [Not [= 1]],
+    //          [Or java.lang.Number,
+    //              Trait1$1]]
+
+    testDnfInverse(SAnd(SNot(SEql(1)),
+                        SOr(classOf[java.lang.Number],
+                            classOf[Trait1])))
+  }
+  test("issue 4"){
+    //td=[And [Or java.lang.Integer,
+    //           [Member a,b,c]],
+    //        [Not [Member 4,5,6]]]
+
+    val A = SMember(4,5,6)
+    val B = classOf[java.lang.Integer]
+    val C = SMember("a","b","c")
+    val D = SAnd( SOr(C,B),SAnd(SNot( C),SNot(B)))
+    assert(D.canonicalize(Some(Dnf)) == SEmpty)
+
+    //[And [Not [Member 4,5,6]],[Or [Member a,b,c],java.lang.Integer],[And [Not [Member a,b,c]],[Not java.lang.Integer]]]
+    val E = SAnd( SNot(A),SOr(C,B),SAnd(SNot( C),SNot(B)))
+    testDnfInverse(SAnd(SOr(B,
+                            C),
+                        SNot(A)))
+
+    // [And [And [Or java.lang.Integer,
+    //              [Member a,b,c]],
+    //           [Not [Member 4,5,6]]],
+    //      [Not [Or [And [Not [Member 4,5,6]],
+    //                    java.lang.Integer],
+    //               [Member a,b,c]]]]
+  }
+  test("randomized testing of inversion") {
+    for {_ <- 0 to 500
+         }
+      testDnfInverse(randomType(2))
   }
 }
