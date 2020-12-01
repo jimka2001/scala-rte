@@ -318,7 +318,7 @@ case class CacheByJboss() extends Cache {
   // https://users.scala-lang.org/t/id-like-a-weak-hash-table-which-allows-gc-when-value-is-otherwise-unreferenced/4681/8?u=jimka
   import org.jboss.util.collection._
 
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
   val hash = new WeakValueHashMap[(Int, Bdd, Bdd), BddNode].asScala
 
   override def getBddSizeCount():(Long,Long) = {
