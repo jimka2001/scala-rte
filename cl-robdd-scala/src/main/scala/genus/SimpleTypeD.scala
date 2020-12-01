@@ -129,6 +129,21 @@ abstract class SimpleTypeD { // SimpleTypeD
     fixed(w, List[T]())
   }
 
+  def findSimplifier(tag:String, t:SimpleTypeD, simplifiers:List[() => SimpleTypeD]):SimpleTypeD = {
+    // DEBUG version of findSimplifier,  if called with two additional arguments,
+    //   diagnostics will be printed logging the progression of simplifications
+    println(s"$tag starting with $t")
+    val s = findSimplifier(simplifiers)
+    if (s == t)
+      println(s"$tag remained $s")
+    else {
+      println(s"$tag")
+      println(s"  changed $t")
+      println(s"       to $s")
+    }
+    s
+  }
+
   def findSimplifier(simplifiers:List[() => SimpleTypeD]):SimpleTypeD = {
     simplifiers match {
       case Nil => this
