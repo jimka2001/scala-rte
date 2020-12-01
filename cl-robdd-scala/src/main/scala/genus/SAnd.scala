@@ -231,8 +231,8 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
           case None => this
           case Some(sub) =>
             // throw away all proper superclasses of sub, i.e., keep everything that is not a superclass
-            // of sub and also keep sub itself.
-            val keep = tds.filter(sup => sup == sub || sub.subtypep(sup).contains(false))
+            // of sub and also keep sub itself.   keep false and dont-know
+            val keep = tds.filter(sup => sup == sub || ! sub.subtypep(sup).contains(true))
             SAnd(keep: _*)
         }
       },
