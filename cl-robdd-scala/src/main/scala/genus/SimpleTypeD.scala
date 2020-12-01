@@ -113,7 +113,7 @@ abstract class SimpleTypeD { // SimpleTypeD
       }
   }
 
-  def fixedPoint[T](v:T, f:T=>T, goodEnough:(T,T)=>Boolean):T = {
+  def fixedPoint[T](w:T, f:T=>T, goodEnough:(T,T)=>Boolean):T = {
     @tailrec
     def fixed(v:T, history:List[T]):T = {
       val v2 = f(v)
@@ -126,7 +126,7 @@ abstract class SimpleTypeD { // SimpleTypeD
       else
         fixed(v2, v::history)
     }
-    fixed(v,List[T]())
+    fixed(w, List[T]())
   }
 
   def findSimplifier(simplifiers:List[() => SimpleTypeD]):SimpleTypeD = {
