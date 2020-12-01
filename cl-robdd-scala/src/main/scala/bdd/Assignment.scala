@@ -21,6 +21,8 @@
 
 package bdd
 
+import scala.annotation.tailrec
+
 case class Assignment(trueVariables:Set[Int]) {
   def value(v:Int):Boolean = {
     trueVariables.contains(v)
@@ -29,6 +31,7 @@ case class Assignment(trueVariables:Set[Int]) {
 
 object Assignment {
   def apply(bitMask: Long): Assignment = {
+    @tailrec
     def recur(bitMask: Long, bit: Int, set: Set[Int]): Set[Int] = {
       if (0 == bitMask)
         set
@@ -54,6 +57,7 @@ object Assignment {
     val digits = Array("\u2080", "\u2081", "\u2082", "\u2083", "\u2084",
                        "\u2085", "\u2086", "\u2087", "\u2088", "\u2089")
 
+    @tailrec
     def subscript(n: Int, higher: List[String]): String = {
       require(n >= 0)
       if (n < 10)
@@ -62,16 +66,16 @@ object Assignment {
         subscript(n / 10, digits(n % 10) :: higher)
     }
 
-    def loop(trues: List[Int], falses: List[Int], literals: List[String]): String = {
+    @tailrec
+    def loop(trues: List[Int], falses: List[Int], literals: List[String]): String =
       (trues, falses) match {
         case (Nil, Nil) => literals.reverse.mkString("")
         case (x :: xs, Nil) => loop(xs, Nil, (v + subscript(x, List())) :: literals)
         case (Nil, y :: ys) => loop(Nil, ys, ("\u00AC" + v + subscript(y, List())) :: literals)
         case (x :: xs, y :: _) if x < y => loop(xs, falses, (v + subscript(x, List())) :: literals)
         case (x :: _, y :: ys) if x > y => loop(trues, ys, ("\u00AC" + v + subscript(y, List())) :: literals)
-        case (x :: _, y :: _) if x == y => sys.error(s"trues=${trues} and falses=${falses} contain the same literal=${x}")
+        case (x :: _, y :: _) if x == y => sys.error(s"trues=$trues and falses=$falses contain the same literal=$x")
       }
-    }
 
     loop(trues, falses, List())
   }

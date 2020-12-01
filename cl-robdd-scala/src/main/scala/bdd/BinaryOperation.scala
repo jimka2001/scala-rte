@@ -52,7 +52,7 @@ sealed abstract class BinaryOperation() {
         maybeOpHash.withValue(Some(newHashMap())) {
           memoize(thunk)
         }
-      case Some(hash) =>
+      case Some(_) =>
         thunk
     }
   }
@@ -76,7 +76,7 @@ sealed abstract class BinaryOperation() {
           }
         }
         else {
-          if (hash.get((b1, b2)).isEmpty)
+          if (!hash.contains((b1, b2)))
             hash((b1, b2)) = thunk
           hash((b1, b2))
         }

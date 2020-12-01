@@ -21,6 +21,8 @@
 
 package bdd
 
+import scala.annotation.tailrec
+
 object MapColoring {
   type FOLD_FUN = (Seq[String], Bdd, String=>Bdd,(Bdd,Bdd)=>Bdd)=>Bdd
 
@@ -40,7 +42,7 @@ object MapColoring {
   // assign every state two Boolean variables to represent 1 of 4 colors
   def makeStateToVarMap(differentColor:List[String], allStates: List[String]): Map[String, (Int, Int)]  = {
     def correlate(bias:Int, states:List[String]):Map[String, (Int, Int)]  = states.zipWithIndex.map {
-      case (st, index) => (st -> (bias*2 + 2 * index + 1, bias*2 + 2 * index + 2))
+      case (st, index) => st -> (bias*2 + 2 * index + 1, bias*2 + 2 * index + 2)
     }.toMap
     val list2 = allStates.filterNot(x => differentColor.contains(x))
     correlate(0, differentColor) ++ correlate(differentColor.length, list2.reverse)
@@ -49,8 +51,8 @@ object MapColoring {
   def uniGraphToBiGraph(uniGraph:Map[String,Set[String]]):Map[String,Set[String]] = {
     uniGraph.foldLeft(Map[String,Set[String]]()){
       case (acc:Map[String,Set[String]],(st1:String,states:Set[String])) =>
-        acc ++ states.flatMap{st2 => Map((st1 -> (uniGraph(st1)+st2)),
-                                         (st2 -> (uniGraph(st2)+st1)))}}
+        acc ++ states.flatMap{st2 => Map(st1 -> (uniGraph(st1) + st2),
+                                         st2 -> (uniGraph(st2)+st1))}}
   }
 
   def breadthFirstOrder(states:Set[String], uniGraph:Map[String,Set[String]]):List[String] = {
@@ -91,8 +93,8 @@ object MapColoring {
       val bit2 = (index & 2) == 2
       //println(s"fixing color st=$st index=$index a=$a b=$b bit1=$bit1 bit2=$bit2")
       And(bdd,
-          (if (bit1) Bdd(a) else Bdd(-a)),
-          (if (bit2) Bdd(b) else Bdd(-b)))
+          if (bit1) Bdd(a) else Bdd(-a),
+          if (bit2) Bdd(b) else Bdd(-b))
     }
 
     def computeBorderConstraints(ab: String): Bdd = {
@@ -124,14 +126,14 @@ object MapColoring {
       folders(fold)._2(states,
                        top,
                        computeBorderConstraints,
-                       ({ (acc: Bdd, bdd: Bdd) =>
+                       { (acc: Bdd, bdd: Bdd) =>
                          n = n + 1
                          val answer = And(acc, bdd)
-                         val size = (() => answer.size().toDouble)
+                         val size = () => answer.size().toDouble
                          //GraphViz.bddView(answer,drawFalseLeaf=false,s"intermediate-$n-of-$numNodes")
                          consume(n.toDouble, size)
                          answer
-                       })))
+                       }))
   }
 
   // calculate a mapping from graph node to color given that the hard work
@@ -162,6 +164,7 @@ object MapColoring {
     }
   }
 
+  @tailrec
   def removeStates(statesToRemove:List[String], biGraph:Map[String,Set[String]]):Map[String,Set[String]] = {
     statesToRemove match {
       case Nil => biGraph
@@ -207,12 +210,12 @@ object MapColoring {
         // https://users.scala-lang.org/u/jasper-m
         // https://users.scala-lang.org/t/how-to-call-a-function-from-a-java-library/5722/2
         val beans: Array[GarbageCollectorMXBean] = ManagementFactory
-          .getGarbageCollectorMXBeans()
+          .getGarbageCollectorMXBeans
           .toArray(Array.empty[GarbageCollectorMXBean])
 
-        def gcCount(): Long = beans.foldLeft(0L) { (acc, b) => b.getCollectionCount() + acc }
+        def gcCount(): Long = beans.foldLeft(0L) { (acc, b) => b.getCollectionCount + acc }
 
-        def gcTime(): Long = beans.foldLeft(0L) { (acc, b) => b.getCollectionTime() + acc }
+        def gcTime(): Long = beans.foldLeft(0L) { (acc, b) => b.getCollectionTime + acc }
 
         val gcCount0 = gcCount().toDouble
         val gcTime0 = gcTime().toDouble
@@ -268,12 +271,11 @@ object MapColoring {
     val reclaimed: Array[List[(Double, Double)]] = numAllocations.zip(hashSizes)
       .map { case (numAllocation: List[(Double, Double)], hashSizes: List[(Double, Double)]) =>
         def tmp(l1: List[(Double, Double)], l2: List[(Double, Double)]): List[(Double, Double)] = {
-          (l1, l2).zipped.flatMap { case ((n1: Double, numObj1: Double), (n2: Double, numObj2: Double)) => {
+          l1.lazyZip(l2).flatMap { case ((n1: Double, numObj1: Double), (n2: Double, numObj2: Double)) =>
             assert(n1 == n2)
             if (0.0 == numObj1 - numObj2)
               List()
             else List((n1, numObj1 - numObj2))
-          }
           }
         }
 
@@ -326,7 +328,7 @@ object MapColoring {
     retain
   }
 
-  def usMapColoringTest(numRegions:Int) = {
+  def usMapColoringTest(numRegions:Int): Int = {
     import USAgraph._
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols)
     val colors = colorizeMap(numRegions, "US", "ME",
@@ -338,7 +340,7 @@ object MapColoring {
                    colors = { st => colors.getOrElse(st, "no-color") })
   }
 
-  def europeMapColoringTest(numRegions:Int) = {
+  def europeMapColoringTest(numRegions:Int): Int = {
     import EuropeGraph._
     biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions")(symbols = symbols)
     val colors = colorizeMap(numRegions, "europe", "Russia",
@@ -351,7 +353,7 @@ object MapColoring {
   }
 
   def main(argv: Array[String]): Unit = {
-    for {numNodes <- (35 to 49 )} {
+    for {numNodes <- 35 to 49} {
       import java.lang.System.nanoTime
 
       val time0 = nanoTime

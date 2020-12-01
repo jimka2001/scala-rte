@@ -114,7 +114,7 @@ object GraphViz {
       }
     }
 
-    for {(bdd, n) <- names} yield {
+    for {(bdd, _) <- names} yield {
       bdd match {
         case bdd: BddNode =>
           drawConnection(bdd, bdd.positive, style = """"solid"""", color = """"green"""", arrowHead = None, arrowTail = None, dir = None)

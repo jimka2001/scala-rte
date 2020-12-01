@@ -23,7 +23,7 @@ package bdd
 
 object EuropeGraph extends PoliticalMap {
   val allStates: Set[String] = Set("Albania",
-                                   "Andora",
+                                   "Andorra",
                                    "Austria",
                                    "Belarus",
                                    "Belgium",
@@ -66,7 +66,7 @@ object EuropeGraph extends PoliticalMap {
                                    "Ukraine"
                                    )
   val symbols: Map[String,String] = Map("Albania"->"AL",
-                                   "Andora"->"AD",
+                                   "Andorra"->"AD",
                                    "Austria" -> "AT",
                                    "Belarus" -> "BY",
                                    "Belgium" -> "BE",
@@ -110,7 +110,7 @@ object EuropeGraph extends PoliticalMap {
                                    )
 
   val statePositions:Map[String,(Double,Double)] = Map("Albania" -> (42.0,	16.0),
-                                                       "Andora" -> (48.0,4.0),
+                                                       "Andorra" -> (48.0,4.0),
                                                        "Austria" -> (49.0,	11.0),
                                                        "Belarus" -> (53.9,	19.0),
                                                        "Belgium" -> (52.83333333,	4.333333),
@@ -154,7 +154,7 @@ object EuropeGraph extends PoliticalMap {
                                                        )
 
 
-  val stateUniGraph:Map[String,Set[String]] = Map("Andora"-> Set("France"),
+  val stateUniGraph:Map[String,Set[String]] = Map("Andorra"-> Set("France"),
                                                   "Albania" -> Set("Montenegro","Kosovo","Greece"),
                                                   "Austria" -> Set("Liechtenstein","Italy","Slovakia"),
                                                   "Belgium" -> Set("Luxembourg","Germany","Netherlands"),
@@ -184,7 +184,7 @@ object EuropeGraph extends PoliticalMap {
                                                   "Serbia" -> Set("Hungary","Bosnia","Montenegro","Kosovo","Bulgaria","North Macedonia","Croatia"),
                                                   "Slovakia" ->Set("Hungary","Ukraine"),
                                                   "Slovenia" -> Set("Austria","Croatia"),
-                                                  "Spain" -> Set("Andora","France","UK"),
+                                                  "Spain" -> Set("Andorra","France","UK"),
                                                   "Sweden"-> Set("Norway", "Finland"),
                                                   "Switzerland" -> Set("Liechtenstein","Austria","Italy"),
                                                   "Turkey" -> Set("Bulgaria","Greece"),
@@ -197,7 +197,7 @@ object EuropeGraph extends PoliticalMap {
   val stateBiGraph:Map[String,Set[String]] = uniMapToBiMap(allStates,stateUniGraph)
   //biGraphToDot(stateBiGraph,statePositions,"europe-political")(symbols=symbols)
   // assert that stateBiGraph does not contain any isolates vertices
-  assert (allStates.forall{state => stateBiGraph.get(state).nonEmpty})
+  assert (allStates.forall{state => stateBiGraph.contains(state)})
 
   def main(argv:Array[String]):Unit = {
     println("-------------------")

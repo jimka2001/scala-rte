@@ -39,15 +39,15 @@ object DimacsBdd {
   def dnfClauseToBdd(dnfClause: ClauseAsList): Bdd = clauseToBdd(dnfClause, BddTrue, And)
 
   // Interpret a list of Clauses as an And of Ors where each clause is a disjunction
-  def cnfToBdd(cnf: TraversableOnce[ClauseAsList]): Bdd = {
+  def cnfToBdd(cnf: IterableOnce[ClauseAsList]): Bdd = {
     cnf.treeMapReduce(BddTrue:Bdd)(cnfClauseToBdd, { (acc: Bdd, b: Bdd) => And(acc, b) })
   }
 
-  def dnfToBdd(dnf: TraversableOnce[ClauseAsList]): Bdd = {
+  def dnfToBdd(dnf: IterableOnce[ClauseAsList]): Bdd = {
     dnfToBdd2(dnf, ()=>())
   }
   // Interpret a list of Clauses as an Or of Ands where each clause is a conjunction
-  def dnfToBdd2(dnf: TraversableOnce[ClauseAsList], thunk: ()=>Unit): Bdd = {
+  def dnfToBdd2(dnf: IterableOnce[ClauseAsList], thunk: ()=>Unit): Bdd = {
     dnf.treeMapReduce(BddFalse:Bdd)(dnfClauseToBdd, { (acc: Bdd, b: Bdd) =>
       thunk()
       Or(acc, b)
@@ -87,9 +87,9 @@ object DimacsMixedReduce {
   def dnfClauseToBdd(dnfClause: ClauseAsList): Bdd = clauseToBdd(dnfClause, BddTrue, And)
 
   // Interpret a list of Clauses as an Or of Ands where each clause is a conjunction
-  def dnfToBdd(dnf: TraversableOnce[ClauseAsList]): Bdd = {
+  def dnfToBdd(dnf: IterableOnce[ClauseAsList]): Bdd = {
     def x(acc:Bdd,next:ClauseAsList):Bdd = Or(acc,dnfClauseToBdd(next))
-    dnf.foldLeft(BddFalse:Bdd)(x)
+    dnf.iterator.foldLeft(BddFalse:Bdd)(x)
   }
 }
 
@@ -102,16 +102,16 @@ object DimacsFold {
   }
   def dnfClauseToBdd(dnfClause: ClauseAsList): Bdd = clauseToBdd(dnfClause, BddTrue, And)
 
-  def dnfToBdd(dnf: TraversableOnce[ClauseAsList]): Bdd = {
+  def dnfToBdd(dnf: IterableOnce[ClauseAsList]): Bdd = {
     dnfToBdd2(dnf,()=>())
   }
   // Interpret a list of Clauses as an Or of Ands where each clause is a conjunction
-  def dnfToBdd2(dnf: TraversableOnce[ClauseAsList],thunk:()=>Unit): Bdd = {
+  def dnfToBdd2(dnf: IterableOnce[ClauseAsList],thunk:()=>Unit): Bdd = {
     def x(acc:Bdd,next:ClauseAsList):Bdd = {
       thunk()
       Or(acc,dnfClauseToBdd(next))
     }
-    dnf.foldLeft(BddFalse:Bdd)(x)
+    dnf.iterator.foldLeft(BddFalse:Bdd)(x)
   }
 }
 
@@ -149,7 +149,7 @@ object ReducePerf {
     require (maxNumTerms > 10)
     require (numTermsStep > 1)
     require (timeOutMinutes > 1)
-    import bdd.BitFiddle.{genDnfFromBitMask, prng}
+    import bdd.BitFiddle.genDnfFromBitMask
     import bdd.Bdd.withNewBddHash
 
     var size = 0L
@@ -169,9 +169,9 @@ object ReducePerf {
 
     type PLOT_DATA = (String, Double, Double, Double, Double)
     val rawDataForPlot: Iterator[PLOT_DATA] = for {
-      numTerms <- (10 to maxNumTerms by numTermsStep).toIterator.takeWhile(_ => timeOutNotReached(timeOutSeconds))
+      numTerms <- (10 to maxNumTerms by numTermsStep).iterator.takeWhile(_ => timeOutNotReached(timeOutSeconds))
       (text, f) <- foldPairs
-      dnf = genDnfFromBitMask(numVars, maxNumBits, numTerms, _ => true).toList
+      dnf = genDnfFromBitMask(numVars, maxNumBits, numTerms, _ => true).iterator.toList
       ms: Double = time(3, s"maxNumBits=$maxNumBits num-terms=$numTerms algo=$text", {
         withNewBddHash {
           f(dnf)
@@ -189,13 +189,13 @@ object ReducePerf {
 
     val rawDataForPlotAsList = rawDataForPlot.toList
 
-    for { (extract_y, label_y,baseName) <- List((((_:PLOT_DATA)._3),"Time (ms)","limited-bdd"),
-                                                (((_:PLOT_DATA)._4),"Size","limited-bdd-size"),
-                                                (((_:PLOT_DATA)._5),"Count","limited-bdd-count"),
+    for { (extract_y, label_y,baseName) <- List(((_:PLOT_DATA)._3,"Time (ms)","limited-bdd"),
+                                                ((_:PLOT_DATA)._4,"Size","limited-bdd-size"),
+                                                ((_:PLOT_DATA)._5,"Count","limited-bdd-count"),
                                                 )}  {
       val dataForPlot = for {
         (text, tuples) <- rawDataForPlotAsList.groupBy(_._1).toList
-      } yield (text, tuples.map(_._2).toList, tuples.map(extract_y).toList)
+      } yield (text, tuples.map(_._2), tuples.map(extract_y))
 
       gnuPlot(dataForPlot)(
               title=s"Fold Strategy $label_y Performance of n=$numVars bits=$maxNumBits",
@@ -215,7 +215,7 @@ object ReducePerf {
   }
 
   def testGenSizePlotPerFold(numVars:Int,numTerms:Int,maxNumLiteralsPerTerm:Int): Unit = {
-    import bdd.BitFiddle.{genDnfFromBitMask}
+    import bdd.BitFiddle.genDnfFromBitMask
     import bdd.Bdd.withNewBddHash
     val foldPairs = List(("         fold", bdd.DimacsFold.dnfToBdd2 _)
                          , ("treeMapReduce", bdd.DimacsBdd.dnfToBdd2 _)
@@ -223,7 +223,7 @@ object ReducePerf {
     type PLOT_DATA = (String, Int, Int, Long, Long, Long, Long)
     val rawDataForPlot:Seq[PLOT_DATA] = for {
       numLiteralsPerTerm <- 2 to maxNumLiteralsPerTerm
-      dnf = genDnfFromBitMask(numVars, numLiteralsPerTerm, numTerms, _ => true).toList
+      dnf = genDnfFromBitMask(numVars, numLiteralsPerTerm, numTerms, _ => true).iterator.toList
       (text, f) <- foldPairs
       dataPoint <- locally{
         import accumulators.Accumulators.withCollector
@@ -306,7 +306,7 @@ object ReducePerf {
         } yield data
 
         gnuPlot(dataForPlot)(
-          title = s"${numLiteralsPerTerm}-Density $llabel",
+          title = s"$numLiteralsPerTerm-Density $llabel",
           comment = s"$llabel Ratio tree-fold / default-fold",
           xAxisLabel = "Iteration",
           grid = true,
@@ -319,7 +319,7 @@ object ReducePerf {
 
 
   def testNumBitsConstruction(numVars:Int,maxNumTerms:Int,numDnfs:Int,maxNumLiteralsPerTerm:Int): Unit = {
-    import bdd.BitFiddle.{genDnfFromBitMask, prng}
+    import bdd.BitFiddle.genDnfFromBitMask
     import bdd.Bdd.withNewBddHash
     val foldPairs = List(("         fold", bdd.DimacsFold.dnfToBdd _)
                          , ("treeMapReduce", bdd.DimacsBdd.dnfToBdd _)
@@ -328,7 +328,7 @@ object ReducePerf {
     val step =  4
     val rawDataForPlot = for {
       numLiteralsPerTerm <- 2 to maxNumLiteralsPerTerm
-      dnfs = (1 to numDnfs).map(_ => genDnfFromBitMask(numVars, numLiteralsPerTerm, maxNumTerms, _ => true).toList)
+      dnfs = (1 to numDnfs).map(_ => genDnfFromBitMask(numVars, numLiteralsPerTerm, maxNumTerms, _ => true).iterator.toList)
       numTerms <- 10 to maxNumTerms by step
       (text, f) <- foldPairs
       truncatedDnfs = dnfs.map { dnf => dnf.take(numTerms) }
@@ -368,11 +368,11 @@ object ReducePerf {
     import bdd.Bdd.withNewBddHash
     require(maxNumVars >= 2)
     val rawDataForPlot = for {
-      n <- (3 to maxNumVars).toIterator // 24 is too large
+      n <- (3 to maxNumVars).iterator // 24 is too large
       dnfIt = genRandomDnf(n)
       (text, f) <- foldPairs
       _ = println(s"constructing BDD with n=$n $text")
-      dnf = dnfIt.toList
+      dnf = dnfIt.iterator.toList
       elapsed = time(2, s"n=$n   $text ", {
         withNewBddHash {
           f(dnf)
@@ -389,7 +389,7 @@ object ReducePerf {
       ys = sorted.map {
         _._3
       }
-    } yield (text, xs.toList, ys.toList)
+    } yield (text, xs, ys)
     gnuPlot(dataForPlot)(
       title = "Fold Strategy Performance for Bdd Construction",
       comment = "Fold Strategy Performance for Bdd Construction",
@@ -400,7 +400,7 @@ object ReducePerf {
   }
 
   def main(argv: Array[String]): Unit = {
-    import treereduce.RationalFoldTest.rationalFoldTest
+    //import treereduce.RationalFoldTest.rationalFoldTest
 
     //println("rationalFoldTest")
     //rationalFoldTest()

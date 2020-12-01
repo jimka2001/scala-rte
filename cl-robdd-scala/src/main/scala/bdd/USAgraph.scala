@@ -80,7 +80,7 @@ object USAgraph extends PoliticalMap {
                                   "WY"
                                   )
   val statePositions:Map[String,(Double,Double)] = Map()
-  val symbols:Map[String,String] = allStates.map{ st => (st -> st)}.toMap
+  val symbols:Map[String,String] = allStates.map{ st => st -> st }.toMap
   // Uni-directional graph so that if x is a member of stateUniGraph(y)
   //   then y is NOT a member of stateUniGraph(x)
   val stateUniGraph:Map[String,Set[String]] = Map(

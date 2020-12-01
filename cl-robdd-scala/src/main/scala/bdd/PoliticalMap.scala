@@ -21,6 +21,8 @@
 
 package bdd
 
+import scala.annotation.tailrec
+
 
 class PoliticalMap {
   def uniMapToBiMap(all:Set[String], uniGraph:Map[String,Set[String]]):Map[String,Set[String]] = {
@@ -44,19 +46,19 @@ class PoliticalMap {
     val nil:Map[String,Set[String]] = Map()
     val (newMap,_) =  biGraph.foldLeft((nil, Set[String]())) { case ((m: Map[String, Set[String]], done: Set[String]), (st: String, states: Set[String])) =>
       println(s"$st -> ${states diff done}")
-      (m + (st -> (states diff done)), (done + st))
+      (m + (st -> (states diff done)), done + st)
     }
     newMap
   }
 
   def checkUniMap(all:Set[String],uniGraph:Map[String,Set[String]]):Unit = {
     for {st <- all}
-      assert((uniGraph.get(st).nonEmpty ||
+      assert(uniGraph.contains(st) ||
         uniGraph.count { case (_, v) =>
           v.contains(st)
-        } >= 1), s"fail 1, problem with nothing connects to $st")
+        } >= 1, s"fail 1, problem with nothing connects to $st")
 
-    for{ (k,v) <- uniGraph}
+    for{ (k,_) <- uniGraph}
       assert(      all.contains(k), s"fail 2 expecting allStates contains $k")
     for{ (k,v) <- uniGraph}
       assert( v.subsetOf(all), s"fail 3, $k connects to non-existing ${v diff all}")
@@ -71,11 +73,12 @@ class PoliticalMap {
 
   def checkBiMap(all:Set[String],biGraph:Map[String,Set[String]]):Unit = {
     // assert that stateBiGraph does not contain any isolates vertices
-    assert(all.forall { state => biGraph.get(state).nonEmpty })
+    assert(all.forall { state => biGraph.contains(state) })
   }
 
   def orderStates(states:List[String], biGraph:Map[String,Set[String]]):List[String] = {
 
+    @tailrec
     def recur(states: List[String]): List[String] = {
       val nextState: Option[(String, Set[String])] = biGraph.find { case (state, neighbors) => !states.contains(state) && states.exists { st => neighbors.contains(st) } }
       nextState match {
@@ -96,10 +99,10 @@ class PoliticalMap {
   }
   def biGraphToDot(biGraph:Map[String,Set[String]],
                    locations:Map[String,(Double,Double)],
-                   baseName:String)(symbols:(String=>String)={x=>x},
-                                    colors:(String=>String)={x=>"no-color"}) = {
-    val dotPathName = s"/tmp/${baseName}.dot"
-    val pngPathName = s"/tmp/${baseName}.png"
+                   baseName:String)(symbols: String=>String ={ x=>x},
+                                    colors: String=>String ={ _=>"no-color"}): Int = {
+    val dotPathName = s"/tmp/$baseName.dot"
+    val pngPathName = s"/tmp/$baseName.png"
     val stream = new java.io.FileOutputStream(new java.io.File(dotPathName))
 
     def write(str: String): Unit = {
@@ -119,7 +122,7 @@ class PoliticalMap {
     for {(st, index) <- nodes} {
       val abbreviation = symbols(st)
       write(s"""$index [label="$abbreviation"""")
-      if (locations.get(st).nonEmpty) {
+      if (locations.contains(st)) {
         val (lat, lon) = locations(st)
         write(s""" pos="$lon,$lat!"""")
       }

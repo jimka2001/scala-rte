@@ -21,6 +21,8 @@
 
 package bdd
 
+import scala.annotation.tailrec
+
 object BitFiddle {
 
   import bdd.DimacsBdd._
@@ -55,6 +57,7 @@ object BitFiddle {
     require(n >= 0)
     require(m >= 0)
 
+    @tailrec
     def take(m: Int, chosen: Set[Int]): Set[Int] = {
       val sample = prng.nextInt(n) + 1  // 1 <= sample <= n
       if (m == 0)
@@ -91,7 +94,7 @@ object BitFiddle {
   //   when f is called with the Int designating the row of the truth table.
   //   Truth table rows are numbered from 0 at the top, corresponding to FFF...F
   //   to (2^n)-1 at the bottom corresponding to TTT...T
-  def genDnfFromBitMask(n: Int, maxNumBits:Int, maxNumTerms:Int, f: Int => Boolean): TraversableOnce[List[Int]] = {
+  def genDnfFromBitMask(n: Int, maxNumBits:Int, maxNumTerms:Int, f: Int => Boolean): IterableOnce[List[Int]] = {
     require(n >= maxNumBits)
     import accumulators.Accumulators.withCollector
 
@@ -112,7 +115,7 @@ object BitFiddle {
                                             (1L << maxNumBits) * (0 until maxNumBits).foldLeft(1L) { (acc, j) => acc * (n - j) })
         .toInt
       withCollector { collect =>
-        (0 until numSamplesPossible).foreach { i =>
+        (0 until numSamplesPossible).foreach { _ =>
           val bitSet = genSample(n, maxNumBits)
           val term = bitSet.map { i => if (prng.nextBoolean()) i else -i }
           if (f(0))
@@ -122,9 +125,9 @@ object BitFiddle {
     }
   }
 
-  def genRandomDnf(n: Int): TraversableOnce[List[Int]] = genRandomDnf(n, n, 1<<n - 1, 0.5)
+  def genRandomDnf(n: Int): IterableOnce[List[Int]] = genRandomDnf(n, n, 1<<n - 1, 0.5)
 
-  def genRandomDnf(n: Int, maxNumBits:Int, maxNumTerms:Int, odds: Double): TraversableOnce[List[Int]] = {
+  def genRandomDnf(n: Int, maxNumBits:Int, maxNumTerms:Int, odds: Double): IterableOnce[List[Int]] = {
     // generate a dnf containing roughly odds (as a fraction) randomly selected
     //   of the possible minterms of n-variables.
     genDnfFromBitMask(n, maxNumBits, maxNumTerms, _ => prng.nextDouble() < odds)

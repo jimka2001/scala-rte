@@ -50,10 +50,9 @@ sealed abstract class Bdd {
       bdd match {
         case BddFalse => ()
         case BddTrue => client(assignTrue,assignFalse)
-        case BddNode(label, positive, negative) => {
+        case BddNode(label, positive, negative) =>
           recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse)
           recur(negative, assignTrue, Assignment(assignFalse.trueVariables + label))
-        }
       }
     }
     recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))
@@ -64,10 +63,9 @@ sealed abstract class Bdd {
       bdd match {
         case BddFalse => None
         case BddTrue => Some((assignTrue,assignFalse))
-        case BddNode(label, positive, negative) => {
+        case BddNode(label, positive, negative) =>
           recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse) orElse
             recur(negative, assignTrue, Assignment(assignFalse.trueVariables + label))
-        }
       }
     }
     recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))
@@ -333,8 +331,6 @@ case class CacheByJboss() extends Cache {
       case None | Some(null) =>
         val bdd = BddNode(label, positive, negative)
         numAllocations = 1L + numAllocations
-        //if (0 == numAllocations.value % 1000000)
-        //  println(s"numAllocations = ${numAllocations.value} hash=${hash.size} " + 100 * hash.size.toDouble/numAllocations.value)
         hash((label, positive, negative)) = bdd
         bdd
     }

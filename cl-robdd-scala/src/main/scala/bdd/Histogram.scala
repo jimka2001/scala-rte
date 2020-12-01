@@ -70,7 +70,7 @@ object Histogram {
     //   iteration of foldBdds to calculate the same histogram.
     val numPartitions = if (n <= 5) 1 else 64
     import scala.collection.parallel.CollectionConverters._
-    (1 to numPartitions).par.map { x =>
+    (1 to numPartitions).par.map { _ =>
       withNewBddHash {
         foldBdds(n, numSamples / numPartitions, Map[Int, Long]()) { (m  : Map[Int, Long], bdd: Bdd) => {
           val size = bdd.size()
@@ -85,13 +85,13 @@ object Histogram {
     require(n <= 5, s"genBddNormalizedSizeHistogram cannot calculate numSamples for n=$n")
     val normalizer: Double = 1.0 / (1L << (1L << n))
     genBddSizeHistogram(n)
-      .map { case (size: Int, population: Long) => (size -> population * normalizer) }
+      .map { case (size: Int, population: Long) => size -> population * normalizer }
   }
 
   def genBddNormalizedSizeHistogram(n  : Int, numSamples: Long): Map[Int, Double] = {
     val normalizer: Double = 1.0 / numSamples
     genBddSizeHistogram(n, numSamples)
-      .map { case (size: Int, population: Long) => (size -> population * normalizer) }
+      .map { case (size: Int, population: Long) => size -> population * normalizer }
   }
 
   def gnuPlotBddSizeHistogram(r  : Range, numSamples: Int => Long): Unit = {
@@ -135,8 +135,8 @@ object Histogram {
       (1 to 3).foldLeft(List[Bdd]()){(<<< : List[Bdd],n:Int)=>
         val bdds = Bdd(n):: <<<
         val xorbdd = Xor(bdds)
-        xorbdd.bddView(true,s"Xor(1..$n)")
-        println(s"n=$n, xor size=${xorbdd.size}")
+        xorbdd.bddView(drawFalseLeaf = true, s"Xor(1..$n)")
+        println(s"n=$n, xor size=${xorbdd.size()}")
         bdds
       }
     }

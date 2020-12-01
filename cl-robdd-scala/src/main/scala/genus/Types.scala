@@ -123,7 +123,7 @@ object Types {
 
   def conj[T](obj:T, seq:Seq[T]):Seq[T] = seq match {
     case Seq() => Seq(obj)
-    case l @ _::_ => obj :: l
+    case l:List[T] => obj :: l
     case _ => seq :+ obj
   }
   
