@@ -96,6 +96,10 @@ object GenusBdd {
                intToTd : immutable.Map[Int, SimpleTypeD]
                ): SimpleTypeD = {
     def extend1(bdd: Bdd, t: SimpleTypeD, lineage: List[SimpleTypeD]): List[List[SimpleTypeD]] = {
+      // take 1 lineage, which is a list of SimpleTypeD from the root of the Bdd to the current
+      //   level, and return a list of lineages representing all the paths from that point
+      //   down to the true Bdd node.  lineages get optimized in case of disjoint types
+      //   or subtypes, and recursion is pruned when disjoint types are found.
       if (SAnd(lineage: _*).disjoint(t).contains(true)) {
         // if the type t is disjoint with something in the lineage, then prune the recursion
         List[List[SimpleTypeD]]()
@@ -113,6 +117,8 @@ object GenusBdd {
     }
 
     def extend2(bdd: Bdd, lineage: List[SimpleTypeD]): List[List[SimpleTypeD]] = {
+      // given a bdd node and a lineage list expand the positive and negative children
+      //   and append them together.
       bdd match {
         case BddFalse => List()
         case BddTrue => List(lineage)
