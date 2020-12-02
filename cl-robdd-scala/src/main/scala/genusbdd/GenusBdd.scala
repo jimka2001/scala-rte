@@ -95,9 +95,11 @@ object GenusBdd {
   def bddToDnf(bdd     : Bdd,
                intToTd : immutable.Map[Int, SimpleTypeD]
                ): SimpleTypeD = {
-    def extend1(bdd: Bdd, t: SimpleTypeD, lineage: List[SimpleTypeD]): List[List[SimpleTypeD]] = {
+    def extendChild(bdd: Bdd, t: SimpleTypeD, lineage: List[SimpleTypeD]): List[List[SimpleTypeD]] = {
       // take 1 lineage, which is a list of SimpleTypeD from the root of the Bdd to the current
-      //   level, and return a list of lineages representing all the paths from that point
+      //   level but not including the current level.  The job is to add the type resented by the
+      //   current level (if it makes sense to do so) and to recur.
+      //   Returns a list of lineages representing all the paths from that point
       //   down to the true Bdd node.  lineages get optimized in case of disjoint types
       //   or subtypes, and recursion is pruned when disjoint types are found.
       if (SAnd(lineage: _*).disjoint(t).contains(true)) {
@@ -105,29 +107,29 @@ object GenusBdd {
         List[List[SimpleTypeD]]()
       } else if (lineage.exists(sup => sup.subtypep(t).contains(true)))
       // if t is supertype of something in lineage, then don't add t to lineage, just recur
-        extend2(bdd, lineage)
+        extendPN(bdd, lineage)
       else {
         // remove supertypes from lineage
         val filteredLineage = lineage.filter(t2 => !t.subtypep(t2).contains(true))
         if (filteredLineage == lineage)
-          extend2(bdd, t :: lineage) // let the filtered version be GC'ed if they are the same.
+          extendPN(bdd, t :: lineage) // let the filtered version be GC'ed if they are the same.
         else
-          extend2(bdd, t :: filteredLineage)
+          extendPN(bdd, t :: filteredLineage)
       }
     }
 
-    def extend2(bdd: Bdd, lineage: List[SimpleTypeD]): List[List[SimpleTypeD]] = {
+    def extendPN(bdd: Bdd, lineage: List[SimpleTypeD]): List[List[SimpleTypeD]] = {
       // given a bdd node and a lineage list expand the positive and negative children
       //   and append them together.
       bdd match {
         case BddFalse => List()
         case BddTrue => List(lineage)
         case BddNode(label, positive, negative) =>
-          extend1(positive, intToTd(label), lineage) ++ extend1(negative, SNot(intToTd(label)), lineage)
+          extendChild(positive, intToTd(label), lineage) ++ extendChild(negative, SNot(intToTd(label)), lineage)
       }
     }
 
-    prettyOr(extend2(bdd, List()).map(prettyAnd))
+    prettyOr(extendPN(bdd, List()).map(prettyAnd))
   }
 
   def main(argv: Array[String]): Unit = {
