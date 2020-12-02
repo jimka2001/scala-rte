@@ -38,64 +38,91 @@ case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
   // bdd is the Bdd representation of the given SimpleTypeD, however,
   //    the Bdd does not know anything about subtype/supertype relations
   lazy val bdd: Bdd = toBdd(td)
-  def toBdd(td:SimpleTypeD):Bdd = {
+
+  def toBdd(td: SimpleTypeD): Bdd = {
     td match {
       case SEmpty => BddFalse
       case STop => BddTrue
       case SAtomic(_)
            | SEql(_)
            | SMember(_*)
-           | SCustom(_,_) => Bdd(tdToInt.getOrElseUpdate(td.canonicalize(), tdToInt.size+1))
+           | SCustom(_, _) => Bdd(tdToInt.getOrElseUpdate(td.canonicalize(), tdToInt.size + 1))
       case SNot(td) => Not(toBdd(td))
-      case SAnd(tds @ _*) => And(tds.map(toBdd) :_*)
-      case SOr(tds @ _*) => Or(tds.map(toBdd) :_*)
       case _ => ???
+      case SAnd(tds@_*) => And(tds.map(toBdd): _*)
+      case SOr(tds@_*) => Or(tds.map(toBdd): _*)
     }
   }
+
   // dnf is a SimpleTypeD which represents the original td
   //   but in a Disjunctive Normal Form.   The DNF is an Or of Ands
   //   where each And has been reduced according to subtype/supertype
   //   relations, and according to disjoint types.
-  lazy val dnf: SimpleTypeD = locally{
-    val m:immutable.Map[Int,SimpleTypeD] = tdToInt.map(_.swap).toMap
-    GenusBdd.BddToDnf(bdd,m)
+  lazy val dnf: SimpleTypeD = locally {
+    val m: immutable.Map[Int, SimpleTypeD] = tdToInt.map(_.swap).toMap
+    GenusBdd.bddToDnf(bdd, m)
   }
 
   // cnf is a SimpleTypeD which represents the original td
   //   but in a Conjunctive Normal Form.  The CNF is an And
   //   of Ors which has been computed by transforming the DNF.
-  lazy val cnf: SimpleTypeD = dnf.canonicalize(nf=Some(Cnf))
+  lazy val cnf: SimpleTypeD = dnf.canonicalize(nf = Some(Cnf))
 }
 
 object GenusBdd {
 
-  def BddToDnf(bdd: Bdd,
-               intToTd        : immutable.Map[Int, SimpleTypeD]): SimpleTypeD = {
-    // We convert a Bdd to Dnf, using SimpleTypeD objects by starting at the
-    //   root node of the Bdd, and walking to every BddTrue child.  Along each
-    //   walk we accumulate a list of SimpleTypeD objects.  When passing through
-    //   a negative child, we invert the object using SNot().  When arriving
-    //   at a BddFalse terminal node, we do nothing, but terminate the recursion branch.
-    //   When arriving at a BddTrue terminal node, we convert the list of type descriptors
-    //   to their intersection using SAnd, and push this SimpleTypeD onto terms.
-    //   When finished, we then use SOr to union the SAnd objects in terms.
-    //   It might be some some objects in terms is not really an SAnd object because it
-    //   has been reduced with a call to the canonicalize method which might convert
-    //   it to a more fundamental type.
-    var terms = List[SimpleTypeD]()
+  def prettyAnd(terms: List[SimpleTypeD]): SimpleTypeD = {
+    terms match {
+      case Nil => STop
+      case h :: Nil => h
+      case _ => SAnd(terms: _*)
+    }
+  }
 
-    def recur(bdd: Bdd, lineage: List[SimpleTypeD]): Any = {
-      bdd match {
-        case BddFalse => ()
-        case BddTrue => terms = SAnd(lineage: _*).canonicalize() :: terms
-        case BddNode(label, positive, negative) =>
-          recur(positive, intToTd(label) :: lineage)
-          recur(negative, SNot(intToTd(label)) :: lineage)
+  def prettyOr(terms: List[SimpleTypeD]): SimpleTypeD = {
+    terms match {
+      case Nil => SEmpty
+      case h :: Nil => h
+      case _ => SOr(terms: _*)
+    }
+  }
+
+  // returns an OR of ANDs representing the type expressed by the given Bdd.
+  // AND terms containing disjoint types have been removed,
+  // and each AND term is free of subtype/supertype pairs.
+  // Singleton AND and OR terms have been reduced
+  // SAand(x) --> x,  SOr(x) --> x
+  def bddToDnf(bdd     : Bdd,
+               intToTd : immutable.Map[Int, SimpleTypeD]
+               ): SimpleTypeD = {
+
+    def extend1(bdd: Bdd, t: SimpleTypeD, lineage: List[SimpleTypeD]): List[List[SimpleTypeD]] = {
+      if (SAnd(lineage: _*).disjoint(t).contains(true)) {
+        // if the type t is disjoint with something in the lineage, then prune the recursion
+        List[List[SimpleTypeD]]()
+      } else if (lineage.exists(sup => t.subtypep(sup).contains(true)))
+      // if t is supertype of something in lineage, then don't add t to lineage, just recur
+        extend2(bdd, lineage)
+      else {
+        // remove supertypes from lineage
+        val filteredLineage = lineage.filter(t2 => !t.subtypep(t2).contains(true))
+        if (filteredLineage == lineage)
+          extend2(bdd, t :: lineage) // let the filtered version be GC'ed if they are the same.
+        else
+          extend2(bdd, t :: filteredLineage)
       }
     }
 
-    recur(bdd, List[SimpleTypeD]())
-    SOr(terms: _*)
+    def extend2(bdd: Bdd, lineage: List[SimpleTypeD]): List[List[SimpleTypeD]] = {
+      bdd match {
+        case BddFalse => List()
+        case BddTrue => List(lineage)
+        case BddNode(label, positive, negative) =>
+          extend1(positive, intToTd(label), lineage) ++ extend1(negative, SNot(intToTd(label)), lineage)
+      }
+    }
+
+    prettyOr(extend2(bdd, List()).map(prettyAnd))
   }
 
   def main(argv: Array[String]): Unit = {
@@ -128,7 +155,6 @@ object GenusBdd {
         println(s"dnf           = $dnf")
         println(s"cnf           = $cnf")
         println(s"canonicalized = $can")
-
       }
     }
   }
