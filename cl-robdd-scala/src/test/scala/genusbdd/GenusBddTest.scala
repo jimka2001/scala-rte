@@ -24,7 +24,6 @@ package genusbdd
 import bdd._
 import genus._
 import genus.Types._
-import org.scalatest._
 
 import scala.collection.{Seq, mutable}
 import org.scalatest.funsuite.AnyFunSuite
