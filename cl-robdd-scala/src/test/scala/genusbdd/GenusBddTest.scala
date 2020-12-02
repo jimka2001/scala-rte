@@ -30,33 +30,68 @@ import scala.collection.{Seq, mutable}
 import org.scalatest.funsuite.AnyFunSuite
 
 class GenusBddTest extends AnyFunSuite {
-  Bdd.withNewBddHash {
-    trait Trait1
-    trait Trait2
-    trait Trait3 extends Trait2
-    val tds = Seq(SEmpty,
-                  STop,
-                  SAtomic(classOf[Trait1]),
-                  SNot(classOf[Trait1]),
-                  SEql(42),
-                  SMember(1, 2, 3),
-                  SMember(1, 3, 2),
-                  evenType, // SCustom(evenp)
-                  SAnd(classOf[Trait1], classOf[Trait2]),
-                  SAnd(classOf[Trait1], classOf[Trait2], classOf[Trait3]),
-                  SOr(classOf[Trait1], classOf[Trait2]),
-                  SOr(classOf[Trait1], classOf[Trait2], classOf[Trait3]))
-    val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
-    tds.foreach { td => println(GenusBdd(td, tdToInt).bdd) }
-    println(tdToInt)
-    tds.foreach { td =>
-      val dnf = GenusBdd(td, tdToInt).dnf
-      val can = dnf.canonicalize()
-      println() // blank
-      println(s"td = $td")
-      println(s"dnf           = $dnf")
-      println(s"canonicalized = $can")
+  trait Trait1
+  trait Trait2
+  trait Trait3 extends Trait2
+  abstract class Abstract1
+  abstract class Abstract2
 
+  test("subclass"){
+    val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
+
+    Bdd.withNewBddHash {
+      val bdd = GenusBdd(SAnd(SAtomic(classOf[Trait2]),
+                              SAtomic(classOf[Trait3])), tdToInt)
+      val dnf = bdd.dnf
+      assert(dnf == SAtomic(classOf[Trait3]))
+    }
+    Bdd.withNewBddHash {
+      val dnf = GenusBdd(SOr(classOf[Trait2],classOf[Trait3]), tdToInt).dnf
+      assert(dnf == SAtomic(classOf[Trait2]))
+    }
+  }
+  test("disjoint"){
+    val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
+    Bdd.withNewBddHash {
+      val dnf = GenusBdd(SAnd(classOf[Abstract1],classOf[Abstract2]), tdToInt).dnf
+      assert(dnf == SEmpty)
+    }
+  }
+  test("disjoint and subtype"){
+    val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
+    Bdd.withNewBddHash {
+      val dnf = GenusBdd(SAnd(classOf[Abstract1], SOr(SAnd(classOf[Abstract1],classOf[Trait2]),
+                                                      SAnd(classOf[Abstract2],classOf[Trait2]))), tdToInt).dnf
+      assert(dnf == SAnd(classOf[Trait2],classOf[Abstract1]))
+    }
+  }
+  test("test 1") {
+    Bdd.withNewBddHash {
+
+      val tds = Seq(SEmpty,
+                    STop,
+                    SAtomic(classOf[Trait1]),
+                    SNot(classOf[Trait1]),
+                    SEql(42),
+                    SMember(1, 2, 3),
+                    SMember(1, 3, 2),
+                    evenType, // SCustom(evenp)
+                    SAnd(classOf[Trait1], classOf[Trait2]),
+                    SAnd(classOf[Trait1], classOf[Trait2], classOf[Trait3]),
+                    SOr(classOf[Trait1], classOf[Trait2]),
+                    SOr(classOf[Trait1], classOf[Trait2], classOf[Trait3]))
+      val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
+      tds.foreach { td => println(GenusBdd(td, tdToInt).bdd) }
+      println(tdToInt)
+      tds.foreach { td =>
+        val dnf = GenusBdd(td, tdToInt).dnf
+        val can = dnf.canonicalize()
+        println() // blank
+        println(s"td = $td")
+        println(s"dnf           = $dnf")
+        println(s"canonicalized = $can")
+
+      }
     }
   }
 }

@@ -37,7 +37,7 @@ case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
 
   // bdd is the Bdd representation of the given SimpleTypeD, however,
   //    the Bdd does not know anything about subtype/supertype relations
-  lazy val bdd: Bdd = toBdd(td)
+  val bdd: Bdd = toBdd(td)
 
   def toBdd(td: SimpleTypeD): Bdd = {
     td match {
@@ -91,16 +91,15 @@ object GenusBdd {
   // AND terms containing disjoint types have been removed,
   // and each AND term is free of subtype/supertype pairs.
   // Singleton AND and OR terms have been reduced
-  // SAand(x) --> x,  SOr(x) --> x
+  // SAnd(x) --> x,  SOr(x) --> x
   def bddToDnf(bdd     : Bdd,
                intToTd : immutable.Map[Int, SimpleTypeD]
                ): SimpleTypeD = {
-
     def extend1(bdd: Bdd, t: SimpleTypeD, lineage: List[SimpleTypeD]): List[List[SimpleTypeD]] = {
       if (SAnd(lineage: _*).disjoint(t).contains(true)) {
         // if the type t is disjoint with something in the lineage, then prune the recursion
         List[List[SimpleTypeD]]()
-      } else if (lineage.exists(sup => t.subtypep(sup).contains(true)))
+      } else if (lineage.exists(sup => sup.subtypep(t).contains(true)))
       // if t is supertype of something in lineage, then don't add t to lineage, just recur
         extend2(bdd, lineage)
       else {
