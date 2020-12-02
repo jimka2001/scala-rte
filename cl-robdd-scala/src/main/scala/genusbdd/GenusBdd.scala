@@ -48,9 +48,9 @@ case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
            | SMember(_*)
            | SCustom(_, _) => Bdd(tdToInt.getOrElseUpdate(td.canonicalize(), tdToInt.size + 1))
       case SNot(td) => Not(toBdd(td))
-      case _ => ???
       case SAnd(tds@_*) => And(tds.map(toBdd): _*)
       case SOr(tds@_*) => Or(tds.map(toBdd): _*)
+      case _ => throw new Exception(s"missing case for $td")
     }
   }
 
