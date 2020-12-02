@@ -102,7 +102,7 @@ object GenusBdd {
       //   Returns a list of lineages representing all the paths from that point
       //   down to the true Bdd node.  lineages get optimized in case of disjoint types
       //   or subtypes, and recursion is pruned when disjoint types are found.
-      if (SAnd(lineage: _*).disjoint(t).contains(true)) {
+      if (prettyAnd(lineage).disjoint(t).contains(true)) {
         // if the type t is disjoint with something in the lineage, then prune the recursion
         List[List[SimpleTypeD]]()
       } else if (lineage.exists(sup => sup.subtypep(t).contains(true)))
