@@ -214,7 +214,7 @@ class QmVec() {
 
     val file = new File(fileName)
     val bw = new BufferedWriter(new FileWriter(file))
-    val numVars:Int = withSetCollector{collect: Int =>Unit => for {
+    val numVars:Int = withSetCollector{collect: (Int =>Unit) => for {
       (_, lengthHash) <- hash
       (_, rectHash) <- lengthHash
       (rectified, _) <- rectHash
