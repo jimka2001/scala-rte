@@ -23,7 +23,6 @@
 package genus
 
 import NormalForm._
-
 import scala.annotation.tailrec
 
 /** The member type is an exhaustive type, all object composing it are
