@@ -214,13 +214,13 @@ class QmVec() {
 
     val file = new File(fileName)
     val bw = new BufferedWriter(new FileWriter(file))
-    val numVars:Int = withSetCollector{(collect: Int =>Unit) => for {
+    val numVars:Int = withSetCollector[Int](collect => for {
       (_, lengthHash) <- hash
       (_, rectHash) <- lengthHash
       (rectified, _) <- rectHash
       literal <- rectified
-    } collect(literal) }.size
-    val numClauses:Int = withSummer(0, (a:Int,b:Int)=>a+b)(sum => for {
+    } collect(literal) ).size
+    val numClauses:Int = withSummer[Int](0, (a,b)=>a+b)(sum => for {
       (_, lengthHash) <- hash
       (_, rectHash) <- lengthHash
       (_, clauses: Set[ClauseAsBitSet]) <- rectHash
