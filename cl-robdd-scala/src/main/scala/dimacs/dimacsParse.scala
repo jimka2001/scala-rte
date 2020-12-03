@@ -78,11 +78,19 @@ object dimacsParse {
   //  through 11.
 
   def parseFileByName(fileName: String): DimacsFile = {
-    parseBufferedContent(Source.fromFile(fileName).buffered)
+    // Thanks to Luis Miguel Mejía Suárez for the following code
+    // https://users.scala-lang.org/t/how-to-fix-source-is-not-closed-warning/6936/6?u=jimka
+    import scala.util.Using
+    Using(Source.fromFile(fileName)) { reader =>
+      parseBufferedContent(reader.buffered)
+    }.get
   }
 
   def consumeFileByName(fileName: String, consumeClause: ClauseAsList => Unit, consumeProblem: Problem => Unit): Unit = {
-    consumeBufferedContent(Source.fromFile(fileName).buffered, consumeClause, consumeProblem)
+    import scala.util.Using
+    Using(Source.fromFile(fileName)){ reader =>
+      consumeBufferedContent(reader.buffered, consumeClause, consumeProblem)
+    }.get
   }
 
   def parseStringContent(content: String): DimacsFile = {
