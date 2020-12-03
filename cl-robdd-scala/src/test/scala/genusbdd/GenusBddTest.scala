@@ -64,6 +64,32 @@ class GenusBddTest extends AnyFunSuite {
       assert(dnf == SAnd(classOf[Trait2],classOf[Abstract1]))
     }
   }
+  def testDnf(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD, Int]):Unit = {
+    val bdd = GenusBdd(td, tdToInt)
+    val dnf = bdd.dnf
+    if (dnf == td)
+      ()
+    else {
+      assert((dnf - td) == SEmpty,
+             s"dnf=$dnf  td=$td   dnf-td=${dnf-td} expecting SEmpty")
+      assert((td-dnf) == SEmpty,
+             s"dnf=$dnf  td=$td   dnf-td=${td-dnf} expecting SEmpty")
+    }
+  }
+  test("randomizer"){
+
+    for{depth <- 2 to 7} {
+      println(s"depth= $depth")
+      val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
+      Bdd.withNewBddHash {
+        for {_ <- 0 to 750 - 100 * depth
+             td = randomType(depth=depth)
+             }
+          testDnf(td,tdToInt)
+      }
+    }
+  }
+
   test("test 1") {
     Bdd.withNewBddHash {
 
