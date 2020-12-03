@@ -106,12 +106,13 @@ object GenusBdd {
       // if t is supertype of something in lineage, then don't add t to lineage, just recur
         extendPN(bdd, lineage)
       else {
-        // remove supertypes from lineage
-        val filteredLineage = lineage.filter(t2 => !t.subtypep(t2).contains(true))
-        if (filteredLineage == lineage)
-          extendPN(bdd, t :: lineage) // let the filtered version be GC'ed if they are the same.
+        // remove supertypes from lineage, keeping types which are NOT a super type
+        //   also keeping types for which the subtypep question returns dont-know
+        val superTypes = lineage.filter(t2 => t.subtypep(t2).contains(true))
+        if (superTypes.isEmpty)
+          extendPN(bdd, t :: lineage) // avoid allocating a new list
         else
-          extendPN(bdd, t :: filteredLineage)
+          extendPN(bdd, t :: (lineage diff superTypes))
       }
     }
 
