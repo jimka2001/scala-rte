@@ -79,7 +79,6 @@ class GenusBddTest extends AnyFunSuite {
   test("randomizer"){
 
     for{depth <- 2 to 7} {
-      println(s"depth= $depth")
       val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
       Bdd.withNewBddHash {
         for {_ <- 0 to 750 - 100 * depth
@@ -106,16 +105,9 @@ class GenusBddTest extends AnyFunSuite {
                     SOr(classOf[Trait1], classOf[Trait2]),
                     SOr(classOf[Trait1], classOf[Trait2], classOf[Trait3]))
       val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
-      tds.foreach { td => println(GenusBdd(td, tdToInt).bdd) }
-      println(tdToInt)
+      tds.foreach { td => GenusBdd(td, tdToInt).bdd }
       tds.foreach { td =>
-        val dnf = GenusBdd(td, tdToInt).dnf
-        val can = dnf.canonicalize()
-        println() // blank
-        println(s"td = $td")
-        println(s"dnf           = $dnf")
-        println(s"canonicalized = $can")
-
+        GenusBdd(td, tdToInt).dnf.canonicalize()
       }
     }
   }
