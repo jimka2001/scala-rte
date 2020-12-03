@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2019,20 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -43,14 +43,13 @@ object Accumulators {
   }
 
   def withSetCollector[A](f: (A => Unit) => Unit): Set[A] = {
-    var objects: Set[A] = Set()
+    // Thanks to Claudio Bley for this implementation.
+    // https://users.scala-lang.org/t/optional-parens/6938/11?u=jimka
+    val objects = collection.mutable.Set[A]()
 
-    def collect(obj: A): Unit = {
-      objects = objects+obj
-    }
+    f(objects.add)
 
-    f(collect)
-    objects
+    objects.toSet
   }
 
   def withNconc[A](f: (List[A] => Unit) => Unit): List[A] = {
