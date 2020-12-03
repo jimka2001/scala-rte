@@ -102,13 +102,13 @@ object GenusBdd {
       if (prettyAnd(lineage).disjoint(t).contains(true)) {
         // if the type t is disjoint with something in the lineage, then prune the recursion
         List[List[SimpleTypeD]]()
-      } else if (lineage.exists(sup => sup.subtypep(t).contains(true)))
+      } else if (lineage.exists(sub => sub.subtypep(t).contains(true)))
       // if t is supertype of something in lineage, then don't add t to lineage, just recur
         extendPN(bdd, lineage)
       else {
         // remove supertypes from lineage, keeping types which are NOT a super type
         //   also keeping types for which the subtypep question returns dont-know
-        val superTypes = lineage.filter(t2 => t.subtypep(t2).contains(true))
+        val superTypes = lineage.filter(sup => t.subtypep(sup).contains(true))
         if (superTypes.isEmpty)
           extendPN(bdd, t :: lineage) // avoid allocating a new list
         else
