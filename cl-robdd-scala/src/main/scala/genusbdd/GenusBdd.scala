@@ -56,8 +56,8 @@ case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
   //   where each And has been reduced according to subtype/supertype
   //   relations, and according to disjoint types.
   lazy val dnf: SimpleTypeD = locally {
-    val m: immutable.Map[Int, SimpleTypeD] = tdToInt.map(_.swap).toMap
-    GenusBdd.bddToDnf(bdd, m)
+    val intToTd: immutable.Map[Int, SimpleTypeD] = tdToInt.map(_.swap).toMap
+    GenusBdd.bddToDnf(bdd, intToTd)
   }
 
   // cnf is a SimpleTypeD which represents the original td
