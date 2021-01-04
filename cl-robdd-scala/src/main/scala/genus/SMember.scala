@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -35,7 +35,7 @@ case class SMember(xs: Any*) extends SimpleTypeD with TerminalType {
 
   override def typep(a: Any): Boolean = xs.contains(a)
 
-  override def inhabited: Option[Boolean] = Some(true)
+  override def inhabited: Option[Boolean] = Some(xs.nonEmpty) // SMember() is empty
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     if (xs.exists(t.typep)) Some(false)
