@@ -178,10 +178,18 @@ abstract class SimpleTypeD { // SimpleTypeD
       this
   }
   def canonicalizeOnce(nf:Option[NormalForm]=None):SimpleTypeD = this
+  val canonicalizedHash:scala.collection.mutable.Map[Option[NormalForm],SimpleTypeD] = scala.collection.mutable.Map()
   def canonicalize(nf:Option[NormalForm]=None):SimpleTypeD = {
-    fixedPoint(this,
-               (t:SimpleTypeD)=>t.canonicalizeOnce(nf=nf),
-               (a:SimpleTypeD, b:SimpleTypeD) => a.getClass == b.getClass && a == b)
+    canonicalizedHash
+      .getOrElseUpdate(nf,
+        // if not already memoized, then perhaps compute a new object, using fixed-point
+                       fixedPoint(this,
+                                  (t:SimpleTypeD)=>t.canonicalizeOnce(nf=nf),
+                                  (a:SimpleTypeD, b:SimpleTypeD) => a.getClass == b.getClass && a == b))
+    // tell the perhaps new object it is already canonicalized
+    canonicalizedHash(nf).canonicalizedHash(nf) = canonicalizedHash(nf)
+    // return the perhaps new object which knows it is canonicalized
+    canonicalizedHash(nf)
   }
 
   /** Returns whether this type is a recognizable supertype of another given type.
