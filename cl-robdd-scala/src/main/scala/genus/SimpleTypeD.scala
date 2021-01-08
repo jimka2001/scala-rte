@@ -64,12 +64,14 @@ abstract class SimpleTypeD { // SimpleTypeD
     lazy val dc12 = c1.disjointDown(c2)
     lazy val dc21 = c2.disjointDown(c1)
 
-    if (d1.nonEmpty)
+    if (this == td && inhabited.nonEmpty)
+      inhabited.map( !_)
+    else if (d1.nonEmpty)
       d1
     else if (d2.nonEmpty)
       d2
-    else if (c1 == c2)
-      None
+    else if (c1 == c2 && c1.inhabited.nonEmpty)
+      c1.inhabited.map( !_)
     else if (dc12.nonEmpty)
       dc12
     else {
