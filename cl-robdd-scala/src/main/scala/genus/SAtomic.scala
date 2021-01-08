@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -43,7 +43,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     ct.isInstance(a)
   }
 
-  override def inhabited: Some[Boolean] = {
+  override def inhabitedDown: Some[Boolean] = {
     if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
     else

@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -120,7 +120,7 @@ object TypeSystemWithLBdd {
     * @param b LBdd representing the type.
     * @return an optional Boolean which is true if b is not empty.
     */
-  def inhabited(b: LBdd): Option[Boolean] = {
+  def inhabitedDown(b: LBdd): Option[Boolean] = {
     b match {
       case LBddFalse => Some(false)
       case LBddTrue => Some(true)

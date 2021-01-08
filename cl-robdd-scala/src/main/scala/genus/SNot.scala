@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -35,7 +35,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     !s.typep(a)
   }
 
-  override def inhabited: Option[Boolean] = {
+  override def inhabitedDown: Option[Boolean] = {
     val nothing = classOf[Nothing]
     val any = classOf[AnyRef]
     s match {

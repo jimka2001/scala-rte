@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -35,14 +35,14 @@ case class SOr(tds: SimpleTypeD*) extends SimpleTypeD {
     tds.exists(_.typep(a))
   }
 
-  override def inhabited: Option[Boolean] = {
+  override def inhabitedDown: Option[Boolean] = {
     val i = memoize((s: SimpleTypeD) => s.inhabited)
     if (tds.exists(i(_).contains(true)))
       Some(true)
     else if (tds.forall(i(_).contains(false)))
       Some(false)
     else
-      super.inhabited
+      super.inhabitedDown
   }
 
   // UnionType(tds: Type*)

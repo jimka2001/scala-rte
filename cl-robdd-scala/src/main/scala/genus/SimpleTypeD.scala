@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -79,7 +79,11 @@ abstract class SimpleTypeD { // SimpleTypeD
     }
   }
 
-  def inhabited: Option[Boolean] = None
+  // inhabitedDown should not be called directly, except as super.inhabitedDown,
+  // rather the variable inhabited should be referenced, ensuring that the
+  // same computation not be done twice.
+  def inhabitedDown: Option[Boolean] = None
+  lazy val inhabited: Option[Boolean] = inhabitedDown
 
   protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     if (inhabited.contains(false)) // an empty type is disjoint to every other type

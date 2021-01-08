@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -36,7 +36,7 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
   }
 
   // IntersectionType(tds: Type*)
-  override def inhabited: Option[Boolean] = {
+  override def inhabitedDown: Option[Boolean] = {
     lazy val dnf = canonicalize(nf=Some(Dnf))
     lazy val cnf = canonicalize(nf=Some(Cnf))
     lazy val inhabitedDnf = dnf.inhabited
@@ -61,7 +61,7 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
       inhabitedCnf
     } else {
       // we don't know anything about whether the intersection is empty
-      super.inhabited
+      super.inhabitedDown
     }
   }
 
@@ -227,7 +227,7 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
         // (and A B C) --> (and A C) if  A is subtype of B
         tds.find(sub => tds.exists{sup =>
           ((sub != sup)
-           && ( sub.subtypep(sup).contains(true)) )}) match {
+           && sub.subtypep(sup).contains(true) )}) match {
           case None => this
           case Some(sub) =>
             // throw away all proper superclasses of sub, i.e., keep everything that is not a superclass

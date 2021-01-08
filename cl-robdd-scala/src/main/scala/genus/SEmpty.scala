@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -28,7 +28,7 @@ object SEmpty extends SimpleTypeD {
 
   override def typep(a: Any): Boolean = false
 
-  override def inhabited: Some[Boolean] = Some(false)
+  override def inhabitedDown: Some[Boolean] = Some(false)
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = Some(true)
 

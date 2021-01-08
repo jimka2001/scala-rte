@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -32,7 +32,7 @@ case class SCustom(f   : Any => Boolean, printable:String) extends SimpleTypeD w
   
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = super.disjointDown(t)
 
-  override def inhabited: Option[Boolean] = super.inhabited
+  override def inhabitedDown: Option[Boolean] = super.inhabitedDown
 
   override def subtypep(t: SimpleTypeD): Option[Boolean] = super.subtypep(t)
 
