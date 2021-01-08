@@ -33,12 +33,16 @@ trait TerminalType
 /** A general type of our type system. */
 abstract class SimpleTypeD { // SimpleTypeD
 
-  def ||(t:SimpleTypeD):SimpleTypeD = SOr(this, t).canonicalize(nf=Some(Dnf))
-  def &&(t:SimpleTypeD):SimpleTypeD = SAnd(this, t).canonicalize(nf=Some(Dnf))
-  def unary_! : SimpleTypeD = SNot(this).canonicalize(nf=Some(Dnf))
-  def -(t:SimpleTypeD):SimpleTypeD = SAnd(this, SNot(t)).canonicalize(nf=Some(Dnf))
-  def ^^(t:SimpleTypeD):SimpleTypeD = SOr(SAnd(this, SNot(t)),
-                                          SAnd(SNot(this), t)).canonicalize(nf=Some(Dnf))
+  def ||(t: SimpleTypeD): SimpleTypeD = SOr(this, t).canonicalize(nf = Some(Dnf))
+
+  def &&(t: SimpleTypeD): SimpleTypeD = SAnd(this, t).canonicalize(nf = Some(Dnf))
+
+  def unary_! : SimpleTypeD = SNot(this).canonicalize(nf = Some(Dnf))
+
+  def -(t: SimpleTypeD): SimpleTypeD = SAnd(this, SNot(t)).canonicalize(nf = Some(Dnf))
+
+  def ^^(t: SimpleTypeD): SimpleTypeD = SOr(SAnd(this, SNot(t)),
+                                            SAnd(SNot(this), t)).canonicalize(nf = Some(Dnf))
 
   /** Returns whether a given object belongs to this type.
    * It is a set membership test.
@@ -65,13 +69,13 @@ abstract class SimpleTypeD { // SimpleTypeD
     lazy val dc21 = c2.disjointDown(c1)
 
     if (this == td && inhabited.nonEmpty)
-      inhabited.map( !_)
+      inhabited.map(!_)
     else if (d1.nonEmpty)
       d1
     else if (d2.nonEmpty)
       d2
     else if (c1 == c2 && c1.inhabited.nonEmpty)
-      c1.inhabited.map( !_)
+      c1.inhabited.map(!_)
     else if (dc12.nonEmpty)
       dc12
     else {
@@ -85,6 +89,7 @@ abstract class SimpleTypeD { // SimpleTypeD
   // rather the variable inhabited should be referenced, ensuring that the
   // same computation not be done twice.
   def inhabitedDown: Option[Boolean] = None
+
   lazy val inhabited: Option[Boolean] = inhabitedDown
 
   protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
@@ -101,41 +106,43 @@ abstract class SimpleTypeD { // SimpleTypeD
    * @return an optional Boolean which is true if this type is a subtype of t
    */
   def subtypep(t: SimpleTypeD): Option[Boolean] = {
-    if ( (t.getClass eq this.getClass)
-         && (t == this))
+    if ((t.getClass eq this.getClass)
+        && (t == this))
       Some(true)
-    else if ( t match {
+    else if (t match {
       case SNot(b) if disjoint(b).contains(true) => true
-      case _ => false}) {
+      case _ => false
+    }) {
       Some(true)
     }
     else
-      (inhabited,t.inhabited) match {
-        case (None,_) => None
-        case (_,None) => None
-        case (Some(false),Some(false)) => Some(true) // empty set is a subset of the empty set
-        case (_,Some(false)) => Some(false) // no inhabited type is a subtype of the empty type
+      (inhabited, t.inhabited) match {
+        case (None, _) => None
+        case (_, None) => None
+        case (Some(false), Some(false)) => Some(true) // empty set is a subset of the empty set
+        case (_, Some(false)) => Some(false) // no inhabited type is a subtype of the empty type
         case _ => None
       }
   }
 
-  def fixedPoint[T](w:T, f:T=>T, goodEnough:(T,T)=>Boolean):T = {
+  def fixedPoint[T](w: T, f: T => T, goodEnough: (T, T) => Boolean): T = {
     @tailrec
-    def fixed(v:T, history:List[T]):T = {
+    def fixed(v: T, history: List[T]): T = {
       val v2 = f(v)
       if (goodEnough(v, v2))
         v
       else if (history.contains(v2)) {
-        history.zipWithIndex.foreach{case (td,i) => println(s"$i: $td")}
+        history.zipWithIndex.foreach { case (td, i) => println(s"$i: $td") }
         throw new Exception("Failed: fixedPoint encountered the same value twice: " + v2)
       }
       else
-        fixed(v2, v::history)
+        fixed(v2, v :: history)
     }
+
     fixed(w, List[T]())
   }
 
-  def findSimplifier(tag:String, t:SimpleTypeD, simplifiers:List[() => SimpleTypeD]):SimpleTypeD = {
+  def findSimplifier(tag: String, t: SimpleTypeD, simplifiers: List[() => SimpleTypeD]): SimpleTypeD = {
     // DEBUG version of findSimplifier,  if called with two additional arguments,
     //   diagnostics will be printed logging the progression of simplifications
     println(s"$tag starting with $t")
@@ -150,12 +157,12 @@ abstract class SimpleTypeD { // SimpleTypeD
     s
   }
 
-  def findSimplifier(simplifiers:List[() => SimpleTypeD]):SimpleTypeD = {
+  def findSimplifier(simplifiers: List[() => SimpleTypeD]): SimpleTypeD = {
     simplifiers match {
       case Nil => this
-      case s::ss =>
+      case s :: ss =>
         val t2 = s()
-        if ( this == t2)
+        if (this == t2)
           findSimplifier(ss)
         else
           t2
@@ -165,27 +172,31 @@ abstract class SimpleTypeD { // SimpleTypeD
   def toDnf:SimpleTypeD = this
   def toCnf:SimpleTypeD = this
 
-  def maybeDnf(nf:Option[NormalForm]=None):SimpleTypeD = {
+  def maybeDnf(nf: Option[NormalForm] = None): SimpleTypeD = {
     if (nf.contains(Dnf))
       toDnf
     else
       this
   }
-  def maybeCnf(nf:Option[NormalForm]=None):SimpleTypeD = {
+
+  def maybeCnf(nf: Option[NormalForm] = None): SimpleTypeD = {
     if (nf.contains(Cnf))
       toCnf
     else
       this
   }
-  def canonicalizeOnce(nf:Option[NormalForm]=None):SimpleTypeD = this
-  val canonicalizedHash:scala.collection.mutable.Map[Option[NormalForm],SimpleTypeD] = scala.collection.mutable.Map()
-  def canonicalize(nf:Option[NormalForm]=None):SimpleTypeD = {
+
+  def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = this
+
+  val canonicalizedHash: scala.collection.mutable.Map[Option[NormalForm], SimpleTypeD] = scala.collection.mutable.Map()
+
+  def canonicalize(nf: Option[NormalForm] = None): SimpleTypeD = {
     canonicalizedHash
       .getOrElseUpdate(nf,
-        // if not already memoized, then perhaps compute a new object, using fixed-point
+                       // if not already memoized, then perhaps compute a new object, using fixed-point
                        fixedPoint(this,
-                                  (t:SimpleTypeD)=>t.canonicalizeOnce(nf=nf),
-                                  (a:SimpleTypeD, b:SimpleTypeD) => a.getClass == b.getClass && a == b))
+                                  (t: SimpleTypeD) => t.canonicalizeOnce(nf = nf),
+                                  (a: SimpleTypeD, b: SimpleTypeD) => a.getClass == b.getClass && a == b))
     // tell the perhaps new object it is already canonicalized
     canonicalizedHash(nf).canonicalizedHash(nf) = canonicalizedHash(nf)
     // return the perhaps new object which knows it is canonicalized
@@ -200,7 +211,7 @@ abstract class SimpleTypeD { // SimpleTypeD
    */
   def supertypep(t: SimpleTypeD): Option[Boolean] = t.subtypep(this)
 
-  def cmp(t:SimpleTypeD):Boolean = {
+  def cmp(t: SimpleTypeD): Boolean = {
     throw new Exception(s"cannot compare type designators ${this.getClass} vs ${t.getClass}")
   }
 }

@@ -199,7 +199,6 @@ case class SOr(tds: SimpleTypeD*) extends SimpleTypeD {
     }
   }
 
-
   // UnionType(tds: Type*)
   override def cmp(td:SimpleTypeD):Boolean = {
     if (this == td)

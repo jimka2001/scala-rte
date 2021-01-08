@@ -28,8 +28,8 @@ import NormalForm._
  *
  * @param tds var-arg, zero or more types
  */
-case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
-  override def toString:String = tds.map(_.toString).mkString("[And ", ",", "]")
+case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD { // SAnd  SNot
+  override def toString: String = tds.map(_.toString).mkString("[And ", ",", "]")
 
   override def typep(a: Any): Boolean = {
     tds.forall(_.typep(a))
@@ -37,8 +37,8 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
 
   // IntersectionType(tds: Type*)
   override def inhabitedDown: Option[Boolean] = {
-    lazy val dnf = canonicalize(nf=Some(Dnf))
-    lazy val cnf = canonicalize(nf=Some(Cnf))
+    lazy val dnf = canonicalize(nf = Some(Dnf))
+    lazy val cnf = canonicalize(nf = Some(Cnf))
     lazy val inhabitedDnf = dnf.inhabited
     lazy val inhabitedCnf = cnf.inhabited
 
@@ -104,7 +104,7 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
   }
 
   // IntersectionType(tds: Type*)
-  override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
+  override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
       () => {
         // (and A B EmptyType C D) -> EmptyType
@@ -225,19 +225,20 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD {  // SAnd  SNot
       },
       () => {
         // (and A B C) --> (and A C) if  A is subtype of B
-        tds.find(sub => tds.exists{sup =>
+        tds.find(sub => tds.exists { sup =>
           ((sub != sup)
-           && sub.subtypep(sup).contains(true) )}) match {
+           && sub.subtypep(sup).contains(true))
+        }) match {
           case None => this
           case Some(sub) =>
             // throw away all proper superclasses of sub, i.e., keep everything that is not a superclass
             // of sub and also keep sub itself.   keep false and dont-know
-            val keep = tds.filter(sup => sup == sub || ! sub.subtypep(sup).contains(true))
+            val keep = tds.filter(sup => sup == sub || !sub.subtypep(sup).contains(true))
             SAnd(keep: _*)
         }
       },
       () => {
-        val i2 = SAnd(tds.map((t: SimpleTypeD) => t.canonicalize(nf=nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
+        val i2 = SAnd(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
         if (this == i2)
           this // return the older object, hoping the newer one is more easily GC'ed
         else {
