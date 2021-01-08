@@ -169,8 +169,13 @@ abstract class SimpleTypeD { // SimpleTypeD
     }
   }
 
-  def toDnf:SimpleTypeD = this
-  def toCnf:SimpleTypeD = this
+  lazy val toDnf: SimpleTypeD = computeDnf()
+
+  def computeDnf(): SimpleTypeD = this
+
+  lazy val toCnf: SimpleTypeD = computeCnf()
+
+  def computeCnf(): SimpleTypeD = this
 
   def maybeDnf(nf: Option[NormalForm] = None): SimpleTypeD = {
     if (nf.contains(Dnf))

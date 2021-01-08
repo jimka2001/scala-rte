@@ -189,7 +189,7 @@ case class SOr(tds: SimpleTypeD*) extends SimpleTypeD {
   }
 
   // UnionType(tds: Type*)
-  override def toCnf: SimpleTypeD = {
+  override def computeCnf(): SimpleTypeD = {
     tds.find(andp) match {
       case Some(td@SAnd(andArgs@_*)) =>
         val others = tds.filterNot(_ == td)

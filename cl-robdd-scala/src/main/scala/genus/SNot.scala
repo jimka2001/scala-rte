@@ -84,7 +84,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
   }
 
   // NotType(s: Type)
-  override def toDnf: SimpleTypeD = {
+  override def computeDnf(): SimpleTypeD = {
     s match {
       case SAnd(xs @ _*) =>
         SOr(xs.map(x => SNot(x)) : _*)
@@ -94,7 +94,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     }
   }
   // NotType(s: Type)
-  override def toCnf: SimpleTypeD = {
+  override def computeCnf(): SimpleTypeD = {
     toDnf
   }
   // NotType(s: Type)

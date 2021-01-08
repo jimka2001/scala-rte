@@ -249,7 +249,7 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD { // SAnd  SNot
   }
 
   // IntersectionType(tds: Type*)
-  override def toDnf: SimpleTypeD = {
+  override def computeDnf(): SimpleTypeD = {
     tds.find(orp) match {
       case Some(td@SOr(orArgs@_*)) =>
         val others = tds.filterNot(_ == td)
@@ -260,13 +260,13 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD { // SAnd  SNot
   }
 
   // IntersectionType(tds: Type*)
-  override def cmp(td:SimpleTypeD):Boolean = {
+  override def cmp(td: SimpleTypeD): Boolean = {
     if (this == td)
       false
     else td match {
       // this <= td ?
-      case SAnd(tds @ _*) =>
-        compareSequence(this.tds,tds)
+      case SAnd(tds@_*) =>
+        compareSequence(this.tds, tds)
       case _ => super.cmp(td)
     }
   }
