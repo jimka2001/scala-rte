@@ -34,7 +34,12 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   override def create(tds:SimpleTypeD*) = SOr(tds: _*)
   override val unit:SimpleTypeD = SEmpty
   override val zero:SimpleTypeD = STop
-
+  override def sameCombination(td:SimpleTypeD):Boolean = {
+    td match {
+      case SOr(_@_*) => true
+      case _ => false
+    }
+  }
   override def typep(a: Any): Boolean = {
     tds.exists(_.typep(a))
   }

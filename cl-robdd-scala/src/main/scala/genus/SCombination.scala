@@ -28,6 +28,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   def create(tds: SimpleTypeD*):SimpleTypeD
   val unit:SimpleTypeD
   val zero:SimpleTypeD
+  def sameCombination(td:SimpleTypeD):Boolean = false
 
   // UnionType(tds: Type*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
@@ -76,16 +77,11 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       () => {
         // (and A (and B C) D) --> (and A B C D)
         // (or A (or B C) D) --> (or A B C D)
-        val rs = tds.find {td =>
-              if (this.getClass == td.getClass)
-                true
-              else false
-        }
-        if (rs.isEmpty)
+        if (tds.find(sameCombination).isEmpty)
           this
         else {
           create(tds.flatMap {
-            case td:SCombination if this.getClass == td.getClass => td.tds
+            case td:SCombination if sameCombination(td) => td.tds
             case x => Seq(x)
           }: _*)
         }
