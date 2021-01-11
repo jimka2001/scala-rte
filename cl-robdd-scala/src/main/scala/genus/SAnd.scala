@@ -166,6 +166,9 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD { // SAnd  SNot
         // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
         // (and Double (not (= "a"))) --> (and Double  (not (member)))
 
+        // this logic would be simpler if SMember and SEql shared a common distinguishing
+        //   supertype.
+
         val notMembers = tds.filter {
           case SNot(SMember(_*)) => true
           case _ => false
