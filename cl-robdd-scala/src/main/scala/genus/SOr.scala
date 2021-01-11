@@ -84,18 +84,16 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
         // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
 
         val members = tds.filter(memberp)
-        val eqls = tds.filter(eqlp)
-        if (members.size + eqls.size <= 1)
+        if (members.size <= 1)
           this
         else {
-          val others = tds.filterNot(td => memberp(td) || eqlp(td))
+          val others = tds.filterNot(memberp)
           val stricter = SOr(others : _*)
-          val content = (members ++ eqls).flatMap{
-            case SMember(xs @ _*) => xs.filterNot(stricter.typep)
-            case SEql(x) => Seq(x).filterNot(stricter.typep)
+          val content = members.flatMap{
+            case m:SMemberImpl => m.xs.filterNot(stricter.typep)
             case _ => Seq()
           }
-          SOr(others ++ Seq(SMember(content : _*).canonicalize()) :_*)
+          SOr(others ++ Seq(createMember(content : _*)) :_*)
         }
       },
       () => {

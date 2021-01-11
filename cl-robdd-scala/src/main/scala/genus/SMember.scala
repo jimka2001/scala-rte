@@ -22,15 +22,12 @@
 
 package genus
 
+import Types._
 import NormalForm._
 import scala.annotation.tailrec
 
-/** The member type is an exhaustive type, all object composing it are
- * given at construction time.
- *
- * @param xs var-arg, the members of the type
- */
-case class SMember(xs: Any*) extends SimpleTypeD with TerminalType {
+abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD with TerminalType {
+
   override def toString:String = xs.map(_.toString).mkString("[Member ", ",", "]")
 
   override def typep(a: Any): Boolean = xs.contains(a)
@@ -61,7 +58,7 @@ case class SMember(xs: Any*) extends SimpleTypeD with TerminalType {
     xs match {
       case Seq() => SEmpty
       case Seq(x) => SEql(x)
-      case xs => SMember(xs.distinct.sortWith(cmp): _*)
+      case xs => createMember(xs.distinct.sortWith(cmp): _*)
     }
   }
 
@@ -91,3 +88,10 @@ case class SMember(xs: Any*) extends SimpleTypeD with TerminalType {
     }
   }
 }
+
+/** The member type is an exhaustive type, all object composing it are
+ * given at construction time.
+ *
+ * @param xs var-arg, the members of the type
+ */
+case class SMember(override val xs: Any*) extends SMemberImpl(xs :_*)

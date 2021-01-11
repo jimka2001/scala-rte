@@ -115,23 +115,13 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   // SAnd(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
-      () => { // SAnd(EqlType(42), A, B, C)
-        //  ==> EqlType(42)
-        //  or EmptyType
-        tds.find(eqlp) match {
-          case Some(e@SEql(x)) =>
-            if (typep(x))
-              e
-            else
-              SEmpty
-          case _ => this
-        }
-      },
       () => { // SAnd(SMember(42,43,44), A, B, C)
         //  ==> SMember(42,44)
         tds.find(memberp) match {
           case Some(SMember(xs@_*)) =>
-            SMember(xs.filter(typep): _*)
+            createMember(xs.filter(typep): _*)
+          case Some(SEql(a)) =>
+            createMember(Seq(a).filter(typep): _*)
           case _ => this
         }
       },
@@ -139,16 +129,9 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
         // (and Long (not (member 1 2)) (not (member 3 4)))
         //  --> (and Long (not (member 1 2 3 4)))
         // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
-        // (and Double (not (= "a"))) --> (and Double  (not (member)))
-
-        // this logic would be simpler if SMember and SEql shared a common distinguishing
-        //   supertype.
 
         val notMembers = tds.filter {
           case SNot(SMember(_*)) => true
-          case _ => false
-        }
-        val notEqls = tds.filter {
           case SNot(SEql(_)) => true
           case _ => false
         }
@@ -157,14 +140,16 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
           case SNot(SMember(_*)) => false
           case _ => true
         }
-        if (notEqls.isEmpty && notMembers.isEmpty)
+        if (notMembers.isEmpty)
           this
         else {
-          // the intersection type omitting the (not (=...) and (not (member ...)
+          // the intersection type omitting the (not (member ...)
           val lessStrict = SAnd(others: _*)
-          val newEqls = notEqls.map { case SNot(SEql(x)) => x }
-          val newMembers = notMembers.flatMap { case SNot(SMember(xs@_*)) => xs }
-          val newElements: Seq[Any] = (newEqls ++ newMembers).filter(x => lessStrict.typep(x))
+          val newMembers = notMembers.flatMap {
+            case SNot(SMember(xs@_*)) => xs
+            case SNot(e@SEql(_)) => e.xs
+          }
+          val newElements: Seq[Any] = newMembers.filter(x => lessStrict.typep(x))
           val newNotMember = SNot(SMember(newElements: _*).canonicalize())
 
           SAnd((others ++ Seq(newNotMember)).sortWith(cmpTypeDesignators): _*)

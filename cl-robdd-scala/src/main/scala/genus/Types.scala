@@ -35,10 +35,14 @@ object Types {
   import scala.runtime.BoxedUnit
 
   // allow implicit conversions from c:Class[_] to AtomicType(c)
-  //    thus allowing Types such as classOf[java.lang.Integer] && !EqlType(0)
+  //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)
   //    classOf[A] && classOf[B]
   implicit def class2type(c:Class[_]): SimpleTypeD = SAtomic(c)
-
+  def createMember(xs:Any*):SimpleTypeD = xs match {
+    case Seq() => SEmpty
+    case Seq(a) => SEql(a)
+    case _ => SMember(xs :_*)
+  }
   val atomicp: SimpleTypeD=>Boolean = {
     case SAtomic(_) => true
     case _ => false
@@ -49,6 +53,7 @@ object Types {
   }
   val memberp: SimpleTypeD=>Boolean = {
     case SMember(_*) => true
+    case SEql(_) => true
     case _ => false
   }
   val andp: SimpleTypeD=>Boolean = {
