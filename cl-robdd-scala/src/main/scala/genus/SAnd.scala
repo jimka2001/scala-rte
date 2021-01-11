@@ -39,7 +39,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     tds.forall(_.typep(a))
   }
 
-  // IntersectionType(tds: Type*)
+  // SAnd(tds: Type*)
   override def inhabitedDown: Option[Boolean] = {
     lazy val dnf = canonicalize(nf = Some(Dnf))
     lazy val cnf = canonicalize(nf = Some(Cnf))
@@ -69,7 +69,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     }
   }
 
-  // IntersectionType(tds: Type*)
+  // SAnd(tds: Type*)
   override protected def disjointDown(t2: SimpleTypeD): Option[Boolean] = {
     lazy val inhabited_t2 = t2.inhabited.contains(true)
     lazy val inhabited_this = this.inhabited.contains(true)
@@ -97,7 +97,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
       super.disjointDown(t2)
   }
 
-  // IntersectionType(tds: Type*)
+  // SAnd(tds: Type*)
   override def subtypep(t: SimpleTypeD): Option[Boolean] = {
     if (tds.exists(_.subtypep(t).contains(true)))
       Some(true)
@@ -110,7 +110,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   // SAnd(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
-      () => { // IntersectionType(EqlType(42), A, B, C)
+      () => { // SAnd(EqlType(42), A, B, C)
         //  ==> EqlType(42)
         //  or EmptyType
         tds.find(eqlp) match {
@@ -122,8 +122,8 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
           case _ => this
         }
       },
-      () => { // IntersectionType(MemberType(42,43,44), A, B, C)
-        //  ==> MemberType(42,44)
+      () => { // SAnd(SMember(42,43,44), A, B, C)
+        //  ==> SMember(42,44)
         tds.find(memberp) match {
           case Some(SMember(xs@_*)) =>
             SMember(xs.filter(typep): _*)
@@ -199,7 +199,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
       ))
   }
 
-  // IntersectionType(tds: Type*)
+  // SAnd(tds: Type*)
   override def computeDnf(): SimpleTypeD = {
     tds.find(orp) match {
       case Some(td@SOr(orArgs@_*)) =>
@@ -210,7 +210,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     }
   }
 
-  // IntersectionType(tds: Type*)
+  // SAnd(tds: Type*)
   override def cmp(td: SimpleTypeD): Boolean = {
     if (this == td)
       false

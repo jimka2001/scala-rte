@@ -46,7 +46,7 @@ case class SMember(xs: Any*) extends SimpleTypeD with TerminalType {
     Some(xs.forall(t.typep))
   }
 
-  // MemberType(xs: Any*)
+  // SMember(xs: Any*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     def cmp(a:Any,b:Any):Boolean = {
       if (a == b)
@@ -65,7 +65,7 @@ case class SMember(xs: Any*) extends SimpleTypeD with TerminalType {
     }
   }
 
-  // MemberType(xs: Any*)
+  // SMember(xs: Any*)
   override def cmp(t:SimpleTypeD):Boolean = {
     if (this == t)
       false
