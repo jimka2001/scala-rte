@@ -28,8 +28,12 @@ import NormalForm._
  *
  * @param tds var-arg, zero or more types
  */
-case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD { // SAnd  SNot
+case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  SNot
   override def toString: String = tds.map(_.toString).mkString("[And ", ",", "]")
+
+  override def create(tds:SimpleTypeD*) = SAnd(tds: _*)
+  override val unit:SimpleTypeD = STop
+  override val zero:SimpleTypeD = SEmpty
 
   override def typep(a: Any): Boolean = {
     tds.forall(_.typep(a))
@@ -103,30 +107,9 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD { // SAnd  SNot
       super.subtypep(t)
   }
 
-  // IntersectionType(tds: Type*)
+  // SAnd(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
-      () => {
-        // (and A B EmptyType C D) -> EmptyType
-        if (tds.contains(SEmpty))
-          SEmpty
-        else
-          this
-      },
-      () => {
-        // (and A B A C) -> (and A B C)
-        SAnd.apply(tds.distinct: _*)
-      },
-      () => {
-        if (tds.isEmpty) {
-          // (and) -> TopType
-          STop
-          // (and A) -> A
-        } else if (tds.tail.isEmpty)
-          tds.head
-        else
-          this
-      },
       () => { // IntersectionType(EqlType(42), A, B, C)
         //  ==> EqlType(42)
         //  or EmptyType
@@ -146,19 +129,6 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD { // SAnd  SNot
             SMember(xs.filter(typep): _*)
           case _ => this
         }
-      },
-      () => { // IntersectionType(A,TopType,B) ==> IntersectionType(A,B)
-        if (tds.contains(STop))
-          SAnd(tds.filterNot(_ == STop): _*)
-        else
-          this
-      },
-      () => {
-        // (and A (not A)) --> Empty
-        if (tds.exists(td => tds.contains(SNot(td))))
-          SEmpty
-        else
-          this
       },
       () => {
         // (and Long (not (member 1 2)) (not (member 3 4)))
@@ -196,21 +166,6 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD { // SAnd  SNot
         }
       },
       () => {
-        // (and A (and B C) D) --> (and A B C D)
-        val ands = tds.find {
-          case SAnd(_*) => true
-          case _ => false
-        }
-        if (ands.isEmpty)
-          this
-        else {
-          SAnd(tds.flatMap {
-            case SAnd(xs@_*) => xs
-            case x => Seq(x)
-          }: _*)
-        }
-      },
-      () => {
         // (and A (not B)) --> Empty where A is subtype of B
         if (tds.exists(a => tds.exists {
           case SNot(b) if a.subtypep(b).contains(true) => true
@@ -240,14 +195,7 @@ case class SAnd(tds: SimpleTypeD*) extends SimpleTypeD { // SAnd  SNot
             SAnd(keep: _*)
         }
       },
-      () => {
-        val i2 = SAnd(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
-        if (this == i2)
-          this // return the older object, hoping the newer one is more easily GC'ed
-        else {
-          i2
-        }
-      }
+      () => { super.canonicalizeOnce(nf)}
       ))
   }
 

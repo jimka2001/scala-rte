@@ -28,8 +28,12 @@ import NormalForm._
  *
  * @param tds var-arg, zero or more types
  */
-case class SOr(tds: SimpleTypeD*) extends SimpleTypeD {
+case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   override def toString:String = tds.map(_.toString).mkString("[Or ", ",", "]")
+
+  override def create(tds:SimpleTypeD*) = SOr(tds: _*)
+  override val unit:SimpleTypeD = SEmpty
+  override val zero:SimpleTypeD = STop
 
   override def typep(a: Any): Boolean = {
     tds.exists(_.typep(a))
@@ -71,25 +75,6 @@ case class SOr(tds: SimpleTypeD*) extends SimpleTypeD {
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
       () => {
-        if (tds.contains(SEmpty)) {
-          SOr(tds.filter {
-            _ != SEmpty
-          }: _*)
-        }
-        else if (tds.contains(STop)){
-          STop
-        }
-        else
-          this
-      },
-      () => {
-        tds match {
-          case Seq() => SEmpty
-          case Seq(x) => x
-          case xs => SOr(xs.distinct : _*)
-        }
-      },
-      () => {
         // (or (member 1 2 3) (member 2 3 4 5)) --> (member 1 2 3 4 5)
         // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
 
@@ -107,26 +92,6 @@ case class SOr(tds: SimpleTypeD*) extends SimpleTypeD {
           }
           SOr(others ++ Seq(SMember(content : _*).canonicalize()) :_*)
         }
-      },
-      () => {
-        // (or (or A B) (or C D)) --> (or A B C D)
-        if (!tds.exists {
-          case SOr(_*) => true
-          case _ => false
-        })
-          this
-        else
-          SOr(tds.flatMap{
-            case SOr(xs @ _*) => xs
-            case x => Seq(x)
-          } : _*)
-      },
-      () => {
-        // (or A (not A)) --> Top
-        if (tds.exists(td => tds.contains(SNot(td))))
-          STop
-        else
-          this
       },
       () => {
         // AXBC + !X = ABC + !X
@@ -182,10 +147,8 @@ case class SOr(tds: SimpleTypeD*) extends SimpleTypeD {
           case Some(_) => STop
         }
       },
-      () => {
-        SOr(tds.map((t: SimpleTypeD) => t.canonicalize(nf=nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
-      }
-    ))
+      () => { super.canonicalizeOnce(nf)}
+      ))
   }
 
   // UnionType(tds: Type*)
