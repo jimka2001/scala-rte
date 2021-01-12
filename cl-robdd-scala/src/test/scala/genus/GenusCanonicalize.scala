@@ -76,15 +76,15 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SAnd(SAtomic(Types.String),
                 SNot(SMember("1", "2")),
                 SNot(SMember("3", "4"))).canonicalize()
-           == SAnd(SNot(SMember("1", "2", "3", "4")),
-                   SAtomic(Types.String)
+           == SAnd(SAtomic(Types.String),
+                   SNot(SMember("1", "2", "3", "4")),
                    )
            )
     assert(SAnd(SAtomic(Types.String),
                 SNot(SMember("1", 2)),
                 SNot(SMember("3", 4))).canonicalize()
-           == SAnd(SNot(SMember("1", "3")),
-                   SAtomic(Types.String)
+           == SAnd(SAtomic(Types.String),
+                   SNot(SMember("1", "3"))
                    )
            )
   }
@@ -145,8 +145,8 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SOr(SAtomic(Types.String),
                SMember(1, 2, "hello"),
                SMember(2, 3, 4, "world")).canonicalize()
-           == SOr(SMember(1, 2, 3, 4),
-                  SAtomic(Types.String)
+           == SOr(SAtomic(Types.String),
+                  SMember(1, 2, 3, 4)
                   ))
     // (or (or A B) (or C D)) --> (or A B C D)
     assert(SOr(SOr(SAtomic(A), SAtomic(B)),
@@ -164,7 +164,7 @@ class GenusCanonicalize extends AnyFunSuite {
            == SAtomic(A))
     // (or A (and (not A) B C) D) --> (or A (and B C) D)
     assert(SOr(A, SAnd(!A, B, C), D).canonicalize()
-           == SOr(A, D, B && C))
+           == SOr(B && C, A, D))
     // (or A (and A B C) D) --> (or A D)
     assert(SOr(A, SAnd(A, B, C), D).canonicalize()
            == SOr(A, D))

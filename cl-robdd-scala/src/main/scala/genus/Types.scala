@@ -160,8 +160,8 @@ object Types {
       a.cmpToSameClassObj(b)
     }
     else {
-      // just compare the classes alphabetically
-      s"$a.getClass" < s"$b.getClass"
+      // just compare the class printed values alphabetically
+      a.getClass.toString < b.getClass.toString
     }
   }
 
