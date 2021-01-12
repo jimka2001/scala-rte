@@ -31,7 +31,7 @@ import NormalForm._
 case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  SNot
   override def toString: String = tds.map(_.toString).mkString("[And ", ",", "]")
 
-  override def create(tds:SimpleTypeD*) = SAnd(tds: _*)
+  override def create(tds:SimpleTypeD*):SimpleTypeD = SAnd(tds: _*)
   override val unit:SimpleTypeD = STop
   override val zero:SimpleTypeD = SEmpty
   override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
