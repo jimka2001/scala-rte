@@ -86,7 +86,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       () => {
         // (and A (and B C) D) --> (and A B C D)
         // (or A (or B C) D) --> (or A B C D)
-        if (tds.find(sameCombination).isEmpty)
+        if (!tds.exists(sameCombination))
           this
         else {
           create(tds.flatMap {
