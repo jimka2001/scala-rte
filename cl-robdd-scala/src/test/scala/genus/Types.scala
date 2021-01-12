@@ -65,8 +65,8 @@ class TypesTest extends AnyFunSuite {
     trait Trait2
 
     for {n <- 1 to 100
-         d <- 1 to 4
-         rep <- 1 to 100
+         d <- 1 to 3
+         rep <- 1 to 80
          li = for {r <- 1 to 10} yield randomType(d)
          m <- 1 to n
          prefix = li.take(m)
@@ -76,8 +76,8 @@ class TypesTest extends AnyFunSuite {
   }
   def triangle_inequality(t1:SimpleTypeD,t2:SimpleTypeD,t3:SimpleTypeD):Unit = {
     if (cmpTypeDesignators(t1,t2) && cmpTypeDesignators(t2,t3))
-    assert(cmpTypeDesignators(t1,t3),
-    s"$t1 < $t2, and $t2 < $t3, but not $t1 < $t3")
+      assert(cmpTypeDesignators(t1,t3),
+             s"$t1 < $t2, and $t2 < $t3, but not $t1 < $t3")
   }
   test("triangle inequality"){
     trait Trait1

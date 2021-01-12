@@ -199,16 +199,4 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
       case _ => ???
     }
   }
-
-  // SAnd(tds: Type*)
-  override def cmpToSameClassObj(td: SimpleTypeD): Boolean = {
-    if (this == td)
-      false
-    else td match {
-      // this <= td ?
-      case SAnd(tds@_*) =>
-        compareSequence(this.tds, tds)
-      case _ => super.cmpToSameClassObj(td) // throws an exception
-    }
-  }
 }

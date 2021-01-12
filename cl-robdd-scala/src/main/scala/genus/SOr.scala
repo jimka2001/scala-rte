@@ -164,16 +164,4 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
       case _ => ???
     }
   }
-
-  // UnionType(tds: Type*)
-  override def cmpToSameClassObj(td:SimpleTypeD):Boolean = {
-    if (this == td)
-      false
-    else td match {
-      // this <= td ?
-      case SOr(tds @ _*) =>
-        compareSequence(this.tds,tds)
-      case _ => super.cmpToSameClassObj(td)  // throws an exception
-    }
-  }
 }

@@ -102,7 +102,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     if( this == td)
       false
     else td match {
-      case SNot(td) => cmpTypeDesignators(s, td)
+      case SNot(td2) => cmpTypeDesignators(s, td2)
       case _ => super.cmpToSameClassObj(td)  // throws an exception
     }
   }

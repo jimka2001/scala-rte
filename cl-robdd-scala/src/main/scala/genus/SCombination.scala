@@ -96,4 +96,13 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       }
       ))
   }
+  // SCombination(tds: Type*)
+  override def cmpToSameClassObj(td:SimpleTypeD):Boolean = {
+    if (this == td)
+      false
+    else td match {
+      case sc:SCombination => compareSequence(this.tds,sc.tds)
+      case _ => super.cmpToSameClassObj(td) // throws an exception
+    }
+  }
 }
