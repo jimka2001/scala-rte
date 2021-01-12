@@ -42,5 +42,6 @@ object STop extends SimpleTypeD {
     else Some(false)
   }
 
-  override def cmp(t:SimpleTypeD):Boolean = false
+  // comparing STop to itself must return false
+  override def cmpToSameClassObj(t:SimpleTypeD):Boolean = false
 }

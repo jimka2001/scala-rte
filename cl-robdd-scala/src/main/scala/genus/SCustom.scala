@@ -36,7 +36,7 @@ case class SCustom(f   : Any => Boolean, printable:String) extends SimpleTypeD w
 
   override def subtypep(t: SimpleTypeD): Option[Boolean] = super.subtypep(t)
 
-  override def cmp(t:SimpleTypeD):Boolean = {
+  override def cmpToSameClassObj(t:SimpleTypeD):Boolean = {
     s"$this" < s"$t"
   }
 }

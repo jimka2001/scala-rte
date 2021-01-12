@@ -63,7 +63,7 @@ abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD with TerminalType {
   }
 
   // SMember(xs: Any*)
-  override def cmp(t:SimpleTypeD):Boolean = {
+  override def cmpToSameClassObj(t:SimpleTypeD):Boolean = {
     if (this == t)
       false
     else t match {
@@ -84,7 +84,7 @@ abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD with TerminalType {
           }
         }
         comp(xs.toList, ys.toList)
-      case _ => super.cmp(t)
+      case _ => super.cmpToSameClassObj(t)  // throws an exception
     }
   }
 }

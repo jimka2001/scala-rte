@@ -98,12 +98,12 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     toDnf
   }
   // NotType(s: Type)
-  override def cmp(td:SimpleTypeD):Boolean = {
+  override def cmpToSameClassObj(td:SimpleTypeD):Boolean = {
     if( this == td)
       false
     else td match {
       case SNot(td) => cmpTypeDesignators(s, td)
-      case _ => super.cmp(td)
+      case _ => super.cmpToSameClassObj(td)  // throws an exception
     }
   }
 }

@@ -34,5 +34,5 @@ object SEmpty extends SimpleTypeD {
 
   override def subtypep(t: SimpleTypeD): Option[Boolean] = Some(true)
 
-  override def cmp(t:SimpleTypeD):Boolean = false
+  override def cmpToSameClassObj(t:SimpleTypeD):Boolean = false
 }

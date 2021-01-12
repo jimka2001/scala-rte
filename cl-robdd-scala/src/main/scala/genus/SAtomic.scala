@@ -129,13 +129,13 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   }
 
   // AtomicType(ct: Class[_])
-  override def cmp(td:SimpleTypeD):Boolean = {
+  override def cmpToSameClassObj(td:SimpleTypeD):Boolean = {
     if (this == td)
       false
     else td match {
       // this <= td ?
       case SAtomic(cl) => s"$ct" < s"$cl"
-      case _ => super.cmp(td)
+      case _ => super.cmpToSameClassObj(td)  // throws an exception
     }
   }
 }

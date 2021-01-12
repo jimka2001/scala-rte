@@ -149,11 +149,15 @@ object Types {
     comp(tds1.toList, tds2.toList)
   }
 
+  /* compare two objects in a way compatible with sortWith.
+  This function implements a strictly-less-than, thus it
+  returns false on equal elements.
+  */
   def cmpTypeDesignators(a:SimpleTypeD, b:SimpleTypeD):Boolean = {
     if( a == b )
-      true
+      false
     else if (a.getClass eq b.getClass) {
-      a.cmp(b)
+      a.cmpToSameClassObj(b)
     }
     else {
       // just compare the classes alphabetically

@@ -44,7 +44,7 @@ case class SEql(a: Any) extends SMemberImpl(a) {
   }
 
   // EqlType(a: Any)
-  override def cmp(t:SimpleTypeD):Boolean = {
+  override def cmpToSameClassObj(t:SimpleTypeD):Boolean = {
     if (this == t)
       false
     else t match {
@@ -55,7 +55,7 @@ case class SEql(a: Any) extends SMemberImpl(a) {
           a.toString <= b.toString
         else
           throw new Exception(s"cannot compare $this vs $t because they are different yet print the same")
-      case _ => super.cmp(t)
+      case _ => super.cmpToSameClassObj(t)  // throws an exception
     }
   }
 }

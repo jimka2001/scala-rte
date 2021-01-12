@@ -221,7 +221,10 @@ abstract class SimpleTypeD { // SimpleTypeD
    */
   def supertypep(t: SimpleTypeD): Option[Boolean] = t.subtypep(this)
 
-  def cmp(t: SimpleTypeD): Boolean = {
+  /* given another abject which we know is the same class as `this`,
+  compare then in a way which is compatible with
+  */
+  def cmpToSameClassObj(t: SimpleTypeD): Boolean = {
     throw new Exception(s"cannot compare type designators ${this.getClass} vs ${t.getClass}")
   }
 }
