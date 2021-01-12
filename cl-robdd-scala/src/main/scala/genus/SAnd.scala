@@ -34,6 +34,9 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   override def create(tds:SimpleTypeD*) = SAnd(tds: _*)
   override val unit:SimpleTypeD = STop
   override val zero:SimpleTypeD = SEmpty
+  override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
+    b.supertypep(a)
+  }
   override def sameCombination(td:SimpleTypeD):Boolean = {
     td match {
       case SAnd(_@_*) => true
@@ -154,15 +157,6 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
 
           SAnd((others ++ Seq(newNotMember)).sortWith(cmpTypeDesignators): _*)
         }
-      },
-      () => {
-        // (and A (not B)) --> Empty where A is subtype of B
-        if (tds.exists(a => tds.exists {
-          case SNot(b) if a.subtypep(b).contains(true) => true
-          case _ => false
-        })) SEmpty
-        else
-          this
       },
       () => {
         // TODO this checks n^2 times, need to change to n^2 / 2

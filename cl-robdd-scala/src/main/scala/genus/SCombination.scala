@@ -28,6 +28,10 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   def create(tds: SimpleTypeD*):SimpleTypeD
   val unit:SimpleTypeD
   val zero:SimpleTypeD
+  // TODO, not sure what is the correct name for this function.
+  //   it is the method which is b.subtypep(a) for SOr  equiv a.supertypep(b)
+  //                         and a.subtypep(b) for SAnd equiv b.supertypep(a)
+  def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean]
   def sameCombination(td:SimpleTypeD):Boolean = false
 
   // UnionType(tds: Type*)
@@ -93,7 +97,18 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         else {
           i2
         }
-      }
+      },
+      () => {
+        // (or A (not B)) --> STop   if B is subtype of A,    zero=STop
+        // (and A (not B)) --> SEmpty   if B is supertype of A,   zero=SEmpty
+        tds.find{a => tds.exists{
+          case SNot(b) if annihilator(a,b).contains(true) => true
+          case _ => false
+        }} match {
+          case None => this
+          case Some(_) => zero
+        }
+      },
       ))
   }
   // SCombination(tds: Type*)

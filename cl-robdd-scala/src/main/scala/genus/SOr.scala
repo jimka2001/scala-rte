@@ -34,6 +34,9 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   override def create(tds:SimpleTypeD*) = SOr(tds: _*)
   override val unit:SimpleTypeD = SEmpty
   override val zero:SimpleTypeD = STop
+  override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
+    b.subtypep(a)
+  }
   override def sameCombination(td:SimpleTypeD):Boolean = {
     td match {
       case SOr(_@_*) => true
@@ -131,23 +134,13 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
                             })
         ao match {
           case None => this
-          case Some(a) => // remove NotType(a) from every intersection, and if a is in intersection, replace with EmptyType
+          case Some(a) => // remove SNot(a) from every intersection, and if a is in intersection, replace with SEmpty
             SOr(
               tds.flatMap {
                 case SAnd(tds@_*) if tds.contains(a) => Seq()
                 case SAnd(tds@_*) if tds.contains(SNot(a)) => Seq(SAnd(tds.filterNot(_ == SNot(a)): _*))
                 case b => Seq(b)
               }: _*)
-        }
-      },
-      () => {
-        // (or A (not B)) --> Top   if B is subtype of A
-        tds.find{a => tds.exists{
-          case SNot(b) if b.subtypep(a).contains(true) => true
-          case _ => false
-        }} match {
-          case None => this
-          case Some(_) => STop
         }
       },
       () => { super.canonicalizeOnce(nf)}
