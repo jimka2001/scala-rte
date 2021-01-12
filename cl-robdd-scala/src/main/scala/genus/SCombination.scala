@@ -96,7 +96,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         }
       },
       () => {
-        val i2 = create(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf)).sortWith(cmpTypeDesignators): _*).maybeDnf(nf).maybeCnf(nf)
+        val i2 = create(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf)).sortWith(cmpTypeDesignators): _*)
+          .maybeDnf(nf).maybeCnf(nf)
         if (this == i2)
           this // return the older object, hoping the newer one is more easily GC'ed
         else {
