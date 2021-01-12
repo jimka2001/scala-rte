@@ -24,6 +24,11 @@ package genus
 import Types._
 import NormalForm._
 
+// The purpose of this class, SCombination, is to serve as a superclass
+// of both SAnd and SOr, as there is quite a bit of common code between
+// the two classes (SAnd and SOr).  In some cases factoring the code
+// out means replacing SEmpty with STop, or vice versa, and
+// replacing subtypep with supertypep, etc.
 abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   def create(tds: SimpleTypeD*):SimpleTypeD
   val unit:SimpleTypeD
