@@ -157,7 +157,8 @@ abstract class SimpleTypeD { // SimpleTypeD
     s
   }
 
-  def findSimplifier(simplifiers: List[() => SimpleTypeD]): SimpleTypeD = {
+  @scala.annotation.tailrec
+  final def findSimplifier(simplifiers: List[() => SimpleTypeD]): SimpleTypeD = {
     // simplifiers is a list of 0-ary functions.   calling such a function
     //   either returns `this` or something else.   we call all the functions
     //   in turn, as long as they return `this`.  As soon as such a function
