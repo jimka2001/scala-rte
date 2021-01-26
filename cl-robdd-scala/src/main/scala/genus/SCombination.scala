@@ -96,10 +96,11 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         }
       },
       () => {
-        val i2 = create(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf)).sortWith(cmpTypeDesignators): _*)
+        val i2 = create(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf))
+                          .sortWith(cmpTypeDesignators): _*)
           .maybeDnf(nf).maybeCnf(nf)
         if (this == i2)
-          this // return the older object, hoping the newer one is more easily GC'ed
+          this // return the older object, hoping the newer one is more easily GC'ed, also preserves EQness
         else {
           i2
         }
@@ -117,10 +118,11 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       },
       ))
   }
-  // SCombination(tds: Type*)
+  // SCombination(tds: SimpleTypeD*)
   override def cmpToSameClassObj(td:SimpleTypeD):Boolean = {
+    // this method is only called if td and this have exactly the same class
     if (this == td)
-      false
+      false // sortWith requires returning false if A not < B, including the case that A == B.
     else td match {
       case sc:SCombination => compareSequence(this.tds,sc.tds)
       case _ => super.cmpToSameClassObj(td) // throws an exception
