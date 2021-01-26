@@ -57,7 +57,7 @@ class MapColoringTestSuite extends AnyFunSuite {
       bdd.visitSatisfyingAssignments { (assignTrue,assignFalse) =>
         val colorMapping: Map[String, String] = assignColors(colorization, assignTrue,assignFalse, colors)
         colors.foreach { color =>
-          val sameColorStates = colorMapping.filterKeys { state => colorMapping(state) == color }.keys
+          val sameColorStates = colorMapping.view.filterKeys { state => colorMapping(state) == color }.keys
           for {state1 <- sameColorStates
                state2 <- sameColorStates
                if state1 != state2
@@ -71,7 +71,7 @@ class MapColoringTestSuite extends AnyFunSuite {
       }
     }
   }
-  import scala.ref.WeakReference
+
   test("europe"){
     europeMapColoringTest(12)
   }
@@ -81,10 +81,10 @@ class MapColoringTestSuite extends AnyFunSuite {
                 USAgraph.stateUniGraph,USAgraph.stateBiGraph,List("MS","AL","TN"))
   }
   def sanityCheck(numNodes:Int):Unit = {
-    import accumulators.Accumulators._
+    import cl.Accumulators._
     Bdd.withNewBddHash {
       //val (states, subGraph) = findSubGraph("AL", numNodes)
-      val (colorization,bdd) = graphToBdd(List("CA"),
+      val (_colorization,bdd) = graphToBdd(List("CA"),
                                           USAgraph.stateUniGraph,
                                           USAgraph.stateBiGraph,
                                           numNodes,
@@ -95,7 +95,7 @@ class MapColoringTestSuite extends AnyFunSuite {
       //println(s"colors=$colorization")
       val countSolutions =
         withCounter { count =>
-          bdd.visitSatisfyingAssignments { (assignTrue:Assignment,assignFalse:Assignment) =>
+          bdd.visitSatisfyingAssignments { (_assignTrue:Assignment,assignFalse:Assignment) =>
             //println(s"   color assignment="+ assignColors(colorization,assign,Array("red","green","blue","yellow")))
             count()
           }

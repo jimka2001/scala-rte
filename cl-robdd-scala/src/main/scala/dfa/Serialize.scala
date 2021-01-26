@@ -36,7 +36,7 @@ object Serialize {
   }
 
   def serializeToString[L,E](dfa:Dfa[L,E]):String = {
-    import accumulators.Accumulators.withOutputToString
+    import cl.Accumulators.withOutputToString
 
     withOutputToString(printer => {
       printer("{\n")

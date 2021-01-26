@@ -21,14 +21,14 @@
 
 package accumulators
 
-import accumulators.Accumulators._
+import cl.Accumulators._
 import org.scalatest._
 import org.scalatest.funsuite.AnyFunSuite
 
 class AccumulatorSuite extends AnyFunSuite {
   
   test("successor"){
-
+    import cl.successor
     val primes = List(11,13,17,19)
     val odds = Array(3,5,7)
 

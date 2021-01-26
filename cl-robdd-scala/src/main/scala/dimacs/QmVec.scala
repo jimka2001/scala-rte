@@ -124,7 +124,7 @@ class QmVec() {
   // for deletion, by calling removeFunction.   However, (1,2,4) is added immediately, by calling
   // addFunction.
   def reducePosCountClauses(posCount: Int): RemoveAdd = {
-    import accumulators.Accumulators._
+    import cl.Accumulators._
     import dimacs.dimacsSimplify.crossCompatiblize
 
     foldUps(withCollector(collect =>
@@ -210,7 +210,7 @@ class QmVec() {
   }
   def writeDimacs(fileName:String, comment:Option[List[String]]):(Int,Int) = {
     import java.io._
-    import accumulators.Accumulators.{withSetCollector, withSummer}
+    import cl.Accumulators.{withSetCollector, withSummer}
 
     val file = new File(fileName)
     val bw = new BufferedWriter(new FileWriter(file))

@@ -76,7 +76,7 @@ object BitFiddle {
     if (m < n / 2)
       take(m, Set())
     else {
-      import accumulators.Accumulators.withSetCollector
+      import cl.Accumulators.withSetCollector
       val inverse = take(n - m, Set())
       withSetCollector { collect =>
         (1 to n).foreach { i =>
@@ -96,7 +96,7 @@ object BitFiddle {
   //   to (2^n)-1 at the bottom corresponding to TTT...T
   def genDnfFromBitMask(n: Int, maxNumBits:Int, maxNumTerms:Int, f: Int => Boolean): IterableOnce[List[Int]] = {
     require(n >= maxNumBits)
-    import accumulators.Accumulators.withCollector
+    import cl.Accumulators.withCollector
 
     if (n == maxNumBits) {
       withCollector { collect =>

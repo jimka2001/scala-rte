@@ -4,7 +4,7 @@ version := "0.1"
 
 scalaVersion := "2.13.3"
 
-libraryDependencies += "fr.epita.lrde" %% "clcompat" % "0.1"
+//libraryDependencies += "fr.epita.lrde" %% "clcompat" % "0.1"
 
 libraryDependencies += "junit" % "junit" % "4.10" % "test"
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.0"

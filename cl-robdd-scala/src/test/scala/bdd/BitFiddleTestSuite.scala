@@ -114,7 +114,7 @@ class BddFiddleTestSuite extends AnyFunSuite {
   test("gen truth table range") {
     import Bdd._
     import Histogram._
-    import accumulators.Accumulators.withCounter
+    import cl.Accumulators.withCounter
     withNewBddHash {
       (1 to 4).foreach { n =>
         assert(1 ==

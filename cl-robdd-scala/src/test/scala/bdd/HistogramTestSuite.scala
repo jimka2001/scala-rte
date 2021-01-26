@@ -28,7 +28,7 @@ class HistogramTestSuite extends AnyFunSuite {
   test("foreachBdd 1") {
     import Bdd._
     import Histogram._
-    import accumulators.Accumulators._
+    import cl.Accumulators._
     withNewBddHash {
       (1 to 4).foreach { n =>
         assert(withCounter(count =>
@@ -39,7 +39,7 @@ class HistogramTestSuite extends AnyFunSuite {
   test("foreachBdd 2") {
     import Bdd._
     import Histogram._
-    import accumulators.Accumulators._
+    import cl.Accumulators._
     withNewBddHash {
       (1 to 4).foreach { n: Int =>
         val bdds: Set[Bdd] = withSetCollector(collect =>
