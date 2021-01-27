@@ -44,7 +44,7 @@ class HistogramTestSuite extends AnyFunSuite {
       (1 to 4).foreach { n: Int =>
         val bdds: Set[Bdd] = withSetCollector(collect =>
                                                 foreachBdd(n)(collect))
-        assert(bdds.size == (1L << (1L << n)), s"n=$n expecting size=${(1L << (1L << n))} got size=${bdds.size}")
+        assert(bdds.size == (1L << (1L << n)), s"n=$n expecting size=${1L << (1L << n)} got size=${bdds.size}")
       }
     }
   }

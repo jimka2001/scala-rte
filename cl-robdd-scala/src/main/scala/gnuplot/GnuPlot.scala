@@ -38,15 +38,15 @@ object GnuPlot {
   def writeCsv(dataToPlot: List[(String, List[Double], List[Double])],
                xAxisLabel:String,
                outputDirName     : String,
-               outputFileBaseName: String) = {
+               outputFileBaseName: String): Unit = {
     require(outputDirName.takeRight(1) == "/")
     import java.io._
-    val csvName = s"${outputDirName}${outputFileBaseName}.csv"
+    val csvName = s"$outputDirName$outputFileBaseName.csv"
     val csv = new PrintWriter(new File(csvName))
     // println(s"[writing to $csvName\n")
     // write header
-    csv.write(s"${xAxisLabel}")
-    for {(text, _, _) <- dataToPlot} csv.write(s",${text}")
+    csv.write(s"$xAxisLabel")
+    for {(text, _, _) <- dataToPlot} csv.write(s",$text")
     csv.write(s"\n")
     // get all x values in case they are different per curve
     val uniqXs: List[Double] = (for {(_, xs, _) <- dataToPlot}
@@ -57,7 +57,7 @@ object GnuPlot {
     // print 1 line per uniq x in order, even if some of the y values are missing
     uniqXs.foreach { x =>
       csv.write(s"$x")
-      dataMaps.foreach { case (text, mapXtoY) =>
+      dataMaps.foreach { case (_text, mapXtoY) =>
         mapXtoY.get(x) match {
           case None => csv.write(",")
           case Some(y) => csv.write(s",$y")
@@ -90,7 +90,7 @@ object GnuPlot {
     import java.io._
     import cl.Accumulators.withOutputToString
 
-    val gnuName = s"${outputDirName}${outputFileBaseName}.gnu"
+    val gnuName = s"$outputDirName$outputFileBaseName.gnu"
     val gnu = new PrintWriter(new File(gnuName))
 
     writeCsv(dataToPlot,xAxisLabel,outputDirName,outputFileBaseName)
@@ -101,9 +101,9 @@ object GnuPlot {
     if (yLog)
       gnu.write("set logscale y\n")
     if ("" != xAxisLabel)
-      gnu.write(s"""set xlabel "${xAxisLabel}"\n""")
+      gnu.write(s"""set xlabel "$xAxisLabel"\n""")
     if ("" != yAxisLabel)
-      gnu.write(s"""set ylabel "${yAxisLabel}"\n""")
+      gnu.write(s"""set ylabel "$yAxisLabel"\n""")
     if (grid)
       gnu.write(s"set grid\n")
 
@@ -115,9 +115,9 @@ object GnuPlot {
       val header: String = withOutputToString { prHeader =>
         def plot(title: String, xys: List[(Double, Double)]): Unit = {
           prHeader(""""-" using 1:2""")
-          prHeader(s" with ${plotWith}")
+          prHeader(s" with $plotWith")
           prHeader(s""" title "$title"""")
-          prFooter(s"""#${title}\n""")
+          prFooter(s"""#$title\n""")
           xys.foreach { case (x, y) =>
             prFooter(s"$x $y\n")
           }
@@ -127,10 +127,9 @@ object GnuPlot {
         if (dataToPlot.nonEmpty) {
           plot(dataToPlot.head._1, dataToPlot.head._2.zip(dataToPlot.head._3))
 
-          dataToPlot.tail.foreach { case (curveTitle, xs, ys) => {
+          dataToPlot.tail.foreach { case (curveTitle, xs, ys) =>
             prHeader(",\\\n    ")
             plot(curveTitle, xs.zip(ys))
-          }
           }
         }
       }
@@ -142,13 +141,13 @@ object GnuPlot {
 
     terminals.foreach { terminal=>
       import sys.process._
-      var outputFileName = s"${outputDirName}${outputFileBaseName}.${terminal}"
+      val outputFileName = s"$outputDirName$outputFileBaseName.$terminal"
 
       //println(s"[generating $outputFileName")
-      val exitCode = (Seq(gnuPlotPath, "-e", s"set terminal ${terminal}", gnuName) #>> new File(outputFileName)).!
+      val exitCode = (Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName) #>> new File(outputFileName)).!
 
-      //if (exitCode != 0)
-      //  println(s"finished $outputFileName with exit code=$exitCode]")
+      if (exitCode != 0)
+        println(s"finished $outputFileName with exit code=$exitCode]")
       //else
       //  println(s"finished $outputFileName]")
     }

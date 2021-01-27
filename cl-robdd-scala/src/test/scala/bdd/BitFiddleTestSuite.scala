@@ -26,12 +26,12 @@ import Bdd._
 import BitFiddle._
 import org.scalatest.funsuite.AnyFunSuite
 
-class BddFiddleTestSuite extends AnyFunSuite {
+class BitFiddleTestSuite extends AnyFunSuite {
 
   test("genSample"){
     for{
-      n <- (1 to 5)
-      m <- (1 to n)
+      n <- 1 to 5
+      m <- 1 to n
       sample <- Some(genSample(n,m))
       _ = assert(sample.size == m)
     } ()
@@ -59,7 +59,7 @@ class BddFiddleTestSuite extends AnyFunSuite {
       m <- 3 to 5
       lim <- 12 to 13
       terms = genDnfFromBitMask(n,m, lim, _=>true)
-    } assert(terms.size == lim, s"n=$n m=$m, lim=$lim, size=${terms.size}")
+    } assert(terms.iterator.size == lim, s"n=$n m=$m, lim=$lim, size=${terms.iterator.size}")
   }
   test("extractBits") {
 
@@ -113,7 +113,6 @@ class BddFiddleTestSuite extends AnyFunSuite {
   }
   test("gen truth table range") {
     import Bdd._
-    import Histogram._
     import cl.Accumulators.withCounter
     withNewBddHash {
       (1 to 4).foreach { n =>
