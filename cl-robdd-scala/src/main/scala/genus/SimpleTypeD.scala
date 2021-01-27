@@ -163,7 +163,7 @@ abstract class SimpleTypeD { // SimpleTypeD
     //   either returns `this` or something else.   we call all the functions
     //   in turn, as long as they return `this`.  As soon as such a function
     //   returns something other than `this`, then that new value is returned
-    //   from findSimplifier.  as a list resort, `this` is returned.
+    //   from findSimplifier.  As a last resort, `this` is returned.
     simplifiers match {
       case Nil => this
       case s :: ss =>
