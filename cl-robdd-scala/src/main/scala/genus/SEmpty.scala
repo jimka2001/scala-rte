@@ -24,7 +24,7 @@ package genus
 
 /** The empty type, subtype of all types. */
 object SEmpty extends SimpleTypeD {
-  override def toString = "Empty"
+  override def toString = "SEmpty"
 
   override def typep(a: Any): Boolean = false
 

@@ -40,7 +40,10 @@ abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD with TerminalType {
   }
 
   override def subtypep(t: SimpleTypeD): Option[Boolean] = {
-    Some(xs.forall(t.typep))
+    if (xs.isEmpty)
+      SEmpty.subtypep(t)
+    else
+      Some(xs.forall(t.typep))
   }
 
   // SMember(xs: Any*)

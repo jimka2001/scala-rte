@@ -63,14 +63,15 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
       case SNot(b) => b.subtypep(s)
       case _ => None
     }
-    if (s.inhabited.contains(true)
-        && s.subtypep(t).contains(true))
+    if (t.canonicalize() == STop)
+      Some(true)
+    else if (s.inhabited.contains(true)
+             && s.subtypep(t).contains(true)) {
       Some(false)
-    else if (os.nonEmpty)
+    } else if (os.nonEmpty)
       os
     else
       super.subtypep(t)
-
   }
 
   // NotType(s: Type)

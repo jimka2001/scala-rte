@@ -115,6 +115,8 @@ abstract class SimpleTypeD { // SimpleTypeD
     }) {
       Some(true)
     }
+    else if (t.canonicalize() == STop)
+      Some(true)
     else
       (inhabited, t.inhabited) match {
         case (None, _) => None

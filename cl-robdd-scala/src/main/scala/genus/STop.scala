@@ -24,7 +24,7 @@ package genus
 
 /** The super type, super type of all types. */
 object STop extends SimpleTypeD {
-  override def toString = "Top"
+  override def toString = "STop"
 
   override def typep(a: Any): Boolean = true
 
@@ -38,8 +38,15 @@ object STop extends SimpleTypeD {
   }
 
   override def subtypep(t: SimpleTypeD): Option[Boolean] = {
-    if (t == STop) Some(true)
-    else Some(false)
+    import NormalForm._
+    if (t == STop)
+      Some(true)
+    else if (t.canonicalize(Some(Dnf)) == STop)
+      Some(true)
+    else if (SNot(t).inhabited.isEmpty)
+      None
+    else
+      Some(false)
   }
 
   // comparing STop to itself must return false

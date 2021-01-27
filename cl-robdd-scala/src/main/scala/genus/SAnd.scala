@@ -107,11 +107,15 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
 
   // SAnd(tds: Type*)
   override def subtypep(t: SimpleTypeD): Option[Boolean] = {
-    if (tds.exists(_.subtypep(t).contains(true)))
+    if (tds.isEmpty)
+      STop.subtypep(t)
+    else if (tds.exists(_.subtypep(t).contains(true)))
       Some(true)
-    else if (tds.forall(_.disjoint(t).contains(true)))
+    else if (t.inhabited.contains(true)
+             && inhabited.contains(true)
+             && tds.forall(_.disjoint(t).contains(true))) {
       Some(false)
-    else
+    } else
       super.subtypep(t)
   }
 
