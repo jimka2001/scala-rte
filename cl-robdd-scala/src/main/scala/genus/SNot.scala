@@ -35,7 +35,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     !s.typep(a)
   }
 
-  override def inhabitedDown: Option[Boolean] = {
+  override protected def inhabitedDown: Option[Boolean] = {
     val nothing = classOf[Nothing]
     val any = classOf[AnyRef]
     s match {

@@ -48,7 +48,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   }
 
   // SAnd(tds: Type*)
-  override def inhabitedDown: Option[Boolean] = {
+  override protected def inhabitedDown: Option[Boolean] = {
     lazy val dnf = canonicalize(nf = Some(Dnf))
     lazy val cnf = canonicalize(nf = Some(Cnf))
     lazy val inhabitedDnf = dnf.inhabited
@@ -106,7 +106,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   }
 
   // SAnd(tds: Type*)
-  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
+  override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
     if (tds.isEmpty)
       STop.subtypep(t)
     else if (tds.exists(_.subtypep(t).contains(true)))

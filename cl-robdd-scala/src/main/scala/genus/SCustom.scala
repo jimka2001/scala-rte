@@ -32,9 +32,9 @@ case class SCustom(f   : Any => Boolean, printable:String) extends SimpleTypeD w
   
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = super.disjointDown(t)
 
-  override def inhabitedDown: Option[Boolean] = super.inhabitedDown
+  override protected def inhabitedDown: Option[Boolean] = super.inhabitedDown
 
-  override def subtypep(t: SimpleTypeD): Option[Boolean] = super.subtypep(t)
+  override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = super.subtypepDown(t)
 
   override def cmpToSameClassObj(t:SimpleTypeD):Boolean = {
     s"$this" < s"$t"

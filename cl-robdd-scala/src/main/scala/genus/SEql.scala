@@ -32,7 +32,7 @@ case class SEql(a: Any) extends SMemberImpl(a) {
     a == b
   }
 
-  override def inhabitedDown: Option[Boolean] = Some(true)
+  override protected def inhabitedDown: Option[Boolean] = Some(true)
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     if (t.typep(a)) Some(false)

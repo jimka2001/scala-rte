@@ -43,7 +43,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     ct.isInstance(a)
   }
 
-  override def inhabitedDown: Some[Boolean] = {
+  override protected def inhabitedDown: Some[Boolean] = {
     if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
     else

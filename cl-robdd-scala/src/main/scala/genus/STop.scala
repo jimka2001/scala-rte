@@ -28,7 +28,7 @@ object STop extends SimpleTypeD {
 
   override def typep(a: Any): Boolean = true
 
-  override def inhabitedDown: Some[Boolean] = Some(true)
+  override protected def inhabitedDown: Some[Boolean] = Some(true)
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     t match {

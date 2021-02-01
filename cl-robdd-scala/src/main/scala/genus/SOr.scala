@@ -47,7 +47,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
     tds.exists(_.typep(a))
   }
 
-  override def inhabitedDown: Option[Boolean] = {
+  override protected def inhabitedDown: Option[Boolean] = {
     val i = memoize((s: SimpleTypeD) => s.inhabited)
     if (tds.exists(i(_).contains(true)))
       Some(true)

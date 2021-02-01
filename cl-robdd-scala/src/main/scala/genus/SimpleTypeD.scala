@@ -88,7 +88,7 @@ abstract class SimpleTypeD { // SimpleTypeD
   // inhabitedDown should not be called directly, except as super.inhabitedDown,
   // rather the variable inhabited should be referenced, ensuring that the
   // same computation not be done twice.
-  def inhabitedDown: Option[Boolean] = None
+  protected def inhabitedDown: Option[Boolean] = None
 
   lazy val inhabited: Option[Boolean] = inhabitedDown
 

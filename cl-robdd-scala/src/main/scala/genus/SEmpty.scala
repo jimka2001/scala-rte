@@ -28,7 +28,7 @@ object SEmpty extends SimpleTypeD {
 
   override def typep(a: Any): Boolean = false
 
-  override def inhabitedDown: Some[Boolean] = Some(false)
+  override protected def inhabitedDown: Some[Boolean] = Some(false)
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = Some(true)
 
