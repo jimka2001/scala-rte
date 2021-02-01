@@ -37,13 +37,9 @@ object STop extends SimpleTypeD {
     }
   }
 
-  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
+  override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
     import NormalForm._
-    if (t == STop)
-      Some(true)
-    else if (t.canonicalize(Some(Dnf)) == STop)
-      Some(true)
-    else if (SNot(t).inhabited.isEmpty)
+    if (SNot(t).inhabited.isEmpty)
       None
     else
       Some(false)

@@ -98,33 +98,37 @@ abstract class SimpleTypeD { // SimpleTypeD
     else
       None
   }
-
   /** Returns whether this type is a recognizable subtype of another given type.
    * It is a subset test. This might be undecidable.
    *
    * @param t the type we want to check whether this type is included in
    * @return an optional Boolean which is true if this type is a subtype of t
    */
-  def subtypep(t: SimpleTypeD): Option[Boolean] = {
+  def subtypep(t:SimpleTypeD): Option[Boolean] = {
     if ((t.getClass eq this.getClass)
         && (t == this))
       Some(true)
-    else if (t match {
+    else if (t.canonicalize() == STop)
+      Some(true)
+    else {
+      subtypepDown(t)
+    }
+  }
+
+  protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
+    if (t match {
       case SNot(b) if disjoint(b).contains(true) => true
       case _ => false
     }) {
       Some(true)
     }
-    else if (t.canonicalize() == STop)
-      Some(true)
-    else
-      (inhabited, t.inhabited) match {
-        case (None, _) => None
-        case (_, None) => None
-        case (Some(false), Some(false)) => Some(true) // empty set is a subset of the empty set
-        case (_, Some(false)) => Some(false) // no inhabited type is a subtype of the empty type
-        case _ => None
-      }
+    else (inhabited, t.inhabited) match {
+      case (None, _) => None
+      case (_, None) => None
+      case (Some(false), Some(false)) => Some(true) // empty set is a subset of the empty set
+      case (_, Some(false)) => Some(false) // no inhabited type is a subtype of the empty type
+      case _ => None
+    }
   }
 
   def fixedPoint[T](w: T, f: T => T, goodEnough: (T, T) => Boolean): T = {

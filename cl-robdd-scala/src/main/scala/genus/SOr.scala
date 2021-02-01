@@ -69,7 +69,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   }
 
   // UnionType(tds: Type*)
-  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
+  override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
     val s = memoize((s: SimpleTypeD) => s.subtypep(t))
     if (tds.isEmpty) {
       SEmpty.subtypep(t)
@@ -80,7 +80,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
     else if (tds.exists(s(_).contains(false))) {
       Some(false)
     } else
-      super.subtypep(t)
+      super.subtypepDown(t)
   }
 
   // UnionType(tds: Type*)

@@ -80,7 +80,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   }
 
   // AtomicType(ct: Class[_])
-  override def subtypep(s: SimpleTypeD): Option[Boolean] = {
+  override protected def subtypepDown(s: SimpleTypeD): Option[Boolean] = {
     s match {
       case SEmpty => Some(false)
       case STop => Some(true)
@@ -95,7 +95,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
         Some(false)
 
       case SNot(_) =>
-        super.subtypep(s)
+        super.subtypepDown(s)
 
       case SOr(tp@_*) =>
         if (tp.exists(x => subtypep(x).contains(true)))
@@ -108,7 +108,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
         else if (tp.forall(x => disjoint(x).contains(true)))
           Some(false)
         else
-          super.subtypep(s)
+          super.subtypepDown(s)
 
       case SAnd(tp@_*) =>
         if (tp.forall(x => subtypep(x).contains(true)))
@@ -116,10 +116,10 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
         else if (tp.forall(x => disjoint(x).contains(true)))
           Some(false)
         else
-          super.subtypep(s)
+          super.subtypepDown(s)
 
       case SCustom(_,_) =>
-        super.subtypep(s)
+        super.subtypepDown(s)
     }
   }
 

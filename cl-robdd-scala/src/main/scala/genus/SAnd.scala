@@ -116,7 +116,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
              && tds.forall(_.disjoint(t).contains(true))) {
       Some(false)
     } else
-      super.subtypep(t)
+      super.subtypepDown(t)
   }
 
   // SAnd(tds: SimpleTypeD*)

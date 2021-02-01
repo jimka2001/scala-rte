@@ -58,7 +58,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
   }
 
   // NotType(s: Type)
-  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
+  override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
     lazy val os = t match {
       case SNot(b) => b.subtypep(s)
       case _ => None
@@ -71,7 +71,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     } else if (os.nonEmpty)
       os
     else
-      super.subtypep(t)
+      super.subtypepDown(t)
   }
 
   // NotType(s: Type)
