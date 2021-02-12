@@ -127,6 +127,11 @@ object Types {
   }
 
   def conj[T](obj:T, seq:Seq[T]):Seq[T] = seq match {
+    // given an object ane a sequence, add the element to the sequence
+    // either at the beginning or end, depending on the type of Seq.
+    // It is easier to add to the begging of a list, but to the end of a vector.
+    // The caller calls this function when it is not important whether the
+    // new element be added to the beginning or the end.
     case Seq() => Seq(obj)
     case l:List[T] => obj :: l
     case _ => seq :+ obj
