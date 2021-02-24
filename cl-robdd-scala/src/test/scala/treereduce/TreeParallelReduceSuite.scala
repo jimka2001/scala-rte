@@ -87,13 +87,13 @@ class TreeParallelReduceSuite extends AnyFunSuite {
       val piercedInterval = (-r to -1) ++ (1 to r)
       time(s"$r  pairMapReduce", {
         val sum = pairMapReduce(piercedInterval)(Rational(0, 1), Rational(1, _), rationalAdd)
-        assert(sum === zero)
+        assert(sum == zero)
       })
       time(s"$r           fold", {
         val sum = piercedInterval.map {
           Rational(1, _)
         }.foldLeft(Rational(0, 1))(_ + _)
-        assert(sum === zero)
+        assert(sum == zero)
       })
       println()
     }
