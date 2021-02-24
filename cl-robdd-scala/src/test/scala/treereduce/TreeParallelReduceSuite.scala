@@ -42,7 +42,7 @@ class TreeParallelReduceSuite extends AnyFunSuite {
     assert(5050 == pairMapReduce(data.toArray)(init = 0, id, addInt))
     assert(5050 == pairMapReduce(data.toArray.par)(init = 0, id, addInt))
     //assert(5050 == pairMapReduce(1 to 100)(init = 0,id, addInt))
-    assert(5050 == pairMapReduce((1 to 100).toIterator)(init = 0, id, addInt))
+    assert(5050 == pairMapReduce((1 to 100).iterator)(init = 0, id, addInt))
     assert(5050 == pairMapReduce(data)(init = 0, id, addInt))
   }
   test("tree map tree reduce non-commutative") {
