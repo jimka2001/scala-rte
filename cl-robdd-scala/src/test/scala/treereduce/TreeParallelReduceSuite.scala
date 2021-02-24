@@ -62,8 +62,8 @@ class TreeParallelReduceSuite extends AnyFunSuite {
     }
 
     for {
-      upper <- (1 to 1000)
-      intervals = ((0 to upper).map(i => (i, i + 1))).toList
+      upper <- 1 to 1000
+      intervals = (0 to upper).map(i => (i, i + 1)).toList
     } {
       assert(intervals.foldLeft((0, 0))(mergeIntervals) == pairMapReduce(intervals)(init = (0, 0), id, mergeIntervals))
     }
