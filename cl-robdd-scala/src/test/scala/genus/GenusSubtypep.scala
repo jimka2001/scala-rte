@@ -198,6 +198,23 @@ class GenusSubtypep extends AnyFunSuite {
     }
   }
 
+  test("intersection and union subtypep"){
+    def checkSubtype(rt1:SimpleTypeD,rt2:SimpleTypeD,comment:String):Unit = {
+      assert(! rt1.subtypep(rt2).contains(false), s"$comment: rt1=$rt1 rt2=$rt2")
+    }
+    for {_ <- 0 to 200
+         n <- 0 to 5
+         rt1 = randomType(n)
+         rt2 = randomType(n)
+         union = SOr(rt1,rt2)
+         intersect = SAnd(rt1,rt2)
+         }{
+      checkSubtype(rt1,union,"x <: x || y")
+      checkSubtype(rt1,union, "x <: y || x")
+      checkSubtype(intersect,rt1, "x&y <: x")
+      checkSubtype(intersect,rt2, "x&y <: y")
+    }
+  }
   test("randomized testing of subtypep") {
     import NormalForm._
 
