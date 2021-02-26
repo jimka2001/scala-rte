@@ -68,6 +68,7 @@ object Types {
     case SNot(_) => true
     case _ => false
   }
+
   def randomType(depth:Int):SimpleTypeD = {
     import scala.util.Random
     val random = new Random
@@ -236,8 +237,12 @@ object Types {
   }
   val primeType:SCustom = SCustom(isPrime)
 
+  def measureSubtypeComputability(n:Int,depth:Int):Double = {
+    assert(n > 0, s"measureSubtypeComputability does not support n=$n")
+    (0 until n).count(_ => randomType(depth).subtypep(randomType(depth)).nonEmpty).toDouble / n
+  }
 
-  def main(args: Array[String]): Unit = {
+  def sanityTest():Unit = {
     val a = 2
     val t = SAtomic(classOf[Int])
 
@@ -277,5 +282,12 @@ object Types {
     println(!t1)
 
     println(classOf[String] || classOf[Integer])
+  }
+
+  def main(args: Array[String]): Unit = {
+    // sanityTest()
+    for{ n <- Seq(10000)
+         p = measureSubtypeComputability(n,8) * 100
+         } println(s"$n => $p")
   }
 }
