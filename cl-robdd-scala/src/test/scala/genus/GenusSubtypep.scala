@@ -198,24 +198,26 @@ class GenusSubtypep extends AnyFunSuite {
     }
   }
 
-  test("intersection and union subtypep"){
-    def checkSubtype(rt1:SimpleTypeD,rt2:SimpleTypeD,comment:String):Unit = {
-      assert(! rt1.subtypep(rt2).contains(false), s"$comment: rt1=$rt1 rt2=$rt2")
+  test("intersection and union subtypep") {
+    def checkSubtype(rt1: SimpleTypeD, rt2: SimpleTypeD, comment: String): Unit = {
+      assert(!rt1.subtypep(rt2).contains(false), s"$comment: rt1=$rt1 rt2=$rt2")
     }
+
     for {_ <- 0 to 200
          n <- 0 to 5
          rt1 = randomType(n)
          rt2 = randomType(n)
-         union = SOr(rt1,rt2)
-         intersect = SAnd(rt1,rt2)
-         }{
-      checkSubtype(rt1,union,"x <: x || y")
-      checkSubtype(rt1,union, "x <: y || x")
-      checkSubtype(intersect,rt1, "x&y <: x")
-      checkSubtype(intersect,rt2, "x&y <: y")
+         union = SOr(rt1, rt2)
+         intersect = SAnd(rt1, rt2)
+         } {
+      checkSubtype(rt1, union, "x <: x || y")
+      checkSubtype(rt2, union, "y <: y || x")
+      checkSubtype(intersect, rt1, "x&y <: x")
+      checkSubtype(intersect, rt2, "x&y <: y")
     }
   }
-  test("randomized testing of subtypep") {
+
+  test("randomized testing of subtypep with normalization") {
     import NormalForm._
 
     def checkSubtype(rt1:SimpleTypeD,rt2:SimpleTypeD,comment:String):Unit = {
@@ -235,5 +237,10 @@ class GenusSubtypep extends AnyFunSuite {
       checkSubtype(rt,rt.toDnf.toCnf,".toDnf.toCnf")
       checkSubtype(rt.toCnf,rt.toDnf,"toCnf vs toDnf")
     }
+  }
+  test("discovered cases"){
+    assert(!SNot(SMember(1,2)).subtypep(SOr(SEql(3),SNot(SMember(1,2)))).contains(false))
+    assert(SAtomic(Long).subtypep(SNot(SAtomic(Double))).contains(true), "Long <: not(Double")
+    assert(SNot(SAtomic(Double)).subtypep(SAtomic(Long)).contains(false), "not(Double) !<: Long")
   }
 }
