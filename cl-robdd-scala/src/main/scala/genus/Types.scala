@@ -239,13 +239,13 @@ object Types {
 
   def measureSubtypeComputability(n:Int,depth:Int):(Double,Double) = {
     assert(n > 0, s"measureSubtypeComputability does not support n=$n")
-    val (p1,p2) = (0 until n).foldLeft((0, 0)) { case ((c1, c2), i) =>
+    val (p1,p2) = (0 until n).foldLeft((0, 0)) { case ((c1, c2), _) =>
       val rt1 = randomType(depth)
       val rt2 = randomType(depth)
       val s1 = rt1.subtypep(rt2).nonEmpty
       val s2 = rt1.canonicalize().subtypep(rt2.canonicalize()).nonEmpty
-      (if (s1) (c1 + 1) else c1,
-        if (s2) (c2 + 1) else c2)
+      (if (s1) c1 + 1 else c1,
+        if (s2) c2 + 1 else c2)
     }
     (p1.toDouble / n, p2.toDouble / n)
   }
