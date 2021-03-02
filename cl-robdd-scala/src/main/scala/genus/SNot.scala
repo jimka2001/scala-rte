@@ -57,18 +57,24 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     else super.disjointDown(t)
   }
 
-  // NotType(s: Type)
+  // NotType(s: SimpleTypeD).subtype(t)
   override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
     lazy val os = t match {
       case SNot(b) => b.subtypep(s)
       case _ => None
     }
-    if (t.canonicalize() == STop)
-      Some(true)
-    else if (s.inhabited.contains(true)
-             && s.subtypep(t).contains(true)) {
+    lazy val hosted = (s,t) match {
+      // SNot(Long).subtype(Double) ==> false
+      case (SAtomic(s2),SAtomic(t2)) if s2.disjoint(t2).contains(true) => Some(false)
+      case (_,_) => None
+    }
+    if (s.inhabited.contains(true)
+      && s.subtypep(t).contains(true)) {
       Some(false)
-    } else if (os.nonEmpty)
+    } else if (hosted.nonEmpty) {
+      hosted
+    }
+    else if (os.nonEmpty)
       os
     else
       super.subtypepDown(t)
