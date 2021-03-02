@@ -105,11 +105,23 @@ abstract class SimpleTypeD { // SimpleTypeD
    * @return an optional Boolean which is true if this type is a subtype of t
    */
   def subtypep(t:SimpleTypeD): Option[Boolean] = {
+    lazy val orResult = t match {
+      case SOr(args@_*) if args.exists(a => subtypep(a).contains(true)) => Some(true)
+      case _ => None
+    }
+    lazy val andResult = t match {
+      case SAnd(args@_*) if args.forall(a => subtypep(a).contains(true)) => Some(true)
+      case _ => None
+    }
     if ((t.getClass eq this.getClass)
         && (t == this))
       Some(true)
     else if (t.canonicalize() == STop)
       Some(true)
+    else if (orResult.contains(true))
+      orResult
+    else if (andResult.contains(true))
+      andResult
     else {
       subtypepDown(t)
     }
