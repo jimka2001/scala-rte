@@ -98,13 +98,14 @@ abstract class SimpleTypeD { // SimpleTypeD
     else
       None
   }
+
   /** Returns whether this type is a recognizable subtype of another given type.
    * It is a subset test. This might be undecidable.
    *
    * @param t the type we want to check whether this type is included in
    * @return an optional Boolean which is true if this type is a subtype of t
    */
-  def subtypep(t:SimpleTypeD): Option[Boolean] = {
+  def subtypep(t: SimpleTypeD): Option[Boolean] = {
     lazy val orResult = t match {
       case SOr(args@_*) if args.exists(a => subtypep(a).contains(true)) => Some(true)
       case _ => None
@@ -114,7 +115,7 @@ abstract class SimpleTypeD { // SimpleTypeD
       case _ => None
     }
     if ((t.getClass eq this.getClass)
-        && (t == this))
+      && (t == this))
       Some(true)
     else if (t.canonicalize() == STop)
       Some(true)
@@ -245,5 +246,22 @@ abstract class SimpleTypeD { // SimpleTypeD
   */
   def cmpToSameClassObj(t: SimpleTypeD): Boolean = {
     throw new Exception(s"cannot compare type designators ${this.getClass} vs ${t.getClass}")
+  }
+
+  def typeEquivalent(t: SimpleTypeD): Option[Boolean] = {
+    val sp1 = subtypep(t)
+    lazy val can1 = canonicalize()
+    lazy val sp2 = can1.subtypep(t)
+    lazy val t1 = t.canonicalize()
+    lazy val sp3 = can1.subtypep(t1)
+
+    if (sp1.contains(false))
+      Some(false)
+    else if (sp1.isEmpty && sp2.contains(false))
+      Some(false)
+    else if (sp1.isEmpty && sp2.isEmpty && sp3.contains(false))
+      Some(false)
+    else
+      t1.subtypep(can1)
   }
 }

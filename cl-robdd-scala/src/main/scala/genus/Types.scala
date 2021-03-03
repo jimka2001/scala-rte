@@ -69,6 +69,20 @@ object Types {
     case _ => false
   }
 
+  def randomType(depth:Int, filter:SimpleTypeD=>Boolean):SimpleTypeD = {
+    @tailrec
+    def recur():SimpleTypeD = {
+      val td = randomType(depth)
+      if (filter(td))
+        td
+      else {
+        // println(s"rejecting $td")
+        recur()
+      }
+    }
+    recur()
+  }
+
   def randomType(depth:Int):SimpleTypeD = {
     import scala.util.Random
     val random = new Random
@@ -95,11 +109,12 @@ object Types {
       SAtomic(classOf[Abstract1]),
       SAtomic(classOf[Abstract2])
       )
-    val maxCompoundSize = 3
+    val maxCompoundSize = 2
     val generators:Seq[()=>SimpleTypeD] = Vector(
       () => SNot(randomType(depth - 1)),
-      () => SAnd(0 until random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*),
-      () => SOr(0 until random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*)
+      // always at least one argument of SAnd and SOr
+      () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*),
+      () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*)
       )
     if (depth <= 0)
       interestingTypes(random.nextInt(interestingTypes.length))
@@ -237,19 +252,6 @@ object Types {
   }
   val primeType:SCustom = SCustom(isPrime)
 
-  def measureSubtypeComputability(n:Int,depth:Int):(Double,Double) = {
-    assert(n > 0, s"measureSubtypeComputability does not support n=$n")
-    val (p1,p2) = (0 until n).foldLeft((0, 0)) { case ((c1, c2), _) =>
-      val rt1 = randomType(depth)
-      val rt2 = randomType(depth)
-      val s1 = rt1.subtypep(rt2).nonEmpty
-      val s2 = rt1.canonicalize().subtypep(rt2.canonicalize()).nonEmpty
-      (if (s1) c1 + 1 else c1,
-        if (s2) c2 + 1 else c2)
-    }
-    (p1.toDouble / n, p2.toDouble / n)
-  }
-
   def sanityTest():Unit = {
     val a = 2
     val t = SAtomic(classOf[Int])
@@ -293,9 +295,6 @@ object Types {
   }
 
   def main(args: Array[String]): Unit = {
-    // sanityTest()
-    for{ n <- Seq(10000)
-         p = measureSubtypeComputability(n,8)
-         } println(s"$n => $p")
+     sanityTest()
   }
 }
