@@ -26,13 +26,19 @@ import Types._
 
 object Statistics {
 
-  def measureSubtypeComputability(n:Int,depth:Int):Map[String,Double] = {
+  def measureSubtypeComputability(n:Int,depth:Int,inh:Boolean):Map[String,Double] = {
     assert(n > 0, s"measureSubtypeComputability does not support n=$n")
-    val m = (0 until n).foldLeft(Map[String, Int]()) { case (m, i) =>
-      val rt1 = randomType(depth, _.inhabited.contains(true))
-      println(s"$i: rt1 = $rt1")
-      val rt2 = randomType(depth, td => td.inhabited.contains(true) && td.typeEquivalent(rt1).contains(false))
-      println(s"    rt2 = $rt2")
+    val m = (0 until n).foldLeft(Map[String, Int]()) { case (m, _) =>
+      val rt1 = if (inh)
+        randomType(depth, _.inhabited.contains(true))
+      else
+        randomType(depth)
+      //println(s"$i: rt1 = $rt1")
+      val rt2 = if (inh)
+        randomType(depth, td => td.inhabited.contains(true) && td.typeEquivalent(rt1).contains(false))
+      else
+        randomType(depth)
+      //println(s"    rt2 = $rt2")
       val can1 = rt1.canonicalize(Some(Dnf))
       val can2 = rt2.canonicalize(Some(Dnf))
       val s1 = rt1.subtypep(rt2)
@@ -42,9 +48,11 @@ object Statistics {
           "equal" -> (m.getOrElse("equal",0) + (if (can1.typeEquivalent(can2).contains(true)) 1 else 0)),
           "subtype True" -> (m.getOrElse("subtype True",0) + (if (s1.contains(true)) 1 else 0)),
           "subtype False" -> (m.getOrElse("subtype False",0) + (if (s1.contains(false)) 1 else 0)),
+          "subtype Some" -> (m.getOrElse("subtype Some",0) + (if (s1.nonEmpty) 1 else 0)),
           "subtype None" -> (m.getOrElse("subtype None",0) + (if (s1.isEmpty) 1 else 0)),
           "subtype DNF True" -> (m.getOrElse("subtype DNF True",0) + (if (s2.contains(true)) 1 else 0)),
           "subtype DNF False" -> (m.getOrElse("subtype DNF False",0) + (if (s2.contains(false)) 1 else 0)),
+          "subtype DNF Some" -> (m.getOrElse("subtype DNF Some",0) + (if (s2.nonEmpty) 1 else 0)),
           "subtype DNF None" -> (m.getOrElse("subtype DNF None",0) + (if (s2.isEmpty) 1 else 0)),
           // how many were not computed a original but became computable after DNF
           "gained" -> (m.getOrElse("gained",0) + (if (s1.isEmpty && s2.nonEmpty) 1 else 0)),
@@ -56,7 +64,7 @@ object Statistics {
 
 
   def main(args: Array[String]): Unit = {
-    val p = measureSubtypeComputability(1000, 3)
-    p.map { case (k, v) => println(s"$k = $v") }
+    val p = measureSubtypeComputability(10000, 3, inh=true)
+    p.foreach { case (k, v) => println(s"$k = $v") }
   }
 }

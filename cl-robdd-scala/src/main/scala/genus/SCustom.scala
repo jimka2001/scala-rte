@@ -28,7 +28,7 @@ package genus
 case class SCustom(f   : Any => Boolean, printable:String) extends SimpleTypeD with TerminalType {
   override def typep(a: Any): Boolean = f(a)
 
-  override def toString = printable + "?"
+  override def toString: String = printable + "?"
   
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = super.disjointDown(t)
 
