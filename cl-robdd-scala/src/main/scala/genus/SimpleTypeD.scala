@@ -249,19 +249,21 @@ abstract class SimpleTypeD { // SimpleTypeD
   }
 
   def typeEquivalent(t: SimpleTypeD): Option[Boolean] = {
-    val sp1 = subtypep(t)
+    lazy val sp1 = subtypep(t)
     lazy val can1 = canonicalize()
     lazy val sp2 = can1.subtypep(t)
-    lazy val t1 = t.canonicalize()
-    lazy val sp3 = can1.subtypep(t1)
+    lazy val can2 = t.canonicalize()
+    lazy val sp3 = can1.subtypep(can2)
 
-    if (sp1.contains(false))
+    if (this == t)
+      Some(true)
+    else if (sp1.contains(false))
       Some(false)
     else if (sp1.isEmpty && sp2.contains(false))
       Some(false)
     else if (sp1.isEmpty && sp2.isEmpty && sp3.contains(false))
       Some(false)
     else
-      t1.subtypep(can1)
+      can2.subtypep(can1)
   }
 }
