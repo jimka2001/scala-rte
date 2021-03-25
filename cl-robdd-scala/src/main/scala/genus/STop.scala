@@ -39,6 +39,7 @@ object STop extends SimpleTypeD {
 
   override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
     import NormalForm._
+    // TODO this test seems suspicious.  need to check
     if (SNot(t).inhabited.isEmpty)
       None
     else
