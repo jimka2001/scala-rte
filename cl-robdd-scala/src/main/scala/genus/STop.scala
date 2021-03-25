@@ -38,12 +38,12 @@ object STop extends SimpleTypeD {
   }
 
   override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
-    import NormalForm._
-    // TODO this test seems suspicious.  need to check
-    if (SNot(t).inhabited.isEmpty)
-      None
-    else
-      Some(false)
+    // STop is only a subtype of itself, or anything which is equivalent to itself.
+    SNot(t).inhabited match {
+      case None => None
+      case Some(true) => Some(false) // if not(t) is inhabited then t is not STop
+      case Some(false) => Some(true) // if not(t) is NOT inhabited, then t is STop
+    }
   }
 
   // comparing STop to itself must return false
