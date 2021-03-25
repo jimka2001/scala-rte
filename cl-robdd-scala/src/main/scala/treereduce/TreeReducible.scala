@@ -26,7 +26,7 @@
 //
 
 package treereduce
-import scala.language.higherKinds // prevents IntelliJ from warning about [M[_]]
+import scala.annotation.tailrec
 
 // This is the Typeclass. It is all about defining types that can be fed *into* TreeReduce.
 trait TreeReducible[M[_]] {
@@ -62,18 +62,19 @@ object TreeReduce {
   // TreeReducible, but you have to pass that *as* a parameter.
   def treeMapReduceIntern[A, B, M[_]](m: M[A])(init: B)(seqOp: A => B, combOp: (B, B) => B)(implicit reducible: TreeReducible[M]): B = {
 
+    @tailrec
     def consumeStack(stack: List[(Int, B)]): List[(Int, B)] = {
       stack match {
           //  Make sure to call combOp with b2,b1 (order reversed) because, stack has
           //    stored the elements in reverse order.  We don't know that combOp is
           //    commutative, so we have to maintain left-to-right as given in the original m.
-        case (i, b1) :: (j, b2) :: tail if i == j => {
+        case (i, b1) :: (j, b2) :: tail if i == j =>
           consumeStack((i + 1, combOp(b2, b1)) :: tail)
-        }
         case _ => stack
       }
     }
-
+    // TODO performance issue, should cons (1,(car seq)) rather than (1,init)
+    // and check thus check for empty sequence
     val stack = reducible.foldLeft(m)((1, init) :: Nil) { (stack: List[(Int, B)], ob: A) =>
       consumeStack((1, seqOp(ob)) :: stack)
     }
