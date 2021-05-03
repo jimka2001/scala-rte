@@ -57,7 +57,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
       super.inhabitedDown
   }
 
-  // UnionType(tds: Type*)
+  // SOr(tds: SimpleTypeD*)
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     val d = memoize((s: SimpleTypeD) => s.disjoint(t))
     if (tds.forall(d(_).contains(true)))
@@ -68,7 +68,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
       super.disjointDown(t)
   }
 
-  // UnionType(tds: Type*)
+  // SOr(tds: SimpleTypeD*)
   override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
     val s = memoize((s: SimpleTypeD) => s.subtypep(t))
     if (tds.isEmpty) {
@@ -83,7 +83,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
       super.subtypepDown(t)
   }
 
-  // UnionType(tds: Type*)
+  // SOr(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
       () => {
@@ -151,7 +151,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
       ))
   }
 
-  // UnionType(tds: Type*)
+  // SOr(tds: SimpleTypeD*)
   override def computeCnf(): SimpleTypeD = {
     // convert SOr( x1, x2, SAnd(y1,y2,y3), x3, x4)
     //    --> td = SAnd(y1,y2,y3)

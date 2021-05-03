@@ -43,7 +43,7 @@ case class SEql(a: Any) extends SMemberImpl(a) {
     Some(t.typep(a))
   }
 
-  // EqlType(a: Any)
+  // SEql(a: Any)
   override def cmpToSameClassObj(t:SimpleTypeD):Boolean = {
     if (this == t)
       false
