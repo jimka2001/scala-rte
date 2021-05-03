@@ -153,6 +153,14 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
 
   // UnionType(tds: Type*)
   override def computeCnf(): SimpleTypeD = {
+    // convert SOr( x1, x2, SAnd(y1,y2,y3), x3, x4)
+    //    --> td = SAnd(y1,y2,y3)
+    //    --> andArgs = (y1,y2,y3)
+    //    --> others = (x1, x2, x3, x4)
+    // --> SAnd(SOr(x1,x2,x3,x4,  y1),
+    //          SOr(x1,x2,x3,x4,  y2),
+    //          SOr(x1,x2,x3,x4,  y3),
+    //     )
     tds.find(andp) match {
       case Some(td@SAnd(andArgs@_*)) =>
         val others = tds.filterNot(_ == td)
