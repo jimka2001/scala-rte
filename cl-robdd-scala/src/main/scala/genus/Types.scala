@@ -22,13 +22,7 @@
 package genus
 
 import java.lang
-
 import scala.annotation.tailrec
-
-object NormalForm extends Enumeration {
-  type NormalForm = Value
-  val Dnf, Cnf = Value
-}
 import NormalForm._
 
 object Types {

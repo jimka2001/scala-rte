@@ -1,4 +1,4 @@
-// Copyright (c) 2020,21 EPITA Research and Development Laboratory
+// Copyright (c) 2021 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,12 +19,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 package genus
 
-/** The member type is an exhaustive type, all object composing it are
- * given at construction time.
- *
- * @param xs var-arg, the members of the type
+/** Trait representing types that have to be stored in the HashMap in the
+ * LBdd representation.
  */
-case class SMember(override val xs: Any*) extends SMemberImpl(xs :_*)
+trait TerminalType

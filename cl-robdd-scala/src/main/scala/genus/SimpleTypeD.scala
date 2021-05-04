@@ -25,10 +25,7 @@ import NormalForm._
 
 import scala.annotation.tailrec
 
-/** Trait representing types that have to be stored in the HashMap in the
- * LBdd representation.
- */
-trait TerminalType
+
 
 /** A general type of our type system. */
 abstract class SimpleTypeD { // SimpleTypeD
