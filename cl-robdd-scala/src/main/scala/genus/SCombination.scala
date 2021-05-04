@@ -100,7 +100,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
                           .sortWith(cmpTypeDesignators): _*)
           .maybeDnf(nf).maybeCnf(nf)
         if (this == i2)
-          this // return the older object, hoping the newer one is more easily GC'ed, also preserves EQness
+          this // return the older object, hoping the newer one is more easily GC'ed, also preserves EQ-ness
         else {
           i2
         }
