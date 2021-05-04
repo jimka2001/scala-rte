@@ -202,7 +202,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
         val others = tds.filterNot(_ == td)
         SOr(orArgs.map { x => SAnd(conj(x, others): _*) }: _*)
       case None => this
-      case _ => ??? // not yet implemented, I think this will never occur
+      case x => throw new Error(s"this should not occur: " + x)
     }
   }
 }

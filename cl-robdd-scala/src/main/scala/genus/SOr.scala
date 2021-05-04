@@ -166,7 +166,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
         val others = tds.filterNot(_ == td)
         SAnd(andArgs.map { x => SOr(conj(x, others): _*) }: _*)
       case None => this
-      case _ => ???
+      case x => throw new Error(s"this should not occur: " + x)
     }
   }
 }
