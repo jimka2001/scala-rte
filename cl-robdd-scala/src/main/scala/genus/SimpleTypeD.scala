@@ -88,7 +88,7 @@ abstract class SimpleTypeD { // SimpleTypeD
   // inhabitedDown should not be called directly, except as super.inhabitedDown,
   // rather the variable inhabited should be referenced, ensuring that the
   // same computation not be done twice.
-  def inhabitedDown: Option[Boolean] = None
+  protected def inhabitedDown: Option[Boolean] = None
 
   lazy val inhabited: Option[Boolean] = inhabitedDown
 
@@ -106,25 +106,42 @@ abstract class SimpleTypeD { // SimpleTypeD
    * @return an optional Boolean which is true if this type is a subtype of t
    */
   def subtypep(t: SimpleTypeD): Option[Boolean] = {
+    lazy val orResult = t match {
+      case SOr(args@_*) if args.exists(a => subtypep(a).contains(true)) => Some(true)
+      case _ => None
+    }
+    lazy val andResult = t match {
+      case SAnd(args@_*) if args.forall(a => subtypep(a).contains(true)) => Some(true)
+      case _ => None
+    }
     if ((t.getClass eq this.getClass)
-        && (t == this))
+      && (t == this))
       Some(true)
-    else if (t match {
+    else if (t.canonicalize() == STop)
+      Some(true)
+    else if (orResult.contains(true))
+      orResult
+    else if (andResult.contains(true))
+      andResult
+    else {
+      subtypepDown(t)
+    }
+  }
+
+  protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
+    if (t match {
       case SNot(b) if disjoint(b).contains(true) => true
       case _ => false
     }) {
       Some(true)
     }
-    else if (t.canonicalize() == STop)
-      Some(true)
-    else
-      (inhabited, t.inhabited) match {
-        case (None, _) => None
-        case (_, None) => None
-        case (Some(false), Some(false)) => Some(true) // empty set is a subset of the empty set
-        case (_, Some(false)) => Some(false) // no inhabited type is a subtype of the empty type
-        case _ => None
-      }
+    else (inhabited, t.inhabited) match {
+      case (None, _) => None
+      case (_, None) => None
+      case (Some(false), Some(false)) => Some(true) // empty set is a subset of the empty set
+      case (_, Some(false)) => Some(false) // no inhabited type is a subtype of the empty type
+      case _ => None
+    }
   }
 
   def fixedPoint[T](w: T, f: T => T, goodEnough: (T, T) => Boolean): T = {
@@ -229,5 +246,24 @@ abstract class SimpleTypeD { // SimpleTypeD
   */
   def cmpToSameClassObj(t: SimpleTypeD): Boolean = {
     throw new Exception(s"cannot compare type designators ${this.getClass} vs ${t.getClass}")
+  }
+
+  def typeEquivalent(t: SimpleTypeD): Option[Boolean] = {
+    lazy val sp1 = subtypep(t)
+    lazy val can1 = canonicalize()
+    lazy val sp2 = can1.subtypep(t)
+    lazy val can2 = t.canonicalize()
+    lazy val sp3 = can1.subtypep(can2)
+
+    if (this == t)
+      Some(true)
+    else if (sp1.contains(false))
+      Some(false)
+    else if (sp1.isEmpty && sp2.contains(false))
+      Some(false)
+    else if (sp1.isEmpty && sp2.isEmpty && sp3.contains(false))
+      Some(false)
+    else
+      can2.subtypep(can1)
   }
 }

@@ -28,7 +28,7 @@ object STop extends SimpleTypeD {
 
   override def typep(a: Any): Boolean = true
 
-  override def inhabitedDown: Some[Boolean] = Some(true)
+  override protected def inhabitedDown: Some[Boolean] = Some(true)
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     t match {
@@ -37,16 +37,13 @@ object STop extends SimpleTypeD {
     }
   }
 
-  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
-    import NormalForm._
-    if (t == STop)
-      Some(true)
-    else if (t.canonicalize(Some(Dnf)) == STop)
-      Some(true)
-    else if (SNot(t).inhabited.isEmpty)
-      None
-    else
-      Some(false)
+  override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
+    // STop is only a subtype of itself, or anything which is equivalent to itself.
+    SNot(t).inhabited match {
+      case None => None
+      case Some(true) => Some(false) // if not(t) is inhabited then t is not STop
+      case Some(false) => Some(true) // if not(t) is NOT inhabited, then t is STop
+    }
   }
 
   // comparing STop to itself must return false

@@ -46,9 +46,9 @@ class GenusSubtypep extends AnyFunSuite {
     // superclass.isAssignableFrom(subclass)
     assert(Number.isAssignableFrom(Integer))
     assert(Number.isAssignableFrom(Long))
-    assert(! Integer.isAssignableFrom(Number))
-    assert(! Long.isAssignableFrom(Integer))
-    assert(! Integer.isAssignableFrom(Long))
+    assert(!Integer.isAssignableFrom(Number))
+    assert(!Long.isAssignableFrom(Integer))
+    assert(!Integer.isAssignableFrom(Long))
 
     assert(SAtomic(Integer).subtypep(SAtomic(Number)).contains(true))
     assert(SAtomic(Long).subtypep(SAtomic(Long)).contains(true))
@@ -68,7 +68,7 @@ class GenusSubtypep extends AnyFunSuite {
            "not Test1 < Test2")
   }
 
-  test("subtypep Scala traits"){
+  test("subtypep Scala traits") {
     // every type is a subtype of itself
     assert(SAtomic(classOf[Trait1]).subtypep(SAtomic(classOf[Trait1])).contains(true))
     assert(SAtomic(classOf[Trait2]).subtypep(SAtomic(classOf[Trait2])).contains(true))
@@ -88,7 +88,7 @@ class GenusSubtypep extends AnyFunSuite {
     assert(SAtomic(classOf[Trait1]).subtypep(SAtomic(classOf[Trait2])).contains(false))
   }
 
-  test("AtomicType subtype of union"){
+  test("AtomicType subtype of union") {
     assert(SAtomic(classOf[Test3]).subtypep(SOr(SAtomic(classOf[Trait1]),
                                                 SAtomic(classOf[Trait2]),
                                                 SAtomic(classOf[Test1]))).contains(true))
@@ -103,7 +103,7 @@ class GenusSubtypep extends AnyFunSuite {
     assert(SAtomic(classOf[Test1]).subtypep(SOr(SAtomic(Integer),
                                                 SAtomic(Long))).contains(false))
   }
-  test("AtomicType subtype of intersection"){
+  test("AtomicType subtype of intersection") {
 
     //  Test2 < Test1
     // Trait2 < Trait1
@@ -125,26 +125,26 @@ class GenusSubtypep extends AnyFunSuite {
                                                  SAtomic(Number),
                                                  SAtomic(Long))).contains(false))
   }
-  test("AtomicType subtype of intersection 2"){
+  test("AtomicType subtype of intersection 2") {
     trait Trait1
     trait Trait2
     assert(SAnd(SAtomic(classOf[Trait1]),
                 SAtomic(classOf[Trait2])).subtypep(SEql(1)).contains(false))
   }
-  test("AtomicType subtype of member"){
+  test("AtomicType subtype of member") {
     assert(SAtomic(classOf[Test1]).subtypep(SMember(1, 2, 3)).contains(false))
   }
-  test("AtomicType subtype of eql"){
+  test("AtomicType subtype of eql") {
     assert(SAtomic(classOf[Test1]).subtypep(SEql(1)).contains(false))
   }
-  test("AtomicType subtype of Not"){
+  test("AtomicType subtype of Not") {
     trait Abstract1
 
     assert(classOf[java.lang.Integer].disjoint(classOf[Abstract1]).contains(true))
     assert(classOf[Abstract1].subtypep(SNot(classOf[java.lang.Integer])).contains(true))
     assert(classOf[java.lang.Integer].subtypep(SNot(classOf[Abstract1])).contains(true))
-    assert(! SNot(classOf[java.lang.Integer]).subtypep(classOf[Abstract1]).contains(true))
-    assert(! SNot(classOf[Abstract1]).subtypep(classOf[java.lang.Integer]).contains(true))
+    assert(!SNot(classOf[java.lang.Integer]).subtypep(classOf[Abstract1]).contains(true))
+    assert(!SNot(classOf[Abstract1]).subtypep(classOf[java.lang.Integer]).contains(true))
 
     trait Abstract2 extends Abstract1
 
@@ -154,14 +154,14 @@ class GenusSubtypep extends AnyFunSuite {
     assert(SNot(classOf[Abstract2]).subtypep(classOf[Abstract1]).contains(false))
   }
 
-  test("Union subtype of Union"){
+  test("Union subtype of Union") {
     val union1 = SOr(SAtomic(Integer),
                      SAtomic(Long))
     // A subtype of A
     assert(union1.subtypep(union1).contains(true))
   }
 
-  test("Union subtype of AtomicType"){
+  test("Union subtype of AtomicType") {
     val union1 = SOr(SAtomic(Integer),
                      SAtomic(Long))
     assert(SAtomic(Integer).subtypep(SAtomic(Number)).contains(true))
@@ -172,51 +172,80 @@ class GenusSubtypep extends AnyFunSuite {
     assert(union1.subtypep(SAtomic(classOf[Test1])).contains(false))
   }
 
-  test("subtypep 174"){
+  test("subtypep 174") {
     assert(SAnd().subtypep(STop).contains(true))
-    assert(SAnd().subtypep(SMember(1,2,3)).contains(false))
+    assert(SAnd().subtypep(SMember(1, 2, 3)).contains(false))
     assert(SOr().subtypep(STop).contains(true))
-    assert(SOr().subtypep(SMember(1,2,3)).contains(true))
-    assert(SMember(1.2,3).subtypep(SOr()).contains(false))
-    assert(SAnd(SEql(0),SEql(1)).subtypep(SEmpty).contains(true))
+    assert(SOr().subtypep(SMember(1, 2, 3)).contains(true))
+    assert(SMember(1.2, 3).subtypep(SOr()).contains(false))
+    assert(SAnd(SEql(0), SEql(1)).subtypep(SEmpty).contains(true))
     assert(SAnd().subtypep(SAnd()).contains(true))
     assert(SNot(SEql(2)).subtypep(STop).contains(true))
-    assert(SOr(SEql(1),SNot(SEql(2))).subtypep(STop).contains(true))
+    assert(SOr(SEql(1), SNot(SEql(2))).subtypep(STop).contains(true))
     // Some(false) contained false canonicalize: rt1=[Or [And Trait3$1],[And java.lang.String,[= 1]]] rt2=Trait3$1
     locally {
       trait Trait3
       val s = SAtomic(classOf[String])
       val t = SAtomic(classOf[Trait3])
 
-      assert(! SAnd(s,SEql(1)).subtypep(t).contains(false))
-      assert(! SOr(t,
-                   SAnd(s,
-                        SEql(1))).subtypep(t).contains(false))
-      assert(! SOr(SAnd(t),
-                   SAnd(s,
-                        SEql(1))).subtypep(t).contains(false))
+      assert(!SAnd(s, SEql(1)).subtypep(t).contains(false))
+      assert(!SOr(t,
+                  SAnd(s,
+                       SEql(1))).subtypep(t).contains(false))
+      assert(!SOr(SAnd(t),
+                  SAnd(s,
+                       SEql(1))).subtypep(t).contains(false))
     }
   }
 
-  test("randomized testing of subtypep") {
+  test("intersection and union subtypep") {
+    def checkSubtype(rt1: SimpleTypeD, rt2: SimpleTypeD, comment: String): Unit = {
+      assert(!rt1.subtypep(rt2).contains(false), s"$comment: rt1=$rt1 rt2=$rt2")
+    }
+
+    for {_ <- 0 to 200
+         n <- 0 to 5
+         rt1 = randomType(n)
+         rt2 = randomType(n)
+         union = SOr(rt1, rt2)
+         intersect = SAnd(rt1, rt2)
+         } {
+      checkSubtype(rt1, union, "x <: x || y")
+      checkSubtype(rt2, union, "y <: y || x")
+      checkSubtype(intersect, rt1, "x&y <: x")
+      checkSubtype(intersect, rt2, "x&y <: y")
+    }
+  }
+
+  test("randomized testing of subtypep with normalization") {
     import NormalForm._
 
-    def checkSubtype(rt1:SimpleTypeD,rt2:SimpleTypeD,comment:String):Unit = {
-      assert(! rt1.subtypep(rt2).contains(false), s"$comment: rt1=$rt1 rt2=$rt2")
-      assert(! rt2.subtypep(rt1).contains(false), s"$comment: rt2=$rt2 rt1=$rt1")
+    def checkSubtype(rt1: SimpleTypeD, rt2: SimpleTypeD, comment: String): Unit = {
+      assert(!rt1.subtypep(rt2).contains(false), s"$comment: rt1=$rt1 rt2=$rt2")
+      assert(!rt2.subtypep(rt1).contains(false), s"$comment: rt2=$rt2 rt1=$rt1")
     }
+
     for {_ <- 0 to 200
          n <- 0 to 5
          rt = randomType(n)
-         }{
-      checkSubtype(rt,rt.canonicalize(),"canonicalize")
-      checkSubtype(rt,rt.canonicalize(Some(Dnf)),"canonicalize(Dnf)")
-      checkSubtype(rt,rt.canonicalize(Some(Cnf)),"canonicalize(Cnf)")
-      checkSubtype(rt,rt.toDnf,"toDnf")
-      checkSubtype(rt,rt.toCnf,"toCnf")
-      checkSubtype(rt,rt.toCnf.toDnf,".toCnf.toDnf")
-      checkSubtype(rt,rt.toDnf.toCnf,".toDnf.toCnf")
-      checkSubtype(rt.toCnf,rt.toDnf,"toCnf vs toDnf")
+         } {
+      checkSubtype(rt, rt.canonicalize(), "canonicalize")
+      checkSubtype(rt, rt.canonicalize(Some(Dnf)), "canonicalize(Dnf)")
+      checkSubtype(rt, rt.canonicalize(Some(Cnf)), "canonicalize(Cnf)")
+      checkSubtype(rt, rt.toDnf, "toDnf")
+      checkSubtype(rt, rt.toCnf, "toCnf")
+      checkSubtype(rt, rt.toCnf.toDnf, ".toCnf.toDnf")
+      checkSubtype(rt, rt.toDnf.toCnf, ".toDnf.toCnf")
+      checkSubtype(rt.toCnf, rt.toDnf, "toCnf vs toDnf")
     }
+  }
+  test("discovered cases") {
+    assert(SAtomic(Long).disjoint(SAtomic(Double)).contains(true), "#1")
+    assert(SAtomic(Long).subtypep(SNot(SAtomic(Double))).contains(true), "#2 Long <: not(Double)")
+    assert(SNot(SAtomic(Double)).subtypep(SAtomic(Long)).contains(false), "#3 not(Double) !<: Long")
+  }
+  test("discovered cases SMember/SEql") {
+    assert(      SNot(SMember(1,2)).subtypep(SOr(SEql(3),SNot(SMember(1,2)))).contains(true), "#4" )
+    assert(      SNot(SEql(0)).subtypep( SOr(SEql(3),SNot(SEql(0))) ).contains(true), "#5" )
   }
 }

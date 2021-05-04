@@ -22,7 +22,6 @@
 
 package genus
 
-import org.scalatest._
 import genus.Types._
 import org.scalatest.funsuite.AnyFunSuite
 
@@ -66,8 +65,8 @@ class TypesTest extends AnyFunSuite {
 
     for {n <- 1 to 100
          d <- 1 to 3
-         rep <- 1 to 80
-         li = for {r <- 1 to 10} yield randomType(d)
+         _ <- 1 to 80
+         li = for {_ <- 1 to 10} yield randomType(d)
          m <- 1 to n
          prefix = li.take(m)
          }
@@ -90,7 +89,7 @@ class TypesTest extends AnyFunSuite {
                         SNot(SAtomic(classOf[Trait1])),
                         SNot(SAtomic(classOf[Trait2]))
                         )
-    for {n <- 1 to 1000
+    for {_ <- 1 to 1000
          d <- 1 to 4
          t1 = randomType(d)
          t2 = randomType(d)

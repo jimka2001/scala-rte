@@ -32,7 +32,7 @@ abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD with TerminalType {
 
   override def typep(a: Any): Boolean = xs.contains(a)
 
-  override def inhabitedDown: Option[Boolean] = Some(xs.nonEmpty) // SMember() is empty
+  override protected def inhabitedDown: Option[Boolean] = Some(xs.nonEmpty) // SMember() is empty
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     if (xs.exists(t.typep)) Some(false)

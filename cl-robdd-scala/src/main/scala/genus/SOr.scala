@@ -47,7 +47,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
     tds.exists(_.typep(a))
   }
 
-  override def inhabitedDown: Option[Boolean] = {
+  override protected def inhabitedDown: Option[Boolean] = {
     val i = memoize((s: SimpleTypeD) => s.inhabited)
     if (tds.exists(i(_).contains(true)))
       Some(true)
@@ -57,7 +57,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
       super.inhabitedDown
   }
 
-  // UnionType(tds: Type*)
+  // SOr(tds: SimpleTypeD*)
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
     val d = memoize((s: SimpleTypeD) => s.disjoint(t))
     if (tds.forall(d(_).contains(true)))
@@ -68,8 +68,8 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
       super.disjointDown(t)
   }
 
-  // UnionType(tds: Type*)
-  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
+  // SOr(tds: SimpleTypeD*)
+  override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
     val s = memoize((s: SimpleTypeD) => s.subtypep(t))
     if (tds.isEmpty) {
       SEmpty.subtypep(t)
@@ -80,10 +80,10 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
     else if (tds.exists(s(_).contains(false))) {
       Some(false)
     } else
-      super.subtypep(t)
+      super.subtypepDown(t)
   }
 
-  // UnionType(tds: Type*)
+  // SOr(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
       () => {
@@ -151,8 +151,16 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
       ))
   }
 
-  // UnionType(tds: Type*)
+  // SOr(tds: SimpleTypeD*)
   override def computeCnf(): SimpleTypeD = {
+    // convert SOr( x1, x2, SAnd(y1,y2,y3), x3, x4)
+    //    --> td = SAnd(y1,y2,y3)
+    //    --> andArgs = (y1,y2,y3)
+    //    --> others = (x1, x2, x3, x4)
+    // --> SAnd(SOr(x1,x2,x3,x4,  y1),
+    //          SOr(x1,x2,x3,x4,  y2),
+    //          SOr(x1,x2,x3,x4,  y3),
+    //     )
     tds.find(andp) match {
       case Some(td@SAnd(andArgs@_*)) =>
         val others = tds.filterNot(_ == td)

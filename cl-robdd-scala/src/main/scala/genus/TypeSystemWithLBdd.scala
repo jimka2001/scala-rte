@@ -120,7 +120,7 @@ object TypeSystemWithLBdd {
     * @param b LBdd representing the type.
     * @return an optional Boolean which is true if b is not empty.
     */
-  def inhabitedDown(b: LBdd): Option[Boolean] = {
+  protected def inhabitedDown(b: LBdd): Option[Boolean] = {
     b match {
       case LBddFalse => Some(false)
       case LBddTrue => Some(true)

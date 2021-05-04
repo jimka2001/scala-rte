@@ -35,7 +35,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     !s.typep(a)
   }
 
-  override def inhabitedDown: Option[Boolean] = {
+  override protected def inhabitedDown: Option[Boolean] = {
     val nothing = classOf[Nothing]
     val any = classOf[AnyRef]
     s match {
@@ -57,24 +57,30 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     else super.disjointDown(t)
   }
 
-  // NotType(s: Type)
-  override def subtypep(t: SimpleTypeD): Option[Boolean] = {
+  // SNot(s: SimpleTypeD).subtype(t)
+  override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
     lazy val os = t match {
       case SNot(b) => b.subtypep(s)
       case _ => None
     }
-    if (t.canonicalize() == STop)
-      Some(true)
-    else if (s.inhabited.contains(true)
-             && s.subtypep(t).contains(true)) {
+    lazy val hosted = (s,t) match {
+      // SNot(Long).subtype(Double) ==> false
+      case (SAtomic(s2),SAtomic(t2)) if s2.disjoint(t2).contains(true) => Some(false)
+      case (_,_) => None
+    }
+    if (s.inhabited.contains(true)
+      && s.subtypep(t).contains(true)) {
       Some(false)
-    } else if (os.nonEmpty)
+    } else if (hosted.nonEmpty) {
+      hosted
+    }
+    else if (os.nonEmpty)
       os
     else
-      super.subtypep(t)
+      super.subtypepDown(t)
   }
 
-  // NotType(s: Type)
+  // SNot(s: SimpleTypeD)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     s match {
       case SNot(s1) => s1.canonicalizeOnce(nf=nf)
@@ -84,8 +90,13 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     }
   }
 
-  // NotType(s: Type)
+  // SNot(s: SimpleTyped)
   override def computeDnf(): SimpleTypeD = {
+    // SNot(SAnd(x1,x2,x3))
+    //  --> SOr(SNot(x1),SNot(x2),SNot(x3)
+    //
+    // SNot(SOr(x1,x2,x3))
+    //  --> SAnd(SNot(x1),SNot(x2),SNot(x3))
     s match {
       case SAnd(xs @ _*) =>
         SOr(xs.map(x => SNot(x)) : _*)
@@ -94,11 +105,11 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
       case _ => this
     }
   }
-  // NotType(s: Type)
+  // SNot(s: SimpleTypeD)
   override def computeCnf(): SimpleTypeD = {
     toDnf
   }
-  // NotType(s: Type)
+  // SNot(s: Type)
   override def cmpToSameClassObj(td:SimpleTypeD):Boolean = {
     if( this == td)
       false
