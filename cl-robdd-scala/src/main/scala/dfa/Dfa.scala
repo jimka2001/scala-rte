@@ -45,7 +45,7 @@ class Dfa[Σ,L,E](Qids:Set[Int],
     Q.find(s => s.id == id).get
   }
   // to find the destination state of a state, we
-  //   match the label exactly using ===
+  //   match the label exactly using ==
   //   TODO, this should really be done using either equivalent
   //    labels or subset relation etc.
   def delta(s:State[Σ,L,E], label:L):State[Σ,L,E] = {
