@@ -1,4 +1,4 @@
-// Copyright (c) 2019,20 EPITA Research and Development Laboratory
+// Copyright (c) 2019,20,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -20,17 +20,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package dfa
-
-class State[L,E](dfa:Dfa[L,E], val id:Int) {
-  var transitions:Set[Transition[L,E]] = Set()
-  def delta(label:L):State[L,E] = dfa.delta(this,label)
-
-  override def toString:String = {
-    s"q:$id"
-  }
-}
-
-case class Transition[L,E](source:State[L,E], label:L, destination:State[L,E]) {}
 
 class Dfa[L,E](Qids:Set[Int],
                q0id:Int,
