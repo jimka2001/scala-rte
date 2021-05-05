@@ -111,4 +111,37 @@ class GenusBddTest extends AnyFunSuite {
       }
     }
   }
+
+  test("typep") {
+    import scala.collection.mutable
+    import GraphViz._
+    def pos(x: Any): Boolean = {
+      x match {
+        case x: Double => x > 0.0
+        case _ => false
+      }
+    }
+
+    val td1 = SOr(classOf[Integer],
+                  classOf[String],
+                  SAnd(classOf[java.lang.Double],
+                       SNot(SCustom(pos, "pos"))))
+    val goods = Seq(1, "hello", -1.0)
+    val bads = Seq(1.0, true)
+    val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
+    Bdd.withNewBddHash {
+      val gb = GenusBdd(td1, tdToInt)
+      //gb.bdd.bddView( drawFalseLeaf=true,title="td1",labelToString=gb.labelToString)
+      for {good <- goods} {
+        val t = good.getClass.getName
+        assert(td1.typep(good), s",{141} $good (type=$t) not of type $td1")
+        assert(gb.typep(good), s",{142} $good (type=$t) not of type $td1")
+      }
+      for {bad <- bads} {
+        val t = bad.getClass.getName
+        assert(!td1.typep(bad), s",{146} $bad (type=$t) in type $td1")
+        assert(!gb.typep(bad), s",{147} $bad (type=$t) not of type $td1")
+      }
+    }
+  }
 }

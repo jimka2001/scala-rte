@@ -131,6 +131,8 @@ sealed abstract class Bdd {
     recur(this, 0)
   }
 
+  def directedWalk(client:Bdd=>Boolean):Boolean
+
   def apply(assignments: Assignment): Boolean
 
 }
@@ -147,6 +149,8 @@ object BddTrue extends BddTerm {
   override def apply(assignments:Assignment):Boolean = {
     true
   }
+
+  def directedWalk(client:Bdd=>Boolean):Boolean = true
 }
 
 object BddFalse extends BddTerm {
@@ -155,6 +159,8 @@ object BddFalse extends BddTerm {
   def apply(assignments:Assignment):Boolean = {
     false
   }
+
+  def directedWalk(client:Bdd=>Boolean):Boolean = false
 }
 
 /////////////////////////////
@@ -211,6 +217,13 @@ case class BddNode(label:Short, positive:Bdd, negative:Bdd) extends Bdd {
     else
       negative(assignment) // call the apply method of the negative child bdd node
   }
+
+  def directedWalk(client:Bdd=>Boolean):Boolean = {
+    if(client(this))
+      positive.directedWalk(client)
+    else
+      negative.directedWalk(client)
+  }
 }
 
 //////////////////////////////
@@ -218,6 +231,7 @@ case class BddNode(label:Short, positive:Bdd, negative:Bdd) extends Bdd {
 //////////////////////////////
 
 object Bdd {
+  import scala.language.implicitConversions
   implicit def int2bdd(raw: Int): Bdd = {
     if (raw > scala.Short.MaxValue)
       sys.error(s"int2bdd cannot convert $raw to Bdd because $raw > ${scala.Short.MaxValue}")

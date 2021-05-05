@@ -66,6 +66,12 @@ case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
   //   of Ors which has been computed by transforming the DNF.
   lazy val cnf: SimpleTypeD = dnf.canonicalize(nf = Some(Cnf))
 
+  def typep(a:Any):Boolean = {
+    bdd.directedWalk{
+      case BddNode(label,_,_) => intToTd(label).typep(a)
+    }
+  }
+
   def labelToString(label:Int):String = {
     intToTd(label).toString
   }
