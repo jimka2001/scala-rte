@@ -51,12 +51,13 @@ case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
     }
   }
 
+  lazy val intToTd: immutable.Map[Int, SimpleTypeD] = tdToInt.map(_.swap).toMap
+
   // dnf is a SimpleTypeD which represents the original td
   //   but in a Disjunctive Normal Form.   The DNF is an Or of Ands
   //   where each And has been reduced according to subtype/supertype
   //   relations, and according to disjoint types.
   lazy val dnf: SimpleTypeD = locally {
-    val intToTd: immutable.Map[Int, SimpleTypeD] = tdToInt.map(_.swap).toMap
     GenusBdd.bddToDnf(bdd, intToTd)
   }
 
@@ -64,6 +65,10 @@ case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
   //   but in a Conjunctive Normal Form.  The CNF is an And
   //   of Ors which has been computed by transforming the DNF.
   lazy val cnf: SimpleTypeD = dnf.canonicalize(nf = Some(Cnf))
+
+  def labelToString(label:Int):String = {
+    intToTd(label).toString
+  }
 }
 
 object GenusBdd {

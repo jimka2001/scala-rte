@@ -25,9 +25,9 @@ object GraphViz {
 
   import java.io.{File, OutputStream}
 
-  def bddView(bdd: Bdd, drawFalseLeaf: Boolean, title:String=""): String = {
+  def bddView(bdd: Bdd, drawFalseLeaf: Boolean, title:String="", labelToString:Int=>String): String = {
     import sys.process._
-    val png = bddToPng(bdd,drawFalseLeaf,title)
+    val png = bddToPng(bdd,drawFalseLeaf,title,labelToString)
     val cmd = Seq("open", png)
     if ("Mac OS X" == System.getProperty("os.name"))
       cmd.!
@@ -44,12 +44,12 @@ object GraphViz {
     }
   }
 
-  def bddToPng(bdd:Bdd,drawFalseLeaf: Boolean, title:String): String = {
+  def bddToPng(bdd:Bdd,drawFalseLeaf: Boolean, title:String, labelToString:Int=>String): String = {
     val png = File.createTempFile("bdd", ".png")
     val pngPath = png.getAbsolutePath
     val dot = File.createTempFile("bdd", ".dot")
     val dotPath = dot.getAbsolutePath
-    bddToPng(bdd,dotPath, drawFalseLeaf, title)
+    bddToPng(bdd,dotPath, drawFalseLeaf, title,labelToString)
 
     locally {
       import sys.process._
@@ -62,14 +62,14 @@ object GraphViz {
     pngPath
   }
 
-  def bddToPng(bdd:Bdd,pathname: String, drawFalseLeaf: Boolean, title:String): String = {
+  def bddToPng(bdd:Bdd,pathname: String, drawFalseLeaf: Boolean, title:String, labelToString:Int=>String): String = {
     val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-    bddToDot(bdd,stream, drawFalseLeaf, title)
+    bddToDot(bdd,stream, drawFalseLeaf, title, labelToString)
     stream.close()
     pathname
   }
 
-  def bddToDot(bdd:Bdd,stream: OutputStream, drawFalseLeaf: Boolean, title:String): Unit = {
+  def bddToDot(bdd:Bdd,stream: OutputStream, drawFalseLeaf: Boolean, title:String, labelToString:Int=>String): Unit = {
     val penWidth = 2
 
     def write(str: String): Unit = {
@@ -91,7 +91,10 @@ object GraphViz {
       bdd match {
         case BddTrue => dotTrue(n)
         case BddFalse => dotFalse(n, drawFalseLeaf)
-        case bdd: BddNode => write(s""" $n [shape="ellipse",label="x${bdd.label}",penWidth=$penWidth]\n""")
+        case bdd: BddNode =>
+          write(s""" $n [shape="ellipse",label="""")
+          write(labelToString(bdd.label))
+          write(s"""",penWidth=$penWidth]\n""")
       }
       (n + 1, names + (bdd -> n))
     }
@@ -139,18 +142,26 @@ object GraphViz {
 
   // TYPE CLASS
   implicit class GraphVizOps(val givenBdd: Bdd) extends AnyVal {
+    def labelToString(label:Int):String = label.toString
     // this implicit class allows the syntax
     //   bdd.bddView(...),
     //   bdd.bddToPng(...), and
     //   bdd.bddToDot(...)
-    def bddView(drawFalseLeaf: Boolean, title:String): Unit = {
-      GraphViz.bddView(givenBdd, drawFalseLeaf,title)
+    def bddView(drawFalseLeaf: Boolean,
+                title:String,
+                labelToString:Int=>String=labelToString): Unit = {
+      GraphViz.bddView(givenBdd, drawFalseLeaf,title,labelToString)
     }
-    def bddToPng(drawFalseLeaf: Boolean,title:String): String = {
-      GraphViz.bddToPng(givenBdd,drawFalseLeaf,title)
+    def bddToPng(drawFalseLeaf: Boolean,
+                 title:String,
+                 labelToString:Int=>String=labelToString): String = {
+      GraphViz.bddToPng(givenBdd,drawFalseLeaf,title,labelToString)
     }
-    def bddToDot(stream: OutputStream, drawFalseLeaf: Boolean, title:String): Unit = {
-      GraphViz.bddToDot(givenBdd,stream,drawFalseLeaf,title)
+    def bddToDot(stream: OutputStream,
+                 drawFalseLeaf: Boolean,
+                 title:String,
+                 labelToString:Int=>String=labelToString): Unit = {
+      GraphViz.bddToDot(givenBdd,stream,drawFalseLeaf,title,labelToString)
     }
   }
 
