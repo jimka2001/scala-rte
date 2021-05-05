@@ -21,24 +21,19 @@
 
 package dfa
 
-class State[Σ,L,E](dfa:Dfa[Σ,L,E], val id:Int) {
-  var transitions:Set[Transition[Σ,L,E]] = Set()
+abstract class Labeler[Σ,L] {
+  def member(s:Σ,lab:L):Boolean
+  def combineLabels(l1:L,l2:L):L
+  def equivLabels(a:L,b:L):Boolean = {a == b}
+}
 
-  // find the destination state of this state given the label,
-  //     this uses a label search, independent of the particular
-  //     value of an input sequence.
-  def delta(label:L):State[Σ,L,E] = dfa.delta(this,label)
+import genusbdd.GenusBdd
 
-  // find the destination state of this state given an element
-  //    of the input sequence.
-  def successor(s:Σ):Option[State[Σ,L,E]] = {
-    transitions
-      .find{case Transition(_,label,_) => dfa.labeler.member(s,label) }
-      .flatMap{case Transition(_,_,dest) => Some(dest)
-      }
+case class GenusBddLabeler() extends Labeler[Any,GenusBdd]() {
+  def member(a:Any,gb:GenusBdd):Boolean = {
+    gb.typep(a)
   }
-
-  override def toString:String = {
-    s"q:$id"
+  def combineLabels(a:GenusBdd,b:GenusBdd):GenusBdd = {
+    a
   }
 }

@@ -25,12 +25,11 @@ package dfa
 // L is the type of label on transitions
 // E is the type of exit values
 class Dfa[Σ,L,E](Qids:Set[Int],
-                     q0id:Int,
-                     Fids:Set[Int],
-                     protoDelta:Set[(Int,L,Int)],
-                     val member:(Σ,L)=>Boolean,
-                     val combineLabels:(L,L)=>L,
-                     fMap:Map[Int,E]) {
+                 q0id:Int,
+                 Fids:Set[Int],
+                 protoDelta:Set[(Int,L,Int)],
+                 val labeler:Labeler[Σ,L],
+                 fMap:Map[Int,E]) {
   // q0id is in Qids
   require(Qids.contains(q0id))
   // each element of Fids is in Qids
@@ -49,7 +48,7 @@ class Dfa[Σ,L,E](Qids:Set[Int],
   //   TODO, this should really be done using either equivalent
   //    labels or subset relation etc.
   def delta(s:State[Σ,L,E], label:L):State[Σ,L,E] = {
-    s.transitions.find(tr => tr.label == label).get.destination
+    s.transitions.find(tr => labeler.equivLabels(tr.label, label)).get.destination
   }
 
   val Q: Set[State[Σ,L,E]] = Qids.map((id:Int) => new State[Σ,L,E](dfa=this,id))
@@ -58,7 +57,7 @@ class Dfa[Σ,L,E](Qids:Set[Int],
     fromState = findState(from)
     (to, toFromTriples) <- fromTriples.groupBy(_._3)
     toState = findState(to)
-    label = toFromTriples.map(_._2).reduce(combineLabels)
+    label = toFromTriples.map(_._2).reduce(labeler.combineLabels)
   } fromState.transitions += Transition(fromState,label,toState)
 
   val q0: State[Σ,L,E] = findState(q0id)

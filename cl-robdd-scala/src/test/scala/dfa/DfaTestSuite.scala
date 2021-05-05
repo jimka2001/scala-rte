@@ -25,12 +25,24 @@ package dfa
 
 import org.scalatest.funsuite.AnyFunSuite
 
-
 class DfaTestSuite extends AnyFunSuite {
 
   import bdd._
 
-  val m1: (Int, Bdd) => Boolean = (_, _) => true
+  class StringLabelerT1 extends Labeler[String,Set[String]] {
+    def member(x:String,s:Set[String]):Boolean = s.contains(x)
+    def combineLabels(a:Set[String],b:Set[String]):Set[String] = a.union(b)
+  }
+  class IntLabelerT1 extends Labeler[Int,Set[Int]] {
+    def member(x:Int,s:Set[Int]):Boolean = s.contains(x)
+    def combineLabels(a:Set[Int],b:Set[Int]):Set[Int] = a.union(b)
+  }
+
+  class BddLabelerT2 extends Labeler[Int,Bdd] {
+    def member(x:Int,b:Bdd):Boolean = ???
+    def combineLabels(a:Bdd,b:Bdd):Bdd = Or(a, b)
+  }
+
   test("build bdd dfa") {
 
     Bdd.withNewBddHash {
@@ -54,8 +66,7 @@ class DfaTestSuite extends AnyFunSuite {
                                                            (2, t3, 7),
                                                            (8, t7, 6),
                                                            (8, t2, 7)),
-                                          member = m1,
-                                          combineLabels = (a: Bdd, b: Bdd) => Or(a, b),
+                                          new BddLabelerT2(),
                                           fMap = Map(4 -> "clause-2",
                                                      5 -> "clause-1",
                                                      6 -> "clause-3",
@@ -90,8 +101,7 @@ class DfaTestSuite extends AnyFunSuite {
                                               (2, t3, 7),
                                               (8, t7, 6),
                                               (8, t2, 7)),
-                                          m1,
-                                          (a: Bdd, b: Bdd) => Or(a, b),
+                                          new BddLabelerT2,
                                           Map(4 -> "clause-2",
                                               5 -> "clause-1",
                                               6 -> "clause-3",
@@ -111,10 +121,6 @@ class DfaTestSuite extends AnyFunSuite {
     val t7 = t3.diff(t2) // !integer & number
     val t9 = Set(9) // symbol
 
-    def m1(x: Int, y: Set[Int]): Boolean = {
-      y.contains(x)
-    }
-
     val dfa = new Dfa[Int, Set[Int], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
                                              0,
                                              Set(4, 5, 6, 7),
@@ -128,8 +134,7 @@ class DfaTestSuite extends AnyFunSuite {
                                                  (2, t3, 7),
                                                  (8, t7, 6),
                                                  (8, t2, 7)),
-                                             m1,
-                                             (a: Set[Int], b: Set[Int]) => a.union(b),
+                                             new IntLabelerT1,
                                              Map(4 -> "clause-2",
                                                  5 -> "clause-1",
                                                  6 -> "clause-3",
@@ -155,10 +160,6 @@ class DfaTestSuite extends AnyFunSuite {
     val t7 = t3.diff(t2) // !integer & number
     val t9 = Set("e9") // symbol
 
-    def m1(x: String, y: Set[String]): Boolean = {
-      y.contains(x)
-    }
-
     val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
                                                    0,
                                                    Set(4, 5, 6, 7),
@@ -172,8 +173,7 @@ class DfaTestSuite extends AnyFunSuite {
                                                        (2, t3, 7),
                                                        (8, t7, 6),
                                                        (8, t2, 7)),
-                                                   m1,
-                                                   (a: Set[String], b: Set[String]) => a.union(b),
+                                                   new StringLabelerT1,
                                                    Map(4 -> "clause-2",
                                                        5 -> "clause-1",
                                                        6 -> "clause-3",
@@ -193,10 +193,6 @@ class DfaTestSuite extends AnyFunSuite {
     val t6 = t3.diff(t1) // !fixnum & number
     val t7 = t3.diff(t2) // !integer & number
 
-    def m1(x: String, y: Set[String]): Boolean = {
-      y.contains(x)
-    }
-
     val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
                                                    0,
                                                    Set(4, 5, 6, 7),
@@ -206,8 +202,7 @@ class DfaTestSuite extends AnyFunSuite {
                                                        (1, t1, 5),
                                                        (1, t7, 6),
                                                        (2, t3, 7)),
-                                                   m1,
-                                                   (a: Set[String], b: Set[String]) => a.union(b),
+                                                   new StringLabelerT1,
                                                    Map(4 -> "clause-2",
                                                        5 -> "clause-1",
                                                        6 -> "clause-3",
@@ -227,10 +222,6 @@ class DfaTestSuite extends AnyFunSuite {
     val t6 = t3.diff(t1) // !fixnum & number
     val t7 = t3.diff(t2) // !integer & number
 
-    def m1(x: String, y: Set[String]): Boolean = {
-      y.contains(x)
-    }
-
     val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
                                                    0,
                                                    Set(4, 5, 6, 7),
@@ -240,8 +231,7 @@ class DfaTestSuite extends AnyFunSuite {
                                                        (1, t1, 5),
                                                        (1, t7, 6),
                                                        (2, t3, 7)),
-                                                   m1,
-                                                   (a: Set[String], b: Set[String]) => a.union(b),
+                                                   new StringLabelerT1,
                                                    Map(4 -> "clause-2",
                                                        5 -> "clause-1",
                                                        6 -> "clause-3",
@@ -264,10 +254,6 @@ class DfaTestSuite extends AnyFunSuite {
     val t6 = t3.diff(t1) // !fixnum & number
     val t7 = t3.diff(t2) // !integer & number
 
-    def accept(s: String, label: Set[String]): Boolean = {
-      label.contains(s)
-    }
-
     val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
                                                    0,
                                                    Set(4, 5, 6, 7),
@@ -277,16 +263,15 @@ class DfaTestSuite extends AnyFunSuite {
                                                        (1, t1, 5), // a1
                                                        (1, t7, 6), // c3 == !(a1 b2) & (a1 b2 c3)
                                                        (2, t3, 7)), // a1 b2 c3
-                                                   accept,
-                                                   (a: Set[String], b: Set[String]) => a.union(b),
+                                                   new StringLabelerT1,
                                                    Map(4 -> "clause-2",
                                                        5 -> "clause-1",
                                                        6 -> "clause-3",
                                                        7 -> "clause-3"))
 
-    assert(simulate(dfa)(List("a1", "a1")) == Some("clause-1"))
-    assert(simulate(dfa)(List()) == None)
-    assert(simulate(dfa)(Array("a1", "b2")) == Some("clause-2"))
-    assert(simulate(dfa)(Array("a1", "b2", "b2")) == None)
+    assert(simulate(dfa)(List("a1", "a1")).contains("clause-1"))
+    assert(simulate(dfa)(List()).isEmpty)
+    assert(simulate(dfa)(Array("a1", "b2")).contains("clause-2"))
+    assert(simulate(dfa)(Array("a1", "b2", "b2")).isEmpty)
   }
 }

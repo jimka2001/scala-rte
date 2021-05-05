@@ -68,7 +68,7 @@ object Minimize {
       def Phi(s: STATE): Set[(L, EQVCLASS)] = {
         val m = for{ (k,pairs) <- PhiPrime(s).groupBy(_._2)
              labels = pairs.map(_._1)
-             label = labels.reduce(dfa.combineLabels)}
+             label = labels.reduce(dfa.labeler.combineLabels)}
           yield (label,k)
         m.toSet
       }
@@ -112,6 +112,6 @@ object Minimize {
     } yield id -> dfa.exitValue(q)
 
     // return a newly constructed Dfa extracted from the Hopcroft partition minimization
-    new Dfa[Sigma,L, E](newIds, newQ0, newFids, newProtoDelta, dfa.member, dfa.combineLabels, newFmap )
+    new Dfa[Sigma,L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap )
   }
 }
