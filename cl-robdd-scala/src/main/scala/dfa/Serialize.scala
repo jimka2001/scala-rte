@@ -23,9 +23,9 @@ package dfa
 
 object Serialize {
 
-  def serialize[L,E](dfa:Dfa[L,E]):Unit = serialize(dfa,print)
+  def serialize[Sigma,L,E](dfa:Dfa[Sigma,L,E]):Unit = serialize(dfa,print)
 
-  def serialize[L,E](dfa:Dfa[L,E], print:String=>Unit):Unit = {
+  def serialize[Sigma,L,E](dfa:Dfa[Sigma,L,E], print:String=>Unit):Unit = {
     print(s"Q=${dfa.Q}\n")
     print(s"q0=${dfa.q0}\n")
     print(s"F=${dfa.F}\n")
@@ -35,7 +35,7 @@ object Serialize {
     } print(s"delta($q,${tr.label}) = ${tr.destination}\n")
   }
 
-  def serializeToString[L,E](dfa:Dfa[L,E]):String = {
+  def serializeToString[Sigma,L,E](dfa:Dfa[Sigma,L,E]):String = {
     import cl.Accumulators.withOutputToString
 
     withOutputToString(printer => {

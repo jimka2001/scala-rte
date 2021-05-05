@@ -21,4 +21,4 @@
 
 package dfa
 
-case class Transition[L,E](source:State[L,E], label:L, destination:State[L,E]) {}
+case class Transition[Σ,L,E](source:State[Σ,L,E], label:L, destination:State[Σ,L,E]) {}

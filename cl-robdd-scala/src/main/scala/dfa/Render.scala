@@ -25,7 +25,7 @@ object Render {
 
   import java.io.{File, OutputStream}
 
-  def dfaView[L,E](dfa: Dfa[L,E], title:String=""): String = {
+  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String=""): String = {
     import sys.process._
     val png = dfaToPng(dfa,title)
     val cmd = Seq("open", png)
@@ -33,7 +33,7 @@ object Render {
     png
   }
 
-  def dfaToPng[L,E](dfa:Dfa[L,E], title:String): String = {
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String): String = {
     val png = File.createTempFile("dfa-", ".png")
     val pngPath = png.getAbsolutePath
     val dot = File.createTempFile("dfa-", ".dot")
@@ -54,14 +54,14 @@ object Render {
     pngPath
   }
 
-  def dfaToPng[L,E](dfa:Dfa[L,E],pathname: String, title:String): String = {
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],pathname: String, title:String): String = {
     val stream = new java.io.FileOutputStream(new java.io.File(pathname))
     dfaToDot(dfa,stream, title)
     stream.close()
     pathname
   }
 
-  def dfaToDot[L,E](dfa:Dfa[L,E],stream: OutputStream, title:String): Unit = {
+  def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],stream: OutputStream, title:String): Unit = {
     val qarr=dfa.Q.toArray
 
     def write(str: String): Unit = {
@@ -75,7 +75,7 @@ object Render {
         write(s""" [label="$label"]""")
       write("\n")
     }
-    def drawState(q:State[L,E]):Unit = {
+    def drawState(q:State[Sigma,L,E]):Unit = {
       write(s"""${qarr.indexOf(q)} [label="${q.id}"]\n""")
       for{
         tr <- q.transitions

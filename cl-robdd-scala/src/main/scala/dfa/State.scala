@@ -21,9 +21,22 @@
 
 package dfa
 
-class State[L,E](dfa:Dfa[L,E], val id:Int) {
-  var transitions:Set[Transition[L,E]] = Set()
-  def delta(label:L):State[L,E] = dfa.delta(this,label)
+class State[Σ,L,E](dfa:Dfa[Σ,L,E], val id:Int) {
+  var transitions:Set[Transition[Σ,L,E]] = Set()
+
+  // find the destination state of this state given the label,
+  //     this uses a label search, independent of the particular
+  //     value of an input sequence.
+  def delta(label:L):State[Σ,L,E] = dfa.delta(this,label)
+
+  // find the destination state of this state given an element
+  //    of the input sequence.
+  def successor(s:Σ):Option[State[Σ,L,E]] = {
+    transitions
+      .find{case Transition(_,label,_) => dfa.member(s,label) }
+      .flatMap{case Transition(_,_,dest) => Some(dest)
+      }
+  }
 
   override def toString:String = {
     s"q:$id"

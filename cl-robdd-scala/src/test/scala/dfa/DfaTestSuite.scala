@@ -27,8 +27,11 @@ import org.scalatest.funsuite.AnyFunSuite
 
 
 class DfaTestSuite extends AnyFunSuite {
+
+  import bdd._
+
+  val m1: (Int, Bdd) => Boolean = (_, _) => true
   test("build bdd dfa") {
-    import bdd._
 
     Bdd.withNewBddHash {
       val t1 = Bdd(1) // fixnum
@@ -39,23 +42,24 @@ class DfaTestSuite extends AnyFunSuite {
       val t7 = And(Not(t2), t3) // !integer & number
       val t9 = Bdd(9) // symbol
 
-      val dfa = new Dfa[Bdd, String](Set(0, 1, 2, 4, 5, 6, 7, 8),
-                                     0,
-                                     Set(4, 5, 6, 7),
-                                     Set((0, t1, 1),
-                                         (0, t4, 2),
-                                         (0, t9, 8),
-                                         (1, t6, 4),
-                                         (1, t1, 5),
-                                         (1, t7, 6),
-                                         (2, t3, 7),
-                                         (8, t7, 6),
-                                         (8, t2, 7)),
-                                     (a: Bdd, b: Bdd) => Or(a, b),
-                                     Map(4 -> "clause-2",
-                                         5 -> "clause-1",
-                                         6 -> "clause-3",
-                                         7 -> "clause-3"))
+      val dfa = new Dfa[Int, Bdd, String](Qids = Set(0, 1, 2, 4, 5, 6, 7, 8),
+                                          q0id = 0,
+                                          Fids = Set(4, 5, 6, 7),
+                                          protoDelta = Set((0, t1, 1),
+                                                           (0, t4, 2),
+                                                           (0, t9, 8),
+                                                           (1, t6, 4),
+                                                           (1, t1, 5),
+                                                           (1, t7, 6),
+                                                           (2, t3, 7),
+                                                           (8, t7, 6),
+                                                           (8, t2, 7)),
+                                          member = m1,
+                                          combineLabels = (a: Bdd, b: Bdd) => Or(a, b),
+                                          fMap = Map(4 -> "clause-2",
+                                                     5 -> "clause-1",
+                                                     6 -> "clause-3",
+                                                     7 -> "clause-3"))
       assert(dfa.F.size == 4)
       assert(dfa.q0.id == 0)
       assert(dfa.F.map(_.id) == Set(4, 5, 6, 7))
@@ -73,24 +77,25 @@ class DfaTestSuite extends AnyFunSuite {
       val t7 = And(Not(t2), t3) // !integer & number
       val t9 = Bdd(9) // symbol
 
-      val dfa = new Dfa[Bdd, String](Set(0, 1, 2, 4, 5, 6, 7, 8),
-                                     0,
-                                     Set(4, 5, 6, 7),
-                                     Set((0, t1, 1),
-                                         (0, t4, 2),
-                                         (0, t9, 8), // mergable
-                                         (0, t4, 8), // mergable
-                                         (1, t6, 4),
-                                         (1, t1, 5),
-                                         (1, t7, 6),
-                                         (2, t3, 7),
-                                         (8, t7, 6),
-                                         (8, t2, 7)),
-                                     (a: Bdd, b: Bdd) => Or(a, b),
-                                     Map(4 -> "clause-2",
-                                         5 -> "clause-1",
-                                         6 -> "clause-3",
-                                         7 -> "clause-3"))
+      val dfa = new Dfa[Int, Bdd, String](Set(0, 1, 2, 4, 5, 6, 7, 8),
+                                          0,
+                                          Set(4, 5, 6, 7),
+                                          Set((0, t1, 1),
+                                              (0, t4, 2),
+                                              (0, t9, 8), // mergable
+                                              (0, t4, 8), // mergable
+                                              (1, t6, 4),
+                                              (1, t1, 5),
+                                              (1, t7, 6),
+                                              (2, t3, 7),
+                                              (8, t7, 6),
+                                              (8, t2, 7)),
+                                          m1,
+                                          (a: Bdd, b: Bdd) => Or(a, b),
+                                          Map(4 -> "clause-2",
+                                              5 -> "clause-1",
+                                              6 -> "clause-3",
+                                              7 -> "clause-3"))
       assert(dfa.F.size == 4)
       assert(dfa.q0.id == 0)
       assert(dfa.F.map(_.id) == Set(4, 5, 6, 7))
@@ -106,24 +111,29 @@ class DfaTestSuite extends AnyFunSuite {
     val t7 = t3.diff(t2) // !integer & number
     val t9 = Set(9) // symbol
 
-    val dfa = new Dfa[Set[Int], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
-                                        0,
-                                        Set(4, 5, 6, 7),
-                                        Set((0, t1, 1),
-                                            (0, t4, 2),
-                                            (0, t9, 8), // mergable
-                                            (0, t4, 8), // mergable
-                                            (1, t6, 4),
-                                            (1, t1, 5),
-                                            (1, t7, 6),
-                                            (2, t3, 7),
-                                            (8, t7, 6),
-                                            (8, t2, 7)),
-                                        (a: Set[Int], b: Set[Int]) => a.union(b),
-                                        Map(4 -> "clause-2",
-                                            5 -> "clause-1",
-                                            6 -> "clause-3",
-                                            7 -> "clause-3"))
+    def m1(x: Int, y: Set[Int]): Boolean = {
+      y.contains(x)
+    }
+
+    val dfa = new Dfa[Int, Set[Int], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
+                                             0,
+                                             Set(4, 5, 6, 7),
+                                             Set((0, t1, 1),
+                                                 (0, t4, 2),
+                                                 (0, t9, 8), // mergable
+                                                 (0, t4, 8), // mergable
+                                                 (1, t6, 4),
+                                                 (1, t1, 5),
+                                                 (1, t7, 6),
+                                                 (2, t3, 7),
+                                                 (8, t7, 6),
+                                                 (8, t2, 7)),
+                                             m1,
+                                             (a: Set[Int], b: Set[Int]) => a.union(b),
+                                             Map(4 -> "clause-2",
+                                                 5 -> "clause-1",
+                                                 6 -> "clause-3",
+                                                 7 -> "clause-3"))
     assert(dfa.F.size == 4)
     assert(dfa.q0.id == 0)
     assert(dfa.F.map(_.id) == Set(4, 5, 6, 7))
@@ -145,27 +155,32 @@ class DfaTestSuite extends AnyFunSuite {
     val t7 = t3.diff(t2) // !integer & number
     val t9 = Set("e9") // symbol
 
-    val dfa = new Dfa[Set[String], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
-                                        0,
-                                        Set(4, 5, 6, 7),
-                                        Set((0, t1, 1),
-                                            (0, t4, 2),
-                                            (0, t9, 8), // mergable
-                                            (0, t4, 8), // mergable
-                                            (1, t6, 4),
-                                            (1, t1, 5),
-                                            (1, t7, 6),
-                                            (2, t3, 7),
-                                            (8, t7, 6),
-                                            (8, t2, 7)),
-                                        (a: Set[String], b: Set[String]) => a.union(b),
-                                        Map(4 -> "clause-2",
-                                            5 -> "clause-1",
-                                            6 -> "clause-3",
-                                            7 -> "clause-3"))
+    def m1(x: String, y: Set[String]): Boolean = {
+      y.contains(x)
+    }
+
+    val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
+                                                   0,
+                                                   Set(4, 5, 6, 7),
+                                                   Set((0, t1, 1),
+                                                       (0, t4, 2),
+                                                       (0, t9, 8), // mergable
+                                                       (0, t4, 8), // mergable
+                                                       (1, t6, 4),
+                                                       (1, t1, 5),
+                                                       (1, t7, 6),
+                                                       (2, t3, 7),
+                                                       (8, t7, 6),
+                                                       (8, t2, 7)),
+                                                   m1,
+                                                   (a: Set[String], b: Set[String]) => a.union(b),
+                                                   Map(4 -> "clause-2",
+                                                       5 -> "clause-1",
+                                                       6 -> "clause-3",
+                                                       7 -> "clause-3"))
     val minDfa = Minimize.minimize(dfa)
     assert(minDfa.F.size == 3)
-    assert(minDfa.F.map(q => minDfa.exitValue(q)) == Set("clause-1","clause-2","clause-3"))
+    assert(minDfa.F.map(q => minDfa.exitValue(q)) == Set("clause-1", "clause-2", "clause-3"))
     assert(minDfa.Q.size == 6)
   }
 
@@ -178,23 +193,28 @@ class DfaTestSuite extends AnyFunSuite {
     val t6 = t3.diff(t1) // !fixnum & number
     val t7 = t3.diff(t2) // !integer & number
 
-    val dfa = new Dfa[Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
-                                           0,
-                                           Set(4, 5, 6, 7),
-                                           Set((0, t1, 1),
-                                               (0, t4, 2),
-                                               (1, t6, 4),
-                                               (1, t1, 5),
-                                               (1, t7, 6),
-                                               (2, t3, 7)),
-                                           (a: Set[String], b: Set[String]) => a.union(b),
-                                           Map(4 -> "clause-2",
-                                               5 -> "clause-1",
-                                               6 -> "clause-3",
-                                               7 -> "clause-3"))
+    def m1(x: String, y: Set[String]): Boolean = {
+      y.contains(x)
+    }
+
+    val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
+                                                   0,
+                                                   Set(4, 5, 6, 7),
+                                                   Set((0, t1, 1),
+                                                       (0, t4, 2),
+                                                       (1, t6, 4),
+                                                       (1, t1, 5),
+                                                       (1, t7, 6),
+                                                       (2, t3, 7)),
+                                                   m1,
+                                                   (a: Set[String], b: Set[String]) => a.union(b),
+                                                   Map(4 -> "clause-2",
+                                                       5 -> "clause-1",
+                                                       6 -> "clause-3",
+                                                       7 -> "clause-3"))
     val minDfa = Minimize.minimize(dfa)
     assert(minDfa.F.size == 3)
-    assert(minDfa.F.map(q => minDfa.exitValue(q)) == Set("clause-1","clause-2","clause-3"))
+    assert(minDfa.F.map(q => minDfa.exitValue(q)) == Set("clause-1", "clause-2", "clause-3"))
     assert(minDfa.Q.size == 6)
   }
 
@@ -207,29 +227,34 @@ class DfaTestSuite extends AnyFunSuite {
     val t6 = t3.diff(t1) // !fixnum & number
     val t7 = t3.diff(t2) // !integer & number
 
-    val dfa = new Dfa[Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
-                                           0,
-                                           Set(4, 5, 6, 7),
-                                           Set((0, t1, 1),
-                                               (0, t4, 2),
-                                               (1, t6, 4),
-                                               (1, t1, 5),
-                                               (1, t7, 6),
-                                               (2, t3, 7)),
-                                           (a: Set[String], b: Set[String]) => a.union(b),
-                                           Map(4 -> "clause-2",
-                                               5 -> "clause-1",
-                                               6 -> "clause-3",
-                                               7 -> "clause-3"))
+    def m1(x: String, y: Set[String]): Boolean = {
+      y.contains(x)
+    }
+
+    val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
+                                                   0,
+                                                   Set(4, 5, 6, 7),
+                                                   Set((0, t1, 1),
+                                                       (0, t4, 2),
+                                                       (1, t6, 4),
+                                                       (1, t1, 5),
+                                                       (1, t7, 6),
+                                                       (2, t3, 7)),
+                                                   m1,
+                                                   (a: Set[String], b: Set[String]) => a.union(b),
+                                                   Map(4 -> "clause-2",
+                                                       5 -> "clause-1",
+                                                       6 -> "clause-3",
+                                                       7 -> "clause-3"))
     assert(dfa.Q.size == 7)
-    Render.dfaToPng(dfa,"test render")
+    Render.dfaToPng(dfa, "test render")
     //Render.dfaView(dfa,"test render")
     val minDfa = Minimize.minimize(dfa)
     Render.dfaToPng(minDfa, "test render minimized")
     //Render.dfaView(minDfa,"test render minimized")
   }
 
-  test("simulate dfa"){
+  test("simulate dfa") {
     import Simulate._
 
     val t1 = Set("a1") // fixnum
@@ -239,26 +264,29 @@ class DfaTestSuite extends AnyFunSuite {
     val t6 = t3.diff(t1) // !fixnum & number
     val t7 = t3.diff(t2) // !integer & number
 
-    val dfa = new Dfa[Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
-                                           0,
-                                           Set(4, 5, 6, 7),
-                                           Set((0, t1, 1), // a1
-                                               (0, t4, 2), // d4
-                                               (1, t6, 4), // b2 c3 == !(a1) & (a1 b2 c3)
-                                               (1, t1, 5), // a1
-                                               (1, t7, 6), // c3 == !(a1 b2) & (a1 b2 c3)
-                                               (2, t3, 7)), // a1 b2 c3
-                                           (a: Set[String], b: Set[String]) => a.union(b),
-                                           Map(4 -> "clause-2",
-                                               5 -> "clause-1",
-                                               6 -> "clause-3",
-                                               7 -> "clause-3"))
-    def accept(s:String,label:Set[String]):Boolean = {
-        label.contains(s)
+    def accept(s: String, label: Set[String]): Boolean = {
+      label.contains(s)
     }
-    assert(simulate(dfa,accept)(List("a1","a1")) == Some("clause-1"))
-    assert(simulate(dfa,accept)(List()) == None)
-    assert(simulate(dfa,accept)(Array("a1", "b2")) == Some("clause-2"))
-    assert(simulate(dfa,accept)(Array("a1", "b2","b2")) == None)
+
+    val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
+                                                   0,
+                                                   Set(4, 5, 6, 7),
+                                                   Set((0, t1, 1), // a1
+                                                       (0, t4, 2), // d4
+                                                       (1, t6, 4), // b2 c3 == !(a1) & (a1 b2 c3)
+                                                       (1, t1, 5), // a1
+                                                       (1, t7, 6), // c3 == !(a1 b2) & (a1 b2 c3)
+                                                       (2, t3, 7)), // a1 b2 c3
+                                                   accept,
+                                                   (a: Set[String], b: Set[String]) => a.union(b),
+                                                   Map(4 -> "clause-2",
+                                                       5 -> "clause-1",
+                                                       6 -> "clause-3",
+                                                       7 -> "clause-3"))
+
+    assert(simulate(dfa)(List("a1", "a1")) == Some("clause-1"))
+    assert(simulate(dfa)(List()) == None)
+    assert(simulate(dfa)(Array("a1", "b2")) == Some("clause-2"))
+    assert(simulate(dfa)(Array("a1", "b2", "b2")) == None)
   }
 }

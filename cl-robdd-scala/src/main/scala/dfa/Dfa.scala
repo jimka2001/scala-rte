@@ -21,12 +21,16 @@
 
 package dfa
 
-class Dfa[L,E](Qids:Set[Int],
-               q0id:Int,
-               Fids:Set[Int],
-               protoDelta:Set[(Int,L,Int)],
-               val combineLabels:(L,L)=>L,
-               fMap:Map[Int,E]) {
+// Seq[Σ] is the type of the input sequence which the DFA is expected to match
+// L is the type of label on transitions
+// E is the type of exit values
+class Dfa[Σ,L,E](Qids:Set[Int],
+                     q0id:Int,
+                     Fids:Set[Int],
+                     protoDelta:Set[(Int,L,Int)],
+                     val member:(Σ,L)=>Boolean,
+                     val combineLabels:(L,L)=>L,
+                     fMap:Map[Int,E]) {
   // q0id is in Qids
   require(Qids.contains(q0id))
   // each element of Fids is in Qids
@@ -36,14 +40,19 @@ class Dfa[L,E](Qids:Set[Int],
   // fMap maps each element of Fids to some object of type E
   require(fMap.map{case (q,_) => q}.toSet == Fids)
 
-  def exitValue(q:State[L,E]):E =  fMap(q.id)
-  def findState(id: Int): State[L,E] = {
+  def exitValue(q:State[Σ,L,E]):E =  fMap(q.id)
+  def findState(id: Int): State[Σ,L,E] = {
     Q.find(s => s.id == id).get
   }
-  def delta(s:State[L,E], label:L):State[L,E] = {
+  // to find the destination state of a state, we
+  //   match the label exactly using ===
+  //   TODO, this should really be done using either equivalent
+  //    labels or subset relation etc.
+  def delta(s:State[Σ,L,E], label:L):State[Σ,L,E] = {
     s.transitions.find(tr => tr.label == label).get.destination
   }
-  val Q: Set[State[L,E]] = Qids.map((id:Int) => new State[L,E](dfa=this,id))
+
+  val Q: Set[State[Σ,L,E]] = Qids.map((id:Int) => new State[Σ,L,E](dfa=this,id))
   for{
     (from , fromTriples) <- protoDelta.groupBy(_._1)
     fromState = findState(from)
@@ -52,8 +61,8 @@ class Dfa[L,E](Qids:Set[Int],
     label = toFromTriples.map(_._2).reduce(combineLabels)
   } fromState.transitions += Transition(fromState,label,toState)
 
-  val q0: State[L,E] = findState(q0id)
-  val F: Set[State[L,E]] = Fids.map(findState)
+  val q0: State[Σ,L,E] = findState(q0id)
+  val F: Set[State[Σ,L,E]] = Fids.map(findState)
 
   override def toString:String = Serialize.serializeToString(dfa=this)
 }

@@ -44,8 +44,8 @@ object Minimize {
       domain.groupBy(f).values.toSet
   }
 
-  def findHopcroftPartition[L, E](dfa: Dfa[L, E]): Set[Set[State[L, E]]] = {
-    type STATE = State[L, E]
+  def findHopcroftPartition[Sigma,L, E](dfa: Dfa[Sigma,L, E]): Set[Set[State[Sigma,L, E]]] = {
+    type STATE = State[Sigma,L, E]
     type EQVCLASS = Set[STATE]
     type PARTITION = Set[EQVCLASS]
 
@@ -81,21 +81,21 @@ object Minimize {
     fixedPoint(Pi0, refine, partitionEqual)
   }
 
-  def minimize[L, E](dfa: Dfa[L, E]): Dfa[L, E] = {
+  def minimize[Sigma,L, E](dfa: Dfa[Sigma,L, E]): Dfa[Sigma,L, E] = {
     val PiMinimized = findHopcroftPartition(dfa)
     // associate each element of PiMinimized with a new id
     // attempt to correlate the old state.id with the new
-    def minState(eqvClass:Set[State[L,E]]):Int = {
+    def minState(eqvClass:Set[State[Sigma,L,E]]):Int = {
       eqvClass.map(_.id).reduce( (a:Int,b:Int) => a.min(b))
     }
-    val ids:Map[Set[State[L,E]],Int] = PiMinimized.map{eqvClass=> eqvClass -> minState(eqvClass) }.toMap
-    def eqvClassOf(s:State[L,E]):Set[State[L,E]] = {
+    val ids:Map[Set[State[Sigma,L,E]],Int] = PiMinimized.map{eqvClass=> eqvClass -> minState(eqvClass) }.toMap
+    def eqvClassOf(s:State[Sigma,L,E]):Set[State[Sigma,L,E]] = {
       PiMinimized.find(eqvClass => eqvClass.contains(s)).get
     }
-    def newId(s:State[L,E]):Int = {
+    def newId(s:State[Sigma,L,E]):Int = {
       ids(eqvClassOf(s))
     }
-    //val ids: Array[Set[State[L,E]]] = PiMinimized.toArray
+    //val ids: Array[Set[State[Sigma,L,E]]] = PiMinimized.toArray
     val newIds = ids.values.toSet
     val newQ0:Int = newId(dfa.q0)
     val newFids = PiMinimized.filter(eqv => dfa.F.exists(q => eqv.contains(q))).map(ids)
@@ -112,6 +112,6 @@ object Minimize {
     } yield id -> dfa.exitValue(q)
 
     // return a newly constructed Dfa extracted from the Hopcroft partition minimization
-    new Dfa[L, E](newIds, newQ0, newFids, newProtoDelta, dfa.combineLabels, newFmap)
+    new Dfa[Sigma,L, E](newIds, newQ0, newFids, newProtoDelta, dfa.member, dfa.combineLabels, newFmap )
   }
 }
