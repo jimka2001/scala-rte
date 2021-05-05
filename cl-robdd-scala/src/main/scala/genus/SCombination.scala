@@ -39,7 +39,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean]
   def sameCombination(td:SimpleTypeD):Boolean = false
 
-  // UnionType(tds: Type*)
+  // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
       () => {
@@ -115,7 +115,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
           case None => this
           case Some(_) => zero
         }
-      },
+      }
       ))
   }
   // SCombination(tds: SimpleTypeD*)
