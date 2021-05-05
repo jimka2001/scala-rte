@@ -23,14 +23,11 @@ package dfa
 
 object Simulate {
 
-  def findReachableFinal[Sigma, L, E](dfa: Dfa[L, E], delta: (Sigma, L) => Boolean)(seq: Seq[Sigma]): Option[State[L, E]] = {
-    val init: Option[State[L, E]] = Some(dfa.q0)
-    seq.foldLeft(init) { (mq: Option[State[L, E]], s: Sigma) =>
 
-      for{
-        q <- mq
-        Transition(_,_,d:State[L,E]) <- q.transitions.find { case Transition(_, l, _) => delta(s, l) }
-      } yield d
+  def findReachableFinal[Σ, L, E](dfa: Dfa[Σ,L, E])(seq: Seq[Σ]): Option[State[Σ,L, E]] = {
+    val init:Option[State[Σ,L,E]] = Some(dfa.q0)
+    seq.foldLeft(init) { (mq, s) =>
+      mq.flatMap(_.successor(s))
     }
   }
 
