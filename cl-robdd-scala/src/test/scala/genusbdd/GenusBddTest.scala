@@ -30,12 +30,16 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class GenusBddTest extends AnyFunSuite {
   trait Trait1
+
   trait Trait2
+
   trait Trait3 extends Trait2
+
   abstract class Abstract1
+
   abstract class Abstract2
 
-  test("subclass"){
+  test("subclass") {
     val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
 
     Bdd.withNewBddHash {
@@ -45,46 +49,48 @@ class GenusBddTest extends AnyFunSuite {
       assert(dnf == SAtomic(classOf[Trait3]))
     }
     Bdd.withNewBddHash {
-      val dnf = GenusBdd(SOr(classOf[Trait2],classOf[Trait3]), tdToInt).dnf
+      val dnf = GenusBdd(SOr(classOf[Trait2], classOf[Trait3]), tdToInt).dnf
       assert(dnf == SAtomic(classOf[Trait2]))
     }
   }
-  test("disjoint"){
+  test("disjoint") {
     val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
     Bdd.withNewBddHash {
-      val dnf = GenusBdd(SAnd(classOf[Abstract1],classOf[Abstract2]), tdToInt).dnf
+      val dnf = GenusBdd(SAnd(classOf[Abstract1], classOf[Abstract2]), tdToInt).dnf
       assert(dnf == SEmpty)
     }
   }
-  test("disjoint and subtype"){
+  test("disjoint and subtype") {
     val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
     Bdd.withNewBddHash {
-      val dnf = GenusBdd(SAnd(classOf[Abstract1], SOr(SAnd(classOf[Abstract1],classOf[Trait2]),
-                                                      SAnd(classOf[Abstract2],classOf[Trait2]))), tdToInt).dnf
-      assert(dnf == SAnd(classOf[Trait2],classOf[Abstract1]))
+      val dnf = GenusBdd(SAnd(classOf[Abstract1], SOr(SAnd(classOf[Abstract1], classOf[Trait2]),
+                                                      SAnd(classOf[Abstract2], classOf[Trait2]))), tdToInt).dnf
+      assert(dnf == SAnd(classOf[Trait2], classOf[Abstract1]))
     }
   }
-  def testDnf(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD, Int]):Unit = {
+
+  def testDnf(td: SimpleTypeD, tdToInt: mutable.Map[SimpleTypeD, Int]): Unit = {
     val bdd = GenusBdd(td, tdToInt)
     val dnf = bdd.dnf
     if (dnf == td)
       ()
     else {
       assert((dnf - td) == SEmpty,
-             s"dnf=$dnf  td=$td   dnf-td=${dnf-td} expecting SEmpty")
-      assert((td-dnf) == SEmpty,
-             s"dnf=$dnf  td=$td   dnf-td=${td-dnf} expecting SEmpty")
+             s"dnf=$dnf  td=$td   dnf-td=${dnf - td} expecting SEmpty")
+      assert((td - dnf) == SEmpty,
+             s"dnf=$dnf  td=$td   dnf-td=${td - dnf} expecting SEmpty")
     }
   }
-  test("randomizer"){
 
-    for{depth <- 2 to 7} {
+  test("randomizer") {
+
+    for {depth <- 2 to 7} {
       val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
       Bdd.withNewBddHash {
         for {_ <- 0 to 750 - 100 * depth
-             td = randomType(depth=depth)
+             td = randomType(depth = depth)
              }
-          testDnf(td,tdToInt)
+          testDnf(td, tdToInt)
       }
     }
   }
