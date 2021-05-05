@@ -31,10 +31,9 @@ object Simulate {
     }
   }
 
-  def simulate[Sigma, L, E](dfa: Dfa[L, E], delta: (Sigma, L) => Boolean)(seq: Seq[Sigma]): Option[E] = {
-
+  def simulate[Σ, L, E](dfa: Dfa[Σ, L, E])(seq: Seq[Σ]): Option[E] = {
     for{
-      d <- findReachableFinal(dfa,delta)(seq)
+      d <- findReachableFinal(dfa)(seq)
       if dfa.F.contains(d)
     } yield dfa.exitValue(d)
   }
