@@ -64,4 +64,18 @@ class Dfa[Σ,L,E](Qids:Set[Int],
   val F: Set[State[Σ,L,E]] = Fids.map(findState)
 
   override def toString:String = Serialize.serializeToString(dfa=this)
+
+  def findReachableFinal(seq: Seq[Σ]): Option[State[Σ,L, E]] = {
+    val init:Option[State[Σ,L,E]] = Some(q0)
+    seq.foldLeft(init) { (mq, s) =>
+      mq.flatMap(_.successor(s))
+    }
+  }
+
+  def simulate(seq: Seq[Σ]): Option[E] = {
+    for{
+      d <- findReachableFinal(seq)
+      if F.contains(d)
+    } yield exitValue(d)
+  }
 }

@@ -245,7 +245,6 @@ class DfaTestSuite extends AnyFunSuite {
   }
 
   test("simulate dfa") {
-    import Simulate._
 
     val t1 = Set("a1") // fixnum
     val t2 = Set("a1", "b2") // integer
@@ -269,9 +268,9 @@ class DfaTestSuite extends AnyFunSuite {
                                                        6 -> "clause-3",
                                                        7 -> "clause-3"))
 
-    assert(simulate(dfa)(List("a1", "a1")).contains("clause-1"))
-    assert(simulate(dfa)(List()).isEmpty)
-    assert(simulate(dfa)(Array("a1", "b2")).contains("clause-2"))
-    assert(simulate(dfa)(Array("a1", "b2", "b2")).isEmpty)
+    assert(dfa.simulate(List("a1", "a1")).contains("clause-1"))
+    assert(dfa.simulate(List()).isEmpty)
+    assert(dfa.simulate(Vector("a1", "b2")).contains("clause-2"))
+    assert(dfa.simulate(Vector("a1", "b2", "b2")).isEmpty)
   }
 }

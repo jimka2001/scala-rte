@@ -62,7 +62,7 @@ object Minimize {
         partition.find(_.contains(source.delta(label))).get
       }
       def PhiPrime(s: STATE): Set[(L, EQVCLASS)] = {
-        for{ Transition(_src,label,_dst) <- s.transitions }
+        for{ Transition(_,label,_) <- s.transitions }
           yield (label,phi(s,label))
       }
       def Phi(s: STATE): Set[(L, EQVCLASS)] = {
