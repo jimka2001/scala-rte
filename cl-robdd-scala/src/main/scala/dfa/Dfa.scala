@@ -41,10 +41,10 @@ class Dfa[Σ,L,E](Qids:Set[Int],
 
   def exitValue(q: State[Σ, L, E]): E = fMap(q.id)
 
-  def findState(id: Int): State[Σ, L, E] = {
+  def idToState(id: Int): State[Σ, L, E] = {
     Q.find(s => s.id == id).get
   }
-  
+
   def delta(s: State[Σ, L, E], label: L): State[Σ, L, E] = {
     s.transitions.find(tr => labeler.equivLabels(tr.label, label)).get.destination
   }
@@ -52,14 +52,14 @@ class Dfa[Σ,L,E](Qids:Set[Int],
   val Q: Set[State[Σ, L, E]] = Qids.map((id: Int) => new State[Σ, L, E](dfa = this, id))
   for {
     (from, fromTriples) <- protoDelta.groupBy(_._1)
-    fromState = findState(from)
+    fromState = idToState(from)
     (to, toFromTriples) <- fromTriples.groupBy(_._3)
-    toState = findState(to)
+    toState = idToState(to)
     label = toFromTriples.map(_._2).reduce(labeler.combineLabels)
   } fromState.transitions += Transition(fromState, label, toState)
 
-  val q0: State[Σ, L, E] = findState(q0id)
-  val F: Set[State[Σ, L, E]] = Fids.map(findState)
+  val q0: State[Σ, L, E] = idToState(q0id)
+  val F: Set[State[Σ, L, E]] = Fids.map(idToState)
 
   override def toString: String = Serialize.serializeToString(dfa = this)
 

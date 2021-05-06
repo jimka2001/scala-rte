@@ -142,12 +142,12 @@ class DfaTestSuite extends AnyFunSuite {
     assert(dfa.F.size == 4)
     assert(dfa.q0.id == 0)
     assert(dfa.F.map(_.id) == Set(4, 5, 6, 7))
-    assert(dfa.findState(0).transitions.size == 3)
-    assert(dfa.findState(0).transitions.exists(tr => tr.label == t9.union(t4)))
-    assert(dfa.exitValue(dfa.findState(5)) == "clause-1")
-    assert(dfa.exitValue(dfa.findState(6)) == "clause-3")
-    assert(dfa.exitValue(dfa.findState(4)) == "clause-2")
-    assert(dfa.exitValue(dfa.findState(7)) == "clause-3")
+    assert(dfa.idToState(0).transitions.size == 3)
+    assert(dfa.idToState(0).transitions.exists(tr => tr.label == t9.union(t4)))
+    assert(dfa.exitValue(dfa.idToState(5)) == "clause-1")
+    assert(dfa.exitValue(dfa.idToState(6)) == "clause-3")
+    assert(dfa.exitValue(dfa.idToState(4)) == "clause-2")
+    assert(dfa.exitValue(dfa.idToState(7)) == "clause-3")
   }
 
   test("minimize dfa") {
