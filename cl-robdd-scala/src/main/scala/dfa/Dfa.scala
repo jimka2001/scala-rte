@@ -37,43 +37,46 @@ class Dfa[Σ,L,E](Qids:Set[Int],
   // each triple in protoDelta is of the form (x,_,y) where x and y are elements of Qids
   require(protoDelta.forall { case (from: Int, _, to: Int) => Qids.contains(from) && Qids.contains(to) })
   // fMap maps each element of Fids to some object of type E
-  require(fMap.map{case (q,_) => q}.toSet == Fids)
+  require(fMap.map { case (q, _) => q }.toSet == Fids)
 
-  def exitValue(q:State[Σ,L,E]):E =  fMap(q.id)
-  def findState(id: Int): State[Σ,L,E] = {
+  def exitValue(q: State[Σ, L, E]): E = fMap(q.id)
+
+  def findState(id: Int): State[Σ, L, E] = {
     Q.find(s => s.id == id).get
   }
-  // to find the destination state of a state, we
-  //   match the label exactly using ==
-  //   TODO, this should really be done using either equivalent
-  //    labels or subset relation etc.
-  def delta(s:State[Σ,L,E], label:L):State[Σ,L,E] = {
+  
+  def delta(s: State[Σ, L, E], label: L): State[Σ, L, E] = {
     s.transitions.find(tr => labeler.equivLabels(tr.label, label)).get.destination
   }
 
-  val Q: Set[State[Σ,L,E]] = Qids.map((id:Int) => new State[Σ,L,E](dfa=this,id))
-  for{
-    (from , fromTriples) <- protoDelta.groupBy(_._1)
+  val Q: Set[State[Σ, L, E]] = Qids.map((id: Int) => new State[Σ, L, E](dfa = this, id))
+  for {
+    (from, fromTriples) <- protoDelta.groupBy(_._1)
     fromState = findState(from)
     (to, toFromTriples) <- fromTriples.groupBy(_._3)
     toState = findState(to)
     label = toFromTriples.map(_._2).reduce(labeler.combineLabels)
-  } fromState.transitions += Transition(fromState,label,toState)
+  } fromState.transitions += Transition(fromState, label, toState)
 
-  val q0: State[Σ,L,E] = findState(q0id)
-  val F: Set[State[Σ,L,E]] = Fids.map(findState)
+  val q0: State[Σ, L, E] = findState(q0id)
+  val F: Set[State[Σ, L, E]] = Fids.map(findState)
 
-  override def toString:String = Serialize.serializeToString(dfa=this)
+  override def toString: String = Serialize.serializeToString(dfa = this)
 
-  def findReachableFinal(seq: Seq[Σ]): Option[State[Σ,L, E]] = {
-    val init:Option[State[Σ,L,E]] = Some(q0)
+  def findReachableFinal(seq: Seq[Σ]): Option[State[Σ, L, E]] = {
+    val init: Option[State[Σ, L, E]] = Some(q0)
     seq.foldLeft(init) { (mq, s) =>
       mq.flatMap(_.successor(s))
     }
   }
 
   def simulate(seq: Seq[Σ]): Option[E] = {
-    for{
+
+    //    findReachableFinal(seq)
+    //      .flatMap{ d => F.find(_ == d)}
+    //      .map(exitValue)
+
+    for {
       d <- findReachableFinal(seq)
       if F.contains(d)
     } yield exitValue(d)
