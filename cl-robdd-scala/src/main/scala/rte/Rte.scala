@@ -27,6 +27,31 @@ abstract class Rte {
   override def toString:String = toLaTeX
 }
 
+object Rte {
+  def randomSeq(depth:Int):Seq[Rte] = {
+    val maxCompoundSize = 2
+    (0 until maxCompoundSize).map{ _ => randomRte(depth)}
+  }
+  def randomRte(depth:Int):Rte = {
+    import scala.util.Random
+    val random = new Random
+    val generators:Seq[()=>Rte] = Vector(
+      () => Not(randomRte(depth - 1)),
+      () => Star(randomRte(depth - 1)),
+      () => And(randomSeq(depth-1)),
+      () => Cat(randomSeq(depth-1)),
+      () => Or(randomSeq(depth-1)),
+      () => Td(genus.Types.randomType(0))
+      )
+    if (depth <= 0)
+      Td(genus.Types.randomType(0))
+    else {
+      val g = generators(random.nextInt(generators.length))
+      g()
+    }
+  }
+}
+
 object sanityTest {
   def main(argv: Array[String]):Unit = {
     import genus._
@@ -42,5 +67,7 @@ object sanityTest {
     println(Or(And(classOf[Integer],
                    Not(SAtomic(classOf[Long]))),
                Not(SEql(44))))
+
+    println(Rte.randomRte(2))
   }
 }
