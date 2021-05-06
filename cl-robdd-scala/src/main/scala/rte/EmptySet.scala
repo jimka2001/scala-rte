@@ -22,25 +22,6 @@
 
 package rte
 
-abstract class Rte {
-  def toLaTeX:String
-  override def toString:String = toLaTeX
-}
-
-object sanityTest {
-  def main(argv: Array[String]):Unit = {
-    import genus._
-    println(Or(And(Td(SAtomic(classOf[Integer])),
-                   Not(Td(SAtomic(classOf[Long])))),
-               Not(Td(SEql(42)))))
-
-    import RteImplicits._
-    println(Or(And(SAtomic(classOf[Integer]),
-                   Not(SAtomic(classOf[Long]))),
-               Not(SEql(43))))
-
-    println(Or(And(classOf[Integer],
-                   Not(SAtomic(classOf[Long]))),
-               Not(SEql(44))))
-  }
+case class EmptySet() extends Rte {
+  override def toLaTeX:String = "\\emptyset"
 }

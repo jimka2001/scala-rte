@@ -22,25 +22,10 @@
 
 package rte
 
-abstract class Rte {
-  def toLaTeX:String
-  override def toString:String = toLaTeX
+case class And(operands:Seq[Rte]) extends Rte{
+  override def toLaTeX:String = "(" ++  operands.map(_.toLaTeX).mkString("\\wedge")  ++ ")"
 }
 
-object sanityTest {
-  def main(argv: Array[String]):Unit = {
-    import genus._
-    println(Or(And(Td(SAtomic(classOf[Integer])),
-                   Not(Td(SAtomic(classOf[Long])))),
-               Not(Td(SEql(42)))))
-
-    import RteImplicits._
-    println(Or(And(SAtomic(classOf[Integer]),
-                   Not(SAtomic(classOf[Long]))),
-               Not(SEql(43))))
-
-    println(Or(And(classOf[Integer],
-                   Not(SAtomic(classOf[Long]))),
-               Not(SEql(44))))
-  }
+object And {
+  def apply(operands: Rte*)(implicit ev: DummyImplicit) = new And(operands)
 }

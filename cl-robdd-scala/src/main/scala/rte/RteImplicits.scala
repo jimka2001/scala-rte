@@ -22,25 +22,16 @@
 
 package rte
 
-abstract class Rte {
-  def toLaTeX:String
-  override def toString:String = toLaTeX
-}
+import genus.SimpleTypeD
 
-object sanityTest {
-  def main(argv: Array[String]):Unit = {
-    import genus._
-    println(Or(And(Td(SAtomic(classOf[Integer])),
-                   Not(Td(SAtomic(classOf[Long])))),
-               Not(Td(SEql(42)))))
+object RteImplicits {
 
-    import RteImplicits._
-    println(Or(And(SAtomic(classOf[Integer]),
-                   Not(SAtomic(classOf[Long]))),
-               Not(SEql(43))))
+  import scala.language.implicitConversions
 
-    println(Or(And(classOf[Integer],
-                   Not(SAtomic(classOf[Long]))),
-               Not(SEql(44))))
+  implicit def tdToTd(raw: SimpleTypeD): Td = {
+    Td(raw)
+  }
+  implicit def classToTd(raw: Class[_]): Td = {
+    Td(genus.SAtomic(raw))
   }
 }

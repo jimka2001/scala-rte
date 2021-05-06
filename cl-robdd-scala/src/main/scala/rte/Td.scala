@@ -22,25 +22,8 @@
 
 package rte
 
-abstract class Rte {
-  def toLaTeX:String
-  override def toString:String = toLaTeX
-}
+import genus.SimpleTypeD
 
-object sanityTest {
-  def main(argv: Array[String]):Unit = {
-    import genus._
-    println(Or(And(Td(SAtomic(classOf[Integer])),
-                   Not(Td(SAtomic(classOf[Long])))),
-               Not(Td(SEql(42)))))
-
-    import RteImplicits._
-    println(Or(And(SAtomic(classOf[Integer]),
-                   Not(SAtomic(classOf[Long]))),
-               Not(SEql(43))))
-
-    println(Or(And(classOf[Integer],
-                   Not(SAtomic(classOf[Long]))),
-               Not(SEql(44))))
-  }
+case class Td(td:SimpleTypeD) extends Rte {
+  override def toLaTeX:String = td.toString
 }
