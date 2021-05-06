@@ -22,6 +22,6 @@
 
 package rte
 
-case class EmptyWord() extends Rte {
+object EmptyWord extends Rte {
   override def toLaTeX:String = "\\varepsilon"
 }

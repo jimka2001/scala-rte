@@ -22,6 +22,6 @@
 
 package rte
 
-case class EmptySet() extends Rte {
+object EmptySet extends Rte {
   override def toLaTeX:String = "\\emptyset"
 }
