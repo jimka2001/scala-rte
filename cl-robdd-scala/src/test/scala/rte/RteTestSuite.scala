@@ -23,12 +23,13 @@
 package rte
 
 import org.scalatest.funsuite.AnyFunSuite
+import RteImplicits._
+import genus._
 
 class RteTestSuite extends AnyFunSuite {
 
   test("implicits test") {
-    import RteImplicits._
-    import genus._
+
     assert( Not(SAtomic(classOf[Integer])) == Not(classOf[Integer]))
     assert( Not(SAtomic(classOf[Long])) != Not(classOf[Integer]))
 
@@ -43,5 +44,14 @@ class RteTestSuite extends AnyFunSuite {
 
     assert( Star(SAtomic(classOf[Integer])) == Star(classOf[Integer]))
     assert( Star(SAtomic(classOf[Long])) != Star(classOf[Integer]))
+  }
+  test("LaTeX"){
+    Or(And(SAtomic(classOf[Integer]),
+           Not(SAtomic(classOf[Long]))),
+       Not(SEql(43))).toLaTeX
+
+    Or(And(classOf[Integer],
+                   Not(SAtomic(classOf[Long]))),
+               Not(SEql(44))).toLaTeX
   }
 }
