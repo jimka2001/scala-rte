@@ -23,5 +23,5 @@
 package rte
 
 object EmptyWord extends Rte {
-  override def toLaTeX:String = "\\varepsilon"
+  override def toLaTeX:String = "\\varepsilon "
 }

@@ -23,7 +23,7 @@
 package rte
 
 final case class Cat(operands:Seq[Rte]) extends Rte {
-  override def toLaTeX:String = "(" ++  operands.map(_.toLaTeX).mkString("\\cdot")  ++ ")"
+  override def toLaTeX:String = "(" ++  operands.map(_.toLaTeX).mkString("\\cdot ")  ++ ")"
 }
 
 object Cat {

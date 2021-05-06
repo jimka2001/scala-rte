@@ -23,7 +23,7 @@
 package rte
 
 case class And(operands:Seq[Rte]) extends Rte{
-  override def toLaTeX:String = "(" ++  operands.map(_.toLaTeX).mkString("\\wedge")  ++ ")"
+  override def toLaTeX:String = "(" ++  operands.map(_.toLaTeX).mkString("\\wedge ")  ++ ")"
 }
 
 object And {

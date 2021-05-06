@@ -23,7 +23,7 @@
 package rte
 
 case class Or(operands:Seq[Rte]) extends Rte {
-  override def toLaTeX:String = "(" ++  operands.map(_.toLaTeX).mkString("\\vee")  ++ ")"
+  override def toLaTeX:String = "(" ++  operands.map(_.toLaTeX).mkString("\\vee ")  ++ ")"
 }
 
 object Or {
