@@ -25,8 +25,10 @@ import java.lang
 import scala.annotation.tailrec
 import NormalForm._
 
+
 object Types {
   import scala.runtime.BoxedUnit
+  import scala.language.implicitConversions
 
   // allow implicit conversions from c:Class[_] to AtomicType(c)
   //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)

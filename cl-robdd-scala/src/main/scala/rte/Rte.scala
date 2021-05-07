@@ -23,6 +23,14 @@
 package rte
 
 abstract class Rte {
+  def |(r: Rte): Rte = Or(this, r)
+  def &(r: Rte): Rte = And(this, r)
+  def ::(r: Rte): Rte = Cat(r,this) // :: reverses order, so we have re-reverse them to maintain semantics
+  def unary_! : Rte = Not(this)
+  def ?():Rte = Or(this,EmptyWord)
+  def *():Rte = Star(this) // postfix operator
+  def +():Rte = Cat(this,Star(this)) // postfix operator
+
   def toLaTeX:String
   override def toString:String = toLaTeX
   def nullable:Boolean
