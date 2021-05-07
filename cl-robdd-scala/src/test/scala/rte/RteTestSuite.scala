@@ -101,10 +101,11 @@ class RteTestSuite extends AnyFunSuite {
     for {
       _ <- 1 to 1000
       t1 = randomType(0)
-      t2 = randomType(0)} {
+      t2 = randomType(0)
+    } {
       assert(Singleton(SAnd(t1, t2)).canonicalize == And(Singleton(t1), Singleton(t2)).canonicalize)
       assert(Singleton(SOr(t1, t2)).canonicalize == Or(Singleton(t1), Singleton(t2)).canonicalize)
-      assert(Singleton(SNot(t1)).canonicalize == And(Not(t1),Sigma).canonicalize)
+      assert(Singleton(SNot(t1)).canonicalize == And(Not(t1), Sigma).canonicalize)
     }
     assert(EmptySet.canonicalize == EmptySet)
     assert(Sigma.canonicalize == Sigma)
