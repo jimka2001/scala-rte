@@ -26,6 +26,7 @@ abstract class Rte {
   def toLaTeX:String
   override def toString:String = toLaTeX
   def nullable:Boolean
+  def firstTypes:Set[genus.SimpleTypeD]
 }
 
 object Rte {

@@ -23,8 +23,10 @@
 package rte
 
 case class And(operands:Seq[Rte]) extends Rte{
+  import genus.SimpleTypeD
   override def toLaTeX:String = "(" ++  operands.map(_.toLaTeX).mkString("\\wedge ")  ++ ")"
   def nullable:Boolean = operands.forall{_.nullable}
+  def firstTypes:Set[SimpleTypeD] = operands.toSet.flatMap((r:Rte) => r.firstTypes)
 }
 
 object And {

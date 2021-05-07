@@ -25,6 +25,17 @@ package rte
 final case class Cat(operands:Seq[Rte]) extends Rte {
   override def toLaTeX:String = "(" ++  operands.map(_.toLaTeX).mkString("\\cdot ")  ++ ")"
   def nullable:Boolean = operands.forall{_.nullable}
+  def firstTypes:Set[genus.SimpleTypeD] = {
+    operands match {
+      case Seq() => EmptyWord.firstTypes
+      case Seq(r) => r.firstTypes
+      case Seq(r,rs @ _*) =>
+        if (r.nullable)
+          r.firstTypes union Cat(rs).firstTypes
+        else
+          r.firstTypes
+    }
+  }
 }
 
 object Cat {

@@ -65,5 +65,16 @@ class RteTestSuite extends AnyFunSuite {
       assert(Star(r).nullable == true)
       assert(Not(Star(r)).nullable == false)
     }
+    for{depth <- 1 to 5
+        _ <- 1 to 1000
+        r = Rte.randomRte(depth)}
+      r.nullable
+  }
+
+  test("firstTypes"){
+    for{depth <- 1 to 5
+        _ <- 1 to 1000
+        r = Rte.randomRte(depth)}
+      r.firstTypes
   }
 }

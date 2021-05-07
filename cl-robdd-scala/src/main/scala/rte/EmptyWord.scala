@@ -25,4 +25,5 @@ package rte
 object EmptyWord extends Rte {
   override def toLaTeX:String = "\\varepsilon "
   def nullable:Boolean = true
+  def firstTypes:Set[genus.SimpleTypeD] = Set.empty
 }

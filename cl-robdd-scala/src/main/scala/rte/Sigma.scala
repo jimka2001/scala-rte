@@ -25,4 +25,5 @@ package rte
 object Sigma extends Rte {
   override def toLaTeX:String = "\\Sigma{}"
   def nullable:Boolean = false
+  def firstTypes:Set[genus.SimpleTypeD] = Set(genus.STop)
 }
