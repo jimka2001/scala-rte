@@ -111,4 +111,27 @@ class RteTestSuite extends AnyFunSuite {
     assert(Sigma.canonicalize == Sigma)
     assert(EmptyWord.canonicalize == EmptyWord)
   }
+
+  test("canonicalize cat") {
+    assert(Cat().canonicalize == EmptyWord)
+    for{depth <- 0 to 5
+        _ <- 1 to 1000
+        r1 = Rte.randomRte(depth)
+        r2 = Rte.randomRte(depth)
+        } {
+      assert(Cat(r1).canonicalize == r1.canonicalize)
+      assert(Cat(EmptySet,r1).canonicalize == EmptySet)
+      assert(Cat(r1,EmptySet).canonicalize == EmptySet)
+      assert(Cat(r1,EmptySet,r2).canonicalize == EmptySet)
+
+      assert(Cat(EmptyWord,r1).canonicalize == r1.canonicalize)
+      assert(Cat(r1,EmptyWord).canonicalize == r1.canonicalize)
+      assert(Cat(r1,EmptyWord,r2).canonicalize == Cat(r1,r2).canonicalize)
+
+      assert(Cat(Cat(r1,r2),Cat(r1,r2)).canonicalize == Cat(r1,r2,r1,r2).canonicalize)
+      assert(Cat(r1,Cat(r1,r2),r2).canonicalize == Cat(r1,r1,r2,r2).canonicalize)
+
+      assert(Cat(r1,r2.*, r2.*, r1).canonicalize == Cat(r1,r2.*,r1).canonicalize)
+    }
+  }
 }
