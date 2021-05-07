@@ -96,6 +96,15 @@ class RteTestSuite extends AnyFunSuite {
       assert((r1 ^ 3) == Cat(r1, r1, r1))
     }
   }
+  test("canonicalize random"){
+    for {depth <- 0 to 5
+         _ <- 1 to 10000
+         r1 = Rte.randomRte(depth=depth)
+         } {
+      r1.canonicalize
+    }
+  }
+
   test("canonicalize") {
     import Types.randomType
     for {
@@ -134,4 +143,17 @@ class RteTestSuite extends AnyFunSuite {
       assert(Cat(r1,r2.*, r2.*, r1).canonicalize == Cat(r1,r2.*,r1).canonicalize)
     }
   }
+  test("canonicalize star") {
+    assert(EmptyWord.*.canonicalize == EmptyWord)
+    assert(EmptySet.*.canonicalize == EmptyWord)
+
+    for{depth <- 0 to 5
+        _ <- 1 to 1000
+        r1 = Rte.randomRte(depth)
+        } {
+      assert(Star(Star(r1)).canonicalize == Star(r1).canonicalize)
+      assert(Star(r1).canonicalize == Star(r1.canonicalize).canonicalize)
+    }
+  }
+
 }

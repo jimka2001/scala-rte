@@ -23,11 +23,16 @@
 package rte
 
 case class Star(operand:Rte) extends Rte {
-  override def canonicalizeOnce:Rte = Star(operand.canonicalizeOnce)
   override def toLaTeX: String = "(" ++ operand.toLaTeX ++ ")" ++ "^{*}"
 
   def nullable: Boolean = true
 
   def firstTypes: Set[genus.SimpleTypeD] = operand.firstTypes
 
+  override def canonicalizeOnce: Rte = operand match {
+    case EmptyWord => EmptyWord
+    case EmptySet => EmptyWord
+    case Star(_) => operand
+    case _ => Star(operand.canonicalizeOnce)
+  }
 }
