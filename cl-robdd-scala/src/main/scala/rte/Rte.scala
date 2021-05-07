@@ -50,6 +50,20 @@ abstract class Rte {
 object Rte {
 
   import scala.annotation.tailrec
+  def findAdjacent[A](xs: Seq[A], cmp: (A, A) => Boolean): Boolean =
+    xs.toList.tails.exists {
+      case Nil => false
+      case x :: Nil => false
+      case x1 :: x2 :: _ => cmp(x1, x2)
+    }
+
+  def removeAdjacent[A](xs: Seq[A], cmp: (A, A) => Boolean): Seq[A] =
+    xs.toList.tails.flatMap {
+      case Nil => Nil
+      case x :: Nil => List(x)
+      case x1 :: x2 :: _ if cmp(x1, x2) => Nil
+      case x :: _ => List(x)
+    }.toSeq
 
   private def fixedPoint[V](value: V, f: V => V, cmp: (V, V) => Boolean): V = {
     @tailrec
