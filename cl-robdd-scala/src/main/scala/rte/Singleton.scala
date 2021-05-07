@@ -24,6 +24,7 @@ package rte
 
 case class Singleton(td:genus.SimpleTypeD) extends Rte {
   override def toLaTeX:String = td.toString
+  override def toString:String = "<" + td.toString + ">"
   def nullable:Boolean = false
   def firstTypes:Set[genus.SimpleTypeD] = Set(td)
   override def canonicalizeOnce:Rte = {
@@ -32,6 +33,9 @@ case class Singleton(td:genus.SimpleTypeD) extends Rte {
       case genus.SOr(operands@_*) => Or( operands.map(td => Singleton(td.canonicalize()).canonicalizeOnce))
       case genus.SNot(operand) => And( Not(Singleton(operand.canonicalize()).canonicalizeOnce),
                                 Sigma)
+      case genus.STop => Sigma
+      case genus.SEmpty => EmptySet
+      case td if td.inhabited.contains(false) => EmptySet
       case _ => Singleton(td.canonicalize())
     }
   }

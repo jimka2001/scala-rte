@@ -23,10 +23,40 @@
 package rte
 
 case class Or(operands:Seq[Rte]) extends Rte {
-  override def toLaTeX:String = "(" ++  operands.map(_.toLaTeX).mkString("\\vee ")  ++ ")"
+  override def toLaTeX:String = "(" +  operands.map(_.toLaTeX).mkString("\\vee ")  + ")"
+  override def toString:String = operands.map(_.toString).mkString("Or(", ",", ")")
   def nullable:Boolean = operands.exists{_.nullable}
   def firstTypes:Set[genus.SimpleTypeD] = operands.toSet.flatMap((r:Rte) => r.firstTypes)
-  override def canonicalizeOnce:Rte = Or(operands.map(_.canonicalizeOnce))
+  override def canonicalizeOnce:Rte = {
+    val betterOperands = operands
+      .distinct
+      .map(_.canonicalizeOnce)
+      .distinct
+      .filterNot(_ == EmptySet)
+    val singletons:List[genus.SimpleTypeD] = betterOperands.flatMap{
+      case Singleton(td) => List(td)
+      case _ => List.empty
+    }.toList
+    lazy val maybeSub = singletons.find{sub =>
+      singletons.exists { sup =>
+        sub != sup && sub.subtypep(sup).contains(true)
+      }}
+    if (betterOperands.isEmpty)
+      EmptySet
+    else if (betterOperands.sizeIs == 1)
+      betterOperands.head
+    else if (betterOperands.exists(Rte.isOr)) {
+      val orops = betterOperands.flatMap {
+        case Or(Seq(rs@_*)) => rs
+        case r => Seq(r)
+      }
+      Or(orops)
+    }
+    else if (maybeSub.nonEmpty)
+      Or(betterOperands.filterNot(_ == Singleton(maybeSub.get)))
+    else
+      Or(betterOperands)
+  }
 }
 
 object Or {

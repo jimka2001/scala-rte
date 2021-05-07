@@ -40,7 +40,7 @@ abstract class Rte {
     }
   }
   def toLaTeX:String
-  override def toString:String = toLaTeX
+  //override def toString:String = toLaTeX
   def nullable:Boolean
   def firstTypes:Set[genus.SimpleTypeD]
   def canonicalize:Rte = Rte.fixedPoint(this, (r:Rte) => r.canonicalizeOnce, (r1:Rte,r2:Rte)=>r1==r2)
@@ -50,6 +50,28 @@ abstract class Rte {
 object Rte {
 
   import scala.annotation.tailrec
+
+  val sigmaStar:Rte = Star(Sigma)
+  val notSigma:Rte = Or(Cat(Sigma,Sigma,sigmaStar),EmptyWord)
+  val notEpsilon:Rte = Cat(Sigma,sigmaStar)
+
+  def isAnd(rt:Rte):Boolean = rt match {
+    case And(Seq(_*)) => true
+    case _ => false
+  }
+
+  def isCat(rt:Rte):Boolean = rt match {
+    case Cat(Seq(_*)) => true
+    case _ => false
+  }
+
+  def isOr(rt:Rte):Boolean = rt match {
+    case Or(Seq(_*)) => true
+    case _ => false
+  }
+  def searchReplace[A](xs: Seq[A], search:A, replace:A):Seq[A] = {
+    xs.map(x => if (search == x) replace else x)
+  }
   def findAdjacent[A](xs: Seq[A], cmp: (A, A) => Boolean): Boolean =
     xs.toList.tails.exists {
       case Nil => false
@@ -86,7 +108,15 @@ object Rte {
   def randomRte(depth: Int): Rte = {
     import scala.util.Random
     val random = new Random
+
+    val rteVector = Vector(EmptySet,
+                           EmptyWord,
+                           Sigma,
+                           sigmaStar,
+                           notSigma,
+                           notEpsilon)
     val generators: Seq[() => Rte] = Vector(
+      () => rteVector(random.nextInt(rteVector.length)),
       () => Not(randomRte(depth - 1)),
       () => Star(randomRte(depth - 1)),
       () => And(randomSeq(depth - 1)),

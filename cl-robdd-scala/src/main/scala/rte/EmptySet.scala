@@ -24,6 +24,7 @@ package rte
 
 object EmptySet extends Rte {
   override def toLaTeX:String = "\\emptyset "
+  override def toString:String = "∅"
   def nullable:Boolean = false
   def firstTypes:Set[genus.SimpleTypeD] = Set.empty
 }

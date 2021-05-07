@@ -175,4 +175,51 @@ class RteTestSuite extends AnyFunSuite {
       assert(Not(r1).canonicalize == Not(r1.canonicalize).canonicalize)
     }
   }
+  test("canonicalize and") {
+    assert(And(Singleton(genus.SEql(0)),Sigma).canonicalize == Singleton(genus.SEql(0)))
+    assert(And(EmptySet,EmptySet).canonicalize == EmptySet)
+    assert(Or(EmptySet,EmptySet).canonicalize == EmptySet)
+    class TestSup
+    class TestSub extends TestSup
+    class TestD1 // disjoint from TestD2
+    class TestD2 // disjoint from TestD1
+    val trsup = Singleton(genus.SAtomic(classOf[TestSup]))
+    val trsub = Singleton(genus.SAtomic(classOf[TestSub]))
+    val trd1 = Singleton(genus.SAtomic(classOf[TestD1]))
+    val trd2 = Singleton(genus.SAtomic(classOf[TestD2]))
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         r3 = Rte.randomRte(depth)
+         r4 = Rte.randomRte(depth)
+         } {
+      // removing duplicates
+      assert(And(r1,r1).canonicalize == r1.canonicalize, s"And(r1,r1)=${And(r1,r1).canonicalize}   r1=${r1.canonicalize}")
+      assert(And(r1,r2,r1).canonicalize == And(r1,r2).canonicalize ||
+               And(r1,r2,r1).canonicalize == And(r2,r1).canonicalize
+             )
+      assert(And(r1,Sigma,r2,EmptyWord).canonicalize == EmptySet)
+      assert(And(r1,EmptySet,r2).canonicalize == EmptySet)
+
+      assert(And(And(r1,r2),r3).canonicalize == And(r1,And(r2,r3)).canonicalize,
+             s"r1=$r1  r2=$r2  r3=$r3   canonicalized: ${r1.canonicalize}  ${r2.canonicalize}  ${r3.canonicalize}")
+      assert(And(And(r1,r2),r3).canonicalize == And(r1,r2,r3).canonicalize)
+      assert(And(r1,Rte.sigmaStar,r2,r3).canonicalize == And(r1,r2,r3).canonicalize)
+      assert(And(r1,Sigma.*,r2,r3).canonicalize == And(r1,r2,r3).canonicalize)
+      assert(And(r1,trsup,r2,trsub,r3).canonicalize == And(r1,r2,trsub,r3).canonicalize)
+      assert(And(r1,trsub,r2,trsup,r3).canonicalize == And(r1,trsub,r2,r3).canonicalize)
+
+      // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
+      assert(And(r1,Or(r2,r3),r4).canonicalize == Or(And(r1,r2,r4),
+                                                     And(r1,r3,r4)).canonicalize,
+             s"r1=$r1  r2=$r2  r3=$r3  r4=$r4" +
+               s"  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
+               " And(r1,r2,r4)=" + And(r1,r2,r4).canonicalize +
+               " And(r1,r3,r4)=" + And(r1,r3,r4).canonicalize
+             )
+      assert(And(r1,r2,Not(r1),r3).canonicalize == EmptySet)
+      assert(And(r1,trd1,r2,trd2,r3).canonicalize == EmptySet)
+    }
+  }
 }

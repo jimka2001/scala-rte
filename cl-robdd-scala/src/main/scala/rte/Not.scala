@@ -26,17 +26,14 @@ case class Not(operand:Rte) extends Rte {
   override def toLaTeX:String = "\\overline{" ++  operand.toLaTeX ++ "}"
   def nullable:Boolean = ! operand.nullable
   def firstTypes:Set[genus.SimpleTypeD] = operand.firstTypes
-  val sigmaStar:Rte = Star(Sigma)
-  val notSigma:Rte = Or(Cat(Sigma,Sigma,sigmaStar),EmptyWord)
-  val notEpsilon:Rte = Cat(Sigma,sigmaStar)
 
   override def canonicalizeOnce:Rte = {
     val betterOperand: Rte = operand.canonicalizeOnce
     betterOperand match {
-      case Sigma => notSigma
-      case `sigmaStar` => EmptySet
-      case EmptyWord => notEpsilon
-      case EmptySet => sigmaStar
+      case Sigma => Rte.notSigma
+      case Rte.sigmaStar => EmptySet
+      case EmptyWord => Rte.notEpsilon
+      case EmptySet => Rte.sigmaStar
 
       // Not(Not(r)) -> Not(r)
       case Not(r) => r.canonicalizeOnce

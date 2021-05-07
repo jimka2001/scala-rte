@@ -24,8 +24,11 @@ package rte
 
 final case class Cat(operands:Seq[Rte]) extends Rte {
   override def toLaTeX: String = "(" ++ operands.map(_.toLaTeX).mkString("\\cdot ") ++ ")"
+  override def toString:String = operands.map(_.toString).mkString("Cat(", ",", ")")
 
   def nullable: Boolean = operands.forall(_.nullable)
+
+  def minLength:Int = operands.count(r => !r.nullable)
 
   def firstTypes: Set[genus.SimpleTypeD] = {
     operands match {
@@ -47,7 +50,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
       case _ => false
     }
     def isCat(r1:Rte):Boolean = r1 match {
-      case Cat(_) => true
+      case Cat(Seq(_*)) => true
       case _ => false
     }
 
