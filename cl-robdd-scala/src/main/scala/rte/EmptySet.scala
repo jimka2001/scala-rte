@@ -24,4 +24,5 @@ package rte
 
 object EmptySet extends Rte {
   override def toLaTeX:String = "\\emptyset "
+  def nullable:Boolean = false
 }

@@ -26,4 +26,5 @@ import genus.SimpleTypeD
 
 case class Td(td:SimpleTypeD) extends Rte {
   override def toLaTeX:String = td.toString
+  def nullable:Boolean = false
 }

@@ -24,4 +24,5 @@ package rte
 
 case class Star(operand:Rte) extends Rte {
   override def toLaTeX:String = "(" ++  operand.toLaTeX ++  ")" ++ "^{*}"
+  def nullable:Boolean = true
 }

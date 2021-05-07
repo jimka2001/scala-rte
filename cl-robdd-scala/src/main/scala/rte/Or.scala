@@ -24,6 +24,7 @@ package rte
 
 case class Or(operands:Seq[Rte]) extends Rte {
   override def toLaTeX:String = "(" ++  operands.map(_.toLaTeX).mkString("\\vee ")  ++ ")"
+  def nullable:Boolean = operands.exists{_.nullable}
 }
 
 object Or {

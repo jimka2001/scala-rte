@@ -25,6 +25,7 @@ package rte
 abstract class Rte {
   def toLaTeX:String
   override def toString:String = toLaTeX
+  def nullable:Boolean
 }
 
 object Rte {

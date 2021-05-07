@@ -22,7 +22,7 @@
 
 package rte
 
-object EmptyWord extends Rte {
-  override def toLaTeX:String = "\\varepsilon "
-  def nullable:Boolean = true
+object Sigma extends Rte {
+  override def toLaTeX:String = "\\Sigma{}"
+  def nullable:Boolean = false
 }

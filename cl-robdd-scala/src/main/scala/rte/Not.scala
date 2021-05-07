@@ -24,4 +24,5 @@ package rte
 
 case class Not(operand:Rte) extends Rte {
   override def toLaTeX:String = "\\overline{" ++  operand.toLaTeX ++ "}"
+  def nullable:Boolean = ! operand.nullable
 }
