@@ -26,4 +26,5 @@ case class Not(operand:Rte) extends Rte {
   override def toLaTeX:String = "\\overline{" ++  operand.toLaTeX ++ "}"
   def nullable:Boolean = ! operand.nullable
   def firstTypes:Set[genus.SimpleTypeD] = operand.firstTypes
+  override def canonicalizeOnce:Rte = Not(operand.canonicalizeOnce)
 }

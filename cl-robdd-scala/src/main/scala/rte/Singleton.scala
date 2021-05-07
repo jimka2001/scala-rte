@@ -22,10 +22,17 @@
 
 package rte
 
-import genus.SimpleTypeD
-
-case class Singleton(td:SimpleTypeD) extends Rte {
+case class Singleton(td:genus.SimpleTypeD) extends Rte {
   override def toLaTeX:String = td.toString
   def nullable:Boolean = false
   def firstTypes:Set[genus.SimpleTypeD] = Set(td)
+  override def canonicalizeOnce:Rte = {
+    td match {
+      case genus.SAnd(operands@_*) => And( operands.map(td => Singleton(td).canonicalizeOnce))
+      case genus.SOr(operands@_*) => Or( operands.map(td => Singleton(td).canonicalizeOnce))
+      case genus.SNot(operand) => And( Not(Singleton(operand).canonicalizeOnce),
+                                Sigma)
+      case _ => this
+    }
+  }
 }

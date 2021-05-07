@@ -22,6 +22,7 @@
 
 package rte
 
+
 abstract class Rte {
   def |(r: Rte): Rte = Or(this, r)
   def &(r: Rte): Rte = And(this, r)
@@ -34,7 +35,7 @@ abstract class Rte {
     n match {
       case 0 => EmptyWord
       case 1 => this
-      case i if i > 1 => Cat(Seq.fill(n)(this))
+      case i if i > 1 => Cat(Seq.fill(n)(this.canonicalize))
       case i if i < 0 => new Error("^ operator does not work with negative numbers: $n")
     }
   }
@@ -42,22 +43,41 @@ abstract class Rte {
   override def toString:String = toLaTeX
   def nullable:Boolean
   def firstTypes:Set[genus.SimpleTypeD]
+  def canonicalize:Rte = Rte.fixedPoint(this, (r:Rte) => r.canonicalizeOnce, (r1:Rte,r2:Rte)=>r1==r2)
+  def canonicalizeOnce:Rte = this
 }
 
 object Rte {
-  def randomSeq(depth:Int):Seq[Rte] = {
-    val maxCompoundSize = 2
-    (0 until maxCompoundSize).map{ _ => randomRte(depth)}
+
+  import scala.annotation.tailrec
+
+  private def fixedPoint[V](value: V, f: V => V, cmp: (V, V) => Boolean): V = {
+    @tailrec
+    def recur(value: V): V = {
+      val newValue = f(value)
+      if (cmp(value, newValue))
+        value
+      else
+        recur(newValue)
+    }
+
+    recur(value)
   }
-  def randomRte(depth:Int):Rte = {
+
+  def randomSeq(depth: Int): Seq[Rte] = {
+    val maxCompoundSize = 2
+    (0 until maxCompoundSize).map { _ => randomRte(depth) }
+  }
+
+  def randomRte(depth: Int): Rte = {
     import scala.util.Random
     val random = new Random
-    val generators:Seq[()=>Rte] = Vector(
+    val generators: Seq[() => Rte] = Vector(
       () => Not(randomRte(depth - 1)),
       () => Star(randomRte(depth - 1)),
-      () => And(randomSeq(depth-1)),
-      () => Cat(randomSeq(depth-1)),
-      () => Or(randomSeq(depth-1)),
+      () => And(randomSeq(depth - 1)),
+      () => Cat(randomSeq(depth - 1)),
+      () => Or(randomSeq(depth - 1)),
       () => Singleton(genus.Types.randomType(0))
       )
     if (depth <= 0)

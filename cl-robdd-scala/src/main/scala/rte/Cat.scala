@@ -36,6 +36,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
           r.firstTypes
     }
   }
+  override def canonicalizeOnce:Rte = Cat(operands.map(_.canonicalizeOnce))
 }
 
 object Cat {

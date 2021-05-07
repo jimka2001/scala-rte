@@ -30,70 +30,84 @@ class RteTestSuite extends AnyFunSuite {
 
   test("implicits test") {
 
-    assert( Not(SAtomic(classOf[Integer])) == Not(classOf[Integer]))
-    assert( Not(SAtomic(classOf[Long])) != Not(classOf[Integer]))
+    assert(Not(SAtomic(classOf[Integer])) == Not(classOf[Integer]))
+    assert(Not(SAtomic(classOf[Long])) != Not(classOf[Integer]))
 
-    assert( And(SAtomic(classOf[Integer])) == And(classOf[Integer]))
-    assert( And(SAtomic(classOf[Long])) != And(classOf[Integer]))
+    assert(And(SAtomic(classOf[Integer])) == And(classOf[Integer]))
+    assert(And(SAtomic(classOf[Long])) != And(classOf[Integer]))
 
-    assert( Or(SAtomic(classOf[Integer])) == Or(classOf[Integer]))
-    assert( Or(SAtomic(classOf[Long])) != Or(classOf[Integer]))
+    assert(Or(SAtomic(classOf[Integer])) == Or(classOf[Integer]))
+    assert(Or(SAtomic(classOf[Long])) != Or(classOf[Integer]))
 
-    assert( Cat(SAtomic(classOf[Integer])) == Cat(classOf[Integer]))
-    assert( Cat(SAtomic(classOf[Long])) != Cat(classOf[Integer]))
+    assert(Cat(SAtomic(classOf[Integer])) == Cat(classOf[Integer]))
+    assert(Cat(SAtomic(classOf[Long])) != Cat(classOf[Integer]))
 
-    assert( Star(SAtomic(classOf[Integer])) == Star(classOf[Integer]))
-    assert( Star(SAtomic(classOf[Long])) != Star(classOf[Integer]))
+    assert(Star(SAtomic(classOf[Integer])) == Star(classOf[Integer]))
+    assert(Star(SAtomic(classOf[Long])) != Star(classOf[Integer]))
   }
-  test("LaTeX"){
+  test("LaTeX") {
     Or(And(SAtomic(classOf[Integer]),
            Not(SAtomic(classOf[Long]))),
        Not(SEql(43))).toLaTeX
 
     Or(And(classOf[Integer],
-                   Not(SAtomic(classOf[Long]))),
-               Not(SEql(44))).toLaTeX
+           Not(SAtomic(classOf[Long]))),
+       Not(SEql(44))).toLaTeX
   }
-  test("nullable"){
+  test("nullable") {
     assert(Sigma.nullable == false)
     assert(EmptySet.nullable == false)
     assert(Star(Sigma).nullable == true)
     assert(Star(EmptySet).nullable == true)
-    for{ depth <- 1 to 5
+    for {depth <- 1 to 5
          _ <- 0 to 100
          r = Rte.randomRte(depth)} {
       assert(Star(r).nullable == true)
       assert(Not(Star(r)).nullable == false)
     }
-    for{depth <- 1 to 5
-        _ <- 1 to 1000
-        r = Rte.randomRte(depth)}
+    for {depth <- 1 to 5
+         _ <- 1 to 1000
+         r = Rte.randomRte(depth)}
       r.nullable
   }
 
-  test("firstTypes"){
-    for{depth <- 1 to 5
-        _ <- 1 to 1000
-        r = Rte.randomRte(depth)}
+  test("firstTypes") {
+    for {depth <- 1 to 5
+         _ <- 1 to 1000
+         r = Rte.randomRte(depth)}
       r.firstTypes
   }
 
-  test("operators"){
-    for{depth <- 1 to 5
-        _ <- 1 to 1000
-        r1 = Rte.randomRte(depth)
-        r2 = Rte.randomRte(depth)} {
-      assert((r1 | r2) == Or(r1,r2))
-      assert((r1 & r2) == And(r1,r2))
-      assert(r1 ++ r2 == Cat(r1,r2)) // check that reversing the arguments works correctly
+  test("operators") {
+    for {depth <- 1 to 5
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)} {
+      assert((r1 | r2) == Or(r1, r2))
+      assert((r1 & r2) == And(r1, r2))
+      assert(r1 ++ r2 == Cat(r1, r2)) // check that reversing the arguments works correctly
       assert(!r1 == Not(r1))
-      assert(r1.?() == Or(r1,EmptyWord))
+      assert(r1.?() == Or(r1, EmptyWord))
       assert(r1.*() == Star(r1))
-      assert(r1.+() == Cat(r1,Star(r1)))
-      assert((r1^0) == EmptyWord)
-      assert((r1^1) == r1)
-      assert((r1^2) == Cat(r1,r1))
-      assert((r1^3) == Cat(r1,r1,r1))
+      assert(r1.+() == Cat(r1, Star(r1)))
+      assert((r1 ^ 0) == EmptyWord)
+      assert((r1 ^ 1) == r1)
+      assert((r1 ^ 2) == Cat(r1, r1))
+      assert((r1 ^ 3) == Cat(r1, r1, r1))
     }
+  }
+  test("canonicalize") {
+    import Types.randomType
+    for {
+      _ <- 1 to 1000
+      t1 = randomType(0)
+      t2 = randomType(0)} {
+      assert(Singleton(SAnd(t1, t2)).canonicalize == And(Singleton(t1), Singleton(t2)).canonicalize)
+      assert(Singleton(SOr(t1, t2)).canonicalize == Or(Singleton(t1), Singleton(t2)).canonicalize)
+      assert(Singleton(SNot(t1)).canonicalize == And(Not(t1),Sigma).canonicalize)
+    }
+    assert(EmptySet.canonicalize == EmptySet)
+    assert(Sigma.canonicalize == Sigma)
+    assert(EmptyWord.canonicalize == EmptyWord)
   }
 }
