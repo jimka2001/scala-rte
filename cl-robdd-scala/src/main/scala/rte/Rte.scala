@@ -30,7 +30,14 @@ abstract class Rte {
   def ?():Rte = Or(this,EmptyWord)
   def *():Rte = Star(this) // postfix operator
   def +():Rte = Cat(this,Star(this)) // postfix operator
-
+  def ^(n:Short) = {
+    n match {
+      case 0 => EmptyWord
+      case 1 => this
+      case i if i > 1 => Cat(Seq.fill(n)(this))
+      case i if i < 0 => new Error("^ operator does not work with negative numbers: $n")
+    }
+  }
   def toLaTeX:String
   override def toString:String = toLaTeX
   def nullable:Boolean

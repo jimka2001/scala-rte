@@ -90,6 +90,10 @@ class RteTestSuite extends AnyFunSuite {
       assert(r1.?() == Or(r1,EmptyWord))
       assert(r1.*() == Star(r1))
       assert(r1.+() == Cat(r1,Star(r1)))
+      assert((r1^0) == EmptyWord)
+      assert((r1^1) == r1)
+      assert((r1^2) == Cat(r1,r1))
+      assert((r1^3) == Cat(r1,r1,r1))
     }
   }
 }
