@@ -25,7 +25,7 @@ package rte
 abstract class Rte {
   def |(r: Rte): Rte = Or(this, r)
   def &(r: Rte): Rte = And(this, r)
-  def ::(r: Rte): Rte = Cat(r,this) // :: reverses order, so we have re-reverse them to maintain semantics
+  def ++(r: Rte): Rte = Cat(this,r)
   def unary_! : Rte = Not(this)
   def ?():Rte = Or(this,EmptyWord)
   def *():Rte = Star(this) // postfix operator
