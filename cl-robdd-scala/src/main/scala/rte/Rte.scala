@@ -51,10 +51,10 @@ object Rte {
       () => And(randomSeq(depth-1)),
       () => Cat(randomSeq(depth-1)),
       () => Or(randomSeq(depth-1)),
-      () => Td(genus.Types.randomType(0))
+      () => Singleton(genus.Types.randomType(0))
       )
     if (depth <= 0)
-      Td(genus.Types.randomType(0))
+      Singleton(genus.Types.randomType(0))
     else {
       val g = generators(random.nextInt(generators.length))
       g()
@@ -65,9 +65,9 @@ object Rte {
 object sanityTest {
   def main(argv: Array[String]):Unit = {
     import genus._
-    println(Or(And(Td(SAtomic(classOf[Integer])),
-                   Not(Td(SAtomic(classOf[Long])))),
-               Not(Td(SEql(42)))))
+    println(Or(And(Singleton(SAtomic(classOf[Integer])),
+                   Not(Singleton(SAtomic(classOf[Long])))),
+               Not(Singleton(SEql(42)))))
 
     import RteImplicits._
     println(Or(And(SAtomic(classOf[Integer]),

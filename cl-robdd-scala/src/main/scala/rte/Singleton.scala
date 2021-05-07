@@ -24,7 +24,7 @@ package rte
 
 import genus.SimpleTypeD
 
-case class Td(td:SimpleTypeD) extends Rte {
+case class Singleton(td:SimpleTypeD) extends Rte {
   override def toLaTeX:String = td.toString
   def nullable:Boolean = false
   def firstTypes:Set[genus.SimpleTypeD] = Set(td)
