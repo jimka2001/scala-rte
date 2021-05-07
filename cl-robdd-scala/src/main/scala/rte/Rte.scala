@@ -28,9 +28,9 @@ abstract class Rte {
   def &(r: Rte): Rte = And(this, r)
   def ++(r: Rte): Rte = Cat(this,r)
   def unary_! : Rte = Not(this)
-  def ?():Rte = Or(this,EmptyWord)
-  def *():Rte = Star(this) // postfix operator
-  def +():Rte = Cat(this,Star(this)) // postfix operator
+  def ? :Rte = Or(this,EmptyWord)
+  def * :Rte = Star(this) // postfix operator
+  def + :Rte = Cat(this, Star(this)) // postfix operator
   def ^(n:Short) = {
     n match {
       case 0 => EmptyWord

@@ -87,9 +87,9 @@ class RteTestSuite extends AnyFunSuite {
       assert((r1 & r2) == And(r1, r2))
       assert(r1 ++ r2 == Cat(r1, r2)) // check that reversing the arguments works correctly
       assert(!r1 == Not(r1))
-      assert(r1.?() == Or(r1, EmptyWord))
-      assert(r1.*() == Star(r1))
-      assert(r1.+() == Cat(r1, Star(r1)))
+      assert(r1.? == Or(r1, EmptyWord))
+      assert(r1.* == Star(r1))
+      assert(r1.+ == Cat(r1, Star(r1)))
       assert((r1 ^ 0) == EmptyWord)
       assert((r1 ^ 1) == r1)
       assert((r1 ^ 2) == Cat(r1, r1))
