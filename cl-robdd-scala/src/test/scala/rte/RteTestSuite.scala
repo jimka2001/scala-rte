@@ -96,10 +96,10 @@ class RteTestSuite extends AnyFunSuite {
       assert((r1 ^ 3) == Cat(r1, r1, r1))
     }
   }
-  test("canonicalize random"){
+  test("canonicalize random") {
     for {depth <- 0 to 5
          _ <- 1 to 10000
-         r1 = Rte.randomRte(depth=depth)
+         r1 = Rte.randomRte(depth = depth)
          } {
       r1.canonicalize
     }
@@ -112,7 +112,7 @@ class RteTestSuite extends AnyFunSuite {
     assert(EmptyWord.canonicalize == EmptyWord)
   }
 
-  test("canonicalize Singleton"){
+  test("canonicalize Singleton") {
     import Types.randomType
     for {
       _ <- 1 to 1000
@@ -126,37 +126,53 @@ class RteTestSuite extends AnyFunSuite {
   }
   test("canonicalize cat") {
     assert(Cat().canonicalize == EmptyWord)
-    for{depth <- 0 to 5
-        _ <- 1 to 1000
-        r1 = Rte.randomRte(depth)
-        r2 = Rte.randomRte(depth)
-        } {
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         } {
       assert(Cat(r1).canonicalize == r1.canonicalize)
-      assert(Cat(EmptySet,r1).canonicalize == EmptySet)
-      assert(Cat(r1,EmptySet).canonicalize == EmptySet)
-      assert(Cat(r1,EmptySet,r2).canonicalize == EmptySet)
+      assert(Cat(EmptySet, r1).canonicalize == EmptySet)
+      assert(Cat(r1, EmptySet).canonicalize == EmptySet)
+      assert(Cat(r1, EmptySet, r2).canonicalize == EmptySet)
 
-      assert(Cat(EmptyWord,r1).canonicalize == r1.canonicalize)
-      assert(Cat(r1,EmptyWord).canonicalize == r1.canonicalize)
-      assert(Cat(r1,EmptyWord,r2).canonicalize == Cat(r1,r2).canonicalize)
+      assert(Cat(EmptyWord, r1).canonicalize == r1.canonicalize)
+      assert(Cat(r1, EmptyWord).canonicalize == r1.canonicalize)
+      assert(Cat(r1, EmptyWord, r2).canonicalize == Cat(r1, r2).canonicalize)
 
-      assert(Cat(Cat(r1,r2),Cat(r1,r2)).canonicalize == Cat(r1,r2,r1,r2).canonicalize)
-      assert(Cat(r1,Cat(r1,r2),r2).canonicalize == Cat(r1,r1,r2,r2).canonicalize)
+      assert(Cat(Cat(r1, r2), Cat(r1, r2)).canonicalize == Cat(r1, r2, r1, r2).canonicalize)
+      assert(Cat(r1, Cat(r1, r2), r2).canonicalize == Cat(r1, r1, r2, r2).canonicalize)
 
-      assert(Cat(r1,r2.*, r2.*, r1).canonicalize == Cat(r1,r2.*,r1).canonicalize)
+      assert(Cat(r1, r2.*, r2.*, r1).canonicalize == Cat(r1, r2.*, r1).canonicalize)
     }
   }
   test("canonicalize star") {
     assert(EmptyWord.*.canonicalize == EmptyWord)
     assert(EmptySet.*.canonicalize == EmptyWord)
 
-    for{depth <- 0 to 5
-        _ <- 1 to 1000
-        r1 = Rte.randomRte(depth)
-        } {
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         } {
       assert(Star(Star(r1)).canonicalize == Star(r1).canonicalize)
       assert(Star(r1).canonicalize == Star(r1.canonicalize).canonicalize)
     }
   }
-
+  test("canonicalize not") {
+    assert( Not(Sigma).canonicalize == Or(Cat(Sigma, Sigma, Star(Sigma)),
+                                         EmptyWord))
+    assert( Not(Star(Sigma)).canonicalize == EmptySet)
+    assert( Not(EmptyWord).canonicalize == Cat(Sigma, Star(Sigma)))
+    assert( Not(EmptySet).canonicalize == Star(Sigma))
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         } {
+      assert(Not(Not(r1)).canonicalize == r1.canonicalize)
+      assert(Not(And(r1,r2)).canonicalize == Or(Not(r1),Not(r2)).canonicalize)
+      assert(Not(Or(r1,r2)).canonicalize == And(Not(r1),Not(r2)).canonicalize)
+      assert(Not(r1).canonicalize == Not(r1.canonicalize).canonicalize)
+    }
+  }
 }
