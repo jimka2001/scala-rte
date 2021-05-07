@@ -28,11 +28,11 @@ case class Singleton(td:genus.SimpleTypeD) extends Rte {
   def firstTypes:Set[genus.SimpleTypeD] = Set(td)
   override def canonicalizeOnce:Rte = {
     td match {
-      case genus.SAnd(operands@_*) => And( operands.map(td => Singleton(td).canonicalizeOnce))
-      case genus.SOr(operands@_*) => Or( operands.map(td => Singleton(td).canonicalizeOnce))
-      case genus.SNot(operand) => And( Not(Singleton(operand).canonicalizeOnce),
+      case genus.SAnd(operands@_*) => And( operands.map(td => Singleton(td.canonicalize()).canonicalizeOnce))
+      case genus.SOr(operands@_*) => Or( operands.map(td => Singleton(td.canonicalize()).canonicalizeOnce))
+      case genus.SNot(operand) => And( Not(Singleton(operand.canonicalize()).canonicalizeOnce),
                                 Sigma)
-      case _ => this
+      case _ => Singleton(td.canonicalize())
     }
   }
 }

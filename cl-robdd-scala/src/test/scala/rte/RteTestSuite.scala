@@ -106,6 +106,13 @@ class RteTestSuite extends AnyFunSuite {
   }
 
   test("canonicalize") {
+
+    assert(EmptySet.canonicalize == EmptySet)
+    assert(Sigma.canonicalize == Sigma)
+    assert(EmptyWord.canonicalize == EmptyWord)
+  }
+
+  test("canonicalize Singleton"){
     import Types.randomType
     for {
       _ <- 1 to 1000
@@ -116,11 +123,7 @@ class RteTestSuite extends AnyFunSuite {
       assert(Singleton(SOr(t1, t2)).canonicalize == Or(Singleton(t1), Singleton(t2)).canonicalize)
       assert(Singleton(SNot(t1)).canonicalize == And(Not(t1), Sigma).canonicalize)
     }
-    assert(EmptySet.canonicalize == EmptySet)
-    assert(Sigma.canonicalize == Sigma)
-    assert(EmptyWord.canonicalize == EmptyWord)
   }
-
   test("canonicalize cat") {
     assert(Cat().canonicalize == EmptyWord)
     for{depth <- 0 to 5
