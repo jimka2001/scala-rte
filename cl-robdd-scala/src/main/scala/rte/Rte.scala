@@ -31,12 +31,12 @@ abstract class Rte {
   def ? :Rte = Or(this,EmptyWord)
   def * :Rte = Star(this) // postfix operator
   def + :Rte = Cat(this, Star(this)) // postfix operator
-  def ^(n:Short) = {
+  def ^(n:Short):Rte = {
     n match {
       case 0 => EmptyWord
       case 1 => this
       case i if i > 1 => Cat(Seq.fill(n)(this.canonicalize))
-      case i if i < 0 => new Error("^ operator does not work with negative numbers: $n")
+      case i if i < 0 => throw new Error("^ operator does not work with negative numbers: $n")
     }
   }
   def toLaTeX:String
