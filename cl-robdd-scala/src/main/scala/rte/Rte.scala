@@ -39,6 +39,17 @@ abstract class Rte {
       case i if i < 0 => throw new Error("^ operator does not work with negative numbers: $n")
     }
   }
+  // isomorphic
+  def ~=(that:Rte):Boolean = {
+    if (this == that)
+      true
+    else (this,that) match {
+        // compare the arguments of And and Or in any order
+      case (Or(Seq(r1s@_*)),Or(Seq(r2s@_*))) => r1s.toSet == r2s.toSet
+      case (And(Seq(r1s@_*)),And(Seq(r2s@_*))) => r1s.toSet == r2s.toSet
+      case _ => false
+    }
+  }
   def toLaTeX:String
   //override def toString:String = toLaTeX
   def nullable:Boolean
@@ -62,6 +73,16 @@ object Rte {
 
   def isCat(rt:Rte):Boolean = rt match {
     case Cat(Seq(_*)) => true
+    case _ => false
+  }
+
+  def isPlus(rt:Rte):Boolean = rt match {
+    case Cat(Seq(x,Star(y))) => x == y
+    case _ => false
+  }
+
+  def isStar(rt:Rte):Boolean = rt match {
+    case Star(_) => true
     case _ => false
   }
 

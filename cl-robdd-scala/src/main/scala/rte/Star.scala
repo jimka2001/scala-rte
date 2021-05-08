@@ -29,10 +29,14 @@ case class Star(operand:Rte) extends Rte {
 
   def firstTypes: Set[genus.SimpleTypeD] = operand.firstTypes
 
-  override def canonicalizeOnce: Rte = operand match {
+  override def canonicalizeOnce: Rte = operand.canonicalizeOnce match {
     case EmptyWord => EmptyWord
     case EmptySet => EmptyWord
-    case Star(_) => operand
-    case _ => Star(operand.canonicalizeOnce)
+    case Star(rt) => Star(rt) // x** -> x*
+    case Cat(Seq(x,ys@Star(y))) if x == y => ys // (x x*)* = x*
+    case Cat(Seq(xs@Star(x),y)) if x == y => xs // (x* x)* = x*
+    // TODO, Star(Cat(X, Y, Z, Star( Cat(X, Y, Z))))
+    //   -->    Star( Cat(X, Y, Z))
+    case rt => Star(rt)
   }
 }

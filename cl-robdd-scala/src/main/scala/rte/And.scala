@@ -32,7 +32,10 @@ case class And(operands:Seq[Rte]) extends Rte{
   def firstTypes:Set[SimpleTypeD] = operands.toSet.flatMap((r:Rte) => r.firstTypes)
   override def canonicalizeOnce:Rte = {
 
-    val betterOperands = operands.distinct.map(_.canonicalizeOnce).distinct
+    val betterOperands = operands
+      .distinct
+      .map(_.canonicalizeOnce)
+      .distinct
     val singletons:List[genus.SimpleTypeD] = betterOperands.flatMap{
       case Singleton(td) => List(td)
       case _ => List.empty
@@ -90,6 +93,15 @@ case class And(operands:Seq[Rte]) extends Rte{
       EmptySet
     else if ( maybeSuper.nonEmpty)
       And(betterOperands.filterNot(_ == Singleton(maybeSuper.get)))
+    else if ((betterOperands.contains(Sigma)
+      || singletons.exists(td => td.inhabited.contains(true)))
+      && betterOperands.exists(Rte.isCat)
+      && betterOperands.exists{
+        case c@Cat(Seq(_*)) => c.minLength > 1
+        case _ => false
+      }
+    )
+      EmptySet
     else
       And(betterOperands)
   }
@@ -97,4 +109,10 @@ case class And(operands:Seq[Rte]) extends Rte{
 
 object And {
   def apply(operands: Rte*)(implicit ev: DummyImplicit) = new And(operands)
+}
+
+object AndSanity {
+  def main(argv:Array[String]):Unit = {
+    print(And(Singleton(genus.SEql(0)),Sigma).canonicalize)
+  }
 }

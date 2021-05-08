@@ -92,8 +92,8 @@ class RteTestSuite extends AnyFunSuite {
       assert(r1.+ == Cat(r1, Star(r1)))
       assert((r1 ^ 0) == EmptyWord)
       assert((r1 ^ 1) == r1)
-      assert((r1 ^ 2) == Cat(r1, r1))
-      assert((r1 ^ 3) == Cat(r1, r1, r1))
+      assert((r1 ^ 2).canonicalize == Cat(r1, r1).canonicalize)
+      assert((r1 ^ 3).canonicalize == Cat(r1, r1, r1).canonicalize)
     }
   }
   test("canonicalize random") {
@@ -124,6 +124,23 @@ class RteTestSuite extends AnyFunSuite {
       assert(Singleton(SNot(t1)).canonicalize == And(Not(t1), Sigma).canonicalize)
     }
   }
+
+  test("canonicalize nullable"){
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         } {
+      assert(r1.nullable == r1.canonicalize.nullable,
+             s"r1=$r1 is"
+               + (if (r1.nullable) "" else " not ")
+               + "nullable while r1.canonicalize="
+               + r1.canonicalize
+               + " is"
+               + (if (r1.canonicalize.nullable) "" else " not ")
+               + "nullable")
+    }
+  }
+
   test("canonicalize cat") {
     assert(Cat().canonicalize == EmptyWord)
     for {depth <- 0 to 5
@@ -156,29 +173,30 @@ class RteTestSuite extends AnyFunSuite {
          } {
       assert(Star(Star(r1)).canonicalize == Star(r1).canonicalize)
       assert(Star(r1).canonicalize == Star(r1.canonicalize).canonicalize)
+      assert(Star(Cat(r1,Star(r1))).canonicalize == Star(r1).canonicalize) // (x x*)* --> x*
+      assert(Star(Cat(Star(r1),r1)).canonicalize == Star(r1).canonicalize) // (x* x)* --> x*
     }
   }
   test("canonicalize not") {
-    assert( Not(Sigma).canonicalize == Or(Cat(Sigma, Sigma, Star(Sigma)),
+    assert(Not(Sigma).canonicalize == Or(Cat(Sigma, Sigma, Star(Sigma)),
                                          EmptyWord))
-    assert( Not(Star(Sigma)).canonicalize == EmptySet)
-    assert( Not(EmptyWord).canonicalize == Cat(Sigma, Star(Sigma)))
-    assert( Not(EmptySet).canonicalize == Star(Sigma))
+    assert(Not(Star(Sigma)).canonicalize == EmptySet)
+    assert(Not(EmptyWord).canonicalize == Cat(Sigma, Star(Sigma)))
+    assert(Not(EmptySet).canonicalize == Star(Sigma))
     for {depth <- 0 to 5
          _ <- 1 to 1000
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {
       assert(Not(Not(r1)).canonicalize == r1.canonicalize)
-      assert(Not(And(r1,r2)).canonicalize == Or(Not(r1),Not(r2)).canonicalize)
-      assert(Not(Or(r1,r2)).canonicalize == And(Not(r1),Not(r2)).canonicalize)
+      assert(Not(And(r1, r2)).canonicalize == Or(Not(r1), Not(r2)).canonicalize)
+      assert(Not(Or(r1, r2)).canonicalize == And(Not(r1), Not(r2)).canonicalize)
       assert(Not(r1).canonicalize == Not(r1.canonicalize).canonicalize)
     }
   }
   test("canonicalize and") {
-    assert(And(Singleton(genus.SEql(0)),Sigma).canonicalize == Singleton(genus.SEql(0)))
-    assert(And(EmptySet,EmptySet).canonicalize == EmptySet)
-    assert(Or(EmptySet,EmptySet).canonicalize == EmptySet)
+    assert(And(Singleton(genus.SEql(0)), Sigma).canonicalize == Singleton(genus.SEql(0)))
+    assert(And(EmptySet, EmptySet).canonicalize == EmptySet)
     class TestSup
     class TestSub extends TestSup
     class TestD1 // disjoint from TestD2
@@ -195,31 +213,135 @@ class RteTestSuite extends AnyFunSuite {
          r4 = Rte.randomRte(depth)
          } {
       // removing duplicates
-      assert(And(r1,r1).canonicalize == r1.canonicalize, s"And(r1,r1)=${And(r1,r1).canonicalize}   r1=${r1.canonicalize}")
-      assert(And(r1,r2,r1).canonicalize == And(r1,r2).canonicalize ||
-               And(r1,r2,r1).canonicalize == And(r2,r1).canonicalize
+      assert(And(r1, r1).canonicalize == r1.canonicalize, s"And(r1,r1)=${And(r1, r1).canonicalize}   r1=${r1.canonicalize}")
+      assert(And(r1, r2, r1).canonicalize == And(r1, r2).canonicalize ||
+               And(r1, r2, r1).canonicalize == And(r2, r1).canonicalize
              )
-      assert(And(r1,Sigma,r2,EmptyWord).canonicalize == EmptySet)
-      assert(And(r1,EmptySet,r2).canonicalize == EmptySet)
+      assert(And(r1, Sigma, r2, EmptyWord).canonicalize == EmptySet)
+      assert(And(r1, EmptySet, r2).canonicalize == EmptySet)
 
-      assert(And(And(r1,r2),r3).canonicalize == And(r1,And(r2,r3)).canonicalize,
+      assert(And(And(r1, r2), r3).canonicalize == And(r1, And(r2, r3)).canonicalize,
              s"r1=$r1  r2=$r2  r3=$r3   canonicalized: ${r1.canonicalize}  ${r2.canonicalize}  ${r3.canonicalize}")
-      assert(And(And(r1,r2),r3).canonicalize == And(r1,r2,r3).canonicalize)
-      assert(And(r1,Rte.sigmaStar,r2,r3).canonicalize == And(r1,r2,r3).canonicalize)
-      assert(And(r1,Sigma.*,r2,r3).canonicalize == And(r1,r2,r3).canonicalize)
-      assert(And(r1,trsup,r2,trsub,r3).canonicalize == And(r1,r2,trsub,r3).canonicalize)
-      assert(And(r1,trsub,r2,trsup,r3).canonicalize == And(r1,trsub,r2,r3).canonicalize)
+      assert(And(And(r1, r2), r3).canonicalize == And(r1, r2, r3).canonicalize)
+      assert(And(r1, Rte.sigmaStar, r2, r3).canonicalize == And(r1, r2, r3).canonicalize)
+      assert(And(r1, Sigma.*, r2, r3).canonicalize == And(r1, r2, r3).canonicalize)
+      assert(And(r1, trsup, r2, trsub, r3).canonicalize == And(r1, r2, trsub, r3).canonicalize)
+      assert(And(r1, trsub, r2, trsup, r3).canonicalize == And(r1, trsub, r2, r3).canonicalize)
 
       // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
-      assert(And(r1,Or(r2,r3),r4).canonicalize == Or(And(r1,r2,r4),
-                                                     And(r1,r3,r4)).canonicalize,
+      assert(And(r1, Or(r2, r3), r4).canonicalize == Or(And(r1, r2, r4),
+                                                        And(r1, r3, r4)).canonicalize,
              s"r1=$r1  r2=$r2  r3=$r3  r4=$r4" +
                s"  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
-               " And(r1,r2,r4)=" + And(r1,r2,r4).canonicalize +
-               " And(r1,r3,r4)=" + And(r1,r3,r4).canonicalize
+               " And(r1,r2,r4)=" + And(r1, r2, r4).canonicalize +
+               " And(r1,r3,r4)=" + And(r1, r3, r4).canonicalize
              )
-      assert(And(r1,r2,Not(r1),r3).canonicalize == EmptySet)
-      assert(And(r1,trd1,r2,trd2,r3).canonicalize == EmptySet)
+      assert(And(r1, r2, Not(r1), r3).canonicalize == EmptySet)
+      assert(And(r1, trd1, r2, trd2, r3).canonicalize == EmptySet)
+    }
+  }
+  test("canonicalize or") {
+    assert(Or(EmptySet, EmptySet).canonicalize == EmptySet)
+    assert(Or().canonicalize == EmptySet)
+    class TestSup
+    class TestSub extends TestSup
+    class TestD1 // disjoint from TestD2
+    class TestD2 // disjoint from TestD1
+    val trsup = Singleton(genus.SAtomic(classOf[TestSup]))
+    val trsub = Singleton(genus.SAtomic(classOf[TestSub]))
+    val trd1 = Singleton(genus.SAtomic(classOf[TestD1]))
+    val trd2 = Singleton(genus.SAtomic(classOf[TestD2]))
+
+    assert(Rte.sigmaStar == Or(Sigma,
+                               Star(Cat(Sigma,Star(Sigma)))).canonicalize)
+    assert(Rte.sigmaStar == Or(Sigma,
+                               Star(trd2),
+                               Star(Cat(Sigma,Star(Sigma)))).canonicalize)
+    // Star(Σ) did not equal Or(<Trait3$1>,Σ,Star(<[Member 1,2,3,4]>),Star(Cat(Σ,Star(Σ))))
+    assert(Rte.sigmaStar == Or(trd1,
+                               Sigma,
+                               Star(trd2),
+                               Star(Cat(Sigma,Star(Sigma)))).canonicalize)
+
+    // Or(A,ε,<java.lang.String>,<java.lang.Integer>) did not equal Or(A,<java.lang.String>,ε,<java.lang.Integer>)
+    assert(Or().canonicalize
+             == Or().canonicalize)
+
+    //                     Or(ε,A,Cat(C,B,Star(Cat(C,B))))
+    // not isomorphic with Or(A,Star(Cat(C,B)))
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         r3 = Rte.randomRte(depth)
+         r4 = Rte.randomRte(depth)
+         } {
+      // remove EmptySet
+      assert(Or(r1,EmptySet,r2).canonicalize == Or(r1,r2).canonicalize)
+
+      // remove duplicate
+      assert(Or(r1,r2,r3,r2).canonicalize == Or(r1,r2,r3).canonicalize ||
+               Or(r1,r2,r3,r2).canonicalize == Or(r1,r3,r2).canonicalize
+             )
+      // Or(x) = x
+      assert(Or(r1).canonicalize == r1.canonicalize)
+
+      // Or(a,Star(Sigma),b) --> Star(Sigma)
+      assert(Or(r1,Star(Sigma),r2).canonicalize == Rte.sigmaStar)
+
+      // Or(a,Or(x,y),b) --> Or(a,x,y,b)
+      assert(Or(r1,Or(r2,r3),r4).canonicalize == Or(r1,r2,r3,r4).canonicalize)
+
+      // (:or A B (:* B) C)
+      // --> (:or A (:* B) C)
+
+      // (:or :epsilon (:cat X (:* X)))
+      //   --> (:or :epsilon (:* X))
+      println("canonicalizing A " + Or(EmptyWord,Cat(r3,Star(r3)))
+                + " --> " + Or(EmptyWord,Cat(r3,Star(r3))).canonicalize )
+      println("canonicalizing B " + Or(EmptyWord,Star(r3))
+                + " --> " + Or(EmptyWord,Star(r3)).canonicalize)
+      //     Or(ε,Cat(Cat(A,B),Star(Cat(A,B))))
+      // --> Or(ε,Cat(A,B,Star(Cat(A,B))))
+
+        assert(Or(EmptyWord,Cat(r3,Star(r3))).canonicalize
+               ~= Or(EmptyWord,Star(r3)).canonicalize,
+             "" + Or(EmptyWord,Cat(r3,Star(r3))).canonicalize
+               + " not isomorphic with "
+               + Or(EmptyWord,Star(r3)).canonicalize)
+
+      // Or(:epsilon,Cat(X,Y,Z,Star(Cat(X,Y,Z))))
+      //  --> Or(:epsilon,Star(Cat(X,Y,Z)))
+      assert(Or(EmptyWord,Cat(r1,r2,r3,Star(Cat(r1,r2,r3)))).canonicalize
+               == Or(EmptyWord, Star(Cat(r1,r2,r3))).canonicalize)
+
+      // Expected :Star(Σ)
+      // Actual   :Or(ε,Cat(Star(Σ),Σ,Star(Σ)))
+
+      //     Star(And(A,
+      //              Or(A,<java.lang.Integer>),
+      //              Or(Star(<[Member 4,5,6]>),Not(B))))
+      // --> Star(Or(And(A,Star(<[Member 4,5,6]>)),
+      //             And(A,Not(B))))
+
+                                                                                                                                                                                                                     // (:or A :epsilon B (:cat X (:* X)) C)
+      //   --> (:or A :epsilon B (:* X) C )
+      assert(Or(r1,EmptyWord,r2,Cat(r3,Star(r3)),r4).canonicalize
+               ~= Or(r1,EmptyWord,r2,Star(r3),r4).canonicalize,
+             "" + Or(r1,EmptyWord,r2,Cat(r3,Star(r3)),r4).canonicalize
+               + " not isomorphic with "
+               + Or(r1,EmptyWord,r2,Star(r3),r4).canonicalize)
+      assert(Or(r1, EmptyWord, r2, r3.+, r4).canonicalize
+               ~= Or(r1,EmptyWord,r2,Star(r3),r4).canonicalize)
+
+      // (:or A :epsilon B (:* X) C)
+      //   --> (:or A B (:* X) C)
+      assert(Or(r1,EmptyWord,r2,Star(r3),r4).canonicalize ~=
+             Or(r1,r2,Star(r3),r4).canonicalize)
+
+      // remove subset
+      assert(Or(r1,trsub,r2,trsup,r3).canonicalize ==
+             Or(r1,r2,trsup,r3).canonicalize)
     }
   }
 }

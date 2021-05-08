@@ -43,36 +43,21 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
   }
 
   override def canonicalizeOnce: Rte = {
-    val betterOperands = operands.map(_.canonicalizeOnce)
-
-    def sameStars(r1: Rte, r2: Rte): Boolean = (r1, r2) match {
-      case (Star(r1), Star(r2)) if r1 == r2 => true
-      case _ => false
-    }
-    def isCat(r1:Rte):Boolean = r1 match {
-      case Cat(Seq(_*)) => true
-      case _ => false
-    }
+    val betterOperands = Cat.stripRedundant(operands)
+      .map(_.canonicalizeOnce)
+      .flatMap{ // Cat( x, Cat(a, b), y) --> Cat(x,a,b,y)
+        case Cat(Seq(rs @ _*)) => rs
+        case rt => Seq(rt)
+      }
+      .filterNot(_ == EmptyWord) //  Cat( x, EmptyWord, y) --> Cat( x, y)
 
     if (betterOperands.isEmpty)
       EmptyWord
     else if (betterOperands.sizeIs == 1)
       betterOperands.head
-    else if (Rte.findAdjacent(betterOperands, sameStars))
-    // Cat(A, X.*, X.*, B) -> Cat(A, X.*, B)
-      Cat(Rte.removeAdjacent(betterOperands, sameStars))
-    else if (betterOperands.exists(isCat))
-    // Cat( x, Cat(a, b), y) --> Cat(x,a,b,y)
-      Cat(betterOperands.flatMap{
-        case Cat(Seq(rs @ _*)) => rs
-        case r => Seq(r)
-      })
     else if (betterOperands.contains(EmptySet))
     //  Cat( x, EmptySet, y) --> EmptySet
       EmptySet
-    else if (betterOperands.contains(EmptyWord))
-    //  Cat( x, EmptyWord, y) --> Cat( x, y)
-      Cat(betterOperands.filter(_ != EmptyWord))
     else
       Cat(betterOperands)
   }
@@ -80,4 +65,15 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
 
 object Cat {
   def apply(operands: Rte*)(implicit ev: DummyImplicit) = new Cat(operands)
+
+  //  (..., x*, x, x* ...) --> (..., x*, x, ...)
+  //  and (..., x*, x* ...) --> (..., x*, ...)
+  def stripRedundant(rs:Seq[Rte]):Seq[Rte] = {
+    rs.toList.tails.flatMap{
+      case r1::Star(r2)::r3::_ if r1==r2 && r2 == r3 => Nil
+      case Star(r1)::Star(r2)::_ if r1 == r2 => Nil
+      case Nil => Nil
+      case rt::_ => List(rt)
+    }.toSeq
+  }
 }
