@@ -125,6 +125,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     else
       Or(betterOperands)
   }
+  def derivativeDown(wrt:genus.SimpleTypeD):Rte = Or(operands.map(rt => rt.canonicalize.derivative(Some(wrt))))
 }
 
 object Or {

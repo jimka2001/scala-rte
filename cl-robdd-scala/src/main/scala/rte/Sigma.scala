@@ -27,4 +27,5 @@ object Sigma extends Rte {
   override def toString:String = "Σ"
   def nullable:Boolean = false
   def firstTypes:Set[genus.SimpleTypeD] = Set(genus.STop)
+  def derivativeDown(wrt:genus.SimpleTypeD):Rte = EmptyWord
 }

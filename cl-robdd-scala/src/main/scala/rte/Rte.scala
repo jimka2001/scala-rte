@@ -56,6 +56,14 @@ abstract class Rte {
   def firstTypes:Set[genus.SimpleTypeD]
   def canonicalize:Rte = Rte.fixedPoint(this, (r:Rte) => r.canonicalizeOnce, (r1:Rte,r2:Rte)=>r1==r2)
   def canonicalizeOnce:Rte = this
+
+  def derivative(wrt:Option[genus.SimpleTypeD]):Rte = wrt match {
+    case None => this
+    case Some(td) if td.inhabited.contains(false) => EmptySet
+    case Some(td) => derivativeDown(td)
+  }
+
+  def derivativeDown(wrt:genus.SimpleTypeD):Rte
 }
 
 object Rte {

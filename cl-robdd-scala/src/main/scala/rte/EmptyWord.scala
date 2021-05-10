@@ -27,4 +27,6 @@ object EmptyWord extends Rte {
   override def toString:String = "ε"
   def nullable:Boolean = true
   def firstTypes:Set[genus.SimpleTypeD] = Set.empty
+  def derivativeDown(wrt:genus.SimpleTypeD):Rte = EmptySet
+
 }

@@ -21,12 +21,13 @@
 //
 
 package rte
+import genus.{SimpleTypeD,SAnd,SNot}
 
-case class Singleton(td:genus.SimpleTypeD) extends Rte {
+case class Singleton(td:SimpleTypeD) extends Rte {
   override def toLaTeX:String = td.toString
   override def toString:String = "<" + td.toString + ">"
   def nullable:Boolean = false
-  def firstTypes:Set[genus.SimpleTypeD] = Set(td)
+  def firstTypes:Set[SimpleTypeD] = Set(td)
   override def canonicalizeOnce:Rte = {
     td match {
       case genus.SAnd(operands@_*) => And( operands.map(td => Singleton(td.canonicalize()).canonicalizeOnce))
@@ -38,5 +39,16 @@ case class Singleton(td:genus.SimpleTypeD) extends Rte {
       case td if td.inhabited.contains(false) => EmptySet
       case _ => Singleton(td.canonicalize())
     }
+  }
+  def derivativeDown(wrt:SimpleTypeD):Rte = wrt match {
+    case `td` => EmptyWord
+    case td2:SimpleTypeD if td2.disjoint(td).contains(true) => EmptySet
+    case td2:SimpleTypeD if td2.subtypep(td).contains(true) => EmptyWord
+    case SAnd(tds@ _*) if tds.contains(SNot(td)) => EmptySet
+    case SAnd(tds@ _*) if tds.contains(td) => EmptyWord
+    case _ => throw new Error(s"cannot compute derivative of $this wrt=$wrt, disjoint= "
+                              + wrt.disjoint(td)
+                              + " subtypep = "
+                              + wrt.subtypep(td))
   }
 }

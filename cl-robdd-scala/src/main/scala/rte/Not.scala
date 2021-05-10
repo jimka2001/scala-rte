@@ -44,4 +44,5 @@ case class Not(operand:Rte) extends Rte {
       case _ => Not(betterOperand)
     }
   }
+  def derivativeDown(wrt:genus.SimpleTypeD):Rte = Not(operand.canonicalize.derivative(Some(wrt)))
 }

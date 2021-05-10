@@ -23,8 +23,8 @@
 package rte
 
 case class Star(operand:Rte) extends Rte {
-  override def toLaTeX: String = "(" ++ operand.toLaTeX ++ ")" ++ "^{*}"
-
+  override def toLaTeX: String = "(" ++ operand.toLaTeX ++ ")^{*}"
+  override def toString: String = "(" + operand.toString + ")*"
   def nullable: Boolean = true
 
   def firstTypes: Set[genus.SimpleTypeD] = operand.firstTypes
@@ -39,4 +39,6 @@ case class Star(operand:Rte) extends Rte {
     //   -->    Star( Cat(X, Y, Z))
     case rt => Star(rt)
   }
+  def derivativeDown(wrt:genus.SimpleTypeD):Rte = Cat(operand.canonicalize.derivative(Some(wrt)),
+                                                      this)
 }

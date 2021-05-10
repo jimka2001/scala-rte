@@ -344,4 +344,15 @@ class RteTestSuite extends AnyFunSuite {
              Or(r1,r2,trsup,r3).canonicalize)
     }
   }
+  test("derivative random") {
+    import Types.randomType
+
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         rt = Rte.randomRte(depth)
+         td = randomType(depth = 0)
+         } {
+      rt.derivative(Some(td))
+    }
+  }
 }

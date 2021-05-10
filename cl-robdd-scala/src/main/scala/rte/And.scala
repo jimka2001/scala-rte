@@ -105,6 +105,7 @@ case class And(operands:Seq[Rte]) extends Rte{
     else
       And(betterOperands)
   }
+  def derivativeDown(wrt:genus.SimpleTypeD):Rte = And(operands.map(rt => rt.canonicalize.derivative(Some(wrt))))
 }
 
 object And {

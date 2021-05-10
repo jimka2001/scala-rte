@@ -61,6 +61,17 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
     else
       Cat(betterOperands)
   }
+  def derivativeDown(wrt:genus.SimpleTypeD):Rte = operands.toList match {
+    case Nil => EmptyWord.derivative(Some(wrt))
+    case rt::Nil => rt.derivative(Some(wrt))
+    case head::tail =>
+      lazy val term1:Rte = Cat((head.derivative(Some(wrt))::tail).toSeq)
+      lazy val term2:Rte = Cat(tail).derivative(Some(wrt))
+      if (head.nullable)
+        Or(Seq(term1,term2))
+      else
+        term1
+  }
 }
 
 object Cat {

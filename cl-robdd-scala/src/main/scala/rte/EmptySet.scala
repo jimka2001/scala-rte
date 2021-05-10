@@ -23,8 +23,15 @@
 package rte
 
 object EmptySet extends Rte {
-  override def toLaTeX:String = "\\emptyset "
-  override def toString:String = "∅"
-  def nullable:Boolean = false
-  def firstTypes:Set[genus.SimpleTypeD] = Set.empty
+  override def toLaTeX: String = "\\emptyset "
+
+  override def toString: String = "∅"
+
+  def nullable: Boolean = false
+
+  def firstTypes: Set[genus.SimpleTypeD] = Set.empty
+
+  override def derivative(wrt: Option[genus.SimpleTypeD]): Rte = EmptySet
+
+  def derivativeDown(wrt: genus.SimpleTypeD): Rte = EmptySet
 }
