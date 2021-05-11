@@ -21,7 +21,7 @@
 //
 
 package rte
-import genus.{SimpleTypeD,SAnd,SNot}
+import genus.{SimpleTypeD,SAnd,SNot,STop}
 
 case class Singleton(td:SimpleTypeD) extends Rte {
   override def toLaTeX:String = td.toString
@@ -42,6 +42,7 @@ case class Singleton(td:SimpleTypeD) extends Rte {
   }
   def derivativeDown(wrt:SimpleTypeD):Rte = wrt match {
     case `td` => EmptyWord
+    case STop => EmptyWord
     case td2:SimpleTypeD if td2.disjoint(td).contains(true) => EmptySet
     case td2:SimpleTypeD if td2.subtypep(td).contains(true) => EmptyWord
     case SAnd(tds@ _*) if tds.contains(SNot(td)) => EmptySet
@@ -50,5 +51,12 @@ case class Singleton(td:SimpleTypeD) extends Rte {
                               + wrt.disjoint(td)
                               + " subtypep = "
                               + wrt.subtypep(td))
+  }
+  override def derivative(wrt:Option[SimpleTypeD]):Rte = td match {
+    // TODO currently don't know how to find derivative of Singleton(td) if td.inhabited=None
+    case genus.SEmpty => EmptySet.derivative(wrt)
+    case genus.STop => Sigma.derivative(wrt)
+    case td if td.inhabited.contains(false) => EmptySet.derivative(wrt)
+    case _ => super.derivative(wrt)
   }
 }

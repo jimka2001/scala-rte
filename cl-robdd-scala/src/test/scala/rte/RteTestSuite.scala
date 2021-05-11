@@ -195,6 +195,16 @@ class RteTestSuite extends AnyFunSuite {
     }
   }
   test("canonicalize and") {
+    // And(Not(<[= 4]>),<[Member 0,4,5,6]>,Not(<[= 1]>),<[Member 1,2,3,4]>)
+    assert(And(Not(Singleton(SEql(4))),
+               Singleton(SMember(0,4,5,6)),
+               Not(Singleton(SEql(1))),
+               Singleton(SMember(1,2,3,4))).canonicalize == EmptySet)
+    assert(And(Singleton(SEql(4)),
+               Singleton(SMember(0,4,5,6)),
+               Not(Singleton(SEql(1))),
+               Singleton(SMember(1,2,3,4))).canonicalize == Singleton(SEql(4)))
+
     assert(And(Singleton(genus.SEql(0)), Sigma).canonicalize == Singleton(genus.SEql(0)))
     assert(And(EmptySet, EmptySet).canonicalize == EmptySet)
     class TestSup
@@ -240,6 +250,7 @@ class RteTestSuite extends AnyFunSuite {
       assert(And(r1, trd1, r2, trd2, r3).canonicalize == EmptySet)
     }
   }
+
   test("canonicalize or") {
     assert(Or(EmptySet, EmptySet).canonicalize == EmptySet)
     assert(Or().canonicalize == EmptySet)
@@ -251,6 +262,28 @@ class RteTestSuite extends AnyFunSuite {
     val trsub = Singleton(genus.SAtomic(classOf[TestSub]))
     val trd1 = Singleton(genus.SAtomic(classOf[TestD1]))
     val trd2 = Singleton(genus.SAtomic(classOf[TestD2]))
+
+    locally{
+      val r1 = Star(trd1)
+      val r2 = EmptyWord
+      val r3 = trd1 // Not(Not(trd1))
+      assert(Or(EmptyWord, Cat( r2, r3, Star(Cat( r2, r3)))).canonicalize
+               == Or(EmptyWord, Star(Cat( r2, r3))).canonicalize)
+      assert(Or(EmptyWord, Cat( r1, Star(Cat( r1)))).canonicalize
+               == Or(EmptyWord, Star(Cat( r1))).canonicalize)
+
+      println(List(Or(EmptyWord, Cat( r1, r3, Star(Cat( r1, r3)))),
+                   Or(EmptyWord, Cat( r1, r3, Star(Cat( r1, r3)))).canonicalize))
+
+      println(List(Or(EmptyWord, Star(Cat( r1, r3))),
+                   Or(EmptyWord, Star(Cat( r1, r3))).canonicalize))
+
+      assert((     Or(EmptyWord, Cat( r1, r3, Star(Cat( r1, r3)))).canonicalize)
+               == (Or(EmptyWord, Star(Cat( r1, r3))).canonicalize))
+
+      assert(Or(EmptyWord, Cat(r1, r2, r3, Star(Cat(r1, r2, r3)))).canonicalize
+               == (Or(EmptyWord, Star(Cat(r1, r2, r3))).canonicalize))
+    }
 
     assert(Rte.sigmaStar == Or(Sigma,
                                Star(Cat(Sigma,Star(Sigma)))).canonicalize)
@@ -266,6 +299,8 @@ class RteTestSuite extends AnyFunSuite {
     // Or(A,ε,<java.lang.String>,<java.lang.Integer>) did not equal Or(A,<java.lang.String>,ε,<java.lang.Integer>)
     assert(Or().canonicalize
              == Or().canonicalize)
+
+
 
     //                     Or(ε,A,Cat(C,B,Star(Cat(C,B))))
     // not isomorphic with Or(A,Star(Cat(C,B)))
@@ -297,14 +332,14 @@ class RteTestSuite extends AnyFunSuite {
 
       // (:or :epsilon (:cat X (:* X)))
       //   --> (:or :epsilon (:* X))
-      println("canonicalizing A " + Or(EmptyWord,Cat(r3,Star(r3)))
-                + " --> " + Or(EmptyWord,Cat(r3,Star(r3))).canonicalize )
-      println("canonicalizing B " + Or(EmptyWord,Star(r3))
-                + " --> " + Or(EmptyWord,Star(r3)).canonicalize)
+      //println("canonicalizing A " + Or(EmptyWord,Cat(r3,Star(r3)))
+      //          + " --> " + Or(EmptyWord,Cat(r3,Star(r3))).canonicalize )
+      //println("canonicalizing B " + Or(EmptyWord,Star(r3))
+      //          + " --> " + Or(EmptyWord,Star(r3)).canonicalize)
       //     Or(ε,Cat(Cat(A,B),Star(Cat(A,B))))
       // --> Or(ε,Cat(A,B,Star(Cat(A,B))))
 
-        assert(Or(EmptyWord,Cat(r3,Star(r3))).canonicalize
+      assert(Or(EmptyWord,Cat(r3,Star(r3))).canonicalize
                ~= Or(EmptyWord,Star(r3)).canonicalize,
              "" + Or(EmptyWord,Cat(r3,Star(r3))).canonicalize
                + " not isomorphic with "
@@ -312,8 +347,17 @@ class RteTestSuite extends AnyFunSuite {
 
       // Or(:epsilon,Cat(X,Y,Z,Star(Cat(X,Y,Z))))
       //  --> Or(:epsilon,Star(Cat(X,Y,Z)))
-      assert(Or(EmptyWord,Cat(r1,r2,r3,Star(Cat(r1,r2,r3)))).canonicalize
-               == Or(EmptyWord, Star(Cat(r1,r2,r3))).canonicalize)
+      locally {
+
+        assert(Or(EmptyWord, Cat(r1, r2, r3, Star(Cat(r1, r2, r3)))).canonicalize
+                 == Or(EmptyWord, Star(Cat(r1, r2, r3))).canonicalize,
+               s"r1=$r1 r2=$r2  r3=$r3")
+      }
+      // Or(Star(A),Cat(X,Y,Z,Star(Cat(X,Y,Z))))
+      //  --> Or(Star(A),Star(Cat(X,Y,Z)))
+      assert(Or(Star(r4),Cat(r1,r2,r3,Star(Cat(r1,r2,r3)))).canonicalize
+               == Or(Star(r4), Star(Cat(r1,r2,r3))).canonicalize,
+             s"r1=$r1 r2=$r2  r3=$r3  r4=$r4")
 
       // Expected :Star(Σ)
       // Actual   :Or(ε,Cat(Star(Σ),Σ,Star(Σ)))
@@ -344,15 +388,63 @@ class RteTestSuite extends AnyFunSuite {
              Or(r1,r2,trsup,r3).canonicalize)
     }
   }
+  test("derivative special cases"){
+    import genus.STop
+    import Types.randomType
+    assert (EmptySet.derivative(Some(STop)) == EmptySet)
+    assert (Sigma.derivative(Some(STop)) == EmptyWord)
+    assert (EmptyWord.derivative(Some(STop)) == EmptySet)
+    assert (Singleton(STop).derivative(Some(STop)) == EmptyWord)
+    assert (Singleton(SEmpty).derivative(Some(STop)) == EmptySet)
+
+    assert (EmptySet.derivative(Some(SEmpty)) == EmptySet)
+    assert (Sigma.derivative(Some(SEmpty)) == EmptySet)
+    assert (EmptyWord.derivative(Some(SEmpty)) == EmptySet)
+    assert (Singleton(STop).derivative(Some(SEmpty)) == EmptySet)
+    assert (Singleton(SEmpty).derivative(Some(SEmpty)) == EmptySet)
+
+    // deriv wrt EmptyWord
+    assert (EmptySet.derivative(None) == EmptySet)
+    assert (Sigma.derivative(None) == Sigma)
+    assert (EmptyWord.derivative(None) == EmptyWord)
+    assert (Singleton(STop).derivative(None) == Sigma)
+    assert (Singleton(SEmpty).derivative(None) == EmptySet)
+
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         td = randomType(depth)
+         rt = Singleton(td)
+         } {
+      if (td.inhabited.contains(true))
+        assert(Sigma.derivative(Some(td)) == EmptyWord)
+      else if (td.inhabited.contains(false))
+        assert(Sigma.derivative(Some(td)) == EmptySet)
+
+      assert(EmptySet.derivative(Some(td)) == EmptySet)
+      assert(EmptyWord.derivative(Some(td)) == EmptySet)
+      if (td.inhabited.contains(true))
+        assert(rt.derivative(Some(STop)) == EmptyWord,
+               s"failed deriv of $rt wrt Some(STop)")
+      else if (td.inhabited.contains(false))
+        assert(rt.derivative(Some(STop)) == EmptySet,
+               s"failed inhabited=${td.inhabited} deriv of $rt wrt Some(STop)")
+      assert(rt.derivative(Some(SEmpty)) == EmptySet)
+
+      assert(rt.derivative(None).canonicalize == rt.canonicalize,
+             s"deriv of $rt wrt EmptyWord/None returned ${rt.derivative(None)} expecting $rt which reduces to ${rt.canonicalize}")
+    }
+  }
   test("derivative random") {
     import Types.randomType
 
     for {depth <- 0 to 5
          _ <- 1 to 1000
          rt = Rte.randomRte(depth)
-         td = randomType(depth = 0)
+         can = rt.canonicalize
+         m = Types.mdtd(can.firstTypes)
+         td <- m
          } {
-      rt.derivative(Some(td))
+      can.derivative(Some(td))
     }
   }
 }

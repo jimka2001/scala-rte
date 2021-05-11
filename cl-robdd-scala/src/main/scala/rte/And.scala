@@ -34,14 +34,22 @@ case class And(operands:Seq[Rte]) extends Rte{
       .distinct
       .map(_.canonicalizeOnce)
       .distinct
+    val matchesOnlySingletons:Boolean = betterOperands.contains(Sigma) || betterOperands.exists(Rte.isSingleton)
     val singletons:List[genus.SimpleTypeD] = betterOperands.flatMap{
       case Singleton(td) => List(td)
+      case Not(Singleton(td)) if matchesOnlySingletons => List(genus.SNot(td))
       case _ => List.empty
     }.toList
-    lazy val maybeSuper = singletons.find{sup =>
+    lazy val singletonIntersection = genus.SAnd(singletons:_*)
+    lazy val canonicalizedSingletons = singletonIntersection.canonicalize()
+    lazy val singletonsInhabited = canonicalizedSingletons.inhabited
+    lazy val maybeSuper:Option[Rte] = singletons.find{sup =>
       singletons.exists { sub =>
         sub != sup && sub.subtypep(sup).contains(true)
-      }}
+      }}.flatMap{
+      case genus.SNot(td) => Some(Not(Singleton(td)))
+      case td => Some(Singleton(td))
+    }
 
     if (betterOperands.isEmpty)
       Rte.sigmaStar
@@ -49,7 +57,7 @@ case class And(operands:Seq[Rte]) extends Rte{
       betterOperands.head
     else if(betterOperands.contains(EmptySet))
       EmptySet
-    else if (betterOperands.contains(EmptyWord) && betterOperands.contains(Sigma))
+    else if (betterOperands.contains(EmptyWord) && matchesOnlySingletons)
       EmptySet
     else if ( betterOperands.contains(EmptyWord)) {
       if ( betterOperands.forall(_.nullable) )
@@ -71,9 +79,8 @@ case class And(operands:Seq[Rte]) extends Rte{
       //        And(A,B,   Y,   C, C)),
       //        And(A,B,   Z,   C, C)))
       betterOperands.find(Rte.isOr) match {
-        case Some(x@Or(Seq(rs @ _*))) => {
+        case Some(x@Or(Seq(rs @ _*))) =>
           Or(rs.map{r => And(Rte.searchReplace(betterOperands,x,r))})
-        }
       }
     } else if (betterOperands.exists(r1 => betterOperands.contains(Not(r1))))
       EmptySet
@@ -89,7 +96,7 @@ case class And(operands:Seq[Rte]) extends Rte{
     })
       EmptySet
     else if ( maybeSuper.nonEmpty)
-      And(betterOperands.filterNot(_ == Singleton(maybeSuper.get)))
+      And(betterOperands.filterNot(maybeSuper.contains(_)))
     else if ((betterOperands.contains(Sigma)
       || singletons.exists(td => td.inhabited.contains(true)))
       && betterOperands.exists(Rte.isCat)
@@ -99,6 +106,12 @@ case class And(operands:Seq[Rte]) extends Rte{
       }
     )
       EmptySet
+    else if (matchesOnlySingletons && singletonsInhabited.contains(false))
+      EmptySet
+    else if (canonicalizedSingletons == genus.SEmpty)
+      EmptySet
+    else if (matchesOnlySingletons && singletons.exists(genus.Types.memberp))
+      Singleton(canonicalizedSingletons)
     else
       And(betterOperands)
   }

@@ -57,11 +57,11 @@ abstract class Rte {
   def canonicalize:Rte = Rte.fixedPoint(this, (r:Rte) => r.canonicalizeOnce, (r1:Rte,r2:Rte)=>r1==r2)
   def canonicalizeOnce:Rte = this
 
-  def derivative(wrt:Option[genus.SimpleTypeD]):Rte = wrt match {
+  def derivative(wrt:Option[genus.SimpleTypeD]):Rte = (wrt match {
     case None => this
     case Some(td) if td.inhabited.contains(false) => EmptySet
     case Some(td) => derivativeDown(td)
-  }
+  }).canonicalize
 
   def derivativeDown(wrt:genus.SimpleTypeD):Rte
 }
@@ -96,6 +96,10 @@ object Rte {
 
   def isOr(rt:Rte):Boolean = rt match {
     case Or(Seq(_*)) => true
+    case _ => false
+  }
+  def isSingleton(rt:Rte):Boolean = rt match {
+    case Singleton(_) => true
     case _ => false
   }
   def searchReplace[A](xs: Seq[A], search:A, replace:A):Seq[A] = {
