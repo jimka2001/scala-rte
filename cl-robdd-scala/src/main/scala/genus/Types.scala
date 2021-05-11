@@ -65,6 +65,21 @@ object Types {
     case _ => false
   }
 
+  def typePartitions(tds:Set[SimpleTypeD]):Iterator[SimpleTypeD] = {
+    for{sub <- tds.subsets
+        tds2:Set[SimpleTypeD] = sub.map[SimpleTypeD](SNot(_)) union (tds diff sub)
+        td = SAnd(tds2.toSeq : _*).canonicalize()
+        if ! td.inhabited.contains(false)
+        } yield td
+  }
+
+  def mdtd(tds:Set[SimpleTypeD]):Seq[SimpleTypeD] = {
+    // this is a very simplistic implementation of mdtd.
+    // it just iterates over all possible combinations of the given sets,
+    // filtering away those which can be proven to be empty
+    typePartitions(tds + STop ).toSeq
+  }
+
   def randomType(depth:Int, filter:SimpleTypeD=>Boolean):SimpleTypeD = {
     @tailrec
     def recur():SimpleTypeD = {
