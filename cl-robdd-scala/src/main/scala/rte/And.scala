@@ -45,9 +45,8 @@ case class And(operands:Seq[Rte]) extends Rte{
         sub != sup && sub.subtypep(sup).contains(true)
       }}
 
-    if (betterOperands.isEmpty) {
+    if (betterOperands.isEmpty)
       Rte.sigmaStar
-    }
     else if (betterOperands.sizeIs == 1)
       betterOperands.head
     else if(betterOperands.contains(EmptySet))
