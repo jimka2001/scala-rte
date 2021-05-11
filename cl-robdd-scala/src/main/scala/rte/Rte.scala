@@ -22,6 +22,8 @@
 
 package rte
 
+import genus.SimpleTypeD
+
 
 abstract class Rte {
   def |(r: Rte): Rte = Or(this, r)
@@ -57,54 +59,65 @@ abstract class Rte {
   def canonicalize:Rte = Rte.fixedPoint(this, (r:Rte) => r.canonicalizeOnce, (r1:Rte,r2:Rte)=>r1==r2)
   def canonicalizeOnce:Rte = this
 
-  def derivative(wrt:Option[genus.SimpleTypeD]):Rte = (wrt match {
+  def derivative(wrt:Option[SimpleTypeD]):Rte = (wrt match {
     case None => this
     case Some(td) if td.inhabited.contains(false) => EmptySet
     case Some(td) => derivativeDown(td)
   }).canonicalize
 
-  def derivativeDown(wrt:genus.SimpleTypeD):Rte
+  def derivativeDown(wrt:SimpleTypeD):Rte
+
+  def derivatives():(Map[Int,Rte],Map[Int,Seq[(SimpleTypeD,Int)]]) = {
+    def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
+      genus.Types.mdtd(rt.firstTypes)
+        .map(td => (td,rt.derivative(Some(td))))
+    }
+    Rte.traceGraph(this,edges)
+  }
 }
 
 object Rte {
 
   import scala.annotation.tailrec
 
-  val sigmaStar:Rte = Star(Sigma)
-  val notSigma:Rte = Or(Cat(Sigma,Sigma,sigmaStar),EmptyWord)
-  val notEpsilon:Rte = Cat(Sigma,sigmaStar)
+  val sigmaStar: Rte = Star(Sigma)
+  val notSigma: Rte = Or(Cat(Sigma, Sigma, sigmaStar), EmptyWord)
+  val notEpsilon: Rte = Cat(Sigma, sigmaStar)
 
-  def isAnd(rt:Rte):Boolean = rt match {
+  def isAnd(rt: Rte): Boolean = rt match {
     case And(Seq(_*)) => true
     case _ => false
   }
 
-  def isCat(rt:Rte):Boolean = rt match {
+  def isCat(rt: Rte): Boolean = rt match {
     case Cat(Seq(_*)) => true
     case _ => false
   }
 
-  def isPlus(rt:Rte):Boolean = rt match {
-    case Cat(Seq(x,Star(y))) => x == y
+  def isPlus(rt: Rte): Boolean = rt match {
+    case Cat(Seq(x, Star(y))) => x == y
     case _ => false
   }
 
-  def isStar(rt:Rte):Boolean = rt match {
+  def isStar(rt: Rte): Boolean = rt match {
     case Star(_) => true
     case _ => false
   }
 
-  def isOr(rt:Rte):Boolean = rt match {
+  def isOr(rt: Rte): Boolean = rt match {
     case Or(Seq(_*)) => true
     case _ => false
   }
-  def isSingleton(rt:Rte):Boolean = rt match {
+
+  def isSingleton(rt: Rte): Boolean = rt match {
     case Singleton(_) => true
     case _ => false
   }
-  def searchReplace[A](xs: Seq[A], search:A, replace:A):Seq[A] = {
+
+  def searchReplace[A](xs: Seq[A], search: A, replace: A): Seq[A] = {
     xs.map(x => if (search == x) replace else x)
   }
+
   def findAdjacent[A](xs: Seq[A], cmp: (A, A) => Boolean): Boolean =
     xs.toList.tails.exists {
       case Nil => false
@@ -163,6 +176,37 @@ object Rte {
       val g = generators(random.nextInt(generators.length))
       g()
     }
+  }
+
+  def traceGraph[V, W](v0: V, edges: V => Seq[(W, V)]): (Map[Int, V], Map[Int, Seq[(W, Int)]]) = {
+    import genus.Types.conj
+    val s0: Seq[(W, Int)] = Seq()
+
+    @tailrec
+    def recur(v: V,
+              i: Int,
+              es: List[(W, V)],
+              intToV: Map[Int, V],
+              vToInt: Map[V, Int],
+              m: Map[Int, Seq[(W, Int)]]): (Map[Int, V], Map[Int, Seq[(W, Int)]]) = {
+      es match {
+        case (w: W, v1: V) :: wvs if !vToInt.contains(v1) =>
+          recur(v, i + 1, es, intToV + (i -> v1), vToInt + (v1 -> i), m)
+        case (w: W, v1: V) :: wvs =>
+          val currentEdges: Seq[(W, Int)] = m.getOrElse(vToInt(v), s0)
+          recur(v, i, wvs, intToV, vToInt, m + (vToInt(v) -> conj(w -> vToInt(v1), currentEdges)))
+        case Nil =>
+          val todo: Set[Int] = (intToV.keySet diff m.keySet)
+          if (todo.isEmpty)
+            (intToV, m)
+          else {
+            val v2 = intToV(todo.head)
+            recur(v2, i, edges(v2).toList, intToV, vToInt, m)
+          }
+      }
+    }
+
+    recur(v0, 1, edges(v0).toList, Map(0 -> v0), Map(v0 -> 0), Map())
   }
 }
 

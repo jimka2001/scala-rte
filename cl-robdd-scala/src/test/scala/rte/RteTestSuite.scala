@@ -435,7 +435,6 @@ class RteTestSuite extends AnyFunSuite {
     }
   }
   test("derivative random") {
-    import Types.randomType
 
     for {depth <- 0 to 5
          _ <- 1 to 1000
@@ -445,6 +444,18 @@ class RteTestSuite extends AnyFunSuite {
          td <- m
          } {
       can.derivative(Some(td))
+    }
+  }
+  test("derivatives random") {
+
+    for {depth <- 0 to 6
+         _ <- 1 to 2000
+         rt = Rte.randomRte(depth)
+         (intToV,m) = rt.derivatives
+         } {
+      println(s"rt = $rt")
+      println(s"   intToV = $intToV")
+      println(s"   m = $m")
     }
   }
 }
