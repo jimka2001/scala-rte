@@ -278,11 +278,11 @@ class RteTestSuite extends AnyFunSuite {
       println(List(Or(EmptyWord, Star(Cat( r1, r3))),
                    Or(EmptyWord, Star(Cat( r1, r3))).canonicalize))
 
-      assert((     Or(EmptyWord, Cat( r1, r3, Star(Cat( r1, r3)))).canonicalize)
-               == (Or(EmptyWord, Star(Cat( r1, r3))).canonicalize))
+      assert(Or(EmptyWord, Cat(r1, r3, Star(Cat(r1, r3)))).canonicalize
+               == Or(EmptyWord, Star(Cat( r1, r3))).canonicalize)
 
       assert(Or(EmptyWord, Cat(r1, r2, r3, Star(Cat(r1, r2, r3)))).canonicalize
-               == (Or(EmptyWord, Star(Cat(r1, r2, r3))).canonicalize))
+               == Or(EmptyWord, Star(Cat(r1, r2, r3))).canonicalize)
     }
 
     assert(Rte.sigmaStar == Or(Sigma,
@@ -389,8 +389,7 @@ class RteTestSuite extends AnyFunSuite {
     }
   }
   test("derivative special cases"){
-    import genus.STop
-    import Types.randomType
+    //import genus.STop
     assert (EmptySet.derivative(Some(STop)) == EmptySet)
     assert (Sigma.derivative(Some(STop)) == EmptyWord)
     assert (EmptyWord.derivative(Some(STop)) == EmptySet)
@@ -412,7 +411,7 @@ class RteTestSuite extends AnyFunSuite {
 
     for {depth <- 0 to 5
          _ <- 1 to 1000
-         td = randomType(depth)
+         td = Types.randomType(depth)
          rt = Singleton(td)
          } {
       if (td.inhabited.contains(true))
@@ -460,14 +459,14 @@ class RteTestSuite extends AnyFunSuite {
   }
 
   test("rte to dfa") {
-    import xymbolyco.GraphViz._
+    //import xymbolyco.GraphViz._
 
-    for {depth <- 5 to 6
-         _ <- 1 to 2
+    for {depth <- 5 to 7
+         _ <- 1 to 500
          rt = Rte.randomRte(depth)
-         sdfa = rt.toDfa()
          } {
-      dfaView(sdfa, abbreviateTransitions=true)
+      rt.toDfa()
+      //dfaView(sdfa, abbreviateTransitions=true)
     }
   }
 }

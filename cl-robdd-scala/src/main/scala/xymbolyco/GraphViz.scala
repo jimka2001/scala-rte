@@ -28,8 +28,13 @@ object GraphViz {
   def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbreviateTransitions:Boolean=false): String = {
     import sys.process._
     val png = dfaToPng(dfa,title,abbreviateTransitions=abbreviateTransitions)
-    val cmd = Seq("open", png)
-    cmd.!
+    System.getProperty("os.name") match {
+      case "Mac OS X" =>
+        // -g => don't bring Preview to forground, and thus don't steal focus
+        val cmd = Seq ("open", "-g", "-a", "Preview", png)
+        cmd.!
+      case os => println(s"cannot view png file $png because os.name is $os")
+    }
     png
   }
 
@@ -64,15 +69,19 @@ object GraphViz {
   def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],stream: OutputStream, title:String, abbreviateTransitions:Boolean): Unit = {
     val qarr=dfa.Q.toArray
     val labels:Set[L] = (for { q <- dfa.Q
-                              Transition(_,label,_) <- q.transitions
+                               (_,transitions) <- q.transitions.groupBy(_.destination)
+                               labels = transitions.map(_.label)
+                               label = labels.reduce(dfa.labeler.combineLabels)
                               } yield label)
     val labelMap:Map[L,String] = labels.toSeq.zipWithIndex.map{ case (lab,i:Int) =>
+      // TODO if abbreviateTransitions is true, need to create a label in the .dot
+      //   file indicating the mapping from abbrev to actual label
       if (abbreviateTransitions)
-        lab -> s"T$i"
+        lab -> s"t$i"
       else
         lab -> lab.toString
     }.toMap
-
+    println(labelMap)
     def write(str: String): Unit = {
       for {c <- str} {
         stream.write(c.toByte)
@@ -86,14 +95,25 @@ object GraphViz {
     }
     def drawState(q:State[Sigma,L,E]):Unit = {
       write(s"""${qarr.indexOf(q)} [label="${q.id}"]\n""")
-      for{
-        tr <- q.transitions
-      } arrow(qarr.indexOf(tr.source),qarr.indexOf(tr.destination),labelMap(tr.label))
+      for {
+        (destination, transitions) <- q.transitions.groupBy(_.destination)
+        labels = transitions.map(_.label)
+        label = labels.reduce(dfa.labeler.combineLabels)
+      } arrow(qarr.indexOf(q), qarr.indexOf(destination), labelMap(label))
     }
     write("digraph G {\n")
     // header
-    write("rankdir=LR; graph[labeljust=l,nojustify=true]\n")
+    write("  fontname=courier;\n")
+    write("  rankdir=LR; graph[labeljust=l,nojustify=true]\n")
+    write("  node [fontname=Arial, fontsize=25];\n")
+    write("  edge [fontsize=20];\n")
 
+    if(abbreviateTransitions){
+      write("label=\"")
+      write((for{(lab,i) <- labels.toSeq.zipWithIndex
+                 } yield s"\\lt$i= $lab").mkString(""))
+      write("\\l\"\n")
+    }
     // initial state Q0
     write("// Initial state\n")
     write("""I0 [label="", style=invis, width=0]""")

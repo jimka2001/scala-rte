@@ -40,7 +40,7 @@ case class GenusBddLabeler() extends Labeler[Any,GenusBdd]() {
 
 import genus.{SimpleTypeD,SOr}
 case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
-  def member(a:Any,rt:SimpleTypeD) = rt.typep(a)
+  def member(a:Any,rt:SimpleTypeD):Boolean = rt.typep(a)
   def combineLabels(a:SimpleTypeD,b:SimpleTypeD):SimpleTypeD = {
     SOr(a,b).canonicalize()
   }
