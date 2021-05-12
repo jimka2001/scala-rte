@@ -67,7 +67,7 @@ abstract class Rte {
 
   def derivativeDown(wrt:SimpleTypeD):Rte
 
-  def derivatives():(Map[Int,Rte],Map[Int,Seq[(SimpleTypeD,Int)]]) = {
+  def derivatives():(Vector[Rte],Vector[Seq[(SimpleTypeD,Int)]]) = {
   import adjuvant.Adjuvant.traceGraph
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       genus.Types.mdtd(rt.firstTypes)

@@ -451,7 +451,7 @@ class RteTestSuite extends AnyFunSuite {
     for {depth <- 0 to 6
          _ <- 1 to 2000
          rt = Rte.randomRte(depth)
-         (intToV,m) = rt.derivatives
+         (intToV,m) = rt.derivatives()
          } {
       println(s"rt = $rt")
       println(s"   intToV = $intToV")

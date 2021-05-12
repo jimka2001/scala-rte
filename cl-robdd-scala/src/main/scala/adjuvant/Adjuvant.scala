@@ -28,7 +28,7 @@ object Adjuvant {
   def conj[T](seq: Seq[T], obj: T): Seq[T] = seq match {
     // inspired by the Clojure conj function
     // See https://clojuredocs.org/clojure.core/conj
-    // given an object ane a sequence, add the element to the sequence
+    // given an object and a sequence, add the element to the sequence
     // either at the beginning or end, depending on the type of Seq.
     // It is easier to add to the begging of a list, but to the end of a vector.
     // The caller calls this function when it is not important whether the
@@ -38,23 +38,30 @@ object Adjuvant {
     case _ => seq :+ obj
   }
 
-  def traceGraph[V, W](v0: V, edges: V => Seq[(W, V)]): (Map[Int, V], Map[Int, Seq[(W, Int)]]) = {
-    val s0: Seq[(W, Int)] = Seq()
+  def traceGraph[V, L](v0: V, edges: V => Seq[(L, V)]): (Vector[V], Vector[Seq[(L, Int)]]) = {
+    val s0: Seq[(L, Int)] = Seq()
 
     @tailrec
     def recur(v: V,
               i: Int,
-              es: List[(W, V)],
+              es: List[(L, V)],
               intToV: Map[Int, V],
               vToInt: Map[V, Int],
-              m: Map[Int, Seq[(W, Int)]]): (Map[Int, V], Map[Int, Seq[(W, Int)]]) = {
+              m: Map[Int, Seq[(L, Int)]]): (Map[Int,V], Map[Int,Seq[(L, Int)]]) = {
       es match {
-        case (w, v1) :: wvs if !vToInt.contains(v1) =>
+        case (label, v1) :: lvs if !vToInt.contains(v1) =>
+          // if we are seeing v1 for the first time, then register it
+          //   in intToV and in vToInt.
           recur(v, i + 1, es, intToV + (i -> v1), vToInt + (v1 -> i), m)
-        case (w, v1) :: wvs =>
-          val currentEdges: Seq[(W, Int)] = m.getOrElse(vToInt(v), s0)
-          recur(v, i, wvs, intToV, vToInt, m + (vToInt(v) -> conj(currentEdges, w -> vToInt(v1))))
+        case (label, v1) :: lvs =>
+          val currentEdges: Seq[(L, Int)] = m.getOrElse(vToInt(v), s0)
+
+          recur(v, i, lvs, intToV, vToInt,
+                m + (vToInt(v) -> conj(currentEdges, label -> vToInt(v1))))
         case Nil =>
+          // TODO, i'm sure there is a way to compute v2 without a linear search.
+          //  we just want to find a vertex which we have learned exists, but whose
+          //  edges have not yet been computed.
           intToV.keys.find(k => !m.contains(k)).map(intToV) match {
             case Some(v2) => recur(v2, i, edges(v2).toList, intToV, vToInt, m)
             case None => (intToV, m)
@@ -62,7 +69,9 @@ object Adjuvant {
       }
     }
 
-    recur(v0, 1, edges(v0).toList, Map(0 -> v0), Map(v0 -> 0), Map())
+    val (vertexMap,edgeMap) = recur(v0, 1, edges(v0).toList, Map(0 -> v0), Map(v0 -> 0), Map())
+    (Vector.tabulate(vertexMap.size)(vertexMap),
+      Vector.tabulate(edgeMap.size)(edgeMap))
   }
 
   def searchReplace[A](xs: Seq[A], search: A, replace: A): Seq[A] = {
