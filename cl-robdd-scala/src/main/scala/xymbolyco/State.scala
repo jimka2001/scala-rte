@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2021 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,29 +19,26 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dfa
+package xymbolyco
 
-object Serialize {
+class State[Σ,L,E](dfa:Dfa[Σ,L,E], val id:Int) {
+  var transitions:Set[Transition[Σ,L,E]] = Set()
 
-  def serialize[Sigma,L,E](dfa:Dfa[Sigma,L,E]):Unit = serialize(dfa,print)
+  // find the destination state of this state given the label,
+  //     this uses a label search, independent of the particular
+  //     value of an input sequence.
+  def delta(label:L):State[Σ,L,E] = dfa.delta(this,label)
 
-  def serialize[Sigma,L,E](dfa:Dfa[Sigma,L,E], print:String=>Unit):Unit = {
-    print(s"Q=${dfa.Q}\n")
-    print(s"q0=${dfa.q0}\n")
-    print(s"F=${dfa.F}\n")
-    for{
-      q <- dfa.Q
-      tr <- q.transitions
-    } print(s"delta($q,${tr.label}) = ${tr.destination}\n")
+  // find the destination state of this state given an element
+  //    of the input sequence.
+  def successor(s:Σ):Option[State[Σ,L,E]] = {
+    transitions
+      .find{case Transition(_,label,_) => dfa.labeler.member(s,label) }
+      .flatMap{case Transition(_,_,dest) => Some(dest)
+      }
   }
 
-  def serializeToString[Sigma,L,E](dfa:Dfa[Sigma,L,E]):String = {
-    import adjuvant.Accumulators.withOutputToString
-
-    withOutputToString(printer => {
-      printer("{\n")
-      serialize(dfa,printer)
-      printer("}\n")
-    })
+  override def toString:String = {
+    s"q:$id"
   }
 }

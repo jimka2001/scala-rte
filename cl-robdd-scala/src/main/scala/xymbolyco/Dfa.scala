@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dfa
+package xymbolyco
 
 // Seq[Σ] is the type of the input sequence which the DFA is expected to match
 // L is the type of label on transitions

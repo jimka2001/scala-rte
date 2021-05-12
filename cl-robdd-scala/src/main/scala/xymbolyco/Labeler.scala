@@ -19,6 +19,29 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dfa
+package xymbolyco
 
-case class Transition[Σ,L,E](source:State[Σ,L,E], label:L, destination:State[Σ,L,E]) {}
+abstract class Labeler[Σ,L] {
+  def member(s:Σ,lab:L):Boolean
+  def combineLabels(l1:L,l2:L):L
+  def equivLabels(a:L,b:L):Boolean = {a == b}
+}
+
+import genusbdd.GenusBdd
+
+case class GenusBddLabeler() extends Labeler[Any,GenusBdd]() {
+  def member(a:Any,gb:GenusBdd):Boolean = {
+    gb.typep(a)
+  }
+  def combineLabels(a:GenusBdd,b:GenusBdd):GenusBdd = {
+    a
+  }
+}
+
+import genus.{SimpleTypeD,SOr}
+case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
+  def member(a:Any,rt:SimpleTypeD) = rt.typep(a)
+  def combineLabels(a:SimpleTypeD,b:SimpleTypeD):SimpleTypeD = {
+    SOr(a,b).canonicalize()
+  }
+}

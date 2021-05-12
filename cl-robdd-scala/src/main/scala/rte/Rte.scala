@@ -76,7 +76,7 @@ abstract class Rte {
     traceGraph(this,edges)
   }
 
-  import dfa.Dfa
+  import xymbolyco.Dfa
 
   def toDfa():Dfa[Any,SimpleTypeD,Boolean] = {
     val (rtes,edges) = derivatives()
@@ -89,7 +89,7 @@ abstract class Rte {
             protoDelta = (for{ src <- rtes.indices
                             (rt,dst) <- edges(src)
             } yield (src, rt, dst)).toSet,
-            labeler = dfa.GenusLabeler(),
+            labeler = xymbolyco.GenusLabeler(),
             fMap=fmap)
   }
 }

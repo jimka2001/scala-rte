@@ -19,28 +19,28 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dfa
+package xymbolyco
 
 object GraphViz {
 
   import java.io.{File, OutputStream}
 
-  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbreviateTransistions:Boolean=false): String = {
+  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbreviateTransitions:Boolean=false): String = {
     import sys.process._
-    val png = dfaToPng(dfa,title,abbreviateTransistions=abbreviateTransistions)
+    val png = dfaToPng(dfa,title,abbreviateTransitions=abbreviateTransitions)
     val cmd = Seq("open", png)
     cmd.!
     png
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbreviateTransistions:Boolean): String = {
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbreviateTransitions:Boolean): String = {
     val png = File.createTempFile("dfa-", ".png")
     val pngPath = png.getAbsolutePath
     val dot = File.createTempFile("dfa-", ".dot")
     val dotPath = dot.getAbsolutePath
     val alt = File.createTempFile("dfa-", ".plain")
     val altPath = alt.getAbsolutePath
-    dfaToPng(dfa,dotPath, title, abbreviateTransistions=abbreviateTransistions)
+    dfaToPng(dfa,dotPath, title, abbreviateTransitions=abbreviateTransitions)
 
     locally {
       import sys.process._
@@ -54,9 +54,9 @@ object GraphViz {
     pngPath
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],pathname: String, title:String, abbreviateTransistions:Boolean): String = {
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],pathname: String, title:String, abbreviateTransitions:Boolean): String = {
     val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-    dfaToDot(dfa,stream, title, abbreviateTransitions = abbreviateTransistions)
+    dfaToDot(dfa,stream, title, abbreviateTransitions = abbreviateTransitions)
     stream.close()
     pathname
   }

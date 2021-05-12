@@ -460,13 +460,14 @@ class RteTestSuite extends AnyFunSuite {
   }
 
   test("rte to dfa") {
+    import xymbolyco.GraphViz._
 
     for {depth <- 5 to 6
          _ <- 1 to 2
          rt = Rte.randomRte(depth)
          sdfa = rt.toDfa()
          } {
-      dfa.GraphViz.dfaView(sdfa,abbreviateTransistions=true)
+      dfaView(sdfa, abbreviateTransitions=true)
     }
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2019,20 EPITA Research and Development Laboratory
+// Copyright (c) 2019,20,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dfa
+package xymbolyco
 
 import scala.annotation.tailrec
 

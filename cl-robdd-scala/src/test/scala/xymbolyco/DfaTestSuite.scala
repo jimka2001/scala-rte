@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package dfa
+package xymbolyco
 
 import org.scalatest.funsuite.AnyFunSuite
 
@@ -236,10 +236,10 @@ class DfaTestSuite extends AnyFunSuite {
                                                        6 -> "clause-3",
                                                        7 -> "clause-3"))
     assert(sdfa.Q.size == 7)
-    dfa.GraphViz.dfaToPng(sdfa, "test render",false)
+    xymbolyco.GraphViz.dfaToPng(sdfa, "test render", false)
     //Render.dfaView(dfa,"test render")
     val minDfa = Minimize.minimize(sdfa)
-    dfa.GraphViz.dfaToPng(minDfa, "test render minimized",false)
+    xymbolyco.GraphViz.dfaToPng(minDfa, "test render minimized", false)
     //Render.dfaView(minDfa,"test render minimized")
   }
 
