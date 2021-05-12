@@ -237,10 +237,10 @@ class DfaTestSuite extends AnyFunSuite {
                                                        6 -> "clause-3",
                                                        7 -> "clause-3"))
     assert(dfa.Q.size == 7)
-    Render.dfaToPng(dfa, "test render")
+    GraphViz.dfaToPng(dfa, "test render")
     //Render.dfaView(dfa,"test render")
     val minDfa = Minimize.minimize(dfa)
-    Render.dfaToPng(minDfa, "test render minimized")
+    GraphViz.dfaToPng(minDfa, "test render minimized")
     //Render.dfaView(minDfa,"test render minimized")
   }
 

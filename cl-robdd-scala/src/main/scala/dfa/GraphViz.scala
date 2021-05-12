@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2019,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -21,7 +21,7 @@
 
 package dfa
 
-object Render {
+object GraphViz {
 
   import java.io.{File, OutputStream}
 
