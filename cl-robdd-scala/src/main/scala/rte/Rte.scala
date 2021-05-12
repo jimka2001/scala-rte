@@ -75,6 +75,23 @@ abstract class Rte {
     }
     traceGraph(this,edges)
   }
+
+  import dfa.Dfa
+
+  def toDfa():Dfa[Any,SimpleTypeD,Boolean] = {
+    val (rtes,edges) = derivatives()
+    val qids = rtes.indices.toSet
+    val fids = qids.filter(i => rtes(i).nullable)
+    val fmap = fids.map{i => (i -> true)}.toMap
+    new Dfa(Qids=qids,
+            q0id=0,
+            Fids=fids,
+            protoDelta = (for{ src <- rtes.indices
+                            (rt,dst) <- edges(src)
+            } yield (src, rt, dst)).toSet,
+            labeler = dfa.GenusLabeler(),
+            fMap=fmap)
+  }
 }
 
 object Rte {
