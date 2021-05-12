@@ -196,12 +196,9 @@ object Rte {
           val currentEdges: Seq[(W, Int)] = m.getOrElse(vToInt(v), s0)
           recur(v, i, wvs, intToV, vToInt, m + (vToInt(v) -> conj(w -> vToInt(v1), currentEdges)))
         case Nil =>
-          val todo: Set[Int] = (intToV.keySet diff m.keySet)
-          if (todo.isEmpty)
-            (intToV, m)
-          else {
-            val v2 = intToV(todo.head)
-            recur(v2, i, edges(v2).toList, intToV, vToInt, m)
+          intToV.keys.find(k => ! m.contains(k)).map(intToV) match {
+            case Some(v2) => recur(v2, i, edges(v2).toList, intToV, vToInt, m)
+            case None => (intToV, m)
           }
       }
     }
