@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 EPITA Research and Development Laboratory
+ * Copyright (c) 2019,21 EPITA Research and Development Laboratory
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation
@@ -214,7 +214,6 @@ class DfaTestSuite extends AnyFunSuite {
   }
 
   test("render dfa") {
-
     val t1 = Set("a1") // fixnum
     val t2 = Set("a1", "b2") // integer
     val t3 = Set("a1", "b2", "c3") // number
@@ -222,7 +221,7 @@ class DfaTestSuite extends AnyFunSuite {
     val t6 = t3.diff(t1) // !fixnum & number
     val t7 = t3.diff(t2) // !integer & number
 
-    val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
+    val sdfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
                                                    0,
                                                    Set(4, 5, 6, 7),
                                                    Set((0, t1, 1),
@@ -236,11 +235,11 @@ class DfaTestSuite extends AnyFunSuite {
                                                        5 -> "clause-1",
                                                        6 -> "clause-3",
                                                        7 -> "clause-3"))
-    assert(dfa.Q.size == 7)
-    GraphViz.dfaToPng(dfa, "test render")
+    assert(sdfa.Q.size == 7)
+    dfa.GraphViz.dfaToPng(sdfa, "test render",false)
     //Render.dfaView(dfa,"test render")
-    val minDfa = Minimize.minimize(dfa)
-    GraphViz.dfaToPng(minDfa, "test render minimized")
+    val minDfa = Minimize.minimize(sdfa)
+    dfa.GraphViz.dfaToPng(minDfa, "test render minimized",false)
     //Render.dfaView(minDfa,"test render minimized")
   }
 

@@ -25,22 +25,22 @@ object GraphViz {
 
   import java.io.{File, OutputStream}
 
-  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String=""): String = {
+  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbreviateTransistions:Boolean=false): String = {
     import sys.process._
-    val png = dfaToPng(dfa,title)
+    val png = dfaToPng(dfa,title,abbreviateTransistions=abbreviateTransistions)
     val cmd = Seq("open", png)
     cmd.!
     png
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String): String = {
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbreviateTransistions:Boolean): String = {
     val png = File.createTempFile("dfa-", ".png")
     val pngPath = png.getAbsolutePath
     val dot = File.createTempFile("dfa-", ".dot")
     val dotPath = dot.getAbsolutePath
     val alt = File.createTempFile("dfa-", ".plain")
     val altPath = alt.getAbsolutePath
-    dfaToPng(dfa,dotPath, title)
+    dfaToPng(dfa,dotPath, title, abbreviateTransistions=abbreviateTransistions)
 
     locally {
       import sys.process._
@@ -54,15 +54,24 @@ object GraphViz {
     pngPath
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],pathname: String, title:String): String = {
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],pathname: String, title:String, abbreviateTransistions:Boolean): String = {
     val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-    dfaToDot(dfa,stream, title)
+    dfaToDot(dfa,stream, title, abbreviateTransitions = abbreviateTransistions)
     stream.close()
     pathname
   }
 
-  def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],stream: OutputStream, title:String): Unit = {
+  def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],stream: OutputStream, title:String, abbreviateTransitions:Boolean): Unit = {
     val qarr=dfa.Q.toArray
+    val labels:Set[L] = (for { q <- dfa.Q
+                              Transition(_,label,_) <- q.transitions
+                              } yield label)
+    val labelMap:Map[L,String] = labels.toSeq.zipWithIndex.map{ case (lab,i:Int) =>
+      if (abbreviateTransitions)
+        lab -> s"T$i"
+      else
+        lab -> lab.toString
+    }.toMap
 
     def write(str: String): Unit = {
       for {c <- str} {
@@ -79,7 +88,7 @@ object GraphViz {
       write(s"""${qarr.indexOf(q)} [label="${q.id}"]\n""")
       for{
         tr <- q.transitions
-      } arrow(qarr.indexOf(tr.source),qarr.indexOf(tr.destination),tr.label.toString)
+      } arrow(qarr.indexOf(tr.source),qarr.indexOf(tr.destination),labelMap(tr.label))
     }
     write("digraph G {\n")
     // header

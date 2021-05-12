@@ -458,4 +458,15 @@ class RteTestSuite extends AnyFunSuite {
       println(s"   m = $m")
     }
   }
+
+  test("rte to dfa") {
+
+    for {depth <- 5 to 6
+         _ <- 1 to 2
+         rt = Rte.randomRte(depth)
+         sdfa = rt.toDfa()
+         } {
+      dfa.GraphViz.dfaView(sdfa,abbreviateTransistions=true)
+    }
+  }
 }
