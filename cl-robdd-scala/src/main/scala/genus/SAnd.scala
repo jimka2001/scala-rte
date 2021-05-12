@@ -23,6 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
+import adjuvant.Adjuvant.conj
 
 /** An intersection type, which is the intersection of zero or more types.
  *
@@ -200,7 +201,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     tds.find(orp) match {
       case Some(td@SOr(orArgs@_*)) =>
         val others = tds.filterNot(_ == td)
-        SOr(orArgs.map { x => SAnd(conj(x, others): _*) }: _*)
+        SOr(orArgs.map { x => SAnd(conj(others, x): _*) }: _*)
       case None => this
       case x => throw new Error(s"this should not occur: " + x)
     }

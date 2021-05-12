@@ -24,25 +24,7 @@ package dfa
 import scala.annotation.tailrec
 
 object Minimize {
-  def fixedPoint[V](value: V, f: V => V, cmp: (V, V) => Boolean): V = {
-    @tailrec
-    def recur(value: V): V = {
-      val newValue = f(value)
-      if (cmp(value, newValue))
-        value
-      else
-        recur(newValue)
-    }
-
-    recur(value)
-  }
-
-  def partitionBy[S,T](domain:Set[S], f:S=>T):Set[Set[S]] = {
-    if (domain.size == 1)
-      Set(domain)
-    else
-      domain.groupBy(f).values.toSet
-  }
+  import adjuvant.Adjuvant._
 
   def findHopcroftPartition[Sigma,L, E](dfa: Dfa[Sigma,L, E]): Set[Set[State[Sigma,L, E]]] = {
     type STATE = State[Sigma,L, E]

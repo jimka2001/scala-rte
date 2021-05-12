@@ -96,20 +96,5 @@ class TypesTest extends AnyFunSuite {
          t3 = randomType(d)
          } triangle_inequality(t1,t2,t3)
   }
-
-  test("conj"){
-    val l1 = List( 1, 2, 3)
-    val v1 = Vector(1,2,3)
-    val s1 = Seq(1,2,3)
-
-    assert(conj(4,l1).contains(2))
-    assert(conj(4,l1).contains(4))
-
-    assert(conj(4,v1).contains(2))
-    assert(conj(4,v1).contains(4))
-
-    assert(conj(4,s1).contains(2))
-    assert(conj(4,s1).contains(4))
-  }
 }
 

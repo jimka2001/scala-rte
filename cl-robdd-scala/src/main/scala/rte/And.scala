@@ -22,6 +22,8 @@
 
 package rte
 
+import adjuvant.Adjuvant._
+
 case class And(operands:Seq[Rte]) extends Rte{
   import genus.SimpleTypeD
   override def toLaTeX:String = operands.map(_.toLaTeX).mkString("(", "\\wedge ", ")")
@@ -80,7 +82,7 @@ case class And(operands:Seq[Rte]) extends Rte{
       //        And(A,B,   Z,   C, C)))
       betterOperands.find(Rte.isOr) match {
         case Some(x@Or(Seq(rs @ _*))) =>
-          Or(rs.map{r => And(Rte.searchReplace(betterOperands,x,r))})
+          Or(rs.map{r => And(searchReplace(betterOperands,x,r))})
       }
     } else if (betterOperands.exists(r1 => betterOperands.contains(Not(r1))))
       EmptySet

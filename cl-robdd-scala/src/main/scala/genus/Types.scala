@@ -66,8 +66,8 @@ object Types {
   }
 
   def typePartitions(tds:Set[SimpleTypeD]):Iterator[SimpleTypeD] = {
-    for{sub <- tds.subsets
-        tds2:Set[SimpleTypeD] = sub.map[SimpleTypeD](SNot(_)) union (tds diff sub)
+    for{sub <- tds.subsets()
+        tds2:Set[SimpleTypeD] = sub.map[SimpleTypeD](SNot) union (tds diff sub)
         td = SAnd(tds2.toSeq : _*).canonicalize()
         if ! td.inhabited.contains(false)
         } yield td
@@ -95,8 +95,7 @@ object Types {
   }
 
   def randomType(depth:Int):SimpleTypeD = {
-    import scala.util.Random
-    val random = new Random
+    val random = new scala.util.Random
     trait Trait1
     trait Trait2
     trait Trait3 extends Trait2
@@ -133,35 +132,6 @@ object Types {
       val g = generators(random.nextInt(generators.length))
       g()
     }
-  }
-
-  // The memoize method is inspired by
-  //  https://clojuredocs.org/clojure.core/memoize
-  // Returning a memoized version of a referentially transparent function. The
-  // memoized version of the function keeps a cache of the mapping from arguments
-  // to results and, when calls with the same arguments are repeated often, has
-  // higher performance at the expense of higher memory use.
-  def memoize[F,T](f:F=>T):F=>T = {
-    val hash = scala.collection.mutable.Map[F,T]()
-    def mem(i:F):T = {
-      hash.getOrElse(i, locally{
-        val v:T = f(i)
-        hash(i) = v
-        v
-      })
-    }
-    mem
-  }
-
-  def conj[T](obj:T, seq:Seq[T]):Seq[T] = seq match {
-    // given an object ane a sequence, add the element to the sequence
-    // either at the beginning or end, depending on the type of Seq.
-    // It is easier to add to the begging of a list, but to the end of a vector.
-    // The caller calls this function when it is not important whether the
-    // new element be added to the beginning or the end.
-    case Seq() => Seq(obj)
-    case l:List[T] => obj :: l
-    case _ => seq :+ obj
   }
   
   def compareSequence(tds1:Seq[SimpleTypeD], tds2:Seq[SimpleTypeD]):Boolean = {
@@ -239,9 +209,8 @@ object Types {
   val evenType:SCustom = SCustom(isEven,"even")
 
   def isOdd(x: Any): Boolean = {
-    import scala.math.abs
     x match {
-      case y: Int => abs(y % 2) == 1
+      case y: Int => scala.math.abs(y % 2) == 1
       case _ => false
     }
   }
@@ -250,9 +219,7 @@ object Types {
   def isPrime(x: Any): Boolean = {
     @scala.annotation.tailrec
     def go(k: Int, y: Int): Boolean = {
-      import scala.math.sqrt
-
-      if (k > sqrt(y)) true
+      if (k > scala.math.sqrt(y)) true
       else if (y % k == 0) false
       else go(k + 1, y)
     }

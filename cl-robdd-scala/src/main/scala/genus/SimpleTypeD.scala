@@ -22,10 +22,7 @@
 package genus
 
 import NormalForm._
-
-import scala.annotation.tailrec
-
-
+import adjuvant.Adjuvant._
 
 /** A general type of our type system. */
 abstract class SimpleTypeD { // SimpleTypeD
@@ -141,23 +138,6 @@ abstract class SimpleTypeD { // SimpleTypeD
     }
   }
 
-  def fixedPoint[T](w: T, f: T => T, goodEnough: (T, T) => Boolean): T = {
-    @tailrec
-    def fixed(v: T, history: List[T]): T = {
-      val v2 = f(v)
-      if (goodEnough(v, v2))
-        v
-      else if (history.contains(v2)) {
-        history.zipWithIndex.foreach { case (td, i) => println(s"$i: $td") }
-        throw new Exception("Failed: fixedPoint encountered the same value twice: " + v2)
-      }
-      else
-        fixed(v2, v :: history)
-    }
-
-    fixed(w, List[T]())
-  }
-
   def findSimplifier(tag: String, t: SimpleTypeD, simplifiers: List[() => SimpleTypeD]): SimpleTypeD = {
     // DEBUG version of findSimplifier,  if called with two additional arguments,
     //   diagnostics will be printed logging the progression of simplifications
@@ -173,22 +153,8 @@ abstract class SimpleTypeD { // SimpleTypeD
     s
   }
 
-  @scala.annotation.tailrec
   final def findSimplifier(simplifiers: List[() => SimpleTypeD]): SimpleTypeD = {
-    // simplifiers is a list of 0-ary functions.   calling such a function
-    //   either returns `this` or something else.   we call all the functions
-    //   in turn, as long as they return `this`.  As soon as such a function
-    //   returns something other than `this`, then that new value is returned
-    //   from findSimplifier.  As a last resort, `this` is returned.
-    simplifiers match {
-      case Nil => this
-      case s :: ss =>
-        val t2 = s()
-        if (this == t2)
-          findSimplifier(ss)
-        else
-          t2
-    }
+    adjuvant.Adjuvant.findSimplifier(this,simplifiers)
   }
 
   lazy val toDnf: SimpleTypeD = computeDnf()

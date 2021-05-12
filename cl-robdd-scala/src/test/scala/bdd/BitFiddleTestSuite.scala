@@ -40,17 +40,17 @@ class BitFiddleTestSuite extends AnyFunSuite {
     for{
       n <- 1 to 5
       m <- 1 to n
-      minterm <- genDnfFromBitMask(n,m, 5000, _=>true)
+      minterm <- genDnfFromBitMask(n,m, 5000, _=>true).iterator
     } assert(minterm.size == m, s"n=$n minterm=$minterm expecting positive size=$m")
     for{
       n <- 1 to 5
       m <- 1 to n
-      minterm <- genDnfFromBitMask(n,m, 5000, _=>true)
+      minterm <- genDnfFromBitMask(n,m, 5000, _=>true).iterator
     } assert(!minterm.contains(0), s"n=$n minterm=$minterm should never contain 0 size=$m")
     for{
       n <- 1 to 5
       m <- 1 to n
-      minterm <- genDnfFromBitMask(n,m, 5000, _=>true)
+      minterm <- genDnfFromBitMask(n,m, 5000, _=>true).iterator
       bit <- minterm
     } assert(! minterm.contains(-bit), s"n=$n minterm=$minterm should never simultaneously contain $bit and -$bit")
 

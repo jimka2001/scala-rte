@@ -23,7 +23,7 @@
 package rte
 
 import genus.SimpleTypeD
-
+import adjuvant.Adjuvant._
 
 abstract class Rte {
   def |(r: Rte): Rte = Or(this, r)
@@ -56,7 +56,7 @@ abstract class Rte {
   //override def toString:String = toLaTeX
   def nullable:Boolean
   def firstTypes:Set[genus.SimpleTypeD]
-  def canonicalize:Rte = Rte.fixedPoint(this, (r:Rte) => r.canonicalizeOnce, (r1:Rte,r2:Rte)=>r1==r2)
+  def canonicalize:Rte = fixedPoint(this, (r:Rte) => r.canonicalizeOnce, (r1:Rte,r2:Rte)=>r1==r2)
   def canonicalizeOnce:Rte = this
 
   def derivative(wrt:Option[SimpleTypeD]):Rte = (wrt match {
@@ -68,17 +68,16 @@ abstract class Rte {
   def derivativeDown(wrt:SimpleTypeD):Rte
 
   def derivatives():(Map[Int,Rte],Map[Int,Seq[(SimpleTypeD,Int)]]) = {
+  import adjuvant.Adjuvant.traceGraph
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       genus.Types.mdtd(rt.firstTypes)
         .map(td => (td,rt.derivative(Some(td))))
     }
-    Rte.traceGraph(this,edges)
+    traceGraph(this,edges)
   }
 }
 
 object Rte {
-
-  import scala.annotation.tailrec
 
   val sigmaStar: Rte = Star(Sigma)
   val notSigma: Rte = Or(Cat(Sigma, Sigma, sigmaStar), EmptyWord)
@@ -114,38 +113,6 @@ object Rte {
     case _ => false
   }
 
-  def searchReplace[A](xs: Seq[A], search: A, replace: A): Seq[A] = {
-    xs.map(x => if (search == x) replace else x)
-  }
-
-  def findAdjacent[A](xs: Seq[A], cmp: (A, A) => Boolean): Boolean =
-    xs.toList.tails.exists {
-      case Nil => false
-      case x :: Nil => false
-      case x1 :: x2 :: _ => cmp(x1, x2)
-    }
-
-  def removeAdjacent[A](xs: Seq[A], cmp: (A, A) => Boolean): Seq[A] =
-    xs.toList.tails.flatMap {
-      case Nil => Nil
-      case x :: Nil => List(x)
-      case x1 :: x2 :: _ if cmp(x1, x2) => Nil
-      case x :: _ => List(x)
-    }.toSeq
-
-  private def fixedPoint[V](value: V, f: V => V, cmp: (V, V) => Boolean): V = {
-    @tailrec
-    def recur(value: V): V = {
-      val newValue = f(value)
-      if (cmp(value, newValue))
-        value
-      else
-        recur(newValue)
-    }
-
-    recur(value)
-  }
-
   def randomSeq(depth: Int): Seq[Rte] = {
     val maxCompoundSize = 2
     (0 until maxCompoundSize).map { _ => randomRte(depth) }
@@ -178,33 +145,6 @@ object Rte {
     }
   }
 
-  def traceGraph[V, W](v0: V, edges: V => Seq[(W, V)]): (Map[Int, V], Map[Int, Seq[(W, Int)]]) = {
-    import genus.Types.conj
-    val s0: Seq[(W, Int)] = Seq()
-
-    @tailrec
-    def recur(v: V,
-              i: Int,
-              es: List[(W, V)],
-              intToV: Map[Int, V],
-              vToInt: Map[V, Int],
-              m: Map[Int, Seq[(W, Int)]]): (Map[Int, V], Map[Int, Seq[(W, Int)]]) = {
-      es match {
-        case (w: W, v1: V) :: wvs if !vToInt.contains(v1) =>
-          recur(v, i + 1, es, intToV + (i -> v1), vToInt + (v1 -> i), m)
-        case (w: W, v1: V) :: wvs =>
-          val currentEdges: Seq[(W, Int)] = m.getOrElse(vToInt(v), s0)
-          recur(v, i, wvs, intToV, vToInt, m + (vToInt(v) -> conj(w -> vToInt(v1), currentEdges)))
-        case Nil =>
-          intToV.keys.find(k => ! m.contains(k)).map(intToV) match {
-            case Some(v2) => recur(v2, i, edges(v2).toList, intToV, vToInt, m)
-            case None => (intToV, m)
-          }
-      }
-    }
-
-    recur(v0, 1, edges(v0).toList, Map(0 -> v0), Map(v0 -> 0), Map())
-  }
 }
 
 object sanityTest {

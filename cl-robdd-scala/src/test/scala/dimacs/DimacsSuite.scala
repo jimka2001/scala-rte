@@ -204,10 +204,10 @@ class DimacsSuite extends AnyFunSuite {
   test("reduceOneVar 2") {
     val literals = List(3, 5, 7, 11, 17)
     for {
-      p <- 0 until literals.length
+      p <- literals.indices
       clause1 = literals
       (prefix: List[Int], suffix: List[Int]) = literals.splitAt(p)
-      clause2: List[Int] = prefix ++ (-(suffix.head) :: suffix.tail)
+      clause2: List[Int] = prefix ++ (-suffix.head :: suffix.tail)
       (reduced, newRectified) = reduceOneVar(literals, clauseToBitSet(clause1), clauseToBitSet(clause2))
     } {
       // we are calling reduceOneVar on two clauses, one is a copy of literals, and one has been negated in the p'th position
@@ -269,7 +269,7 @@ p cnf 3 2
     }
   }
   test("read dimacs benchmark files") {
-    val base = this.getClass().getResource(".").toString.drop(5) // skip "file:" 5 characters
+    val base = this.getClass.getResource(".").toString.drop(5) // skip "file:" 5 characters
     val rel = "../../../../../cl-robdd/data"
     // bench marks
     List("aim-100-1_6-no-1.cnf",

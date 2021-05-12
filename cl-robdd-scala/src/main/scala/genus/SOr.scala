@@ -23,6 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
+import adjuvant.Adjuvant.conj
 
 /** A union type, which is the union of zero or more types.
  *
@@ -48,6 +49,8 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   }
 
   override protected def inhabitedDown: Option[Boolean] = {
+    import adjuvant.Adjuvant._
+
     val i = memoize((s: SimpleTypeD) => s.inhabited)
     if (tds.exists(i(_).contains(true)))
       Some(true)
@@ -59,6 +62,8 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
 
   // SOr(tds: SimpleTypeD*)
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
+    import adjuvant.Adjuvant._
+
     val d = memoize((s: SimpleTypeD) => s.disjoint(t))
     if (tds.forall(d(_).contains(true)))
       Some(true)
@@ -70,6 +75,8 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
 
   // SOr(tds: SimpleTypeD*)
   override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
+    import adjuvant.Adjuvant._
+
     val s = memoize((s: SimpleTypeD) => s.subtypep(t))
     if (tds.isEmpty) {
       SEmpty.subtypep(t)
@@ -164,7 +171,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
     tds.find(andp) match {
       case Some(td@SAnd(andArgs@_*)) =>
         val others = tds.filterNot(_ == td)
-        SAnd(andArgs.map { x => SOr(conj(x, others): _*) }: _*)
+        SAnd(andArgs.map { x => SOr(conj(others,x): _*) }: _*)
       case None => this
       case x => throw new Error(s"this should not occur: " + x)
     }
