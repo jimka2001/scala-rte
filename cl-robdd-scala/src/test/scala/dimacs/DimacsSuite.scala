@@ -21,7 +21,7 @@
 
 package dimacs
 
-import cl.CLcompat._
+import adjuvant.CLcompat._
 import dimacs.QmVec._
 import dimacs.dimacsParse._
 import dimacs.dimacsSimplify._

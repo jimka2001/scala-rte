@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2020 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,29 +19,36 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dfa
+package adjuvant
 
-object Serialize {
+import adjuvant.CLcompat._
+import org.scalatest.funsuite.AnyFunSuite
 
-  def serialize[Sigma,L,E](dfa:Dfa[Sigma,L,E]):Unit = serialize(dfa,print)
+class CLcompatTestSuite extends AnyFunSuite {
+  type T= Int=>Nothing
+  assert(42 == block{ret:T => ret(42)})
+  assert(43 == block{ret:T => 43})
+  assert(44 == block{ret1:T =>
+    block{ret2:T =>
+      ret1(44)
+    }})
 
-  def serialize[Sigma,L,E](dfa:Dfa[Sigma,L,E], print:String=>Unit):Unit = {
-    print(s"Q=${dfa.Q}\n")
-    print(s"q0=${dfa.q0}\n")
-    print(s"F=${dfa.F}\n")
-    for{
-      q <- dfa.Q
-      tr <- q.transitions
-    } print(s"delta($q,${tr.label}) = ${tr.destination}\n")
-  }
+  assert(45 == block{ret1:T =>
+    block{ret2:T =>
+      ret1(45)
+    }
+    ret1(46)})
 
-  def serializeToString[Sigma,L,E](dfa:Dfa[Sigma,L,E]):String = {
-    import adjuvant.Accumulators.withOutputToString
+  assert(48 == block{ret1:T =>
+    block{ret2:T =>
+      ret2(47)
+    }
+    ret1(48)})
 
-    withOutputToString(printer => {
-      printer("{\n")
-      serialize(dfa,printer)
-      printer("}\n")
-    })
-  }
+  assert(49 == block{ret1:T =>
+    block{ret2:T =>
+      ret1(49)
+    }
+    assert(false, "this line should never be reached")
+  })
 }

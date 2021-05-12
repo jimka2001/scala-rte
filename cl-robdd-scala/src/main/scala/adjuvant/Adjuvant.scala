@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2021 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,36 +19,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package clcompat
 
-import cl.CLcompat._
-import org.scalatest.funsuite.AnyFunSuite
+package adjuvant
 
-class CLcompatTestSuite extends AnyFunSuite {
-  type T= Int=>Nothing
-  assert(42 == block{ret:T => ret(42)})
-  assert(43 == block{ret:T => 43})
-  assert(44 == block{ret1:T =>
-    block{ret2:T =>
-      ret1(44)
-    }})
+object Adjuvant {
 
-  assert(45 == block{ret1:T =>
-    block{ret2:T =>
-      ret1(45)
-    }
-    ret1(46)})
-
-  assert(48 == block{ret1:T =>
-    block{ret2:T =>
-      ret2(47)
-    }
-    ret1(48)})
-
-  assert(49 == block{ret1:T =>
-    block{ret2:T =>
-      ret1(49)
-    }
-    assert(false, "this line should never be reached")
-  })
 }

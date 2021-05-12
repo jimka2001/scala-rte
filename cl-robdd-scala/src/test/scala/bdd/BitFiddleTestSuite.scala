@@ -113,7 +113,7 @@ class BitFiddleTestSuite extends AnyFunSuite {
   }
   test("gen truth table range") {
     import Bdd._
-    import cl.Accumulators.withCounter
+    import adjuvant.Accumulators.withCounter
     withNewBddHash {
       (1 to 4).foreach { n =>
         assert(1 ==

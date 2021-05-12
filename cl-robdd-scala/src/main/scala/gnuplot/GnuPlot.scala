@@ -88,7 +88,7 @@ object GnuPlot {
     assert(outputDirName.takeRight(1) == "/", s"outputDirName=$outputDirName must end with /")
 
     import java.io._
-    import cl.Accumulators.withOutputToString
+    import adjuvant.Accumulators.withOutputToString
 
     val gnuName = s"$outputDirName$outputFileBaseName.gnu"
     val gnu = new PrintWriter(new File(gnuName))
