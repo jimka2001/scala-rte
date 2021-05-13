@@ -152,10 +152,10 @@ object Adjuvant {
   @tailrec
   def findSimplifier[T](target: T, simplifiers: List[() => T]): T = {
     // simplifiers is a list of 0-ary functions.   calling such a function
-    //   either returns `this` or something else.   we call all the functions
-    //   in turn, as long as they return `this`.  As soon as such a function
-    //   returns something other than `this`, then that new value is returned
-    //   from findSimplifier.  As a last resort, `this` is returned.
+    //   either returns `target` or something else.   we call all the functions
+    //   in turn, as long as they return `target`.  As soon as such a function
+    //   returns something other than `target`, then that new value is returned
+    //   from findSimplifier.  As a last resort, `target` is returned.
     simplifiers match {
       case Nil => target
       case s :: ss =>
