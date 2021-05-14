@@ -44,7 +44,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
   }
 
   override def canonicalizeOnce: Rte = {
-    val betterOperands = Cat.stripRedundant(operands)
+    val betterOperands = Cat.swapCommutables(Cat.stripRedundant(operands))
       .map(_.canonicalizeOnce)
       .flatMap { // Cat( x, Cat(a, b), y) --> Cat(x,a,b,y)
         case Cat(Seq(rs@_*)) => rs
@@ -88,5 +88,16 @@ object Cat {
       case Nil => Nil
       case rt::_ => List(rt)
     }.toSeq
+  }
+  def swapCommutables(rts:Seq[Rte]):Seq[Rte] = {
+    // Cat(A,B,X*,X,C,D) --> Cat(A,B,X,X*,C,D)
+    def recur(rts:List[Rte],acc:List[Rte]):List[Rte] = {
+      rts match {
+        case Nil => acc.reverse
+        case Star(rt1)::rt2::rs if rt1 == rt2 => recur(rt2::Star(rt1)::rs,acc)
+        case rt::rs => recur(rs,rt::acc)
+      }
+    }
+    recur(rts.toList,Nil).toSeq
   }
 }
