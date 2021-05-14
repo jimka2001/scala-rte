@@ -83,7 +83,7 @@ object Cat {
   //  and (..., x*, x* ...) --> (..., x*, ...)
   def stripRedundant(rs:Seq[Rte]):Seq[Rte] = {
     rs.toList.tails.flatMap{
-      case r1::Star(r2)::r3::_ if r1==r2 && r2 == r3 => Nil
+      case Star(r1)::r2::Star(r3)::_ if r1 == r2 && r2 == r3 => Nil
       case Star(r1)::Star(r2)::_ if r1 == r2 => Nil
       case Nil => Nil
       case rt::_ => List(rt)
