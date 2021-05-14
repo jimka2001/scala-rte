@@ -24,11 +24,12 @@ package rte
 
 final case class Cat(operands:Seq[Rte]) extends Rte {
   override def toLaTeX: String = "(" ++ operands.map(_.toLaTeX).mkString("\\cdot ") ++ ")"
-  override def toString:String = operands.map(_.toString).mkString("Cat(", ",", ")")
+
+  override def toString: String = operands.map(_.toString).mkString("Cat(", ",", ")")
 
   def nullable: Boolean = operands.forall(_.nullable)
 
-  def minLength:Int = operands.count(r => !r.nullable)
+  def minLength: Int = operands.count(r => !r.nullable)
 
   def firstTypes: Set[genus.SimpleTypeD] = {
     operands match {
@@ -45,8 +46,8 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
   override def canonicalizeOnce: Rte = {
     val betterOperands = Cat.stripRedundant(operands)
       .map(_.canonicalizeOnce)
-      .flatMap{ // Cat( x, Cat(a, b), y) --> Cat(x,a,b,y)
-        case Cat(Seq(rs @ _*)) => rs
+      .flatMap { // Cat( x, Cat(a, b), y) --> Cat(x,a,b,y)
+        case Cat(Seq(rs@_*)) => rs
         case rt => Seq(rt)
       }
       .filterNot(_ == EmptyWord) //  Cat( x, EmptyWord, y) --> Cat( x, y)
@@ -61,14 +62,15 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
     else
       Cat(betterOperands)
   }
-  def derivativeDown(wrt:genus.SimpleTypeD):Rte = operands.toList match {
+
+  def derivativeDown(wrt: genus.SimpleTypeD): Rte = operands.toList match {
     case Nil => EmptyWord.derivative(Some(wrt))
-    case rt::Nil => rt.derivative(Some(wrt))
-    case head::tail =>
-      lazy val term1:Rte = Cat((head.derivative(Some(wrt))::tail).toSeq)
-      lazy val term2:Rte = Cat(tail).derivative(Some(wrt))
+    case rt :: Nil => rt.derivative(Some(wrt))
+    case head :: tail =>
+      lazy val term1: Rte = Cat((head.derivative(Some(wrt)) :: tail).toSeq)
+      lazy val term2: Rte = Cat(tail).derivative(Some(wrt))
       if (head.nullable)
-        Or(Seq(term1,term2))
+        Or(Seq(term1, term2))
       else
         term1
   }

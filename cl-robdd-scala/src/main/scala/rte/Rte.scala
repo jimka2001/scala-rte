@@ -68,7 +68,8 @@ abstract class Rte {
   def derivativeDown(wrt:SimpleTypeD):Rte
 
   def derivatives():(Vector[Rte],Vector[Seq[(SimpleTypeD,Int)]]) = {
-  import adjuvant.Adjuvant.traceGraph
+    import adjuvant.Adjuvant.traceGraph
+
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       genus.Types.mdtd(rt.firstTypes)
         .map(td => (td,rt.derivative(Some(td))))
@@ -82,7 +83,7 @@ abstract class Rte {
     val (rtes,edges) = derivatives()
     val qids = rtes.indices.toSet
     val fids = qids.filter(i => rtes(i).nullable)
-    val fmap = fids.map{i => (i -> true)}.toMap
+    val fmap = fids.map{i => i -> true}.toMap
     new Dfa(Qids=qids,
             q0id=0,
             Fids=fids,
