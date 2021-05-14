@@ -242,13 +242,13 @@ class RteTestSuite extends AnyFunSuite {
   test("canonicalize and") {
     // And(Not(<[= 4]>),<[Member 0,4,5,6]>,Not(<[= 1]>),<[Member 1,2,3,4]>)
     assert(And(Not(Singleton(SEql(4))),
-               Singleton(SMember(0,4,5,6)),
+               Singleton(SMember(0, 4, 5, 6)),
                Not(Singleton(SEql(1))),
-               Singleton(SMember(1,2,3,4))).canonicalize == EmptySet)
+               Singleton(SMember(1, 2, 3, 4))).canonicalize == EmptySet)
     assert(And(Singleton(SEql(4)),
-               Singleton(SMember(0,4,5,6)),
+               Singleton(SMember(0, 4, 5, 6)),
                Not(Singleton(SEql(1))),
-               Singleton(SMember(1,2,3,4))).canonicalize == Singleton(SEql(4)))
+               Singleton(SMember(1, 2, 3, 4))).canonicalize == Singleton(SEql(4)))
 
     assert(And(Singleton(genus.SEql(0)), Sigma).canonicalize == Singleton(genus.SEql(0)))
     assert(And(EmptySet, EmptySet).canonicalize == EmptySet)
