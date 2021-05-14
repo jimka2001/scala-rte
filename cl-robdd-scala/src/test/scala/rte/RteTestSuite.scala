@@ -55,15 +55,15 @@ class RteTestSuite extends AnyFunSuite {
        Not(SEql(44))).toLaTeX
   }
   test("nullable") {
-    assert(Sigma.nullable == false)
-    assert(EmptySet.nullable == false)
-    assert(Star(Sigma).nullable == true)
-    assert(Star(EmptySet).nullable == true)
+    assert(!Sigma.nullable)
+    assert(!EmptySet.nullable)
+    assert(Star(Sigma).nullable)
+    assert(Star(EmptySet).nullable)
     for {depth <- 1 to 5
          _ <- 0 to 100
          r = Rte.randomRte(depth)} {
-      assert(Star(r).nullable == true)
-      assert(Not(Star(r)).nullable == false)
+      assert(Star(r).nullable)
+      assert(!Not(Star(r)).nullable)
     }
     for {depth <- 1 to 5
          _ <- 1 to 1000
