@@ -55,39 +55,38 @@ object Adjuvant {
     //    all vertices have been visited.
     @tailrec
     def recur(v: V,
-              nextAvailable: Int,
+              currentStateId:Int,
+              nextAvailableState: Int,
               es: List[(L, V)],
-              intToV: Map[Int, V],
+              intToV: Vector[V],
               vToInt: Map[V, Int],
-              m: Map[Int, Seq[(L, Int)]]): (Map[Int,V], Map[Int,Seq[(L, Int)]]) = {
+              m: Vector[Seq[(L, Int)]]): (Vector[V], Vector[Seq[(L, Int)]]) = {
 
       es match {
         case (label, v1) :: lvs if !vToInt.contains(v1) =>
           // if we are seeing v1 for the first time, then register it
           //   in intToV and in vToInt.
-          recur(v, nextAvailable + 1, es, intToV + (nextAvailable -> v1), vToInt + (v1 -> nextAvailable), m)
+          recur(v, currentStateId, nextAvailableState + 1, es,
+                intToV.appended(v1), vToInt + (v1 -> nextAvailableState), m)
         case (label, v1) :: lvs =>
-          val currentEdges: Seq[(L, Int)] = m.getOrElse(vToInt(v), s0)
-
-          recur(v, nextAvailable, lvs, intToV, vToInt,
-                m + (vToInt(v) -> conj(currentEdges, label -> vToInt(v1))))
+          recur(v, currentStateId, nextAvailableState, lvs, intToV, vToInt,
+                m.updated(currentStateId, conj(m(currentStateId), label -> vToInt(v1))))
         case Nil =>
-          val next = vToInt(v)+1
+          val next = currentStateId+1
           // The termination condition occurs if next == nextAvailable, because
           //   this means now new vertices have been encountered which have not
           //   yet been treated.
-          if (next < nextAvailable) {
+          if (next < nextAvailableState) {
             val v2 = intToV(next)
-            recur(v2, nextAvailable, edges(v2).toList, intToV, vToInt, m)
+            recur(v2, next, nextAvailableState, edges(v2).toList, intToV, vToInt, m.appended(s0))
           }
           else
             (intToV, m)
       }
     }
 
-    val (vertexMap,edgeMap) = recur(v0, 1, edges(v0).toList, Map(0 -> v0), Map(v0 -> 0), Map())
-    (Vector.tabulate(vertexMap.size)(vertexMap),
-      Vector.tabulate(edgeMap.size)(edgeMap))
+    recur(v0, 0, 1, edges(v0).toList, Vector(v0), Map(v0 -> 0), Vector(s0))
+
   }
 
   def searchReplace[A](xs: Seq[A], search: A, replace: A): Seq[A] = {
