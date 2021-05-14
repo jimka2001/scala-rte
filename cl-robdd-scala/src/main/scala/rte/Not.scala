@@ -31,9 +31,11 @@ case class Not(operand:Rte) extends Rte {
     val betterOperand: Rte = operand.canonicalizeOnce
     betterOperand match {
       case Sigma => Rte.notSigma
+      case Singleton(genus.STop) => Rte.notSigma
       case Rte.sigmaStar => EmptySet
       case EmptyWord => Rte.notEpsilon
       case EmptySet => Rte.sigmaStar
+      case Singleton(genus.SEmpty) => Rte.sigmaStar
 
       // Not(Not(r)) -> Not(r)
       case Not(r) => r.canonicalizeOnce

@@ -72,15 +72,42 @@ abstract class Rte {
 
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       genus.Types.mdtd(rt.firstTypes)
-        .map(td => (td,rt.derivative(Some(td))))
+        .map(td => (td,
+          try rt.derivative(Some(td))
+          catch {
+            case e: CannotComputeDerivative =>
+              throw new CannotComputeDerivatives(msg=Seq(s"when generating derivatives from $this",
+                                                         "when computing edges of " + rt,
+                                                         s"  which canonicalizes to " + this.canonicalize,
+                                                         s"  computing derivative of ${e.rte}",
+                                                         s"  wrt=${e.wrt}",
+                                                         "  derivatives() reported: " + e.msg).mkString("\n"),
+                                                 rte=this,
+                                                 firstTypes = rt.firstTypes,
+                                                 mdtd = genus.Types.mdtd(rt.firstTypes)
+                                         )
+          }))
     }
+
     traceGraph(this,edges)
   }
 
   import xymbolyco.Dfa
 
   def toDfa():Dfa[Any,SimpleTypeD,Boolean] = {
-    val (rtes,edges) = derivatives()
+    val (rtes,edges) = try {
+      derivatives()
+    }
+    catch {
+      case e: CannotComputeDerivatives =>
+        throw new CannotComputeDfa(msg=Seq(s"While trying to compute Dfa of $this ",
+                                           s"   firstTypes = " + e.firstTypes,
+                                           s"   mdtd = "+ e.mdtd,
+                                           "  toDfa reported:",
+                                           e.msg).mkString("\n"),
+                                   rte=this)
+    }
+
     val qids = rtes.indices.toSet
     val fids = qids.filter(i => rtes(i).nullable)
     val fmap = fids.map{i => i -> true}.toMap
@@ -165,6 +192,18 @@ object Rte {
 
 }
 
+object sanityTest2 {
+  def main(argv: Array[String]): Unit = {
+    for {depth <- 5 to 7
+         _ <- 1 to 2000
+         rt = Rte.randomRte(depth)
+         } {
+      rt.toDfa()
+      //dfaView(sdfa, abbreviateTransitions=true)
+    }
+  }
+}
+
 object sanityTest {
   def main(argv: Array[String]):Unit = {
     import genus._
@@ -184,3 +223,12 @@ object sanityTest {
     println(Rte.randomRte(2))
   }
 }
+
+class CannotComputeDerivative(val msg:String, val rte:Rte, val wrt:SimpleTypeD) extends Exception(msg) {}
+
+class CannotComputeDerivatives(val msg:String,
+                               val rte:Rte,
+                               val firstTypes:Set[SimpleTypeD],
+                               val mdtd:Seq[SimpleTypeD]) extends Exception(msg) {}
+
+class CannotComputeDfa(val msg:String, val rte:Rte ) extends Exception(msg){}

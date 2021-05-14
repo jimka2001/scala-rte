@@ -47,10 +47,12 @@ case class Singleton(td:SimpleTypeD) extends Rte {
     case td2:SimpleTypeD if td2.subtypep(td).contains(true) => EmptyWord
     case SAnd(tds@ _*) if tds.contains(SNot(td)) => EmptySet
     case SAnd(tds@ _*) if tds.contains(td) => EmptyWord
-    case _ => throw new Error(s"cannot compute derivative of $this wrt=$wrt, disjoint= "
-                              + wrt.disjoint(td)
-                              + " subtypep = "
-                              + wrt.subtypep(td))
+    case _ => throw new CannotComputeDerivative(s"cannot compute derivative of $this wrt=$wrt, disjoint= "
+                                                  + wrt.disjoint(td)
+                                                  + " subtypep = "
+                                                  + wrt.subtypep(td),
+                                                wrt=wrt,
+                                                rte=this)
   }
   override def derivative(wrt:Option[SimpleTypeD]):Rte = td match {
     // TODO currently don't know how to find derivative of Singleton(td) if td.inhabited=None

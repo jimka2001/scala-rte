@@ -163,6 +163,25 @@ class RteTestSuite extends AnyFunSuite {
       assert(Cat(r1, r2.*, r2.*, r1).canonicalize == Cat(r1, r2.*, r1).canonicalize)
     }
   }
+
+  test("canonicalize cat case 166"){
+
+    assert(And(Not(Singleton(SEql(1))),Sigma).canonicalize
+             != Not(Singleton(SEql(1))))
+
+    assert(Cat(And(Not(Singleton(SMember(1))),
+                   Sigma),
+               Singleton(SMember("a"))).canonicalize
+             != Cat(Not(Singleton(SEql(1))),
+                    Singleton(SEql("a"))))
+
+    assert(Star(Cat(And(Not(Singleton(SMember(1))),
+                        Sigma),
+                    Singleton(SMember("a")))).canonicalize
+             != Star(Cat(Not(Singleton(SEql(1))),
+                         Singleton(SEql("a")))))
+  }
+
   test("canonicalize star") {
     assert(EmptyWord.*.canonicalize == EmptyWord)
     assert(EmptySet.*.canonicalize == EmptyWord)
@@ -462,7 +481,7 @@ class RteTestSuite extends AnyFunSuite {
     //import xymbolyco.GraphViz._
 
     for {depth <- 5 to 7
-         _ <- 1 to 500
+         _ <- 1 to 1000
          rt = Rte.randomRte(depth)
          } {
       rt.toDfa()
@@ -480,5 +499,60 @@ class RteTestSuite extends AnyFunSuite {
       dfaToPng(rt.toDfa(), s"depth=$depth,rep=$rep", abbreviateTransitions=true)
       // dfaView(rt.toDfa(), s"depth=$depth,rep=$rep", abbreviateTransitions=true)
     }
+  }
+
+  test("rte deriv case 1"){
+    // OK
+    Star(Cat(And(Or(Not(Singleton(SMember(1,2,3,4))),
+                    Star(Singleton(SEmpty)))
+                 ),
+             Singleton(SMember("a","b","c","d")))).toDfa()
+
+    // OK
+    Star(Cat(And(Singleton(SMember(1)),
+                 Sigma),
+             Singleton(SMember("a")))).toDfa()
+
+    // OK
+    Cat(And(Not(Singleton(SMember(1))),
+            Sigma),
+        Singleton(SMember("a"))).toDfa()
+
+    // OK
+    Star(Cat(And(Not(Singleton(SMember(1))),
+                 Sigma),
+             Singleton(SMember(1)))).toDfa()
+
+    // was Error
+    Star(Cat(Not(Singleton(SEql(1))),
+             Singleton(SEql("a")))).toDfa()
+
+    // was Error
+    Star(Cat(And(Not(Singleton(SMember(1))),
+                 Sigma),
+             Singleton(SMember("a")))).toDfa()
+
+
+    // was Error
+    Star(Cat(And(Or(Not(Singleton(SMember(1)))
+                    ),
+                 Sigma),
+             Singleton(SMember("a")))).toDfa()
+
+    // was Error
+    Star(Cat(And(Or(Not(Singleton(SMember(1))),
+                    Star(Singleton(SEmpty))),
+                 Sigma),
+             Singleton(SMember("a")))).toDfa()
+
+
+    //  when generating dfa from (Cat(And(Or(Not(<[Member 1,2,3,4]>),(<SEmpty>)*),Σ),<[Member a,b,c]>))*
+    //    canonicalized to (Cat(Not(<[Member 1,2,3,4]>),<[Member a,b,c]>))*
+    //       computing derivative of <[Member a,b,c]>
+    //          wrt=[Not [Member 1,2,3,4]]
+    Star(Cat(And(Or(Not(Singleton(SMember(1,2,3,4))),
+                    Star(Singleton(SEmpty))),
+                 Sigma),
+             Singleton(SMember("a","b","c","d")))).toDfa()
   }
 }
