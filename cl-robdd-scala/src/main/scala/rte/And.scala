@@ -88,7 +88,7 @@ case class And(operands:Seq[Rte]) extends Rte{
       EmptySet
     else if (singletons.exists(td => td.inhabited.contains(false)))
       EmptySet
-    else if (betterOperands.contains(Sigma) && !matchesOnlySingletons && singletons.exists(td => td.inhabited.contains(true)))
+    else if (betterOperands.contains(Sigma) && betterOperands.exists(Rte.isSingleton) && singletons.exists(td => td.inhabited.contains(true)))
       And(betterOperands.filterNot(_ == Sigma))
     else if (betterOperands.contains(Rte.sigmaStar) && singletons.exists(td => td.inhabited.contains(true)))
       And(betterOperands.filterNot(_ == Rte.sigmaStar))
