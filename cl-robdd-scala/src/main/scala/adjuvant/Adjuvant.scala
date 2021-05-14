@@ -165,4 +165,12 @@ object Adjuvant {
           t2
     }
   }
+
+  def trace[A](a: A): A = {
+    trace("",a)
+  }
+  def trace[A](msg:String,a:A):A = {
+    println(s"$msg: $a")
+    a
+  }
 }
