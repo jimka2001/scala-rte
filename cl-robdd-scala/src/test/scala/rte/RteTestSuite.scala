@@ -92,10 +92,18 @@ class RteTestSuite extends AnyFunSuite {
       assert(r1.+ == Cat(r1, Star(r1)))
       assert((r1 ^ 0) == EmptyWord)
       assert((r1 ^ 1) == r1)
-      assert((r1 ^ 2).canonicalize == Cat(r1, r1).canonicalize)
+      assert((r1 ^ 2).canonicalize == Cat(r1, r1).canonicalize, s"r1=$r1")
       assert((r1 ^ 3).canonicalize == Cat(r1, r1, r1).canonicalize)
     }
   }
+
+  test("cat case 99"){
+    assert(Cat(Sigma,Sigma,Star(Sigma),Sigma,Sigma,Star(Sigma)).canonicalize
+             == Cat(Sigma,Sigma,Sigma,Sigma,Star(Sigma)).canonicalize)
+    assert(Cat(Sigma,Sigma,Star(Sigma),Sigma,Sigma,Star(Sigma)).canonicalize
+             == Cat(Star(Sigma),Sigma,Sigma,Sigma,Sigma).canonicalize)
+  }
+
   test("canonicalize random") {
     for {depth <- 0 to 5
          _ <- 1 to 10000
@@ -157,13 +165,25 @@ class RteTestSuite extends AnyFunSuite {
       assert(Cat(r1, EmptyWord).canonicalize == r1.canonicalize)
       assert(Cat(r1, EmptyWord, r2).canonicalize == Cat(r1, r2).canonicalize)
 
-      assert(Cat(Cat(r1, r2), Cat(r1, r2)).canonicalize == Cat(r1, r2, r1, r2).canonicalize)
+      assert(Cat(Cat(r1, r2), Cat(r1, r2)).canonicalize == Cat(r1, r2, r1, r2).canonicalize,
+             s"r1=$r1   r2=$r2")
       assert(Cat(r1, Cat(r1, r2), r2).canonicalize == Cat(r1, r1, r2, r2).canonicalize)
 
       assert(Cat(r1, r2.*, r2.*, r1).canonicalize == Cat(r1, r2.*, r1).canonicalize)
     }
   }
 
+  test("canonicalize cat case 168"){
+    val r1 = Singleton(SEql(1))
+    val r2 = Star(r1)
+    assert(Cat(Cat(r1,r2),Cat(r1,r2)).canonicalize !=
+           Cat(r1,r2).canonicalize)
+    assert(Cat(r1,r2,r1,r2).canonicalize !=
+           Cat(r1,r2))
+    assert(Cat(Cat(r1,r2),Cat(r1,r2)).canonicalize ==
+             Cat(r1,r2,r1,r2).canonicalize)
+
+  }
   test("canonicalize cat case 166"){
 
     assert(And(Not(Singleton(SEql(1))),Sigma).canonicalize
@@ -189,13 +209,18 @@ class RteTestSuite extends AnyFunSuite {
     for {depth <- 0 to 5
          _ <- 1 to 1000
          r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
          } {
       assert(Star(Star(r1)).canonicalize == Star(r1).canonicalize)
       assert(Star(r1).canonicalize == Star(r1.canonicalize).canonicalize)
       assert(Star(Cat(r1,Star(r1))).canonicalize == Star(r1).canonicalize) // (x x*)* --> x*
       assert(Star(Cat(Star(r1),r1)).canonicalize == Star(r1).canonicalize) // (x* x)* --> x*
+      assert(Star(Cat(r1,r1,Star(Cat(r1,r1)))).canonicalize == Star(Cat(r1,r1)).canonicalize) // (x x (x x)*)* --> (x x)*
+      assert(Star(Cat(r1,r2,Star(Cat(r1,r2)))).canonicalize == Star(Cat(r1,r2)).canonicalize) // (x x (x x)*)* --> (x x)*
+      assert(Star(Cat(Star(Cat(r1,r2)),r1,r2)).canonicalize == Star(Cat(r1,r2)).canonicalize) // ((x y)* x y)* --> (x y)*
     }
   }
+
   test("canonicalize not") {
     assert(Not(Sigma).canonicalize == Or(Cat(Sigma, Sigma, Star(Sigma)),
                                          EmptyWord))
@@ -208,7 +233,8 @@ class RteTestSuite extends AnyFunSuite {
          r2 = Rte.randomRte(depth)
          } {
       assert(Not(Not(r1)).canonicalize == r1.canonicalize)
-      assert(Not(And(r1, r2)).canonicalize == Or(Not(r1), Not(r2)).canonicalize)
+      assert(Not(And(r1, r2)).canonicalize == Or(Not(r1), Not(r2)).canonicalize,
+             s"r1=$r1  r2=$r2")
       assert(Not(Or(r1, r2)).canonicalize == And(Not(r1), Not(r2)).canonicalize)
       assert(Not(r1).canonicalize == Not(r1.canonicalize).canonicalize)
     }
@@ -297,6 +323,8 @@ class RteTestSuite extends AnyFunSuite {
       println(List(Or(EmptyWord, Star(Cat( r1, r3))),
                    Or(EmptyWord, Star(Cat( r1, r3))).canonicalize))
 
+      println(Or(EmptyWord, Cat(r1, r3, Star(Cat(r1, r3)))).canonicalize)
+      println(Or(EmptyWord, Star(Cat( r1, r3))).canonicalize)
       assert(Or(EmptyWord, Cat(r1, r3, Star(Cat(r1, r3)))).canonicalize
                == Or(EmptyWord, Star(Cat( r1, r3))).canonicalize)
 
@@ -318,8 +346,6 @@ class RteTestSuite extends AnyFunSuite {
     // Or(A,ε,<java.lang.String>,<java.lang.Integer>) did not equal Or(A,<java.lang.String>,ε,<java.lang.Integer>)
     assert(Or().canonicalize
              == Or().canonicalize)
-
-
 
     //                     Or(ε,A,Cat(C,B,Star(Cat(C,B))))
     // not isomorphic with Or(A,Star(Cat(C,B)))
@@ -406,6 +432,10 @@ class RteTestSuite extends AnyFunSuite {
       assert(Or(r1,trsub,r2,trsup,r3).canonicalize ==
              Or(r1,r2,trsup,r3).canonicalize)
     }
+  }
+  test("case 415"){
+    assert(Or(EmptyWord,Cat(Star(Sigma),Sigma,Star(Sigma))).canonicalize
+             == Star(Sigma))
   }
   test("derivative special cases"){
     //import genus.STop

@@ -21,22 +21,47 @@
 //
 
 package rte
+import adjuvant.Adjuvant._
 
 case class Star(operand:Rte) extends Rte {
   override def toLaTeX: String = "(" ++ operand.toLaTeX ++ ")^{*}"
+
   override def toString: String = "(" + operand.toString + ")*"
+
   def nullable: Boolean = true
 
   def firstTypes: Set[genus.SimpleTypeD] = operand.firstTypes
+
+  def getStarCatOperands(rt: Rte): Seq[Rte] = {
+    rt match {
+      case Star(Cat(Seq(xs@_*))) => xs
+      case _ => Seq.empty
+    }
+  }
 
   override def canonicalizeOnce: Rte = operand.canonicalizeOnce match {
     case EmptyWord => EmptyWord
     case EmptySet => EmptyWord
     case Star(rt) => Star(rt) // x** -> x*
-    case Cat(Seq(x,ys@Star(y))) if x == y => ys // (x x*)* = x*
-    case Cat(Seq(xs@Star(x),y)) if x == y => xs // (x* x)* = x*
-    // TODO, Star(Cat(X, Y, Z, Star( Cat(X, Y, Z))))
+    case Cat(Seq(x, ys@Star(y))) if x == y => ys // (x x*)* = x*
+    case Cat(Seq(xs@Star(x), y)) if x == y => xs // (x* x)* = x*
+    case Cat(Seq(xs@Star(u), x, Star(v))) if x == u && x == v => xs // (x* x x*)* = x*
+    // Star(Cat(X, Y, Z, Star( Cat(X, Y, Z))))
     //   -->    Star( Cat(X, Y, Z))
+    case Cat(Seq(xs@_*)) if Rte.isStarCat(xs.last) && getStarCatOperands(xs.last) == xs.dropRight(1) =>
+      xs.last
+    // Star(Cat(Star( Cat(X, Y, Z)), X, Y, Z))
+    //   -->    Star( Cat(X, Y, Z))
+    case Cat(Seq(xs@_*)) if Rte.isStarCat(xs.head) && getStarCatOperands(xs.head) == xs.tail =>
+      xs.head
+    // Star(Cat(Star( Cat(X, Y, Z)), X, Y, Z, Star(Cat(X,Y,Z)))
+    //   -->    Star( Cat(X, Y, Z))
+    case Cat(Seq(xs@_*)) if xs.size > 2 &&
+      Rte.isStarCat(xs.head)
+      && Rte.isStarCat(xs.last)
+      && xs.head == xs.last
+      && getStarCatOperands(xs.head) == xs.tail.dropRight(1) =>
+      xs.head
     case rt => Star(rt)
   }
 
