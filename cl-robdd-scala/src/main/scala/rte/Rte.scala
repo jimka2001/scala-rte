@@ -148,6 +148,11 @@ object Rte {
     case _ => false
   }
 
+  def isStarCat(rt: Rte):Boolean = rt match {
+    case Star(Cat(Seq(_*))) => true
+    case _ => false
+  }
+
   def isOr(rt: Rte): Boolean = rt match {
     case Or(Seq(_*)) => true
     case _ => false
