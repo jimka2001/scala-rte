@@ -81,7 +81,6 @@ object GraphViz {
       else
         lab -> lab.toString
     }.toMap
-    println(labelMap)
     def write(str: String): Unit = {
       for {c <- str} {
         stream.write(c.toByte)
@@ -108,12 +107,6 @@ object GraphViz {
     write("  node [fontname=Arial, fontsize=25];\n")
     write("  edge [fontsize=20];\n")
 
-    if(abbreviateTransitions){
-      write("label=\"")
-      write((for{(lab,i) <- labels.toSeq.zipWithIndex
-                 } yield s"\\lt$i= $lab").mkString(""))
-      write("\\l\"\n")
-    }
     // initial state Q0
     write("// Initial state\n")
     write("""I0 [label="", style=invis, width=0]""")
@@ -133,12 +126,17 @@ object GraphViz {
     write(s"// all ${dfa.Q.size} states\n")
     dfa.Q.foreach{drawState}
 
-    if (title != "" ) {
+    lazy val transitionLabelText:String = (for{(lab,i) <- labels.toSeq.zipWithIndex
+                                               } yield s"\\lt$i= $lab").mkString("","","\\l")
+
+    if(abbreviateTransitions || title != ""){
       write( """  labelloc="t";""")
-      write("\n")
-      write(s"""  label="$title";""")
-      write("\n")
+      write("label=\"")
+      write(title)
+      write(transitionLabelText)
+      write("\"\n")
     }
+
     write("}\n")
   }
 }

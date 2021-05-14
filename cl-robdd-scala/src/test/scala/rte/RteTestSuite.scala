@@ -469,4 +469,16 @@ class RteTestSuite extends AnyFunSuite {
       //dfaView(sdfa, abbreviateTransitions=true)
     }
   }
+  test("rte to png") {
+    import xymbolyco.GraphViz._
+
+    for {depth <- 5 to 6
+         rep <- 1 to 3
+         rt = Rte.randomRte(depth).canonicalize
+         } {
+
+      dfaToPng(rt.toDfa(), s"depth=$depth,rep=$rep", abbreviateTransitions=true)
+      // dfaView(rt.toDfa(), s"depth=$depth,rep=$rep", abbreviateTransitions=true)
+    }
+  }
 }
