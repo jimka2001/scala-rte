@@ -39,6 +39,7 @@ case class Star(operand:Rte) extends Rte {
     //   -->    Star( Cat(X, Y, Z))
     case rt => Star(rt)
   }
-  def derivativeDown(wrt:genus.SimpleTypeD):Rte = Cat(operand.canonicalize.derivative(Some(wrt)),
-                                                      this)
+
+  def derivativeDown(wrt: genus.SimpleTypeD): Rte = Cat(operand.canonicalize.derivative(Some(wrt)),
+                                                        this)
 }
