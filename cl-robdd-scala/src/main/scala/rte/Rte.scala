@@ -43,13 +43,16 @@ abstract class Rte {
   }
   // isomorphic
   def ~=(that:Rte):Boolean = {
-    if (this == that)
-      true
-    else (this,that) match {
+    (this,that) match {
+      case (x,y) if x == y => true
         // compare the arguments of And and Or in any order
       case (Or(Seq(r1s@_*)),Or(Seq(r2s@_*))) => r1s.toSet == r2s.toSet
       case (And(Seq(r1s@_*)),And(Seq(r2s@_*))) => r1s.toSet == r2s.toSet
-      case _ => false
+      case (rt1,rt2) =>
+        val dfa = Or(And(rt1,Not(rt2)),
+                     And(rt2,Not(rt1))).toDfa
+        (dfa.F.isEmpty // no final states
+          || dfa .findSpanningPath.isEmpty) // no path to a final state from q0
     }
   }
   def toLaTeX:String
