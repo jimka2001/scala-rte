@@ -69,7 +69,14 @@ case class Or(operands:Seq[Rte]) extends Rte {
       }
       case _ => false
     }
-
+    // Or(Not(<[= 0]>),(<[= 1]>)*) did not equal Not(<[= 0]>)
+    lazy val dominantNotSingleton = betterOperands.find{
+      case Not(Singleton(td1)) if betterOperands.exists{
+        case Star(Singleton(td2)) => td1.disjoint(td2).contains(true)
+        case _ => false
+      } => true
+      case _ => false
+    }
     lazy val maybeCatxyz = betterOperands.find(catxyzp) // (:cat X Y Z (:* (:cat X Y Z)))
     // Or() --> EmptySet
     if (betterOperands.isEmpty)
@@ -122,6 +129,13 @@ case class Or(operands:Seq[Rte]) extends Rte {
       Or(betterOperands.filterNot(_ == EmptyWord))
     else if (maybeSub.nonEmpty)
       Or(betterOperands.filterNot(_ == Singleton(maybeSub.get)))
+    else if (betterOperands.contains(Rte.sigmaSigmaStarSigma) && betterOperands.exists{
+      case Not(Singleton(_)) => true
+      case _ => false})
+      Or(betterOperands.filter(_!= Rte.sigmaSigmaStarSigma))
+    else if (dominantNotSingleton.nonEmpty)
+    // Or(Not(<[= 0]>),(<[= 1]>)*) did not equal Not(<[= 0]>)
+      dominantNotSingleton.get
     else
       Or(betterOperands)
   }

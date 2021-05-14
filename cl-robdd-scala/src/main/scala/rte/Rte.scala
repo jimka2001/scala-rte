@@ -125,7 +125,8 @@ abstract class Rte {
 object Rte {
 
   val sigmaStar: Rte = Star(Sigma)
-  val notSigma: Rte = Or(Cat(Sigma, Sigma, sigmaStar), EmptyWord)
+  val sigmaSigmaStarSigma:Rte = Cat(Sigma, Sigma, sigmaStar)
+  val notSigma: Rte = Or(sigmaSigmaStarSigma, EmptyWord)
   val notEpsilon: Rte = Cat(Sigma, sigmaStar)
 
   def isAnd(rt: Rte): Boolean = rt match {
