@@ -42,6 +42,7 @@ case class And(operands:Seq[Rte]) extends Rte{
       case Not(Singleton(td)) if matchesOnlySingletons => List(genus.SNot(td))
       case _ => List.empty
     }.toList
+
     lazy val singletonIntersection = genus.SAnd(singletons:_*)
     lazy val canonicalizedSingletons = singletonIntersection.canonicalize()
     lazy val singletonsInhabited = canonicalizedSingletons.inhabited
@@ -69,7 +70,13 @@ case class And(operands:Seq[Rte]) extends Rte{
     }
     else if (betterOperands.contains(Rte.sigmaStar))
       And(betterOperands.filterNot(_ == Rte.sigmaStar))
-    else if (betterOperands.exists(Rte.isAnd)) {
+    else if (matchesOnlySingletons && betterOperands.exists(Rte.isStar)) {
+      // if x matches only singleton then And(x,y*) -> And(x,y)
+      And(betterOperands.map{
+        case Star(rt) => rt
+        case rt => rt
+      })
+    } else if (betterOperands.exists(Rte.isAnd)) {
       val andops = betterOperands.flatMap{
         case And(Seq(rs @ _*)) => rs
         case r => Seq(r)

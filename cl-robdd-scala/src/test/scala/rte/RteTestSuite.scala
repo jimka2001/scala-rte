@@ -232,10 +232,12 @@ class RteTestSuite extends AnyFunSuite {
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {
-      assert(Not(Not(r1)).canonicalize == r1.canonicalize)
-      assert(Not(And(r1, r2)).canonicalize == Or(Not(r1), Not(r2)).canonicalize,
-             s"r1=$r1  r2=$r2")
-      assert(Not(Or(r1, r2)).canonicalize == And(Not(r1), Not(r2)).canonicalize)
+      assert(Not(Not(r1)).canonicalize ~= r1.canonicalize)
+      assert(Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize,
+             s"\nr1=$r1  r2=$r2" +
+             s"\n  Not(And(r1, r2)) = Not(And($r1, $r2)) = " + Not(And(r1, r2)).canonicalize +
+             s"\n  Or(Not(r1), Not(r2)) = Or(Not($r1), Not($r2)) = " + Or(Not(r1), Not(r2)).canonicalize)
+      assert(Not(Or(r1, r2)).canonicalize ~= And(Not(r1), Not(r2)).canonicalize)
       assert(Not(r1).canonicalize == Not(r1.canonicalize).canonicalize)
     }
   }
@@ -267,7 +269,6 @@ class RteTestSuite extends AnyFunSuite {
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
-         r4 = Rte.randomRte(depth)
          } {
       // removing duplicates
       assert(And(r1, r1).canonicalize == r1.canonicalize, s"And(r1,r1)=${And(r1, r1).canonicalize}   r1=${r1.canonicalize}")
@@ -277,7 +278,7 @@ class RteTestSuite extends AnyFunSuite {
       assert(And(r1, Sigma, r2, EmptyWord).canonicalize == EmptySet)
       assert(And(r1, EmptySet, r2).canonicalize == EmptySet)
 
-      assert(And(And(r1, r2), r3).canonicalize == And(r1, And(r2, r3)).canonicalize,
+      assert(And(And(r1, r2), r3).canonicalize ~= And(r1, And(r2, r3)).canonicalize,
              s"r1=$r1  r2=$r2  r3=$r3   canonicalized: ${r1.canonicalize}  ${r2.canonicalize}  ${r3.canonicalize}")
       assert(And(And(r1, r2), r3).canonicalize == And(r1, r2, r3).canonicalize)
       assert(And(r1, Rte.sigmaStar, r2, r3).canonicalize == And(r1, r2, r3).canonicalize)
@@ -294,6 +295,40 @@ class RteTestSuite extends AnyFunSuite {
 
   test("canonicalize and 295") {
 
+    locally{
+      val r1 = Singleton(SEql(1))
+      val r2 = Singleton(SEql(2))
+      val r3 = Singleton(SEql(3))
+      val r4 = Singleton(SEql(4))
+      // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
+      assert(And(r1, Or(r2, r3), r4).canonicalize ~= Or(And(r1, r2, r4),
+                                                        And(r1, r3, r4)).canonicalize,
+             s"\nr1=$r1  r2=$r2  r3=$r3  r4=$r4" +
+               s"\n  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
+               "\n And(r1,r2,r4)=" + s" And($r1,$r2,$r4)=" + And(r1, r2, r4).canonicalize +
+               "\n And(r1,r3,r4)=" + s" And($r1,$r3,$r4)=" + And(r1, r3, r4).canonicalize
+             )
+    }
+    locally{
+      abstract class Test1
+      val r1 = Star(Sigma)
+      val r2 = Singleton(SEql(1))
+      val r3 = r1
+      val r4 = Star(Singleton(SAtomic(classOf[Test1])))
+      // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
+      assert(Or(r1,r4).canonicalize == r1)
+      assert(Or(r4,r1).canonicalize == r1)
+      assert(And(r1, Or(r2, r3), r4).canonicalize ~= Or(And(r1, r2, r4),
+                                                        And(r1, r3, r4)).canonicalize,
+             s"\nr1=$r1  r2=$r2  r3=$r3  r4=$r4" +
+               s"\n  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
+               "\n And(r1, Or(r2, r3), r4)=" + s"  And($r1, Or($r2, $r3), $r4)="+ And(r1, Or(r2, r3), r4).canonicalize +
+               "\n Or(r2, r3)=" + s"  Or($r2, $r3)="+ Or(r2, r3).canonicalize +
+               "\n And(r1,r2,r4)=" + s" And($r1,$r2,$r4)=" + And(r1, r2, r4).canonicalize +
+               "\n And(r1,r3,r4)=" + s" And($r1,$r3,$r4)=" + And(r1, r3, r4).canonicalize +
+               "\n Or(And(r1, r2, r4), And(r1, r3, r4)) = " + Or(And(r1, r2, r4), And(r1, r3, r4)).canonicalize
+             )
+    }
     for {depth <- 0 to 5
          _ <- 1 to 1000
          r1 = Rte.randomRte(depth)
@@ -305,10 +340,10 @@ class RteTestSuite extends AnyFunSuite {
       // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
       assert(And(r1, Or(r2, r3), r4).canonicalize ~= Or(And(r1, r2, r4),
                                                         And(r1, r3, r4)).canonicalize,
-             s"r1=$r1  r2=$r2  r3=$r3  r4=$r4" +
-               s"  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
-               " And(r1,r2,r4)=" + And(r1, r2, r4).canonicalize +
-               " And(r1,r3,r4)=" + And(r1, r3, r4).canonicalize
+             s"\nr1=$r1  r2=$r2  r3=$r3  r4=$r4" +
+               s"\n  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
+               "\n And(r1,r2,r4)=" + And(r1, r2, r4).canonicalize +
+               "\n And(r1,r3,r4)=" + And(r1, r3, r4).canonicalize
              )
     }
   }
@@ -316,7 +351,14 @@ class RteTestSuite extends AnyFunSuite {
     assert(Or(Not(Singleton(SEql(0))),
               Star(Singleton(SEql(1)))).canonicalize == Not(Singleton(SEql(0))))
   }
-
+  test("canonicalize and 352"){
+    abstract class Test1
+    val r1 = Star(Sigma)
+    val r2 = Singleton(SEql(1))
+    val r4 = Star(Singleton(SAtomic(classOf[Test1])))
+    assert(And(r2,r4).canonicalize == EmptySet)
+    assert(And(r1,r2,r4).canonicalize == EmptySet)
+  }
   test("canonicalize and 315"){
     val r1 = Or(//Cat(Sigma,Sigma,Star(Sigma)),
                 Not(Singleton(SEql(0))),
@@ -346,11 +388,11 @@ class RteTestSuite extends AnyFunSuite {
              s"r1=$r1")
       assert(And(r1, r2, Not(r1)).canonicalize == EmptySet,
              s"r1=$r1  r2=$r2 ")
-      assert(And(r1, r2, Not(r1), r3).canonicalize == EmptySet,
+      assert(And(r1, r2, Not(r1), r3).canonicalize ~= EmptySet,
              s"r1=$r1  r2=$r2   r3=$r3")
-      assert(And(r1, Not(r1), r3).canonicalize == EmptySet,
+      assert(And(r1, Not(r1), r3).canonicalize ~= EmptySet,
              s"r1=$r1  r3=$r3")
-      assert(And(r1, trd1, r2, trd2, r3).canonicalize == EmptySet,
+      assert(And(r1, trd1, r2, trd2, r3).canonicalize ~= EmptySet,
              s"r1=$r1  r2=$r2   r3=$r3")
     }
   }
@@ -429,7 +471,7 @@ class RteTestSuite extends AnyFunSuite {
       assert(Or(r1,Star(Sigma),r2).canonicalize == Rte.sigmaStar)
 
       // Or(a,Or(x,y),b) --> Or(a,x,y,b)
-      assert(Or(r1,Or(r2,r3),r4).canonicalize == Or(r1,r2,r3,r4).canonicalize)
+      assert(Or(r1,Or(r2,r3),r4).canonicalize ~= Or(r1,r2,r3,r4).canonicalize)
 
       // (:or A B (:* B) C)
       // --> (:or A (:* B) C)
