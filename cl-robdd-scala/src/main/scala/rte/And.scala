@@ -119,8 +119,13 @@ case class And(operands:Seq[Rte]) extends Rte{
       EmptySet
     else if (canonicalizedSingletons == genus.SEmpty)
       EmptySet
-    else if (matchesOnlySingletons && singletons.exists(genus.Types.memberp))
-      Singleton(canonicalizedSingletons)
+    // the following is not correct because it maps
+    // And(Singleton(SEql(0)),Not(Cat(Sigma,Sigma*)))
+    // -> Singleton(SEql(0))
+    // should be EmptySet
+    //else if (trace("122: firstTypes="+this.firstTypes+" ",
+    //               matchesOnlySingletons && singletons.exists(genus.Types.memberp)))
+    //  Singleton(canonicalizedSingletons)
     else
       And(betterOperands)
   }
