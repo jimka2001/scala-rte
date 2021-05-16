@@ -30,7 +30,7 @@ object GraphViz {
     val png = dfaToPng(dfa,title,abbreviateTransitions=abbreviateTransitions)
     System.getProperty("os.name") match {
       case "Mac OS X" =>
-        // -g => don't bring Preview to forground, and thus don't steal focus
+        // -g => don't bring Preview to foreground, and thus don't steal focus
         val cmd = Seq ("open", "-g", "-a", "Preview", png)
         cmd.!
       case os => println(s"cannot view png file $png because os.name is $os")
