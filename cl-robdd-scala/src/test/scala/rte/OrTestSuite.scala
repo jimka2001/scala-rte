@@ -28,16 +28,7 @@ import rte.RteImplicits._
 
 class OrTestSuite extends AnyFunSuite {
 
-
-  test("canonicalize or 315"){
-    assert(Or(Not(Singleton(SEql(0))),
-              Star(Singleton(SEql(1)))).canonicalize == Not(Singleton(SEql(0))))
-  }
-
-
-  test("canonicalize or") {
-    assert(Or(EmptySet, EmptySet).canonicalize == EmptySet)
-    assert(Or().canonicalize == EmptySet)
+  test("canonicalize or 31"){
     class TestSup
     class TestSub extends TestSup
     class TestD1 // disjoint from TestD2
@@ -56,20 +47,34 @@ class OrTestSuite extends AnyFunSuite {
       assert(Or(EmptyWord, Cat( r1, Star(Cat( r1)))).canonicalize
                == Or(EmptyWord, Star(Cat( r1))).canonicalize)
 
-      println(List(Or(EmptyWord, Cat( r1, r3, Star(Cat( r1, r3)))),
-                   Or(EmptyWord, Cat( r1, r3, Star(Cat( r1, r3)))).canonicalize))
-
-      println(List(Or(EmptyWord, Star(Cat( r1, r3))),
-                   Or(EmptyWord, Star(Cat( r1, r3))).canonicalize))
-
-      println(Or(EmptyWord, Cat(r1, r3, Star(Cat(r1, r3)))).canonicalize)
-      println(Or(EmptyWord, Star(Cat( r1, r3))).canonicalize)
       assert(Or(EmptyWord, Cat(r1, r3, Star(Cat(r1, r3)))).canonicalize
                == Or(EmptyWord, Star(Cat( r1, r3))).canonicalize)
 
       assert(Or(EmptyWord, Cat(r1, r2, r3, Star(Cat(r1, r2, r3)))).canonicalize
                == Or(EmptyWord, Star(Cat(r1, r2, r3))).canonicalize)
     }
+  }
+
+  test("canonicalize or 58"){
+    val r1 = Not(Singleton(SAtomic(classOf[java.lang.Integer])))
+    abstract class Test1
+    val r2 = Singleton(SAtomic(classOf[Test1]))
+    val r3 = Not(Singleton(SEql(0)))
+    val r4 = Not(Singleton(SEql(1)))
+    assert(Or(r1,r2,r3,r4).canonicalize ~= Or(r1,Or(r2,r3),r4).canonicalize)
+  }
+
+  test("canonicalize or") {
+    assert(Or(EmptySet, EmptySet).canonicalize == EmptySet)
+    assert(Or().canonicalize == EmptySet)
+    class TestSup
+    class TestSub extends TestSup
+    class TestD1 // disjoint from TestD2
+    class TestD2 // disjoint from TestD1
+    val trsup = Singleton(genus.SAtomic(classOf[TestSup]))
+    val trsub = Singleton(genus.SAtomic(classOf[TestSub]))
+    val trd1 = Singleton(genus.SAtomic(classOf[TestD1]))
+    val trd2 = Singleton(genus.SAtomic(classOf[TestD2]))
 
     assert(Rte.sigmaStar == Or(Sigma,
                                Star(Cat(Sigma,Star(Sigma)))).canonicalize)
@@ -108,8 +113,23 @@ class OrTestSuite extends AnyFunSuite {
       // Or(a,Star(Sigma),b) --> Star(Sigma)
       assert(Or(r1,Star(Sigma),r2).canonicalize == Rte.sigmaStar)
 
+      // Or(a,Or(x,y)) --> Or(a,x,y)
+      assert(Or(r1,Or(r2,r3)).canonicalize ~= Or(r1,r2,r3).canonicalize,
+             s"\n   r1=$r1 \n   r2=$r2 \n   r3=$r3" +
+               s"\n   Or(r1,Or(r2,r3))= " + Or(r1,Or(r2,r3)).canonicalize +
+               s"\n   Or(r1,r2,r3)=     " + Or(r1,r2,r3))
+
+      // Or(Or(x,y),b) --> Or(x,y,b)
+      assert(Or(Or(r2,r3),r4).canonicalize ~= Or(r2,r3,r4).canonicalize,
+             s"\n   r2=$r2 \n   r3=$r3 \n   r4=$r4" +
+               s"\n   Or(Or(r2,r3),r4)= " + Or(Or(r2,r3),r4).canonicalize +
+               s"\n   Or(r2,r3,r4)=     " + Or(r2,r3,r4))
+
       // Or(a,Or(x,y),b) --> Or(a,x,y,b)
-      assert(Or(r1,Or(r2,r3),r4).canonicalize ~= Or(r1,r2,r3,r4).canonicalize)
+      assert(Or(r1,Or(r2,r3),r4).canonicalize ~= Or(r1,r2,r3,r4).canonicalize,
+             s"\n   r1=$r1 \n   r2=$r2 \n   r3=$r3 \n   r4=$r4" +
+               s"\n   Or(r1,Or(r2,r3),r4)= " + Or(r1,Or(r2,r3),r4).canonicalize +
+               s"\n   Or(r1,r2,r3,r4)=     " + Or(r1,r2,r3,r4))
 
       // (:or A B (:* B) C)
       // --> (:or A (:* B) C)
@@ -181,5 +201,24 @@ class OrTestSuite extends AnyFunSuite {
               Star(Singleton(SEql(1)))).canonicalize == Not(Singleton(SEql(0))))
   }
 
+  test("canonicalize or 204") {
 
+    for {depth <- 0 to 4
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         r3 = Rte.randomRte(depth)
+         r4 = Rte.randomRte(depth)
+         } {
+
+      // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
+      assert(Or(r1, And(r2, r3), r4).canonicalize ~= And(Or(r1, r2, r4),
+                                                         Or(r1, r3, r4)).canonicalize,
+             s"\nr1=$r1  r2=$r2  r3=$r3  r4=$r4" +
+               s"\n  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
+               "\n Or(r1,r2,r4)=" + Or(r1, r2, r4).canonicalize +
+               "\n Or(r1,r3,r4)=" + Or(r1, r3, r4).canonicalize
+             )
+    }
+  }
 }

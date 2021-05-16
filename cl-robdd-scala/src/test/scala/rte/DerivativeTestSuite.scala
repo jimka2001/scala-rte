@@ -73,7 +73,9 @@ class DerivativeTestSuite extends AnyFunSuite {
     val a = Not(And(r1, r2)).canonicalize
     val b = Or(Not(r1), Not(r2)).canonicalize
 
-    assert(And(a, Not(b)).derivative(Some(SAtomic(classOf[java.lang.Number]))) != Singleton(SEql(0)))
+    val aNotB = And(a,Not(b))
+
+    assert(aNotB.derivative(Some(SAtomic(classOf[java.lang.Number]))) != Singleton(SEql(0)))
 
   }
 
@@ -143,9 +145,7 @@ class DerivativeTestSuite extends AnyFunSuite {
          rt = Rte.randomRte(depth)
          (intToV,m) = rt.derivatives()
          } {
-      println(s"rt = $rt")
-      println(s"   intToV = $intToV")
-      println(s"   m = $m")
+      assert(intToV.nonEmpty)
     }
   }
 
