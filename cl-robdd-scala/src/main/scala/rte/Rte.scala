@@ -167,6 +167,24 @@ object Rte {
     case _ => false
   }
 
+  // predicate to match form like this Cat(X, Y, Z, Star( Cat(X, Y, Z)))
+  def catxyzp(rt:Rte):Boolean = rt match {
+    case Cat(Seq(rs1@_*)) =>{
+      // at least length 2
+      if (rs1.sizeIs >= 2) {
+        val rightmost = rs1.last
+        val leading = rs1.dropRight(1)
+        rightmost match {
+          case Star(Cat(Seq(rs2@_*))) => leading == rs2
+          case _ => false
+        }
+      }
+      else
+        false
+    }
+    case _ => false
+  }
+
   def randomSeq(depth: Int): Seq[Rte] = {
     val maxCompoundSize = 2
     (0 until maxCompoundSize).map { _ => randomRte(depth) }

@@ -51,24 +51,6 @@ case class Or(operands:Seq[Rte]) extends Rte {
     lazy val maybePlus = betterOperands.find(Rte.isPlus)
     lazy val existsNullable = betterOperands.exists(_.nullable)
 
-
-    // predicate to match form like this Cat(X, Y, Z, Star( Cat(X, Y, Z)))
-    def catxyzp(rt:Rte):Boolean = rt match {
-      case Cat(Seq(rs1@_*)) =>{
-        // at least length 2
-        if (rs1.sizeIs >= 2) {
-          val rightmost = rs1.last
-          val leading = rs1.dropRight(1)
-          rightmost match {
-            case Star(Cat(Seq(rs2@_*))) => leading == rs2
-            case _ => false
-          }
-        }
-        else
-          false
-      }
-      case _ => false
-    }
     // Or(Not(<[= 0]>),(<[= 1]>)*) -> Some(Not(<[= 0]>))
     lazy val dominantNotSingleton = betterOperands.find{
       case Not(Singleton(td1)) if betterOperands.exists{
@@ -77,7 +59,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       } => true
       case _ => false
     }
-    lazy val maybeCatxyz = betterOperands.find(catxyzp) // (:cat X Y Z (:* (:cat X Y Z)))
+    lazy val maybeCatxyz = betterOperands.find(Rte.catxyzp) // (:cat X Y Z (:* (:cat X Y Z)))
     // Or() --> EmptySet
     if (betterOperands.isEmpty)
       EmptySet
