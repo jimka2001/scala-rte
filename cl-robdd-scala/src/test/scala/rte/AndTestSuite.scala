@@ -122,7 +122,6 @@ class AndTestSuite extends AnyFunSuite {
   }
 
   test("canonicalize and 295") {
-
     for {depth <- 0 to 4
          _ <- 1 to 1000
          r1 = Rte.randomRte(depth)
@@ -142,6 +141,18 @@ class AndTestSuite extends AnyFunSuite {
     }
   }
 
+  test("canonicalize and 147") {
+    for {depth <- 0 to 4
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         r3 = Rte.randomRte(depth)
+         r4 = Rte.randomRte(depth)
+         } {
+      assert(And(r1, Or(r2, r3).canonicalize, r4).canonicalize ~=
+               And(r1, Or(r2, r3), r4).canonicalize)
+    }
+  }
 
   test("canonicalize and 352"){
     abstract class Test1
