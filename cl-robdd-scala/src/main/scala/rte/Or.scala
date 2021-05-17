@@ -69,7 +69,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       }
       case _ => false
     }
-    // Or(Not(<[= 0]>),(<[= 1]>)*) did not equal Not(<[= 0]>)
+    // Or(Not(<[= 0]>),(<[= 1]>)*) -> Some(Not(<[= 0]>))
     lazy val dominantNotSingleton = betterOperands.find{
       case Not(Singleton(td1)) if betterOperands.exists{
         case Star(Singleton(td2)) => td1.disjoint(td2).contains(true)
