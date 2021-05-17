@@ -133,7 +133,22 @@ case class Or(operands:Seq[Rte]) extends Rte {
       case Not(Singleton(_)) => true
       case _ => false})
       Or(betterOperands.filter(_!= Rte.sigmaSigmaStarSigma))
-    else if (dominantNotSingleton.nonEmpty)
+    else if (betterOperands.exists{
+      // Or(A,Not(A),X) -> Sigma
+      case Not(rt) if betterOperands.contains(rt) => true
+      case _ => false
+    })
+      Rte.sigmaStar
+    else if (betterOperands.exists{
+      // Or(A,Not(B),X) -> Sigma if B is subtype of A
+      case Not(Singleton(sub)) if betterOperands.exists{
+        case Singleton(sup) if sub.subtypep(sup).contains(true) => true
+        case _ => false
+      } => true
+      case _ => false
+    })
+      Rte.sigmaStar
+    else if ( betterOperands.size == 2 && dominantNotSingleton.nonEmpty)
     // Or(Not(<[= 0]>),(<[= 1]>)*) did not equal Not(<[= 0]>)
       dominantNotSingleton.get
     else
