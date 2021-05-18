@@ -159,6 +159,11 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SOr(SEql(1),SAnd(SAtomic(classOf[java.lang.Integer]),SNot(SEql(1)))).canonicalize() ==
              SAtomic(classOf[java.lang.Integer]))
   }
+  test("canonicalize and 162"){
+    trait Trait1
+    assert( SAnd(SAtomic(classOf[java.lang.Number]),SNot(SAtomic(classOf[Trait1]))).canonicalize() ==
+              SAtomic(classOf[java.lang.Number]))
+  }
   test("canonicalize or 2") {
     assert(SOr(A, SNot(A)).canonicalize()
            == STop)
