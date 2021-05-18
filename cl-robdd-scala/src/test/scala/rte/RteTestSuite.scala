@@ -126,8 +126,9 @@ class RteTestSuite extends AnyFunSuite {
     val r2 = Cat(Or(Rte.Member(1,2,3,4),
                     EmptySet,
                     Not(number)),
-                 Not(And(Rte.Member(4,5,6),
-                         Rte.Atomic(classOf[Abstract2]))))
+                 Not(EmptySet
+                     )
+                 )
 
       println(s"  r1 = $r1")
       println(s"  r2 = $r2")
