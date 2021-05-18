@@ -41,6 +41,7 @@ abstract class Rte {
       case i if i < 0 => throw new Error("^ operator does not work with negative numbers: $n")
     }
   }
+
   // isomorphic
   def ~=(that:Rte):Boolean = {
     (this,that) match {
@@ -131,6 +132,16 @@ object Rte {
   val sigmaSigmaStarSigma:Rte = Cat(Sigma, Sigma, sigmaStar)
   val notSigma: Rte = Or(sigmaSigmaStarSigma, EmptyWord)
   val notEpsilon: Rte = Cat(Sigma, sigmaStar)
+
+  def Member(xs: Any*):Rte = {
+    Singleton(genus.SMember(xs : _*))
+  }
+  def Eql(x: Any):Rte = {
+    Singleton(genus.SEql(x))
+  }
+  def Atomic(ct: Class[_]):Rte = {
+    Singleton(genus.SAtomic(ct))
+  }
 
   def isAnd(rt: Rte): Boolean = rt match {
     case And(Seq(_*)) => true
@@ -233,21 +244,7 @@ object sanityTest2 {
 
 object sanityTest {
   def main(argv: Array[String]):Unit = {
-    import genus._
-    println(Or(And(Singleton(SAtomic(classOf[Integer])),
-                   Not(Singleton(SAtomic(classOf[Long])))),
-               Not(Singleton(SEql(42)))))
 
-    import RteImplicits._
-    println(Or(And(SAtomic(classOf[Integer]),
-                   Not(SAtomic(classOf[Long]))),
-               Not(SEql(43))))
-
-    println(Or(And(classOf[Integer],
-                   Not(SAtomic(classOf[Long]))),
-               Not(SEql(44))))
-
-    println(Rte.randomRte(2))
   }
 }
 
