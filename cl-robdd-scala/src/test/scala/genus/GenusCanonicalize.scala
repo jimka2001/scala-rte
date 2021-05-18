@@ -153,6 +153,12 @@ class GenusCanonicalize extends AnyFunSuite {
                SOr(SAtomic(C), SAtomic(D))).canonicalize()
            == SOr(SAtomic(A), SAtomic(B), SAtomic(C), SAtomic(D)))
   }
+  test("canonicalize or 156"){
+    assert(SOr(SEql(1),SAtomic(classOf[java.lang.Integer])).canonicalize() ==
+             SAtomic(classOf[java.lang.Integer]))
+    assert(SOr(SEql(1),SAnd(SAtomic(classOf[java.lang.Integer]),SNot(SEql(1)))).canonicalize() ==
+             SAtomic(classOf[java.lang.Integer]))
+  }
   test("canonicalize or 2") {
     assert(SOr(A, SNot(A)).canonicalize()
            == STop)
