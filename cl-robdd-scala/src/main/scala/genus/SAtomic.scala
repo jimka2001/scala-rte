@@ -30,9 +30,15 @@ import NormalForm._
  */
 case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   override def toString:String = {
-    val fullName = ct.getName
+    val fullName = if (ct.getName.startsWith("java.lang."))
+      ct.getName.drop(10)
+    else
+      ct.getName
 
     val shortName = fullName.dropWhile(_ != '$')
+
+    //println(s"fullName=$fullName")
+    //println(s"shortName=$shortName")
     if (shortName == "")
       fullName
     else
