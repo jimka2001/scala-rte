@@ -127,6 +127,27 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
         }
       },
       () => {
+        // if A is subtype of B then
+        // SOr(X,A,Y,B,Z) --> SOr(X,Y,B,Z)
+        val maybeSub = tds.find { sub =>
+          tds.exists { sup =>
+            sub != sup &&
+              sub.subtypep(sup).contains(true)
+          }
+        }
+        maybeSub match {
+          case None => this
+          case _ => SOr(tds.flatMap { sub =>
+            if (tds.exists { sup =>
+              sub != sup && sub.subtypep(sup).contains(true)
+            })
+              Seq()
+            else
+              Seq(sub)
+          }: _*)
+        }
+      },
+      () => {
         // A + A!B -> A + B
         // A + A!BX + Y = (A + BX + Y)
         // A + ABX + Y = (A + Y)
