@@ -21,6 +21,8 @@
 
 package xymbolyco
 
+import scala.annotation.tailrec
+
 // Seq[Σ] is the type of the input sequence which the DFA is expected to match
 // L is the type of label on transitions
 // E is the type of exit values
@@ -78,6 +80,7 @@ class Dfa[Σ,L,E](Qids:Set[Int],
                              } yield dst :: s :: ss
       }
     }
+    @tailrec
     def recur(paths:Seq[List[State[Σ, L, E]]]): Option[Seq[State[Σ, L, E]]] = {
       lazy val found = paths.find{
         case s::ss => F.contains(s)
