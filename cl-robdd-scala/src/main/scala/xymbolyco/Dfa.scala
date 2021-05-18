@@ -93,11 +93,6 @@ class Dfa[Σ,L,E](Qids:Set[Int],
   }
 
   def simulate(seq: Seq[Σ]): Option[E] = {
-
-    //    findReachableFinal(seq)
-    //      .flatMap{ d => F.find(_ == d)}
-    //      .map(exitValue)
-
     for {
       d <- findReachableFinal(seq)
       if F.contains(d)
