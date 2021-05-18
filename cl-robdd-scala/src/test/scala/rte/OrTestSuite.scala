@@ -148,13 +148,13 @@ class OrTestSuite extends AnyFunSuite {
       locally {
 
         assert(Or(EmptyWord, Cat(r1, r2, r3, Star(Cat(r1, r2, r3)))).canonicalize
-                 == Or(EmptyWord, Star(Cat(r1, r2, r3))).canonicalize,
+                 ~= Or(EmptyWord, Star(Cat(r1, r2, r3))).canonicalize,
                s"r1=$r1 r2=$r2  r3=$r3")
       }
       // Or(Star(A),Cat(X,Y,Z,Star(Cat(X,Y,Z))))
       //  --> Or(Star(A),Star(Cat(X,Y,Z)))
       assert(Or(Star(r4), Cat(r1, r2, r3, Star(Cat(r1, r2, r3)))).canonicalize
-               == Or(Star(r4), Star(Cat(r1, r2, r3))).canonicalize,
+               ~= Or(Star(r4), Star(Cat(r1, r2, r3))).canonicalize,
              s"r1=$r1 r2=$r2  r3=$r3  r4=$r4")
 
       // Expected :Star(Σ)
@@ -182,7 +182,7 @@ class OrTestSuite extends AnyFunSuite {
                Or(r1, r2, Star(r3), r4).canonicalize)
 
       // remove subset
-      assert(Or(r1, trsub, r2, trsup, r3).canonicalize ==
+      assert(Or(r1, trsub, r2, trsup, r3).canonicalize ~=
                Or(r1, r2, trsup, r3).canonicalize)
     }
   }

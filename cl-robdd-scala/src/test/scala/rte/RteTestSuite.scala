@@ -111,6 +111,7 @@ class RteTestSuite extends AnyFunSuite {
     trait Trait1
     trait Trait2
     trait Trait3 extends Trait2
+
     abstract class Abstract1
     abstract class Abstract2 extends Trait3
     val string = Rte.Atomic(classOf[java.lang.String])
@@ -156,18 +157,18 @@ class RteTestSuite extends AnyFunSuite {
         val a = Not(And(r1, r2)).canonicalize
         val b = Or(Not(r1), Not(r2)).canonicalize
         xymbolyco.GraphViz.dfaView(Or(And(a,Not(b)),
-                                      And(b,Not(a))).toDfa(),"demorgan",true)
+                                      And(b,Not(a))).toDfa(),"de-morgan",true)
         assert(Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize,
                s"\nr1=$r1  \nr2=$r2" +
                  s"\n  Not(And(r1, r2)) = Not(And($r1, $r2)) = " + Not(And(r1, r2)).canonicalize +
                  s"\n  Or(Not(r1), Not(r2)) = Or(Not($r1), Not($r2)) = " + Or(Not(r1), Not(r2)).canonicalize)
       }
       assert(Not(Or(r1, r2)).canonicalize ~= And(Not(r1), Not(r2)).canonicalize)
-      assert(Not(r1).canonicalize == Not(r1.canonicalize).canonicalize)
+      assert(Not(r1).canonicalize ~= Not(r1.canonicalize).canonicalize)
     }
   }
 
-  test("demorgan 245"){
+  test("de morgan 245"){
     // Not.apply(And.apply(r1, r2)(scala.this.DummyImplicit.dummyImplicit)).canonicalize.
     //     ~=(Or.apply(Not.apply(r1), Not.apply(r2))(scala.this.DummyImplicit.dummyImplicit).canonicalize)
     //     was false
@@ -183,33 +184,33 @@ class RteTestSuite extends AnyFunSuite {
     val b = Or(Not(r1), Not(r2)).canonicalize
 
     //xymbolyco.GraphViz.dfaView(Or(And(a,Not(b)),
-    //                              And(b,Not(a))).toDfa(),"demorgan",true)
+    //                              And(b,Not(a))).toDfa(),"de-morgan",true)
 
     assert(a ~= b)
   }
 
-  test("demorgan 272"){
+  test("de morgan 272"){
 
     val r1 = Cat(Singleton(SAtomic(classOf[java.lang.Number])), Singleton(SEql(0)))
     val r2 = Sigma
     val a = Not(And(r1, r2)).canonicalize
     val b = Or(Not(r1), Not(r2)).canonicalize
 
-    println(s"r1=$r1")
-    println(s"r2=$r2")
-    println(s"And(r1,r2) = And($r1,$r2) = " + And(r1,r2).canonicalize)
-    println(s"Not(r1) = Not($r1) = " + Not(r1).canonicalize)
-    println(s"Not(r2) = Not($r2) = " + Not(r2).canonicalize)
-    println(s"a=$a")
-    println(s"b=$b")
-    xymbolyco.GraphViz.dfaView(b.toDfa(),"b",true)
-    xymbolyco.GraphViz.dfaView(a.toDfa(),"a",true)
-    xymbolyco.GraphViz.dfaView(And(a,Not(b)).toDfa(),"a & !b",true)
-    xymbolyco.GraphViz.dfaView(And(b,Not(a)).toDfa(),"b & !a",true)
+    //println(s"r1=$r1")
+    //println(s"r2=$r2")
+    //println(s"And(r1,r2) = And($r1,$r2) = " + And(r1,r2).canonicalize)
+    //println(s"Not(r1) = Not($r1) = " + Not(r1).canonicalize)
+    //println(s"Not(r2) = Not($r2) = " + Not(r2).canonicalize)
+    //println(s"a=$a")
+    //println(s"b=$b")
+    //xymbolyco.GraphViz.dfaView(b.toDfa(),"b",true)
+    //xymbolyco.GraphViz.dfaView(a.toDfa(),"a",true)
+    //xymbolyco.GraphViz.dfaView(And(a,Not(b)).toDfa(),"a & !b",true)
+    //xymbolyco.GraphViz.dfaView(And(b,Not(a)).toDfa(),"b & !a",true)
 
-    println("derivative = " + And(a,Not(b)).derivative(Some(SAtomic(classOf[java.lang.Number]))))
+    //println("derivative = " + And(a,Not(b)).derivative(Some(SAtomic(classOf[java.lang.Number]))))
 
-    assert(And(a,Not(b)).canonicalize == EmptySet)
+    assert(And(a,Not(b)).canonicalize ~= EmptySet)
 
     assert(a ~= b)
   }
