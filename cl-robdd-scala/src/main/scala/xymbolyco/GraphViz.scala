@@ -39,11 +39,15 @@ object GraphViz {
   }
 
   def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbreviateTransitions:Boolean): String = {
-    val png = File.createTempFile("dfa-", ".png")
+    val prefix = if (title == "")
+      "dfa"
+    else
+      title
+    val png = File.createTempFile(prefix+"-", ".png")
     val pngPath = png.getAbsolutePath
-    val dot = File.createTempFile("dfa-", ".dot")
+    val dot = File.createTempFile(prefix+"-", ".dot")
     val dotPath = dot.getAbsolutePath
-    val alt = File.createTempFile("dfa-", ".plain")
+    val alt = File.createTempFile(prefix+"-", ".plain")
     val altPath = alt.getAbsolutePath
     dfaToPng(dfa,dotPath, title, abbreviateTransitions=abbreviateTransitions)
 
