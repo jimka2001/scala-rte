@@ -118,14 +118,15 @@ class RteTestSuite extends AnyFunSuite {
     val number = Singleton(SAtomic(classOf[java.lang.Number]))
     val r1 = Or(string,
                 Rte.Eql(0),
-                Rte.Atomic(classOf[Abstract2]),
+                //Rte.Atomic(classOf[Abstract2]),
                 Rte.Atomic(classOf[Trait2]),
                 Star(integer),
                 Rte.Atomic(classOf[Trait3]),
-                number)
-    val r2 = Cat(Or(Rte.Member(1,2,3,4),
+                number
+                )
+    val r2 = Cat(Or(Rte.Eql(1),
                     Not(number)),
-                 Rte.sigmaStar // Not(EmptySet)
+                 Rte.sigmaStar
                  )
 
       println(s"  r1 = $r1")
