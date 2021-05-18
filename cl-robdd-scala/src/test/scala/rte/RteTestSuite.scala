@@ -120,8 +120,8 @@ class RteTestSuite extends AnyFunSuite {
                    Or(Rte.Atomic(classOf[Abstract2]),
                       Rte.Atomic(classOf[Trait2]))),
                 Or(Star(integer),Or(Rte.Atomic(classOf[Trait3]),number)))
-    val r2 = Cat(Or(Or(Rte.Member(1,2,3,4),
-                       EmptySet),
+    val r2 = Cat(Or(Rte.Member(1,2,3,4),
+                    EmptySet,
                     Not(number)),
                  Not(And(Rte.Member(4,5,6),
                          Rte.Atomic(classOf[Abstract2]))))
