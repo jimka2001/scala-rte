@@ -124,7 +124,6 @@ class RteTestSuite extends AnyFunSuite {
                 Rte.Atomic(classOf[Trait3]),
                 number)
     val r2 = Cat(Or(Rte.Member(1,2,3,4),
-                    EmptySet,
                     Not(number)),
                  Not(EmptySet
                      )
