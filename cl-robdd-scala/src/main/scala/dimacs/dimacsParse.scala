@@ -242,8 +242,13 @@ object dimacsParse {
     var diagnostics: List[String] = Nil
     val vec = new QmVec
 
-    def logDiagnostic(comment: String): Unit = {
-      println(comment)
+    def logDiagnostic(comment:String):Unit = {
+      logDiagnosticInt(false,comment)
+    }
+    logDiagnostic(s"parsing $inFileName")
+    def logDiagnosticInt(verbose:Boolean, comment: String): Unit = {
+      if(verbose)
+        println(comment)
       diagnostics = comment :: diagnostics
     }
 
@@ -271,12 +276,11 @@ object dimacsParse {
     logDiagnostic(s"   reduced by numVars=" + (1.0 - numVars2.toFloat / numVars1) +
                     " numClauses=" + (1.0 - numClauses2.toFloat / numClauses1))
     val t3 = System.nanoTime()
-    println(s"   write time= ${(t3 - t2) / 1.0e9}")
+    logDiagnostic(s"   write time= ${(t3 - t2) / 1.0e9}")
 
   }
 
   def dimacsConvertFile(fName: String, getInputName: String => String, getOutputName: String => String): Unit = {
-    println(s"parsing $fName")
     val inFileName: String = getInputName(fName)
     val outFileName: String = getOutputName(fName)
     dimacsConvertFile(inFileName, outFileName)
