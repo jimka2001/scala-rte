@@ -125,8 +125,7 @@ class RteTestSuite extends AnyFunSuite {
                 number)
     val r2 = Cat(Or(Rte.Member(1,2,3,4),
                     Not(number)),
-                 Not(EmptySet
-                     )
+                 Rte.sigmaStar // Not(EmptySet)
                  )
 
       println(s"  r1 = $r1")
