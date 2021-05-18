@@ -24,16 +24,18 @@ package xymbolyco
 import scala.annotation.tailrec
 
 object Minimize {
+
   import adjuvant.Adjuvant._
 
-  def findHopcroftPartition[Sigma,L, E](dfa: Dfa[Sigma,L, E]): Set[Set[State[Sigma,L, E]]] = {
-    type STATE = State[Sigma,L, E]
+  def trim[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+  def findHopcroftPartition[Σ, L, E](dfa: Dfa[Σ, L, E]): Set[Set[State[Σ, L, E]]] = {
+    type STATE = State[Σ, L, E]
     type EQVCLASS = Set[STATE]
     type PARTITION = Set[EQVCLASS]
 
     val Pi0 = partitionBy(dfa.F, dfa.exitValue) + dfa.Q.diff(dfa.F)
 
-    def partitionEqual(pi1    : PARTITION, pi2: PARTITION): Boolean =
+    def partitionEqual(pi1: PARTITION, pi2: PARTITION): Boolean =
       pi1 == pi2
 
     def refine(partition: PARTITION): PARTITION = {
@@ -43,57 +45,66 @@ object Minimize {
         //   whose source and label are given
         partition.find(_.contains(source.delta(label))).get
       }
+
       def PhiPrime(s: STATE): Set[(L, EQVCLASS)] = {
-        for{ Transition(_,label,_) <- s.transitions }
-          yield (label,phi(s,label))
+        for {Transition(_, label, _) <- s.transitions}
+          yield (label, phi(s, label))
       }
+
       def Phi(s: STATE): Set[(L, EQVCLASS)] = {
-        val m = for{ (k,pairs) <- PhiPrime(s).groupBy(_._2)
-             labels = pairs.map(_._1)
-             label = labels.reduce(dfa.labeler.combineLabels)}
-          yield (label,k)
+        val m = for {(k, pairs) <- PhiPrime(s).groupBy(_._2)
+                     labels = pairs.map(_._1)
+                     label = labels.reduce(dfa.labeler.combineLabels)}
+        yield (label, k)
         m.toSet
       }
-      def repartition(eqvClass:EQVCLASS):PARTITION = {
-        partitionBy(eqvClass,Phi)
+
+      def repartition(eqvClass: EQVCLASS): PARTITION = {
+        partitionBy(eqvClass, Phi)
       }
+
       partition.flatMap(repartition)
     }
 
     fixedPoint(Pi0, refine, partitionEqual)
   }
 
-  def minimize[Sigma,L, E](dfa: Dfa[Sigma,L, E]): Dfa[Sigma,L, E] = {
+  def minimize[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
     val PiMinimized = findHopcroftPartition(dfa)
+
     // associate each element of PiMinimized with a new id
     // attempt to correlate the old state.id with the new
-    def minState(eqvClass:Set[State[Sigma,L,E]]):Int = {
-      eqvClass.map(_.id).reduce( (a:Int,b:Int) => a.min(b))
+    def minState(eqvClass: Set[State[Σ, L, E]]): Int = {
+      eqvClass.map(_.id).reduce((a: Int, b: Int) => a.min(b))
     }
-    val ids:Map[Set[State[Sigma,L,E]],Int] = PiMinimized.map{eqvClass=> eqvClass -> minState(eqvClass) }.toMap
-    def eqvClassOf(s:State[Sigma,L,E]):Set[State[Sigma,L,E]] = {
+
+    val ids: Map[Set[State[Σ, L, E]], Int] = PiMinimized.map { eqvClass => eqvClass -> minState(eqvClass) }.toMap
+
+    def eqvClassOf(s: State[Σ, L, E]): Set[State[Σ, L, E]] = {
       PiMinimized.find(eqvClass => eqvClass.contains(s)).get
     }
-    def newId(s:State[Sigma,L,E]):Int = {
+
+    def newId(s: State[Σ, L, E]): Int = {
       ids(eqvClassOf(s))
     }
-    //val ids: Array[Set[State[Sigma,L,E]]] = PiMinimized.toArray
+
+    //val ids: Array[Set[State[Σ,L,E]]] = PiMinimized.toArray
     val newIds = ids.values.toSet
-    val newQ0:Int = newId(dfa.q0)
+    val newQ0: Int = newId(dfa.q0)
     val newFids = PiMinimized.filter(eqv => dfa.F.exists(q => eqv.contains(q))).map(ids)
 
-    val newProtoDelta = for{
+    val newProtoDelta = for {
       q <- dfa.Q
       tr <- q.transitions
     } yield (newId(tr.source), tr.label, newId(tr.destination))
 
     val newFmap = for {
-      (eqv,id) <- ids
+      (eqv, id) <- ids
       if newFids.contains(id)
       q = eqv.head
     } yield id -> dfa.exitValue(q)
 
     // return a newly constructed Dfa extracted from the Hopcroft partition minimization
-    new Dfa[Sigma,L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap )
+    new Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
   }
 }
