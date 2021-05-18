@@ -19,7 +19,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 package rte
 
 import genus._
@@ -123,7 +122,7 @@ class AndTestSuite extends AnyFunSuite {
 
   test("canonicalize and 295") {
     for {depth <- 0 to 4
-         _ <- 1 to 1000
+         _ <- 1 to 500
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)

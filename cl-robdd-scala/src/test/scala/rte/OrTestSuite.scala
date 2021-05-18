@@ -88,7 +88,7 @@ class OrTestSuite extends AnyFunSuite {
     //                     Or(ε,A,Cat(C,B,Star(Cat(C,B))))
     // not isomorphic with Or(A,Star(Cat(C,B)))
     for {depth <- 0 to 5
-         _ <- 1 to 1000
+         _ <- 1 to 500
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
@@ -228,9 +228,8 @@ class OrTestSuite extends AnyFunSuite {
   }
 
   test("canonicalize or 204") {
-
     for {depth <- 0 to 4
-         _ <- 1 to 500
+         _ <- 1 to 100
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
@@ -253,7 +252,7 @@ class OrTestSuite extends AnyFunSuite {
   test("canonicalize or 253") {
 
     for {depth <- 0 to 4
-         _ <- 1 to 1000
+         _ <- 1 to 500
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
