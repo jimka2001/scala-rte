@@ -38,7 +38,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       .map(_.canonicalizeOnce)
       .distinct
       .filterNot(_ == EmptySet)
-    val singletons: List[genus.SimpleTypeD] = betterOperands.flatMap {
+    lazy val singletons: List[genus.SimpleTypeD] = betterOperands.flatMap {
       case Singleton(td) => List(td)
       case _ => List.empty
     }.toList
