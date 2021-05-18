@@ -135,7 +135,7 @@ class RteTestSuite extends AnyFunSuite {
     val rt1 = Not(And(r1,r2)).canonicalize
     val rt2 = Or(Not(r1),Not(r2))
     Or(And(rt1,Not(rt2)),
-       And(rt2,Not(rt1))).toDfa
+       And(rt2,Not(rt1))).canonicalize //toDfa
     //Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize
 
 
