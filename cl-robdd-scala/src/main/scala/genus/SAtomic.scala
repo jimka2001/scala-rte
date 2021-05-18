@@ -52,14 +52,6 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
   // AtomicType(ct: Class[_])
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
-    import java.lang.reflect.Modifier
-    def isFinal(cl: Class[_]): Boolean = {
-      Modifier.isFinal(cl.getModifiers)
-    }
-
-    def isInterface(cl: Class[_]): Boolean = {
-      Modifier.isInterface(cl.getModifiers)
-    }
 
     t match {
       case SEmpty => Some(true)
@@ -69,9 +61,12 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
           Some(false)
         else if (ct.isAssignableFrom(tp) || tp.isAssignableFrom(ct))
           Some(false)
-        else if (isFinal(ct) || isFinal(tp)) // if either is final
+        else if (SAtomic.isFinal(ct) || SAtomic.isFinal(tp)) // if either is final
           Some(true)
-        else if (isInterface(ct) || isInterface(tp)) // if either is an interface
+        else if (SAtomic.closedWorldView) {
+          Some(! SAtomic.existsCommonInstantiatableSubclass(ct, tp))
+        }
+        else if (SAtomic.isInterface(ct) || SAtomic.isInterface(tp)) // if either is an interface
           Some(false) // TODO justify this choice.
         else // neither is final, and neither is an interface, and neither is a subclass of the other, so disjoint.
           Some(true)
@@ -149,4 +144,58 @@ object SAtomic {
     else if (ct == classOf[Any]) STop
     else new SAtomic(ct)
   }
+  // closedWorldView determines semantics of disjointness.
+  //   if the world view is open, then for any two interfaces (for example)
+  //   we assume that it is possible to create a class inheriting from both
+  //   thus interfaces are never disjoint.
+  //   However if the world view is closed, then we only assume classes
+  //   exist which actually exist NOW, thus thus if there are not common
+  //   subclasses of two given classes, then we conclude the classes are
+  //   disjoint.
+  val closedWorldView:Boolean = true
+  def existsCommonInstantiatableSubclass(c1:Class[_], c2:Class[_]):Boolean = {
+    // use the reflections API to determine whether there is a common subclass
+    // which is instantiable, ie., not empty, not interface, not abstract.
+    val subsC1 = reflections.getSubTypesOf(c1).toArray.filter{
+      case c:Class[_] => isInstantiatable(c)
+      case _ => false
+    }
+    lazy val subsC2 = reflections.getSubTypesOf(c2).toArray.filter{
+      case c:Class[_] => isInstantiatable(c)
+      case _ => false
+    }.toSet
+
+    if( subsC1.isEmpty)
+      false
+    else if (subsC2.isEmpty)
+      false
+    else {
+      //println(s"searching for common subclass of $c1 and $c2 --> " + (subsC1.toSet intersect subsC2))
+      subsC1.exists{s => subsC2.contains(s)}
+    }
+  }
+  import java.lang.reflect.Modifier
+  def isFinal(cl: Class[_]): Boolean = {
+    Modifier.isFinal(cl.getModifiers)
+  }
+  def isAbstract(cl:Class[_]): Boolean = {
+    Modifier.isAbstract(cl.getModifiers)
+  }
+  def isInterface(cl: Class[_]): Boolean = {
+    Modifier.isInterface(cl.getModifiers)
+  }
+  def isInstantiatable(cl: Class[_]): Boolean = {
+    if (cl != classOf[Nothing])
+      false
+    else if (isFinal(cl))
+      true
+    else if (isAbstract(cl) || isInterface(cl))
+      false
+    else
+      true
+  }
+
+  import org.reflections.Reflections
+  val reflections = new Reflections("")
+
 }
