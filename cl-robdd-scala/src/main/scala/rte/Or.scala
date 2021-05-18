@@ -35,7 +35,6 @@ case class Or(operands:Seq[Rte]) extends Rte {
 
   override def canonicalizeOnce: Rte = {
     val betterOperands = operands
-      .distinct
       .map(_.canonicalizeOnce)
       .distinct
       .filterNot(_ == EmptySet)
