@@ -25,8 +25,9 @@ package rte
 import org.scalatest.funsuite.AnyFunSuite
 import RteImplicits._
 import genus._
+import adjuvant.MyFunSuite
 
-class RteTestSuite extends AnyFunSuite {
+class RteTestSuite extends MyFunSuite {
 
   test("implicits test") {
 
@@ -104,7 +105,42 @@ class RteTestSuite extends AnyFunSuite {
       assert(Singleton(SNot(t1)).canonicalize == And(Not(t1), Sigma).canonicalize)
     }
   }
+  test("discovered case 108"){
+    //r1 = Or(Or(Cat(Σ,Σ,(Σ)*),ε),Or(<Abstract1$1>,Cat(<Abstract2$1>,<{4,5,6}>)))
+    //r2 = Or(Or(Cat(<[= 0]>,<{1,2,3,4}>),(<[= -1]>)*),Not(Or(<[= 0]>,<{a,b,c}>)))
+    trait Trait1
+    trait Trait2
+    trait Trait3 extends Trait2
 
+    abstract class Abstract1
+    abstract class Abstract2 extends Trait3
+    val r1 = Or(Or(Cat(Sigma,Sigma,Star(Sigma)),EmptyWord),
+                Or(Rte.Atomic(classOf[Abstract1]),
+                   Cat(Rte.Atomic(classOf[Abstract2]),
+                  Rte.Member(4,5,6))))
+    val r2 = Or(Or(Cat(Rte.Eql(0),Rte.Member(1,2,3,4)),Star(Rte.Eql(-1))),
+                Not(Or(Rte.Eql(0),Rte.Member("a","b","c"))))
+
+    println(s"  r1 = $r1")
+    println(s"  r2 = $r2")
+
+    val rt1 = Not(And(r1,r2)).canonicalize
+    val rt2 = Or(Not(r1),Not(r2))
+    println(s"  rt1 = $rt1")
+    println(s"  rt2 = $rt2")
+    import xymbolyco.GraphViz.dfaToPng
+
+    xymbolyco.Serialize.serialize(rt1.toDfa())
+    dfaToPng(rt1.toDfa(),title="debug",abbreviateTransitions = true)
+    dfaToPng(Not(rt1).toDfa(),title="not rt1",abbreviateTransitions=true)
+    dfaToPng(xymbolyco.Minimize.minimize(rt1.toDfa()),title="minimized", abbreviateTransitions = true)
+    println("------------------------------------")
+    val cano = Rte.withSimplifier(() => Or(And(rt1,Not(rt2)),
+                                           And(rt2,Not(rt1)))//.canonicalize
+                                  )
+    println(s"cano=$cano")
+    dfaToPng(cano.toDfa(),title="cano",abbreviateTransitions = true)
+  }
   test("discovered case 109 infinite loop"){
     // r1 = Or(Or(Or(<java.lang.String>,<[= 0]>),Or(<Abstract2$1>,<Trait2$1>)),Or((<java.lang.Integer>)*,Or(<Trait3$1>,<java.lang.Number>)))
     // r2 = Cat(Or(Or(<[Member 1,2,3,4]>,<SEmpty>),Not(<java.lang.Number>)),Not(And(<[Member 4,5,6]>,<Abstract2$1>)))
@@ -129,14 +165,22 @@ class RteTestSuite extends AnyFunSuite {
                     Not(number)),
                  Rte.sigmaStar
                  )
-
+    println("subtype? " + genus.SEql(1).subtypep(genus.SAtomic(classOf[java.lang.Integer])))
+    println("=> " + Or(Rte.Eql(1),integer).canonicalize)
     println(s"  r1 = $r1")
     println(s"  r2 = $r2")
 
     val rt1 = Not(And(r1,r2)).canonicalize
     val rt2 = Or(Not(r1),Not(r2))
-    Or(And(rt1,Not(rt2)),
-       And(rt2,Not(rt1))).canonicalize //toDfa
+    println(s"  rt1 = $rt1")
+    println(s"  rt2 = $rt2")
+    import xymbolyco.GraphViz.dfaToPng
+
+    xymbolyco.Serialize.serialize(rt1.toDfa())
+    dfaToPng(rt1.toDfa,title="debug",abbreviateTransitions = true)
+    dfaToPng(Not(rt1).toDfa,title="not rt1",abbreviateTransitions=true)
+   Or(And(rt1,Not(rt2)),
+       And(rt2,Not(rt1))).toDfa
     //Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize
 
 
@@ -147,16 +191,19 @@ class RteTestSuite extends AnyFunSuite {
     assert(Not(Star(Sigma)).canonicalize == EmptySet)
     assert(Not(EmptyWord).canonicalize == Cat(Sigma, Star(Sigma)))
     assert(Not(EmptySet).canonicalize == Star(Sigma))
-    for {depth <- 0 to 5
-         _ <- 1 to 1000
+    for {depth <- 0 to 2
+         r <- 1 to 1000
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {
+      println(s"depth=$depth  r=$r")
+      println(s"  r1 = $r1")
+      println(s"  r2 = $r2")
       assert(Not(Not(r1)).canonicalize ~= r1.canonicalize)
       if (! (Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize)) {
         val a = Not(And(r1, r2)).canonicalize
         val b = Or(Not(r1), Not(r2)).canonicalize
-        xymbolyco.GraphViz.dfaView(Or(And(a,Not(b)),
+        xymbolyco.GraphViz.dfaToPng(Or(And(a,Not(b)),
                                       And(b,Not(a))).toDfa(),"de-morgan",true)
         assert(Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize,
                s"\nr1=$r1  \nr2=$r2" +

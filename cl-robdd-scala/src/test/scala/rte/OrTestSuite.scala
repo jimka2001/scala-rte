@@ -102,7 +102,7 @@ class OrTestSuite extends AnyFunSuite {
                Or(r1, r2, r3, r2).canonicalize == Or(r1, r3, r2).canonicalize
              )
       // Or(x) = x
-      assert(Or(r1).canonicalize == r1.canonicalize)
+      assert(Or(r1).canonicalize ~= r1.canonicalize)
 
       // Or(a,Star(Sigma),b) --> Star(Sigma)
       assert(Or(r1, Star(Sigma), r2).canonicalize == Rte.sigmaStar)

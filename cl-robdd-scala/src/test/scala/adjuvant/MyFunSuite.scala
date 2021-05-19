@@ -27,8 +27,17 @@ class MyFunSuite extends AnyFunSuite {
   override def test(testName: String, testTags: Tag*)(testFun: => Any /* Assertion */)(implicit pos: source.Position):Unit = {
     super.test(testName,testTags : _*)(locally{
       println("[ starting " + testName)
-      try{      testFun }
-      finally{ println("] finished " + testName)}
+      var finished = false
+      try{
+        testFun
+        finished = true
+      }
+      finally{
+        if (finished)
+          println("] finished " + testName)
+        else
+          println("] aborted " + testName)
+      }
     })(pos)
   }
 }

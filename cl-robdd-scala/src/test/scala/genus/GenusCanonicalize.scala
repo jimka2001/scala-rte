@@ -36,6 +36,7 @@ class GenusCanonicalize extends AnyFunSuite {
   trait TraitC
 
   trait TraitD
+  class Test1 extends TraitA with TraitB with TraitC with TraitD
 
   val A: Class[TraitA] = classOf[TraitA]
   val B: Class[TraitB] = classOf[TraitB]
@@ -356,8 +357,11 @@ class GenusCanonicalize extends AnyFunSuite {
   //             Trait1$1],
   //  expecting EmptyType
   //                                                                                                                                                                   Actual   :[Or java.lang.Number,Trait1$1]
-  //
-  //  org.scalatest.exceptions.TestFailedException: [Or java.lang.Number,Trait1$1] did not equal Empty td=[And [Not [= 1]],[Or java.lang.Number,Trait1$1]] dnf=[Or Trait1$1,[And [Not [= 1]],java.lang.Number]], td-dnf=[Or java.lang.Number,Trait1$1], expecting EmptyType
+  //  org.scalatest.exceptions.TestFailedException: [Or java.lang.Number,Trait1$1]
+  //    did not equal Empty td=[And [Not [= 1]],[Or java.lang.Number,Trait1$1]]
+  //                        dnf=[Or Trait1$1,[And [Not [= 1]],java.lang.Number]],
+  //                        td-dnf=[Or java.lang.Number,Trait1$1],
+  //                        expecting EmptyType
   //                                                                                                                                                                                                                                                    at org.scalatest.Assertions.newAssertionFailedException(Assertions.scala:472)
   //  at org.scalatest.Assertions.newAssertionFailedException$(Assertions.scala:471)
   //  at org.scalatest.Assertions$.newAssertionFailedException(Assertions.scala:1231)

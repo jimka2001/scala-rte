@@ -119,9 +119,8 @@ class DerivativeTestSuite extends AnyFunSuite {
         assert(rt.derivative(Some(STop)) == EmptySet,
                s"failed inhabited=${td.inhabited} deriv of $rt wrt Some(STop)")
       assert(rt.derivative(Some(SEmpty)) == EmptySet)
-
-      assert(rt.derivative(None).canonicalize == rt.canonicalize,
-             s"deriv of $rt wrt EmptyWord/None returned ${rt.derivative(None)} expecting $rt which reduces to ${rt.canonicalize}")
+      assert(rt.derivative(None).canonicalize ~= rt.canonicalize,
+             s": deriv of $rt wrt EmptyWord/None returned ${rt.derivative(None)} \n   expecting $rt which reduces to ${rt.canonicalize}")
     }
   }
 

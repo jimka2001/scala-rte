@@ -25,10 +25,10 @@ import bdd._
 import genus._
 import genus.Types._
 
-import scala.collection.{Seq, mutable}
-import org.scalatest.funsuite.AnyFunSuite
 
-class GenusBddTest extends AnyFunSuite {
+import scala.collection.{Seq, mutable}
+import adjuvant._
+class GenusBddTest extends MyFunSuite {
   trait Trait1
 
   trait Trait2
