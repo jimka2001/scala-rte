@@ -56,7 +56,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
       Some(true)
   }
 
-  // AtomicType(ct: Class[_])
+  // SAtomic(ct: Class[_])
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
 
     t match {
@@ -80,7 +80,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     }
   }
 
-  // AtomicType(ct: Class[_])
+  // SAtomic(ct: Class[_])
   override protected def subtypepDown(s: SimpleTypeD): Option[Boolean] = {
     s match {
       case SEmpty => Some(false)
@@ -124,12 +124,12 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     }
   }
 
-  // AtomicType(ct: Class[_])
+  // SAtomic(ct: Class[_])
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     SAtomic(ct)
   }
 
-  // AtomicType(ct: Class[_])
+  // SAtomic(ct: Class[_])
   override def cmpToSameClassObj(td:SimpleTypeD):Boolean = {
     if (this == td)
       false

@@ -111,7 +111,9 @@ object Adjuvant {
   def fixedPoint[V](value: V, f: V => V, cmp: (V, V) => Boolean): V = {
     @tailrec
     def recur(value: V): V = {
+      //println("[ fixedPoint: starting with " + value)
       val newValue = f(value)
+      //println("] fixedPoint: computed "+ newValue)
       if (cmp(value, newValue))
         value
       else

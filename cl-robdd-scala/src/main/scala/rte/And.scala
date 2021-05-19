@@ -31,7 +31,7 @@ case class And(operands:Seq[Rte]) extends Rte{
   def nullable:Boolean = operands.forall{_.nullable}
   def firstTypes:Set[SimpleTypeD] = operands.toSet.flatMap((r:Rte) => r.firstTypes)
   override def canonicalizeOnce:Rte = {
-
+    //println("canonicalizing And: " + operands)
     val betterOperands = operands
       .distinct
       .map(_.canonicalizeOnce)
