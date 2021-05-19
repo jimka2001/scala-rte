@@ -87,7 +87,6 @@ object Types {
       if (filter(td))
         td
       else {
-        // println(s"rejecting $td")
         recur()
       }
     }

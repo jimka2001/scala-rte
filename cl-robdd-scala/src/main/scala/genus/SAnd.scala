@@ -38,12 +38,8 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
     b.supertypep(a)
   }
-  override def sameCombination(td:SimpleTypeD):Boolean = {
-    td match {
-      case SAnd(_@_*) => true
-      case _ => false
-    }
-  }
+  override def sameCombination(td:SimpleTypeD):Boolean = andp(td)
+
   override def typep(a: Any): Boolean = {
     tds.forall(_.typep(a))
   }

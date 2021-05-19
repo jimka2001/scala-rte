@@ -23,14 +23,14 @@ package genus
 
 import Types._
 import NormalForm._
-import adjuvant.Adjuvant.conj
+import adjuvant.Adjuvant.{conj, trace}
 
 /** A union type, which is the union of zero or more types.
  *
  * @param tds var-arg, zero or more types
  */
 case class SOr(override val tds: SimpleTypeD*) extends SCombination {
-  override def toString:String = tds.map(_.toString).mkString("[Or ", ",", "]")
+  override def toString:String = tds.map(_.toString).mkString("[SOr ", ",", "]")
 
   override def create(tds:Seq[SimpleTypeD]):SimpleTypeD = SOr.createOr(tds)
   override val unit:SimpleTypeD = SEmpty
@@ -38,12 +38,8 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
     b.subtypep(a)
   }
-  override def sameCombination(td:SimpleTypeD):Boolean = {
-    td match {
-      case SOr(_@_*) => true
-      case _ => false
-    }
-  }
+  override def sameCombination(td:SimpleTypeD):Boolean = orp(td)
+
   override def typep(a: Any): Boolean = {
     tds.exists(_.typep(a))
   }

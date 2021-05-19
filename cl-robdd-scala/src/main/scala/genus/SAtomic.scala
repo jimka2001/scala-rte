@@ -23,6 +23,7 @@ package genus
 
 // genus
 import NormalForm._
+import adjuvant.Adjuvant.trace
 
 /** The atoms of our type system: a simple type built from a native Scala/Java type.
  *
@@ -37,8 +38,6 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
     val shortName = fullName.dropWhile(_ != '$')
 
-    //println(s"fullName=$fullName")
-    //println(s"shortName=$shortName")
     if (shortName == "")
       fullName
     else
@@ -52,6 +51,8 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   override protected def inhabitedDown: Some[Boolean] = {
     if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
+    else if (SAtomic.closedWorldView)
+      Some(SAtomic.existsInstantiatableSubclass(ct))
     else
       Some(true)
   }
@@ -65,13 +66,13 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
       case SAtomic(tp) =>
         if (tp == ct)
           Some(false)
+        else if (SAtomic.closedWorldView) {
+          Some(! SAtomic.existsCommonInstantiatableSubclass(ct, tp))
+        }
         else if (ct.isAssignableFrom(tp) || tp.isAssignableFrom(ct))
           Some(false)
         else if (SAtomic.isFinal(ct) || SAtomic.isFinal(tp)) // if either is final
           Some(true)
-        else if (SAtomic.closedWorldView) {
-          Some(! SAtomic.existsCommonInstantiatableSubclass(ct, tp))
-        }
         else if (SAtomic.isInterface(ct) || SAtomic.isInterface(tp)) // if either is an interface
           Some(false) // TODO justify this choice.
         else // neither is final, and neither is an interface, and neither is a subclass of the other, so disjoint.
@@ -83,7 +84,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   // SAtomic(ct: Class[_])
   override protected def subtypepDown(s: SimpleTypeD): Option[Boolean] = {
     s match {
-      case SEmpty => Some(false)
+      case SEmpty => this.inhabited.map(!_)
       case STop => Some(true)
       // super.isAssignableFrom(sub) means sub is subtype of super
       case SAtomic(tp) =>
@@ -126,7 +127,14 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
   // SAtomic(ct: Class[_])
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
-    SAtomic(ct)
+    if (ct == classOf[Nothing])
+      SEmpty
+    else if (ct == classOf[Any])
+      STop
+    else if ( SAtomic.closedWorldView && ! SAtomic.existsInstantiatableSubclass(ct))
+      SEmpty
+    else
+      this
   }
 
   // SAtomic(ct: Class[_])
@@ -150,6 +158,7 @@ object SAtomic {
     else if (ct == classOf[Any]) STop
     else new SAtomic(ct)
   }
+
   // closedWorldView determines semantics of disjointness.
   //   if the world view is open, then for any two interfaces (for example)
   //   we assume that it is possible to create a class inheriting from both
@@ -158,40 +167,57 @@ object SAtomic {
   //   exist which actually exist NOW, thus thus if there are not common
   //   subclasses of two given classes, then we conclude the classes are
   //   disjoint.
-  val closedWorldView:Boolean = true
-  def existsCommonInstantiatableSubclass(c1:Class[_], c2:Class[_]):Boolean = {
-    // use the reflections API to determine whether there is a common subclass
-    // which is instantiable, ie., not empty, not interface, not abstract.
-    val subsC1 = reflections.getSubTypesOf(c1).toArray.filter{
-      case c:Class[_] => isInstantiatable(c)
+  val closedWorldView: Boolean = true
+
+  def instantiatableSubclasses(cl: Class[_]): Array[Class[_]] = {
+    val properSubs = reflections.getSubTypesOf(cl).toArray.collect {
+      case c: Class[_] if isInstantiatable(c) => c
+    }
+    if (isInstantiatable(cl))
+      properSubs ++ Array(cl)
+    else
+      properSubs
+  }
+
+  def existsInstantiatableSubclass(cl: Class[_]): Boolean = {
+    for{c <- reflections.getSubTypesOf(cl).toArray} println(s"$c -> $cl")
+    isInstantiatable(cl) || reflections.getSubTypesOf(cl).toArray.exists {
+      case c: Class[_] => isInstantiatable(c)
       case _ => false
     }
-    lazy val subsC2 = reflections.getSubTypesOf(c2).toArray.filter{
-      case c:Class[_] => isInstantiatable(c)
-      case _ => false
-    }.toSet
+  }
 
-    if( subsC1.isEmpty)
+  def existsCommonInstantiatableSubclass(c1: Class[_], c2: Class[_]): Boolean = {
+    // use the reflections API to determine whether there is a common subclass
+    // which is instantiable, ie., not empty, not interface, not abstract.
+    val subsC1 = instantiatableSubclasses(c1)
+    lazy val subsC2 = instantiatableSubclasses(c2).toSet
+
+    if (subsC1.isEmpty)
       false
     else if (subsC2.isEmpty)
       false
     else {
-      //println(s"searching for common subclass of $c1 and $c2 --> " + (subsC1.toSet intersect subsC2))
-      subsC1.exists{s => subsC2.contains(s)}
+      subsC1.exists { s => subsC2.contains(s) }
     }
   }
+
   import java.lang.reflect.Modifier
+
   def isFinal(cl: Class[_]): Boolean = {
     Modifier.isFinal(cl.getModifiers)
   }
-  def isAbstract(cl:Class[_]): Boolean = {
+
+  def isAbstract(cl: Class[_]): Boolean = {
     Modifier.isAbstract(cl.getModifiers)
   }
+
   def isInterface(cl: Class[_]): Boolean = {
     Modifier.isInterface(cl.getModifiers)
   }
+
   def isInstantiatable(cl: Class[_]): Boolean = {
-    if (cl != classOf[Nothing])
+    if (cl == classOf[Nothing])
       false
     else if (isFinal(cl))
       true
@@ -202,6 +228,13 @@ object SAtomic {
   }
 
   import org.reflections.Reflections
-  val reflections = new Reflections("")
 
+  val reflections = new Reflections("")
+}
+
+object sanityCheck {
+  def main(argv:Array[String]):Unit = {
+   println( SAtomic(classOf[java.lang.String]).toString)
+
+  }
 }
