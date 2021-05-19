@@ -80,7 +80,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     })
     // (:or A B (:* B) C)
     // --> (:or A (:* B) C)
-      Or(betterOperands.flatMap {
+      Or.createOr(betterOperands.flatMap {
         case r2 if betterOperands.exists { r1 => Rte.isStar(r1) && Star(r2) == r1 } => Seq()
         case rt => Seq(rt)
       })
@@ -89,7 +89,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     // (:or :epsilon (:cat X (:* X)))
     //   --> (:or :epsilon (:* X))
     else if (existsNullable && maybePlus.nonEmpty)
-      Or(betterOperands.map {
+      Or.createOr(betterOperands.map {
         case Cat(Seq(x, z@Star(y))) if x == y => z
         case Cat(Seq(z@Star(x), y)) if x == y => z
         case rt => rt
@@ -99,7 +99,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     // (:or :epsilon (:cat X Y Z (:* (:cat X Y Z))))
     //   --> (:or :epsilon (:* (:cat X Y Z)))
     else if (existsNullable && maybeCatxyz.nonEmpty)
-      Or(betterOperands.map{
+      Or.createOr(betterOperands.map{
         case c@Cat(Seq(rs@_*)) if maybeCatxyz.contains(c) => rs.last
         case rt => rt
       })
@@ -107,13 +107,13 @@ case class Or(operands:Seq[Rte]) extends Rte {
     // (:or A :epsilon B (:* X) C)
     //   --> (:or A B (:* X) C)
     else if (betterOperands.contains(EmptyWord) && betterOperands.exists(r => r != EmptyWord && r.nullable))
-      Or(betterOperands.filterNot(_ == EmptyWord))
+      Or.createOr(betterOperands.filterNot(_ == EmptyWord))
     else if (maybeSub.nonEmpty)
-      Or(betterOperands.filterNot(_ == Singleton(maybeSub.get)))
+      Or.createOr(betterOperands.filterNot(_ == Singleton(maybeSub.get)))
     else if (betterOperands.contains(Rte.sigmaSigmaStarSigma) && betterOperands.exists{
       case Not(Singleton(_)) => true
       case _ => false})
-      Or(betterOperands.filter(_!= Rte.sigmaSigmaStarSigma))
+      Or.createOr(betterOperands.filter(_!= Rte.sigmaSigmaStarSigma))
     else if (betterOperands.exists{
       // Or(A,Not(A),X) -> Sigma
       case Not(rt) if betterOperands.contains(rt) => true
@@ -133,11 +133,18 @@ case class Or(operands:Seq[Rte]) extends Rte {
     // Or(Not(<[= 0]>),(<[= 1]>)*) did not equal Not(<[= 0]>)
       dominantNotSingleton.get
     else
-      Or(betterOperands)
+      Or.createOr(betterOperands)
   }
-  def derivativeDown(wrt:genus.SimpleTypeD):Rte = Or(operands.map(rt => rt.canonicalize.derivative(Some(wrt))))
+  def derivativeDown(wrt:genus.SimpleTypeD):Rte = Or.createOr(operands.map(rt => rt.derivative(Some(wrt))))
 }
 
 object Or {
   def apply(operands: Rte*)(implicit ev: DummyImplicit) = new Or(operands)
+  def createOr(operands: Seq[Rte]):Rte = {
+    operands match {
+      case Seq() => EmptySet
+      case Seq(rt) => rt
+      case _ => Or(operands)
+    }
+  }
 }

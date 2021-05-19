@@ -28,7 +28,7 @@ import scala.annotation.tailrec
 
 abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD with TerminalType {
 
-  override def toString:String = xs.map(_.toString).mkString("[Member ", ",", "]")
+  override def toString:String = xs.map(_.toString).mkString("{", ",", "}")
 
   override def typep(a: Any): Boolean = xs.contains(a)
 

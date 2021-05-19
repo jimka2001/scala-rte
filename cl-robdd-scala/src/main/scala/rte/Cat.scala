@@ -60,7 +60,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
     //  Cat( x, EmptySet, y) --> EmptySet
       EmptySet
     else
-      Cat(betterOperands)
+      Cat.createCat(betterOperands)
   }
 
   def derivativeDown(wrt: genus.SimpleTypeD): Rte = operands.toList match {
@@ -78,7 +78,13 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
 
 object Cat {
   def apply(operands: Rte*)(implicit ev: DummyImplicit) = new Cat(operands)
-
+  def createCat(operands: Seq[Rte]):Rte = {
+    operands match {
+      case Seq() => EmptyWord
+      case Seq(rt) => rt
+      case _ => Cat(operands)
+    }
+  }
   //  (..., x*, x, x* ...) --> (..., x*, x, ...)
   //  and (..., x*, x* ...) --> (..., x*, ...)
   def stripRedundant(rs:Seq[Rte]):Seq[Rte] = {

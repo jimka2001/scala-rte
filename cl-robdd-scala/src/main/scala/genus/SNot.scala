@@ -29,7 +29,7 @@ import NormalForm._
  * @param s the type we want to get the complement
  */
 case class SNot(s: SimpleTypeD) extends SimpleTypeD {
-  override def toString:String = "[Not " + s.toString + "]"
+  override def toString:String = "!" + s.toString
 
   override def typep(a: Any): Boolean = {
     !s.typep(a)
@@ -99,9 +99,9 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     //  --> SAnd(SNot(x1),SNot(x2),SNot(x3))
     s match {
       case SAnd(xs @ _*) =>
-        SOr(xs.map(x => SNot(x)) : _*)
+        SOr.createOr(xs.map(SNot(_)))
       case SOr(xs @ _*) =>
-        SAnd(xs.map(x => SNot(x)) : _*)
+        SAnd.createAnd(xs.map(SNot(_)))
       case _ => this
     }
   }

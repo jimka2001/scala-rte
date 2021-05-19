@@ -32,7 +32,7 @@ import adjuvant.Adjuvant.conj
 case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   override def toString:String = tds.map(_.toString).mkString("[Or ", ",", "]")
 
-  override def create(tds:SimpleTypeD*):SimpleTypeD = SOr(tds: _*)
+  override def create(tds:Seq[SimpleTypeD]):SimpleTypeD = SOr.createOr(tds)
   override val unit:SimpleTypeD = SEmpty
   override val zero:SimpleTypeD = STop
   override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
@@ -102,12 +102,12 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
           this
         else {
           val others = tds.filterNot(memberp)
-          val stricter = SOr(others : _*)
+          val stricter = SOr.createOr(others)
           val content = members.flatMap{
             case m:SMemberImpl => m.xs.filterNot(stricter.typep)
             case _ => Seq()
           }
-          SOr(others ++ Seq(createMember(content : _*)) :_*)
+          SOr.createOr(others ++ Seq(createMember(content : _*)))
         }
       },
       () => {
@@ -119,10 +119,10 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
           }
           case _ => false
         } match {
-          case Some(SNot(x)) => SOr(tds.map{
-            case SAnd(td2s @ _*) => SAnd(td2s.filter(_ != x) : _*)
+          case Some(SNot(x)) => SOr.createOr(tds.map{
+            case SAnd(td2s @ _*) => SAnd.createAnd(td2s.filter(_ != x))
             case a => a
-          } :_*)
+          })
           case _ => this
         }
       },
@@ -144,7 +144,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
               Seq()
             else
               Seq(sub)
-          }: _*)
+          })
         }
       },
       () => {
@@ -167,12 +167,12 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
         ao match {
           case None => this
           case Some(a) => // remove SNot(a) from every intersection, and if a is in intersection, replace with SEmpty
-            SOr(
+            SOr.createOr(
               tds.flatMap {
                 case SAnd(tds@_*) if tds.contains(a) => Seq()
-                case SAnd(tds@_*) if tds.contains(SNot(a)) => Seq(SAnd(tds.filterNot(_ == SNot(a)): _*))
+                case SAnd(tds@_*) if tds.contains(SNot(a)) => Seq(SAnd.createAnd(tds.filterNot(_ == SNot(a))))
                 case b => Seq(b)
-              }: _*)
+              })
         }
       },
       () => { super.canonicalizeOnce(nf)}
@@ -192,9 +192,19 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
     tds.find(andp) match {
       case Some(td@SAnd(andArgs@_*)) =>
         val others = tds.filterNot(_ == td)
-        SAnd(andArgs.map { x => SOr(conj(others,x): _*) }: _*)
+        SAnd.createAnd(andArgs.map { x => SOr.createOr(conj(others,x)) })
       case None => this
       case x => throw new Error(s"this should not occur: " + x)
+    }
+  }
+}
+
+object SOr {
+  def createOr(tds:Seq[SimpleTypeD]):SimpleTypeD = {
+    tds match {
+      case Seq() => SEmpty
+      case Seq(td) => td
+      case _ => SOr(tds: _*)
     }
   }
 }

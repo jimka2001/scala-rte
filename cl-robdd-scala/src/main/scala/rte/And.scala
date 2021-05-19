@@ -43,7 +43,7 @@ case class And(operands:Seq[Rte]) extends Rte{
       case _ => List.empty
     }.toList
 
-    lazy val singletonIntersection = genus.SAnd(singletons:_*)
+    lazy val singletonIntersection = genus.SAnd.createAnd(singletons)
     lazy val canonicalizedSingletons = singletonIntersection.canonicalize()
     lazy val singletonsInhabited = canonicalizedSingletons.inhabited
     lazy val maybeSuper:Option[Rte] = singletons.find{sup =>
@@ -68,20 +68,12 @@ case class And(operands:Seq[Rte]) extends Rte{
       else
         EmptySet
     }
-    else if (betterOperands.contains(Rte.sigmaStar))
-      And(betterOperands.filterNot(_ == Rte.sigmaStar))
     else if (matchesOnlySingletons && betterOperands.exists(Rte.isStar)) {
       // if x matches only singleton then And(x,y*) -> And(x,y)
-      And(betterOperands.map{
+      And.createAnd(betterOperands.map{
         case Star(rt) => rt
         case rt => rt
       })
-    } else if (betterOperands.exists(Rte.isAnd)) {
-      val andops = betterOperands.flatMap{
-        case And(Seq(rs @ _*)) => rs
-        case r => Seq(r)
-      }
-      And(andops)
     } else if (betterOperands.exists(Rte.isOr)) {
       // And(A,B,Or(X,Y,Z),C,D)
       // --> Or(And(A,B,   X,   C, C)),
@@ -89,23 +81,23 @@ case class And(operands:Seq[Rte]) extends Rte{
       //        And(A,B,   Z,   C, C)))
       betterOperands.find(Rte.isOr) match {
         case Some(x@Or(Seq(rs @ _*))) =>
-          Or(rs.map{r => And(searchReplace(betterOperands,x,r))})
+          Or.createOr(rs.map{r => And.createAnd(searchReplace(betterOperands,x,r))})
       }
     } else if (betterOperands.exists(r1 => betterOperands.contains(Not(r1))))
       EmptySet
     else if (singletons.exists(td => td.inhabited.contains(false)))
       EmptySet
     else if (betterOperands.contains(Sigma) && betterOperands.exists(Rte.isSingleton) && singletons.exists(td => td.inhabited.contains(true)))
-      And(betterOperands.filterNot(_ == Sigma))
+      And.createAnd(betterOperands.filterNot(_ == Sigma))
     else if (betterOperands.contains(Rte.sigmaStar) && singletons.exists(td => td.inhabited.contains(true)))
-      And(betterOperands.filterNot(_ == Rte.sigmaStar))
+      And.createAnd(betterOperands.filterNot(_ == Rte.sigmaStar))
     else if ( singletons.tails.exists{
       case t1::ts => ts.exists{t2 => t1.disjoint(t2).contains(true)}
       case _ => false
     })
       EmptySet
     else if ( maybeSuper.nonEmpty)
-      And(betterOperands.filterNot(maybeSuper.contains(_)))
+      And.createAnd(betterOperands.filterNot(maybeSuper.contains(_)))
     else if ((betterOperands.contains(Sigma)
       || singletons.exists(td => td.inhabited.contains(true)))
       && betterOperands.exists(Rte.isCat)
@@ -127,13 +119,21 @@ case class And(operands:Seq[Rte]) extends Rte{
     //               matchesOnlySingletons && singletons.exists(genus.Types.memberp)))
     //  Singleton(canonicalizedSingletons)
     else
-      And(betterOperands)
+      And.createAnd(betterOperands)
   }
-  def derivativeDown(wrt:genus.SimpleTypeD):Rte = And(operands.map(rt => rt.canonicalize.derivative(Some(wrt))))
+  def derivativeDown(wrt:genus.SimpleTypeD):Rte = And.createAnd(operands.map(rt => rt.derivative(Some(wrt))))
 }
 
 object And {
   def apply(operands: Rte*)(implicit ev: DummyImplicit) = new And(operands)
+
+  def createAnd(operands: Seq[Rte]): Rte = {
+    operands match {
+      case Seq() => Rte.sigmaStar
+      case Seq(rt) => rt
+      case _ => And(operands)
+    }
+  }
 }
 
 object AndSanity {
