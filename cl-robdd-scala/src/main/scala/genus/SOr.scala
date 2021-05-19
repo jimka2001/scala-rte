@@ -123,20 +123,23 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
         }
       },
       () => {
-        // if A is subtype of B then
-        // SOr(X,A,Y,B,Z) --> SOr(X,Y,B,Z)
-        val maybeSub = tds.find { sub =>
-          tds.exists { sup =>
+        // if Asub is subtype of Bsup then
+        // SOr(X,Asub,Y,Bsup,Z) --> SOr(X,Y,Bsup,Z)
+        // but be careful, if A < B and B < A we DO NOT want to remove both.
+        val maybeSup = tds.find { sup =>
+          tds.exists { sub =>
             sub != sup &&
               sub.subtypep(sup).contains(true)
           }
         }
-        maybeSub match {
+        maybeSup match {
           case None => this
-          case _ => SOr(tds.flatMap { sub =>
-            if (tds.exists { sup =>
-              sub != sup && sub.subtypep(sup).contains(true)
-            })
+          // if there is a super type somewhere in the sequence
+          //    then remove all sub types EXCEPT the super type itself
+          case _ => SOr.createOr(tds.flatMap { sub =>
+            if (maybeSup.contains(sub))
+              Seq(sub)
+            else if ( maybeSup.flatMap(sub.subtypep).contains(true))
               Seq()
             else
               Seq(sub)
