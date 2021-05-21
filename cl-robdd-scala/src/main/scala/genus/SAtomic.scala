@@ -263,8 +263,32 @@ object SAtomic {
 }
 
 object sanityCheck {
-  def main(argv:Array[String]):Unit = {
-   println( SAtomic(classOf[java.lang.String]).toString)
+  val reflect = new org.reflections.Reflections("")
 
+  def main(argv:Array[String]):Unit = {
+    describeSubclasses(classOf[java.lang.Number])
+    makeNumber()
+    describeSubclasses(classOf[List[Any]])
+    describeSubclasses(List(1,2,3).getClass)
+  }
+  def describeSubclasses(cl:Class[_]):Unit = {
+    import java.lang.reflect.Modifier
+    // getSubTypesOf does not realize that a type is a subtype of itself
+    val subs:List[Class[_]] = cl :: reflect.getSubTypesOf(cl).toArray.toList.collect {
+      case c: Class[_] => c
+    }
+    println("---------")
+    for{ sub <- subs
+         } println( s"$sub is " + Modifier.toString(sub.getModifiers)  + ", superclass is " + cl.getSuperclass)
+
+  }
+  def makeNumber():Unit = {
+    class MyNumber extends Number {
+      def doubleValue():Double = 0.0
+      def longValue():Long = 0
+      def intValue():Int = 0
+      def floatValue():Float = 0.0F
+    }
+    new MyNumber
   }
 }
