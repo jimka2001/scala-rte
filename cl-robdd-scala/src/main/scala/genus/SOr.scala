@@ -23,31 +23,30 @@ package genus
 
 import Types._
 import NormalForm._
+import adjuvant.Adjuvant.{conj, trace}
 
 /** A union type, which is the union of zero or more types.
  *
  * @param tds var-arg, zero or more types
  */
 case class SOr(override val tds: SimpleTypeD*) extends SCombination {
-  override def toString:String = tds.map(_.toString).mkString("[Or ", ",", "]")
+  override def toString:String = tds.map(_.toString).mkString("[SOr ", ",", "]")
 
-  override def create(tds:SimpleTypeD*):SimpleTypeD = SOr(tds: _*)
+  override def create(tds:Seq[SimpleTypeD]):SimpleTypeD = SOr.createOr(tds)
   override val unit:SimpleTypeD = SEmpty
   override val zero:SimpleTypeD = STop
   override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
     b.subtypep(a)
   }
-  override def sameCombination(td:SimpleTypeD):Boolean = {
-    td match {
-      case SOr(_@_*) => true
-      case _ => false
-    }
-  }
+  override def sameCombination(td:SimpleTypeD):Boolean = orp(td)
+
   override def typep(a: Any): Boolean = {
     tds.exists(_.typep(a))
   }
 
   override protected def inhabitedDown: Option[Boolean] = {
+    import adjuvant.Adjuvant._
+
     val i = memoize((s: SimpleTypeD) => s.inhabited)
     if (tds.exists(i(_).contains(true)))
       Some(true)
@@ -59,6 +58,8 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
 
   // SOr(tds: SimpleTypeD*)
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
+    import adjuvant.Adjuvant._
+
     val d = memoize((s: SimpleTypeD) => s.disjoint(t))
     if (tds.forall(d(_).contains(true)))
       Some(true)
@@ -70,6 +71,8 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
 
   // SOr(tds: SimpleTypeD*)
   override protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
+    import adjuvant.Adjuvant._
+
     val s = memoize((s: SimpleTypeD) => s.subtypep(t))
     if (tds.isEmpty) {
       SEmpty.subtypep(t)
@@ -95,12 +98,12 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
           this
         else {
           val others = tds.filterNot(memberp)
-          val stricter = SOr(others : _*)
+          val stricter = SOr.createOr(others)
           val content = members.flatMap{
             case m:SMemberImpl => m.xs.filterNot(stricter.typep)
             case _ => Seq()
           }
-          SOr(others ++ Seq(createMember(content : _*)) :_*)
+          SOr.createOr(others ++ Seq(createMember(content : _*)))
         }
       },
       () => {
@@ -112,11 +115,35 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
           }
           case _ => false
         } match {
-          case Some(SNot(x)) => SOr(tds.map{
-            case SAnd(td2s @ _*) => SAnd(td2s.filter(_ != x) : _*)
+          case Some(SNot(x)) => SOr.createOr(tds.map{
+            case SAnd(td2s @ _*) => SAnd.createAnd(td2s.filter(_ != x))
             case a => a
-          } :_*)
+          })
           case _ => this
+        }
+      },
+      () => {
+        // if Asub is subtype of Bsup then
+        // SOr(X,Asub,Y,Bsup,Z) --> SOr(X,Y,Bsup,Z)
+        // but be careful, if A < B and B < A we DO NOT want to remove both.
+        val maybeSup = tds.find { sup =>
+          tds.exists { sub =>
+            sub != sup &&
+              sub.subtypep(sup).contains(true)
+          }
+        }
+        maybeSup match {
+          case None => this
+          // if there is a super type somewhere in the sequence
+          //    then remove all sub types EXCEPT the super type itself
+          case _ => SOr.createOr(tds.flatMap { sub =>
+            if (maybeSup.contains(sub))
+              Seq(sub)
+            else if ( maybeSup.flatMap(sub.subtypep).contains(true))
+              Seq()
+            else
+              Seq(sub)
+          })
         }
       },
       () => {
@@ -139,12 +166,12 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
         ao match {
           case None => this
           case Some(a) => // remove SNot(a) from every intersection, and if a is in intersection, replace with SEmpty
-            SOr(
+            SOr.createOr(
               tds.flatMap {
                 case SAnd(tds@_*) if tds.contains(a) => Seq()
-                case SAnd(tds@_*) if tds.contains(SNot(a)) => Seq(SAnd(tds.filterNot(_ == SNot(a)): _*))
+                case SAnd(tds@_*) if tds.contains(SNot(a)) => Seq(SAnd.createAnd(tds.filterNot(_ == SNot(a))))
                 case b => Seq(b)
-              }: _*)
+              })
         }
       },
       () => { super.canonicalizeOnce(nf)}
@@ -164,9 +191,19 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
     tds.find(andp) match {
       case Some(td@SAnd(andArgs@_*)) =>
         val others = tds.filterNot(_ == td)
-        SAnd(andArgs.map { x => SOr(conj(x, others): _*) }: _*)
+        SAnd.createAnd(andArgs.map { x => SOr.createOr(conj(others,x)) })
       case None => this
       case x => throw new Error(s"this should not occur: " + x)
+    }
+  }
+}
+
+object SOr {
+  def createOr(tds:Seq[SimpleTypeD]):SimpleTypeD = {
+    tds match {
+      case Seq() => SEmpty
+      case Seq(td) => td
+      case _ => SOr(tds: _*)
     }
   }
 }

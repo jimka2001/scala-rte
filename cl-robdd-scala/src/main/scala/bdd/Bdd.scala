@@ -74,7 +74,7 @@ sealed abstract class Bdd {
   def toDnf():String = toDnf("x")
   def toDnf(x:String):String = {
     import Assignment.toMinTerm
-    import cl.Accumulators._
+    import adjuvant.Accumulators._
     val substrings:List[String] = withCollector(collect =>
       visitSatisfyingAssignments{(t:Assignment,f:Assignment) => collect(toMinTerm(x,t,f))})
 

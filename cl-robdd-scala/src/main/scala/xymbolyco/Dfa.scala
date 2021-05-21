@@ -19,7 +19,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dfa
+package xymbolyco
+
+import scala.annotation.tailrec
 
 // Seq[Σ] is the type of the input sequence which the DFA is expected to match
 // L is the type of label on transitions
@@ -70,12 +72,30 @@ class Dfa[Σ,L,E](Qids:Set[Int],
     }
   }
 
+  def findSpanningPath:Option[Seq[State[Σ,L,E]]] = {
+    def augment(paths: Seq[List[State[Σ, L, E]]]): Seq[List[State[Σ, L, E]]] = {
+      paths.flatMap {
+        case s :: ss => for {Transition(src, label, dst) <- s.transitions
+                             if s != dst && !ss.contains(dst)
+                             } yield dst :: s :: ss
+      }
+    }
+    @tailrec
+    def recur(paths:Seq[List[State[Σ, L, E]]]): Option[Seq[State[Σ, L, E]]] = {
+      lazy val found = paths.find{
+        case s::ss => F.contains(s)
+      }
+      if (paths.isEmpty)
+        None
+      else if (found.nonEmpty)
+        found.map(_.reverse)
+      else
+        recur(augment(paths))
+    }
+    recur(Seq(List(q0)))
+  }
+
   def simulate(seq: Seq[Σ]): Option[E] = {
-
-    //    findReachableFinal(seq)
-    //      .flatMap{ d => F.find(_ == d)}
-    //      .map(exitValue)
-
     for {
       d <- findReachableFinal(seq)
       if F.contains(d)

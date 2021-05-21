@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2021 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,36 +19,32 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package clcompat
 
-import cl.CLcompat._
+package rte
+
+import genus._
 import org.scalatest.funsuite.AnyFunSuite
 
-class CLcompatTestSuite extends AnyFunSuite {
-  type T= Int=>Nothing
-  assert(42 == block{ret:T => ret(42)})
-  assert(43 == block{ret:T => 43})
-  assert(44 == block{ret1:T =>
-    block{ret2:T =>
-      ret1(44)
-    }})
+class StarTestSuite extends AnyFunSuite {
 
-  assert(45 == block{ret1:T =>
-    block{ret2:T =>
-      ret1(45)
-    }
-    ret1(46)})
+  test("canonicalize star") {
+    assert(EmptyWord.*.canonicalize == EmptyWord)
+    assert(EmptySet.*.canonicalize == EmptyWord)
 
-  assert(48 == block{ret1:T =>
-    block{ret2:T =>
-      ret2(47)
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         } {
+      assert(Star(Star(r1)).canonicalize == Star(r1).canonicalize)
+      assert(Star(r1).canonicalize == Star(r1.canonicalize).canonicalize)
+      assert(Star(Cat(r1,Star(r1))).canonicalize == Star(r1).canonicalize) // (x x*)* --> x*
+      assert(Star(Cat(Star(r1),r1)).canonicalize == Star(r1).canonicalize) // (x* x)* --> x*
+      assert(Star(Cat(r1,r1,Star(Cat(r1,r1)))).canonicalize == Star(Cat(r1,r1)).canonicalize) // (x x (x x)*)* --> (x x)*
+      assert(Star(Cat(r1,r2,Star(Cat(r1,r2)))).canonicalize == Star(Cat(r1,r2)).canonicalize) // (x x (x x)*)* --> (x x)*
+      assert(Star(Cat(Star(Cat(r1,r2)),r1,r2)).canonicalize == Star(Cat(r1,r2)).canonicalize) // ((x y)* x y)* --> (x y)*
     }
-    ret1(48)})
+  }
 
-  assert(49 == block{ret1:T =>
-    block{ret2:T =>
-      ret1(49)
-    }
-    assert(false, "this line should never be reached")
-  })
+
 }

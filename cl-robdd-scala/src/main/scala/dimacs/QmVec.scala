@@ -21,7 +21,7 @@
 
 package dimacs
 
-import cl.CLcompat._
+import adjuvant.CLcompat._
 import dimacs.QmVec._
 
 import scala.annotation.tailrec
@@ -124,7 +124,7 @@ class QmVec() {
   // for deletion, by calling removeFunction.   However, (1,2,4) is added immediately, by calling
   // addFunction.
   def reducePosCountClauses(posCount: Int): RemoveAdd = {
-    import cl.Accumulators._
+    import adjuvant.Accumulators._
     import dimacs.dimacsSimplify.crossCompatiblize
 
     foldUps(withCollector(collect =>
@@ -210,7 +210,7 @@ class QmVec() {
   }
   def writeDimacs(fileName:String, comment:Option[List[String]]):(Int,Int) = {
     import java.io._
-    import cl.Accumulators.{withSetCollector, withSummer}
+    import adjuvant.Accumulators.{withSetCollector, withSummer}
 
     val file = new File(fileName)
     val bw = new BufferedWriter(new FileWriter(file))

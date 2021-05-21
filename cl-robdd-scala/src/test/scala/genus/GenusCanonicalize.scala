@@ -36,6 +36,7 @@ class GenusCanonicalize extends AnyFunSuite {
   trait TraitC
 
   trait TraitD
+  class Test1 extends TraitA with TraitB with TraitC with TraitD
 
   val A: Class[TraitA] = classOf[TraitA]
   val B: Class[TraitB] = classOf[TraitB]
@@ -153,6 +154,17 @@ class GenusCanonicalize extends AnyFunSuite {
                SOr(SAtomic(C), SAtomic(D))).canonicalize()
            == SOr(SAtomic(A), SAtomic(B), SAtomic(C), SAtomic(D)))
   }
+  test("canonicalize or 156"){
+    assert(SOr(SEql(1),SAtomic(classOf[java.lang.Integer])).canonicalize() ==
+             SAtomic(classOf[java.lang.Integer]))
+    assert(SOr(SEql(1),SAnd(SAtomic(classOf[java.lang.Integer]),SNot(SEql(1)))).canonicalize() ==
+             SAtomic(classOf[java.lang.Integer]))
+  }
+  test("canonicalize and 162"){
+    trait Trait1
+    assert( SAnd(SAtomic(classOf[java.lang.Number]),SNot(SAtomic(classOf[Trait1]))).canonicalize() ==
+              SAtomic(classOf[java.lang.Number]))
+  }
   test("canonicalize or 2") {
     assert(SOr(A, SNot(A)).canonicalize()
            == STop)
@@ -179,7 +191,7 @@ class GenusCanonicalize extends AnyFunSuite {
 
     // AXBC + !X = ABC + !X
     assert(SOr(SAnd(A, classOf[X], B, C), SNot(classOf[X])).canonicalize()
-           == SOr(SAnd(A, B, C), SNot(classOf[X])))
+           == SOr(SAnd(A, B, C), SNot(classOf[X])).canonicalize())
 
 
     assert(SEql(1).subtypep(classOf[java.lang.Integer]).contains(true))
@@ -345,8 +357,11 @@ class GenusCanonicalize extends AnyFunSuite {
   //             Trait1$1],
   //  expecting EmptyType
   //                                                                                                                                                                   Actual   :[Or java.lang.Number,Trait1$1]
-  //
-  //  org.scalatest.exceptions.TestFailedException: [Or java.lang.Number,Trait1$1] did not equal Empty td=[And [Not [= 1]],[Or java.lang.Number,Trait1$1]] dnf=[Or Trait1$1,[And [Not [= 1]],java.lang.Number]], td-dnf=[Or java.lang.Number,Trait1$1], expecting EmptyType
+  //  org.scalatest.exceptions.TestFailedException: [Or java.lang.Number,Trait1$1]
+  //    did not equal Empty td=[And [Not [= 1]],[Or java.lang.Number,Trait1$1]]
+  //                        dnf=[Or Trait1$1,[And [Not [= 1]],java.lang.Number]],
+  //                        td-dnf=[Or java.lang.Number,Trait1$1],
+  //                        expecting EmptyType
   //                                                                                                                                                                                                                                                    at org.scalatest.Assertions.newAssertionFailedException(Assertions.scala:472)
   //  at org.scalatest.Assertions.newAssertionFailedException$(Assertions.scala:471)
   //  at org.scalatest.Assertions$.newAssertionFailedException(Assertions.scala:1231)

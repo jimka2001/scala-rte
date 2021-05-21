@@ -81,7 +81,7 @@ class MapColoringTestSuite extends AnyFunSuite {
                 USAgraph.stateUniGraph,USAgraph.stateBiGraph,List("MS","AL","TN"))
   }
   def sanityCheck(numNodes:Int):Unit = {
-    import cl.Accumulators._
+    import adjuvant.Accumulators._
     Bdd.withNewBddHash {
       //val (states, subGraph) = findSubGraph("AL", numNodes)
       val (_colorization,bdd) = graphToBdd(List("CA"),

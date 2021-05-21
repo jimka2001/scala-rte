@@ -226,7 +226,7 @@ object ReducePerf {
       dnf = genDnfFromBitMask(numVars, numLiteralsPerTerm, numTerms, _ => true).iterator.toList
       (text, f) <- foldPairs
       dataPoint <- locally{
-        import cl.Accumulators.withCollector
+        import adjuvant.Accumulators.withCollector
         import Bdd.getBddSizeCount
         withCollector[PLOT_DATA] { collect =>
           var iteration = 0

@@ -23,26 +23,23 @@ package genus
 
 import Types._
 import NormalForm._
+import adjuvant.Adjuvant.conj
 
 /** An intersection type, which is the intersection of zero or more types.
  *
  * @param tds var-arg, zero or more types
  */
 case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  SNot
-  override def toString: String = tds.map(_.toString).mkString("[And ", ",", "]")
+  override def toString: String = tds.map(_.toString).mkString("[SAnd ", ",", "]")
 
-  override def create(tds:SimpleTypeD*):SimpleTypeD = SAnd(tds: _*)
+  override def create(tds:Seq[SimpleTypeD]):SimpleTypeD = SAnd.createAnd(tds)
   override val unit:SimpleTypeD = STop
   override val zero:SimpleTypeD = SEmpty
   override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
     b.supertypep(a)
   }
-  override def sameCombination(td:SimpleTypeD):Boolean = {
-    td match {
-      case SAnd(_@_*) => true
-      case _ => false
-    }
-  }
+  override def sameCombination(td:SimpleTypeD):Boolean = andp(td)
+
   override def typep(a: Any): Boolean = {
     tds.forall(_.typep(a))
   }
@@ -159,7 +156,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
           val newElements: Seq[Any] = newMembers.filter(x => lessStrict.typep(x))
           val newNotMember = SNot(SMember(newElements: _*).canonicalize())
 
-          SAnd((others ++ Seq(newNotMember)).sortWith(cmpTypeDesignators): _*)
+          SAnd.createAnd((others ++ Seq(newNotMember)).sortWith(cmpTypeDesignators))
         }
       },
       () => {
@@ -180,7 +177,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
             // throw away all proper superclasses of sub, i.e., keep everything that is not a superclass
             // of sub and also keep sub itself.   keep false and dont-know
             val keep = tds.filter(sup => sup == sub || !sub.subtypep(sup).contains(true))
-            SAnd(keep: _*)
+            SAnd.createAnd(keep)
         }
       },
       () => { super.canonicalizeOnce(nf)}
@@ -200,9 +197,19 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     tds.find(orp) match {
       case Some(td@SOr(orArgs@_*)) =>
         val others = tds.filterNot(_ == td)
-        SOr(orArgs.map { x => SAnd(conj(x, others): _*) }: _*)
+        SOr.createOr(orArgs.map { x => SAnd.createAnd(conj(others, x)) })
       case None => this
       case x => throw new Error(s"this should not occur: " + x)
+    }
+  }
+}
+
+object SAnd {
+  def createAnd(tds: Seq[SimpleTypeD]): SimpleTypeD = {
+    tds match {
+      case Seq() => STop
+      case Seq(td) => td
+      case _ => SAnd(tds: _*)
     }
   }
 }

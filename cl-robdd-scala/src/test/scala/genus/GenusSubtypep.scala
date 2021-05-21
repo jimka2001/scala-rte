@@ -37,7 +37,8 @@ trait Trait2 extends Trait1
 
 class Test3 extends Test2 with Trait2
 
-class GenusSubtypep extends AnyFunSuite {
+import adjuvant.MyFunSuite
+class GenusSubtypep extends MyFunSuite {
   val Long: Class[lang.Long] = classOf[java.lang.Long]
   val Integer: Class[Integer] = classOf[java.lang.Integer]
   val Number: Class[Number] = classOf[java.lang.Number]
@@ -128,8 +129,15 @@ class GenusSubtypep extends AnyFunSuite {
   test("AtomicType subtype of intersection 2") {
     trait Trait1
     trait Trait2
+    assert(SAtomic(classOf[Trait1]).inhabited.contains(false))
     assert(SAnd(SAtomic(classOf[Trait1]),
-                SAtomic(classOf[Trait2])).subtypep(SEql(1)).contains(false))
+                SAtomic(classOf[Trait2])).inhabited.contains(false))
+    assert(SAtomic(classOf[Trait1]).disjoint(SAtomic(classOf[Trait2])).contains(true))
+    assert(SAnd(SAtomic(classOf[Trait1]),
+                SAtomic(classOf[Trait2])).canonicalize() == SEmpty)
+    // true because empty set is a subtype of every set
+    assert(SAnd(SAtomic(classOf[Trait1]),
+                SAtomic(classOf[Trait2])).subtypep(SEql(1)).contains(true))
   }
   test("AtomicType subtype of member") {
     assert(SAtomic(classOf[Test1]).subtypep(SMember(1, 2, 3)).contains(false))
@@ -216,14 +224,22 @@ class GenusSubtypep extends AnyFunSuite {
       checkSubtype(intersect, rt2, "x&y <: y")
     }
   }
+  def checkSubtype(rt1: SimpleTypeD, rt2: SimpleTypeD, comment: String): Unit = {
+    assert(!rt1.subtypep(rt2).contains(false),
+           s": $comment: \n   rt1= $rt1 \n   rt2= $rt2" +
+             "\n  failed rt1 < rt2" +
+             s"\n   rt1.canonicalize= ${rt1.canonicalize()}"+
+             s"\n   rt2.canonicalize= ${rt2.canonicalize()}")
+    assert(!rt2.subtypep(rt1).contains(false),
+           s": $comment: \n   rt1= $rt1 \n   rt2= $rt2" +
+             "\n  failed rt1 > rt2" +
+             s"\n   rt1.canonicalize= ${rt1.canonicalize()}"+
+             s"\n   rt2.canonicalize= ${rt2.canonicalize()}")
+
+  }
 
   test("randomized testing of subtypep with normalization") {
     import NormalForm._
-
-    def checkSubtype(rt1: SimpleTypeD, rt2: SimpleTypeD, comment: String): Unit = {
-      assert(!rt1.subtypep(rt2).contains(false), s"$comment: rt1=$rt1 rt2=$rt2")
-      assert(!rt2.subtypep(rt1).contains(false), s"$comment: rt2=$rt2 rt1=$rt1")
-    }
 
     for {_ <- 0 to 200
          n <- 0 to 5
@@ -239,7 +255,101 @@ class GenusSubtypep extends AnyFunSuite {
       checkSubtype(rt.toCnf, rt.toDnf, "toCnf vs toDnf")
     }
   }
-  test("discovered cases") {
+  test("discovered subtypep 259"){
+    locally{
+      // ![SAnd {4,5,6},Number,Integer]
+      val rt= SNot(SAnd(SMember(4,5,6),Number,Integer))
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 262")
+    }
+    locally{
+      //[SOr ![SAnd ![= 0],[SOr Number],[SOr [= -1],Integer]]]
+      val rt= SOr( SNot(SAnd( SNot(SEql(0)),SOr( Number),SOr( SEql(-1),Integer))))
+      //println(s"rt=$rt")
+      //println(s"rt.canonicalize() = ${rt.canonicalize()}")
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 272")
+    }
+    locally{
+      trait Trait1
+      trait Trait2
+      trait Trait3 extends Trait2
+      abstract class Abstract1
+      abstract class Abstract2 extends Trait3
+      // [SOr Trait3$2,[= 1],Abstract2$2]
+      assert(SAtomic(classOf[Trait3]).subtypep(SEql(1)).contains(true))
+      assert(SAtomic(classOf[Abstract2]).subtypep(SEql(1)).contains(true))
+      assert(SEql(1).subtypep(SEql(1)).contains(true))
+      val rt= SOr( classOf[Trait3],SEql(1),classOf[Abstract2])
+      //println(s"rt=$rt")
+      //println(s"rt.canonicalize() = ${rt.canonicalize()}")
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 270")
+    }
+    locally{
+      trait Trait1
+      // [SOr Trait1$1,Integer]
+      val rt = SOr(classOf[Trait1],classOf[java.lang.Integer])
+      //println(s"rt=$rt")
+      //println(s"rt.canonicalize() = ${rt.canonicalize()}")
+      assert(classOf[Trait1].subtypep(SAtomic(classOf[java.lang.Integer])).contains(true))
+      assert(classOf[java.lang.Integer].subtypep(SAtomic(classOf[java.lang.Integer])).contains(true))
+      assert(SOr(classOf[Trait1],classOf[java.lang.Integer]).subtypep(SAtomic(classOf[java.lang.Integer])).contains(true))
+      assert(SAtomic(classOf[java.lang.Integer]).subtypep(SOr(classOf[Trait1],classOf[java.lang.Integer])).contains(true))
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 259")
+    }
+    locally{
+      abstract class Abstract1
+      // [SOr [SOr Abstract1$1,Integer],[SAnd [= -1],[= 1]]]
+      val rt = SOr(SOr(classOf[Abstract1],classOf[java.lang.Integer]),
+                   SAnd(SEql(-1),SEql(1)))
+      //println(s"rt=$rt")
+      //println(s"rt.canonicalize() = ${rt.canonicalize()}")
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 274")
+    }
+    locally{
+      abstract class Abstract1
+      // ![SOr [SOr Abstract1$1,Integer],[SAnd [= -1],[= 1]]]
+      val rt = SNot(SOr(SOr(classOf[Abstract1],classOf[java.lang.Integer]),
+                        SAnd(SEql(-1),SEql(1))))
+      //println(s"rt=$rt")
+      //println(s"rt.canonicalize() = ${rt.canonicalize()}")
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 299")
+    }
+    locally{
+      val rt = SOr(SNot(classOf[java.lang.Long]),
+                  // SEql("hello"),
+                   SNot(SEmpty))
+      assert(SAtomic(classOf[java.lang.Long]).canonicalize() != SEmpty)
+      assert(SNot(classOf[java.lang.Long]).canonicalize() != STop)
+      assert(STop.subtypep(SNot(classOf[java.lang.Long])).contains(false))
+      assert(SNot(classOf[java.lang.Long]).subtypep(STop).contains(true))
+      assert(SNot(classOf[java.lang.Long]).subtypep(SNot(SEmpty)).contains(true))
+      assert(SNot(SEmpty).subtypep(SNot(classOf[java.lang.Long])).contains(false))
+      assert(rt.canonicalize() == STop)
+    }
+    assert(SOr(SNot(SNot(STop)),
+               SNot(SOr(SEql(1)))).canonicalize() == STop)
+    assert(SOr(SNot(classOf[java.lang.Number]),
+               SNot(SEmpty)).canonicalize() == STop)
+
+    locally{
+      val rt = SOr(SNot(classOf[java.lang.Number]),
+                   SOr(classOf[java.lang.Integer], SEql(0), SMember(4,5,6)),
+                   SNot(SEmpty))
+      assert(rt.canonicalize() == STop)
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 256")
+    }
+    locally{
+      assert(SAtomic.existsInstantiatableSubclass(classOf[java.lang.String]))
+      val rt = SOr(SAtomic(classOf[java.lang.String]),SEql(-1))
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 243")
+    }
+    locally{
+      abstract class Abstract1
+      val rt = SAtomic(classOf[Abstract1])
+      assert(rt.subtypep(SEmpty).contains(true))
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 249")
+    }
+  }
+  test("discovered cases 275") {
     assert(SAtomic(Long).disjoint(SAtomic(Double)).contains(true), "#1")
     assert(SAtomic(Long).subtypep(SNot(SAtomic(Double))).contains(true), "#2 Long <: not(Double)")
     assert(SNot(SAtomic(Double)).subtypep(SAtomic(Long)).contains(false), "#3 not(Double) !<: Long")

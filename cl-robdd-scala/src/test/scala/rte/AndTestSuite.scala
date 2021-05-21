@@ -1,0 +1,202 @@
+// Copyright (c) 2021 EPITA Research and Development Laboratory
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software,
+// and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+package rte
+
+import genus._
+import org.scalatest.funsuite.AnyFunSuite
+//import rte.RteImplicits._
+
+class AndTestSuite extends AnyFunSuite {
+
+  test("canonicalize and 31"){
+    assert(And(Singleton(SEql(0)), Not(Cat(Sigma,Star(Sigma)))).canonicalize != Singleton(SEql(0)))
+    assert(And(Singleton(SEql(0)), Not(Cat(Sigma,Star(Sigma)))).canonicalize ~= EmptySet)
+  }
+
+  test("canonicalize and 242") {
+    // And(Not(<[= 4]>),<[Member 0,4,5,6]>,Not(<[= 1]>),<[Member 1,2,3,4]>)
+    assert(And(Not(Singleton(SEql(4))),
+               Singleton(SMember(0, 4, 5, 6)),
+               Not(Singleton(SEql(1))),
+               Singleton(SMember(1, 2, 3, 4))).canonicalize == EmptySet)
+    assert(And(Singleton(SEql(4)),
+               Singleton(SMember(0, 4, 5, 6)),
+               Not(Singleton(SEql(1))),
+               Singleton(SMember(1, 2, 3, 4))).canonicalize == Singleton(SEql(4)))
+
+    assert(And(Singleton(genus.SEql(0)), Sigma).canonicalize == Singleton(genus.SEql(0)))
+    assert(And(EmptySet, EmptySet).canonicalize == EmptySet)
+  }
+  test("canonicalize and") {
+    class TestSup
+    class TestSub extends TestSup
+    class TestD1 // disjoint from TestD2
+    class TestD2 // disjoint from TestD1
+    val trsup = Singleton(genus.SAtomic(classOf[TestSup]))
+    val trsub = Singleton(genus.SAtomic(classOf[TestSub]))
+    val trd1 = Singleton(genus.SAtomic(classOf[TestD1]))
+    val trd2 = Singleton(genus.SAtomic(classOf[TestD2]))
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         r3 = Rte.randomRte(depth)
+         } {
+      // removing duplicates
+      assert(And(r1, r1).canonicalize == r1.canonicalize, s"And(r1,r1)=${And(r1, r1).canonicalize}   r1=${r1.canonicalize}")
+      assert(And(r1, r2, r1).canonicalize == And(r1, r2).canonicalize ||
+               And(r1, r2, r1).canonicalize == And(r2, r1).canonicalize
+             )
+      assert(And(r1, Sigma, r2, EmptyWord).canonicalize == EmptySet)
+      assert(And(r1, EmptySet, r2).canonicalize == EmptySet)
+
+      assert(And(And(r1, r2), r3).canonicalize ~= And(r1, And(r2, r3)).canonicalize,
+             s"r1=$r1  \nr2=$r2  \nr3=$r3   \ncanonicalized: ${r1.canonicalize}  ${r2.canonicalize}  ${r3.canonicalize}")
+      assert(And(And(r1, r2), r3).canonicalize ~= And(r1, r2, r3).canonicalize)
+      assert(And(r1, Rte.sigmaStar, r2, r3).canonicalize ~= And(r1, r2, r3).canonicalize)
+      assert(And(r1, Sigma.*, r2, r3).canonicalize ~= And(r1, r2, r3).canonicalize)
+      assert(And(r1, trsup, r2, trsub, r3).canonicalize ~= And(r1, r2, trsub, r3).canonicalize)
+      assert(And(r1, trsub, r2, trsup, r3).canonicalize ~= And(r1, trsub, r2, r3).canonicalize)
+
+      assert(And(r1, r2, Not(r1), r3).canonicalize ~= EmptySet)
+      assert(And(r1, trd1, r2, trd2, r3).canonicalize ~= EmptySet)
+    }
+  }
+
+  test("canonicalize and 88") {
+
+    val r1 = Singleton(SEql(1))
+    val r2 = Singleton(SEql(2))
+    val r3 = Singleton(SEql(3))
+    val r4 = Singleton(SEql(4))
+    // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
+    assert(And(r1, Or(r2, r3), r4).canonicalize ~= Or(And(r1, r2, r4),
+                                                      And(r1, r3, r4)).canonicalize,
+           s"\nr1=$r1  r2=$r2  r3=$r3  r4=$r4" +
+             s"\n  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
+             "\n And(r1,r2,r4)=" + s" And($r1,$r2,$r4)=" + And(r1, r2, r4).canonicalize +
+             "\n And(r1,r3,r4)=" + s" And($r1,$r3,$r4)=" + And(r1, r3, r4).canonicalize
+           )
+
+  }
+
+  test("canonicalize and 105") {
+    abstract class Test1
+    val r1 = Star(Sigma)
+    val r2 = Singleton(SEql(1))
+    val r3 = r1
+    val r4 = Star(Singleton(SAtomic(classOf[Test1])))
+    // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
+    assert(Or(r1, r4).canonicalize == r1)
+    assert(Or(r4, r1).canonicalize == r1)
+    assert(And(r1, Or(r2, r3), r4).canonicalize ~= Or(And(r1, r2, r4),
+                                                      And(r1, r3, r4)).canonicalize,
+           s"\nr1=$r1  r2=$r2  r3=$r3  r4=$r4" +
+             s"\n  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
+             "\n And(r1, Or(r2, r3), r4)=" + s"  And($r1, Or($r2, $r3), $r4)=" + And(r1, Or(r2, r3), r4).canonicalize +
+             "\n Or(r2, r3)=" + s"  Or($r2, $r3)=" + Or(r2, r3).canonicalize +
+             "\n And(r1,r2,r4)=" + s" And($r1,$r2,$r4)=" + And(r1, r2, r4).canonicalize +
+             "\n And(r1,r3,r4)=" + s" And($r1,$r3,$r4)=" + And(r1, r3, r4).canonicalize +
+             "\n Or(And(r1, r2, r4), And(r1, r3, r4)) = " + Or(And(r1, r2, r4), And(r1, r3, r4)).canonicalize
+           )
+  }
+
+  test("canonicalize and 295") {
+    for {depth <- 0 to 4
+         _ <- 1 to 500
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         r3 = Rte.randomRte(depth)
+         r4 = Rte.randomRte(depth)
+         } {
+
+      // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
+      assert(And(r1, Or(r2, r3), r4).canonicalize ~= Or(And(r1, r2, r4),
+                                                        And(r1, r3, r4)).canonicalize,
+             s"\nr1=$r1  r2=$r2  r3=$r3  r4=$r4" +
+               s"\n  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
+               "\n And(r1,r2,r4)=" + And(r1, r2, r4).canonicalize +
+               "\n And(r1,r3,r4)=" + And(r1, r3, r4).canonicalize
+             )
+    }
+  }
+
+  test("canonicalize and 147") {
+    for {depth <- 0 to 4
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         r3 = Rte.randomRte(depth)
+         r4 = Rte.randomRte(depth)
+         } {
+      assert(And(r1, Or(r2, r3).canonicalize, r4).canonicalize ~=
+               And(r1, Or(r2, r3), r4).canonicalize)
+    }
+  }
+
+  test("canonicalize and 352"){
+    abstract class Test1
+    val r1 = Star(Sigma)
+    val r2 = Singleton(SEql(1))
+    val r4 = Star(Singleton(SAtomic(classOf[Test1])))
+    assert(And(r2,r4).canonicalize == EmptySet)
+    assert(And(r1,r2,r4).canonicalize == EmptySet)
+  }
+  test("canonicalize and 315"){
+    val r1 = Or(//Cat(Sigma,Sigma,Star(Sigma)),
+                Not(Singleton(SEql(0))),
+                Star(Singleton(SEql(1)))
+                )
+    val r2 = Star(Sigma)
+
+    assert(And(r1, r2, Not(r1)).canonicalize == EmptySet,
+           s"r1=$r1  r2=$r2 ")
+  }
+
+  test("canonicalize and 325") {
+
+    class TestD1 // disjoint from TestD2
+    class TestD2 // disjoint from TestD1
+
+    val trd1 = Singleton(genus.SAtomic(classOf[TestD1]))
+    val trd2 = Singleton(genus.SAtomic(classOf[TestD2]))
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         r3 = Rte.randomRte(depth)
+         } {
+
+      assert(And(r1, Not(r1)).canonicalize ~= EmptySet,
+             s"r1=$r1")
+      assert(And(r1, r2, Not(r1)).canonicalize ~= EmptySet,
+             s"r1=$r1  r2=$r2 ")
+      assert(And(r1, r2, Not(r1), r3).canonicalize ~= EmptySet,
+             s"r1=$r1  r2=$r2   r3=$r3")
+      assert(And(r1, Not(r1), r3).canonicalize ~= EmptySet,
+             s"r1=$r1  r3=$r3")
+      assert(And(r1, trd1, r2, trd2, r3).canonicalize ~= EmptySet,
+             s"r1=$r1  r2=$r2   r3=$r3")
+    }
+  }
+
+}

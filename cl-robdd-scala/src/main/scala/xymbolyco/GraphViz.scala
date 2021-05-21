@@ -1,4 +1,4 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
+// Copyright (c) 2019,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,28 +19,37 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dfa
+package xymbolyco
 
-object Render {
+object GraphViz {
 
   import java.io.{File, OutputStream}
 
-  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String=""): String = {
+  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbreviateTransitions:Boolean=false): String = {
     import sys.process._
-    val png = dfaToPng(dfa,title)
-    val cmd = Seq("open", png)
-    cmd.!
+    val png = dfaToPng(dfa,title,abbreviateTransitions=abbreviateTransitions)
+    System.getProperty("os.name") match {
+      case "Mac OS X" =>
+        // -g => don't bring Preview to foreground, and thus don't steal focus
+        val cmd = Seq ("open", "-g", "-a", "Preview", png)
+        cmd.!
+      case os => println(s"cannot view png file $png because os.name is $os")
+    }
     png
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String): String = {
-    val png = File.createTempFile("dfa-", ".png")
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbreviateTransitions:Boolean): String = {
+    val prefix = if (title == "")
+      "dfa"
+    else
+      title
+    val png = File.createTempFile(prefix+"-", ".png")
     val pngPath = png.getAbsolutePath
-    val dot = File.createTempFile("dfa-", ".dot")
+    val dot = File.createTempFile(prefix+"-", ".dot")
     val dotPath = dot.getAbsolutePath
-    val alt = File.createTempFile("dfa-", ".plain")
+    val alt = File.createTempFile(prefix+"-", ".plain")
     val altPath = alt.getAbsolutePath
-    dfaToPng(dfa,dotPath, title)
+    dfaToPng(dfa,dotPath, title, abbreviateTransitions=abbreviateTransitions)
 
     locally {
       import sys.process._
@@ -54,16 +63,28 @@ object Render {
     pngPath
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],pathname: String, title:String): String = {
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],pathname: String, title:String, abbreviateTransitions:Boolean): String = {
     val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-    dfaToDot(dfa,stream, title)
+    dfaToDot(dfa,stream, title, abbreviateTransitions = abbreviateTransitions)
     stream.close()
     pathname
   }
 
-  def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],stream: OutputStream, title:String): Unit = {
+  def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],stream: OutputStream, title:String, abbreviateTransitions:Boolean): Unit = {
     val qarr=dfa.Q.toArray
-
+    val labels:Set[L] = (for { q <- dfa.Q
+                               (_,transitions) <- q.transitions.groupBy(_.destination)
+                               labels = transitions.map(_.label)
+                               label = labels.reduce(dfa.labeler.combineLabels)
+                              } yield label)
+    val labelMap:Map[L,String] = labels.toSeq.zipWithIndex.map{ case (lab,i:Int) =>
+      // TODO if abbreviateTransitions is true, need to create a label in the .dot
+      //   file indicating the mapping from abbrev to actual label
+      if (abbreviateTransitions)
+        lab -> s"t$i"
+      else
+        lab -> lab.toString
+    }.toMap
     def write(str: String): Unit = {
       for {c <- str} {
         stream.write(c.toByte)
@@ -77,13 +98,18 @@ object Render {
     }
     def drawState(q:State[Sigma,L,E]):Unit = {
       write(s"""${qarr.indexOf(q)} [label="${q.id}"]\n""")
-      for{
-        tr <- q.transitions
-      } arrow(qarr.indexOf(tr.source),qarr.indexOf(tr.destination),tr.label.toString)
+      for {
+        (destination, transitions) <- q.transitions.groupBy(_.destination)
+        labels = transitions.map(_.label)
+        label = labels.reduce(dfa.labeler.combineLabels)
+      } arrow(qarr.indexOf(q), qarr.indexOf(destination), labelMap(label))
     }
     write("digraph G {\n")
     // header
-    write("rankdir=LR; graph[labeljust=l,nojustify=true]\n")
+    write("  fontname=courier;\n")
+    write("  rankdir=LR; graph[labeljust=l,nojustify=true]\n")
+    write("  node [fontname=Arial, fontsize=25];\n")
+    write("  edge [fontsize=20];\n")
 
     // initial state Q0
     write("// Initial state\n")
@@ -104,12 +130,17 @@ object Render {
     write(s"// all ${dfa.Q.size} states\n")
     dfa.Q.foreach{drawState}
 
-    if (title != "" ) {
+    lazy val transitionLabelText:String = (for{(lab,i) <- labels.toSeq.zipWithIndex
+                                               } yield s"\\lt$i= $lab").mkString("","","\\l")
+
+    if(abbreviateTransitions || title != ""){
       write( """  labelloc="t";""")
-      write("\n")
-      write(s"""  label="$title";""")
-      write("\n")
+      write("label=\"")
+      write(title)
+      write(transitionLabelText)
+      write("\"\n")
     }
+
     write("}\n")
   }
 }

@@ -19,10 +19,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 package genus
 
-import org.scalatest._
 import Types._
 import org.scalatest.funsuite.AnyFunSuite
 
@@ -43,15 +41,17 @@ class GenusDisjoint extends AnyFunSuite {
   }
 
   test("disjoint AtomicType") {
-    val numericType = SAtomic(classOf[java.lang.Number])
+    SAtomic.withOpenWorldView {
+      val numericType = SAtomic(classOf[java.lang.Number])
 
-    assert(! numericType.disjoint(numericType).getOrElse(true))
-    assert(! numericType.disjoint(intJavaType).getOrElse(true))
-    assert(! numericType.disjoint(doubleJavaType).getOrElse(true))
-    assert(! intJavaType.disjoint(numericType).getOrElse(true))
-    assert(! doubleJavaType.disjoint(numericType).getOrElse(true))
-    assert(numericType.disjoint(stringType).getOrElse(true))
-    assert(stringType.disjoint(numericType).getOrElse(true))
+      assert(!numericType.disjoint(numericType).getOrElse(true))
+      assert(!numericType.disjoint(intJavaType).getOrElse(true))
+      assert(!numericType.disjoint(doubleJavaType).getOrElse(true))
+      assert(!intJavaType.disjoint(numericType).getOrElse(true))
+      assert(!doubleJavaType.disjoint(numericType).getOrElse(true))
+      assert(numericType.disjoint(stringType).getOrElse(true))
+      assert(stringType.disjoint(numericType).getOrElse(true))
+    }
   }
 
   test("disjoint Member") {
@@ -106,15 +106,19 @@ class GenusDisjoint extends AnyFunSuite {
   trait Trait2 extends Trait1
   trait Trait3
   trait Trait4
-  class Test3 extends Test2 with Trait2
+  class Test3 extends Test2 with Trait2 with Trait4
   case class Test4()
   case class Test5() extends Test3
   class Test6
   class Test7
   abstract class Abstract1
   abstract class Abstract2
-
+  class Test8 extends Abstract1
+  class Test9 extends Abstract1 with Trait1 with Trait2
   test("disjoint and with classes"){
+    assert(SAtomic(classOf[Trait1]).inhabited.contains(true))
+    assert(SAtomic(classOf[Trait2]).inhabited.contains(true))
+    assert(SAtomic(classOf[Trait4]).inhabited.contains(true))
     assert(SAnd(SAtomic(classOf[Trait1]),
                 SAtomic(classOf[Trait2]),
                 SAtomic(classOf[Trait4])).inhabited.contains(true))
@@ -124,10 +128,11 @@ class GenusDisjoint extends AnyFunSuite {
            .disjoint(SAtomic(classOf[Trait2])).contains(false))
 
     // (disjoint? (and A B C) D)   where B disjoint with D
+    assert(SAtomic(classOf[Abstract1]).disjoint(SAtomic(classOf[Abstract2])).contains(true))
     assert(SAnd(SAtomic(classOf[Trait1]),
                 SAtomic(classOf[Abstract1]),
                 SAtomic(classOf[Trait2]))
-      // disjoint because Abstract1 and Abstract2 are disjoint
+             // disjoint because Abstract1 and Abstract2 are disjoint
            .disjoint(SAtomic(classOf[Abstract2])).contains(true))
 
     // (disjoint? (and B C) A)
@@ -135,39 +140,46 @@ class GenusDisjoint extends AnyFunSuite {
     assert(SAtomic(classOf[Abstract1]).subtypep(SOr(SAtomic(classOf[Abstract1]),
                                                     SAtomic(classOf[Abstract2]))).contains(true))
 
+    assert(SAtomic(classOf[Abstract1]).inhabited.contains(true))
+    assert(SAtomic(classOf[Trait1]).inhabited.contains(true))
+    assert(SOr(SAtomic(classOf[Abstract1]),
+               SAtomic(classOf[Abstract2])).inhabited.contains(true))
+    assert(SAtomic(classOf[Trait2]).inhabited.contains(true))
+    assert(SAnd(SAtomic(classOf[Trait1]),
+                SOr(SAtomic(classOf[Abstract1]),
+                    SAtomic(classOf[Abstract2])),
+                SAtomic(classOf[Trait2])).inhabited.contains(true))
     assert(SAnd(SAtomic(classOf[Trait1]),
                 SOr(SAtomic(classOf[Abstract1]),
                     SAtomic(classOf[Abstract2])),
                 SAtomic(classOf[Trait2])).disjoint(SAtomic(classOf[Abstract1])).contains(false))
   }
 
-  //  Test2 < Test1
-  // Trait2 < Trait1
-  //  Test3 < Test2
-  //  Test3 < Trait2
-  test("disjoint AtomicType with inheritance"){
-    // one assignable from the other
-    assert(SAtomic(classOf[Test2]).disjoint(SAtomic(classOf[Test1])) == Some(false))
-    assert(SAtomic(classOf[Test1]).disjoint(SAtomic(classOf[Test2])) == Some(false))
-    assert(SAtomic(classOf[Test3]).disjoint(SAtomic(classOf[Test2])) == Some(false))
-    assert(SAtomic(classOf[Test3]).disjoint(SAtomic(classOf[Trait2])) == Some(false))
-    assert(SAtomic(classOf[Trait1]).disjoint(SAtomic(classOf[Trait2])) == Some(false))
+  test("disjoint AtomicType with inheritance") {
+    SAtomic.withOpenWorldView {
+      // one assignable from the other
+      assert(SAtomic(classOf[Test2]).disjoint(SAtomic(classOf[Test1])) == Some(false))
+      assert(SAtomic(classOf[Test1]).disjoint(SAtomic(classOf[Test2])) == Some(false))
+      assert(SAtomic(classOf[Test3]).disjoint(SAtomic(classOf[Test2])) == Some(false))
+      assert(SAtomic(classOf[Test3]).disjoint(SAtomic(classOf[Trait2])) == Some(false))
+      assert(SAtomic(classOf[Trait1]).disjoint(SAtomic(classOf[Trait2])) == Some(false))
 
-    // either is final
-    assert(SAtomic(classOf[Test5]).disjoint(SAtomic(classOf[Test5])) == Some(false))
-    assert(SAtomic(classOf[Test5]).disjoint(SAtomic(classOf[Test3])) == Some(false))
-    assert(SAtomic(classOf[Test4]).disjoint(SAtomic(classOf[Test3])) == Some(true))
-    assert(SAtomic(classOf[Test3]).disjoint(SAtomic(classOf[Test4])) == Some(true))
+      // either is final
+      assert(SAtomic(classOf[Test5]).disjoint(SAtomic(classOf[Test5])) == Some(false))
+      assert(SAtomic(classOf[Test5]).disjoint(SAtomic(classOf[Test3])) == Some(false))
+      assert(SAtomic(classOf[Test4]).disjoint(SAtomic(classOf[Test3])) == Some(true))
+      assert(SAtomic(classOf[Test3]).disjoint(SAtomic(classOf[Test4])) == Some(true))
 
-    // either is a trait
-    assert(SAtomic(classOf[Trait2]).disjoint(SAtomic(classOf[Test1])) == Some(false))
-    assert(SAtomic(classOf[Trait2]).disjoint(SAtomic(classOf[Trait3])) == Some(false))
-    assert(SAtomic(classOf[Test4]).disjoint(SAtomic(classOf[Test5])) == Some(true))
-    assert(SAtomic(classOf[Test4]).disjoint(SAtomic(classOf[Test4])) == Some(false))
-    assert(SAtomic(classOf[Test1]).disjoint(SAtomic(classOf[Trait3])) == Some(false))
-    assert(SAtomic(classOf[Trait4]).disjoint(SAtomic(classOf[Trait3])) == Some(false))
+      // either is a trait
+      assert(SAtomic(classOf[Trait2]).disjoint(SAtomic(classOf[Test1])) == Some(false))
+      assert(SAtomic(classOf[Trait2]).disjoint(SAtomic(classOf[Trait3])) == Some(false))
+      assert(SAtomic(classOf[Test4]).disjoint(SAtomic(classOf[Test5])) == Some(true))
+      assert(SAtomic(classOf[Test4]).disjoint(SAtomic(classOf[Test4])) == Some(false))
+      assert(SAtomic(classOf[Test1]).disjoint(SAtomic(classOf[Trait3])) == Some(false))
+      assert(SAtomic(classOf[Trait4]).disjoint(SAtomic(classOf[Trait3])) == Some(false))
 
-    // neither is trait nor superclass nor final
-    assert(SAtomic(classOf[Test6]).disjoint(SAtomic(classOf[Test7])) == Some(true))
+      // neither is trait nor superclass nor final
+      assert(SAtomic(classOf[Test6]).disjoint(SAtomic(classOf[Test7])) == Some(true))
+    }
   }
 }

@@ -19,15 +19,14 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package accumulators
+package adjuvant
 
-import cl.Accumulators._
+import adjuvant.Accumulators._
 import org.scalatest.funsuite.AnyFunSuite
 
 class AccumulatorSuite extends AnyFunSuite {
   
   test("successor"){
-    import cl.successor
     val primes = List(11,13,17,19)
     val odds = Array(3,5,7)
 

@@ -33,12 +33,10 @@ object Statistics {
         randomType(depth, _.inhabited.contains(true))
       else
         randomType(depth)
-      //println(s"$i: rt1 = $rt1")
       val rt2 = if (inh)
         randomType(depth, td => td.inhabited.contains(true) && td.typeEquivalent(rt1).contains(false))
       else
         randomType(depth)
-      //println(s"    rt2 = $rt2")
       val can1 = rt1.canonicalize(Some(Dnf))
       val can2 = rt2.canonicalize(Some(Dnf))
       val s1 = rt1.subtypep(rt2)

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 EPITA Research and Development Laboratory
+// Copyright (c) 2019,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,6 +19,29 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dfa
+package xymbolyco
 
-case class Transition[Σ,L,E](source:State[Σ,L,E], label:L, destination:State[Σ,L,E]) {}
+object Serialize {
+
+  def serialize[Sigma,L,E](dfa:Dfa[Sigma,L,E]):Unit = serialize(dfa,print)
+
+  def serialize[Sigma,L,E](dfa:Dfa[Sigma,L,E], print:String=>Unit):Unit = {
+    print(s"Q=${dfa.Q}\n")
+    print(s"q0=${dfa.q0}\n")
+    print(s"F=${dfa.F}\n")
+    for{
+      q <- dfa.Q
+      tr <- q.transitions
+    } print(s"delta($q,${tr.label}) = ${tr.destination}\n")
+  }
+
+  def serializeToString[Sigma,L,E](dfa:Dfa[Sigma,L,E]):String = {
+    import adjuvant.Accumulators.withOutputToString
+
+    withOutputToString(printer => {
+      printer("{\n")
+      serialize(dfa,printer)
+      printer("}\n")
+    })
+  }
+}

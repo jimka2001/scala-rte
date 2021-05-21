@@ -22,7 +22,6 @@
 
 package genus
 
-import org.scalatest._
 import Types._
 import org.scalatest.funsuite.AnyFunSuite
 

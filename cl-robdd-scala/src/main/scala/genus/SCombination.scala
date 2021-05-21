@@ -30,7 +30,7 @@ import NormalForm._
 // out means replacing SEmpty with STop, or vice versa, and
 // replacing subtypep with supertypep, etc.
 abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
-  def create(tds: SimpleTypeD*):SimpleTypeD
+  def create(tds:Seq[SimpleTypeD]):SimpleTypeD
   val unit:SimpleTypeD
   val zero:SimpleTypeD
   // TODO, not sure what is the correct name for this function.
@@ -74,14 +74,14 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         // SAnd(A,STop,B) ==> SAnd(A,B),  unit=STop,   zero=SEmpty
         // SOr(A,SEmpty,B) ==> SOr(A,B),  unit=SEmpty, zero=STop
         if (tds.contains(unit))
-          create(tds.filterNot(_ == unit): _*)
+          create(tds.filterNot(_ == unit))
         else
           this
       },
       () => {
         // (and A B A C) -> (and A B C)
         // (or A B A C) -> (or A B C)
-        create(tds.distinct: _*)
+        create(tds.distinct)
       },
       () => {
         // (and A (and B C) D) --> (and A B C D)
@@ -92,12 +92,12 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
           create(tds.flatMap {
             case td:SCombination if sameCombination(td) => td.tds
             case x => Seq(x)
-          }: _*)
+          })
         }
       },
       () => {
         val i2 = create(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf))
-                          .sortWith(cmpTypeDesignators): _*)
+                          .sortWith(cmpTypeDesignators))
           .maybeDnf(nf).maybeCnf(nf)
         if (this == i2)
           this // return the older object, hoping the newer one is more easily GC'ed, also preserves EQ-ness

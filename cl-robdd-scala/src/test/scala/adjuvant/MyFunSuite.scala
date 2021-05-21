@@ -19,26 +19,25 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dfa
-
-class State[Σ,L,E](dfa:Dfa[Σ,L,E], val id:Int) {
-  var transitions:Set[Transition[Σ,L,E]] = Set()
-
-  // find the destination state of this state given the label,
-  //     this uses a label search, independent of the particular
-  //     value of an input sequence.
-  def delta(label:L):State[Σ,L,E] = dfa.delta(this,label)
-
-  // find the destination state of this state given an element
-  //    of the input sequence.
-  def successor(s:Σ):Option[State[Σ,L,E]] = {
-    transitions
-      .find{case Transition(_,label,_) => dfa.labeler.member(s,label) }
-      .flatMap{case Transition(_,_,dest) => Some(dest)
+package adjuvant
+import org.scalatest.funsuite.AnyFunSuite
+class MyFunSuite extends AnyFunSuite {
+  import org.scalactic.source
+  import org.scalatest.Tag
+  override def test(testName: String, testTags: Tag*)(testFun: => Any /* Assertion */)(implicit pos: source.Position):Unit = {
+    super.test(testName,testTags : _*)(locally{
+      println("[ starting " + testName)
+      var finished = false
+      try{
+        testFun
+        finished = true
       }
-  }
-
-  override def toString:String = {
-    s"q:$id"
+      finally{
+        if (finished)
+          println("] finished " + testName)
+        else
+          println("] aborted " + testName)
+      }
+    })(pos)
   }
 }

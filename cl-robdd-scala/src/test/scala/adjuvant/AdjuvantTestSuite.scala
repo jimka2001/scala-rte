@@ -1,4 +1,4 @@
-// Copyright (c) 2021 EPITA Research and Development Laboratory
+// Copyright (c) 2019 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,21 +19,27 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package dfa
+package adjuvant
 
-abstract class Labeler[Σ,L] {
-  def member(s:Σ,lab:L):Boolean
-  def combineLabels(l1:L,l2:L):L
-  def equivLabels(a:L,b:L):Boolean = {a == b}
+import adjuvant.Adjuvant._
+import org.scalatest.funsuite.AnyFunSuite
+
+class AdjuvantTestSuite extends AnyFunSuite {
+  test("conj"){
+    val l1 = List( 1, 2, 3)
+    val v1 = Vector(1,2,3)
+    val s1 = Seq(1,2,3)
+
+    assert(conj(l1,4).contains(2))
+    assert(conj(l1,4).contains(4))
+
+    assert(conj(v1,4).contains(2))
+    assert(conj(v1,4).contains(4))
+
+    assert(conj(s1,4).contains(2))
+    assert(conj(s1,4).contains(4))
+  }
+
 }
 
-import genusbdd.GenusBdd
 
-case class GenusBddLabeler() extends Labeler[Any,GenusBdd]() {
-  def member(a:Any,gb:GenusBdd):Boolean = {
-    gb.typep(a)
-  }
-  def combineLabels(a:GenusBdd,b:GenusBdd):GenusBdd = {
-    a
-  }
-}
