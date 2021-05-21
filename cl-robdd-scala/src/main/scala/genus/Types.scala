@@ -77,7 +77,13 @@ object Types {
     // this is a very simplistic implementation of mdtd.
     // it just iterates over all possible combinations of the given sets,
     // filtering away those which can be proven to be empty
-    typePartitions(tds + STop ).toSeq
+    val partitions =     typePartitions(tds + STop ).toSeq
+    val distinctPartitions = partitions.distinct
+    if (partitions.size != distinctPartitions.size) {
+      println(s"computed ${partitions.size} partitions")
+      println(s"   reduced = " + distinctPartitions.size)
+    }
+    distinctPartitions
   }
 
   def randomType(depth:Int, filter:SimpleTypeD=>Boolean):SimpleTypeD = {

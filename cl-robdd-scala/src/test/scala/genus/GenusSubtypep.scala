@@ -227,10 +227,15 @@ class GenusSubtypep extends MyFunSuite {
   def checkSubtype(rt1: SimpleTypeD, rt2: SimpleTypeD, comment: String): Unit = {
     assert(!rt1.subtypep(rt2).contains(false),
            s": $comment: \n   rt1= $rt1 \n   rt2= $rt2" +
-             s"\n   rt1.canonicalize= ${rt1.canonicalize()}\n   rt2.canonicalize= ${rt2.canonicalize()}")
+             "\n  failed rt1 < rt2" +
+             s"\n   rt1.canonicalize= ${rt1.canonicalize()}"+
+             s"\n   rt2.canonicalize= ${rt2.canonicalize()}")
     assert(!rt2.subtypep(rt1).contains(false),
            s": $comment: \n   rt1= $rt1 \n   rt2= $rt2" +
-             s"\n   rt1.canonicalize= ${rt1.canonicalize()}\n   rt2.canonicalize= ${rt2.canonicalize()}")
+             "\n  failed rt1 > rt2" +
+             s"\n   rt1.canonicalize= ${rt1.canonicalize()}"+
+             s"\n   rt2.canonicalize= ${rt2.canonicalize()}")
+
   }
 
   test("randomized testing of subtypep with normalization") {
@@ -252,13 +257,61 @@ class GenusSubtypep extends MyFunSuite {
   }
   test("discovered subtypep 259"){
     locally{
+      // ![SAnd {4,5,6},Number,Integer]
+      val rt= SNot(SAnd(SMember(4,5,6),Number,Integer))
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 262")
+    }
+    locally{
+      //[SOr ![SAnd ![= 0],[SOr Number],[SOr [= -1],Integer]]]
+      val rt= SOr( SNot(SAnd( SNot(SEql(0)),SOr( Number),SOr( SEql(-1),Integer))))
+      //println(s"rt=$rt")
+      //println(s"rt.canonicalize() = ${rt.canonicalize()}")
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 272")
+    }
+    locally{
+      trait Trait1
+      trait Trait2
+      trait Trait3 extends Trait2
+      abstract class Abstract1
+      abstract class Abstract2 extends Trait3
+      // [SOr Trait3$2,[= 1],Abstract2$2]
+      assert(SAtomic(classOf[Trait3]).subtypep(SEql(1)).contains(true))
+      assert(SAtomic(classOf[Abstract2]).subtypep(SEql(1)).contains(true))
+      assert(SEql(1).subtypep(SEql(1)).contains(true))
+      val rt= SOr( classOf[Trait3],SEql(1),classOf[Abstract2])
+      //println(s"rt=$rt")
+      //println(s"rt.canonicalize() = ${rt.canonicalize()}")
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 270")
+    }
+    locally{
+      trait Trait1
+      // [SOr Trait1$1,Integer]
+      val rt = SOr(classOf[Trait1],classOf[java.lang.Integer])
+      //println(s"rt=$rt")
+      //println(s"rt.canonicalize() = ${rt.canonicalize()}")
+      assert(classOf[Trait1].subtypep(SAtomic(classOf[java.lang.Integer])).contains(true))
+      assert(classOf[java.lang.Integer].subtypep(SAtomic(classOf[java.lang.Integer])).contains(true))
+      assert(SOr(classOf[Trait1],classOf[java.lang.Integer]).subtypep(SAtomic(classOf[java.lang.Integer])).contains(true))
+      assert(SAtomic(classOf[java.lang.Integer]).subtypep(SOr(classOf[Trait1],classOf[java.lang.Integer])).contains(true))
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 259")
+    }
+    locally{
+      abstract class Abstract1
+      // [SOr [SOr Abstract1$1,Integer],[SAnd [= -1],[= 1]]]
+      val rt = SOr(SOr(classOf[Abstract1],classOf[java.lang.Integer]),
+                   SAnd(SEql(-1),SEql(1)))
+      //println(s"rt=$rt")
+      //println(s"rt.canonicalize() = ${rt.canonicalize()}")
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 274")
+    }
+    locally{
       abstract class Abstract1
       // ![SOr [SOr Abstract1$1,Integer],[SAnd [= -1],[= 1]]]
       val rt = SNot(SOr(SOr(classOf[Abstract1],classOf[java.lang.Integer]),
                         SAnd(SEql(-1),SEql(1))))
-      println(s"rt=$rt")
-      println(s"rt.canonicalize() = ${rt.canonicalize()}")
-      checkSubtype(rt, rt.canonicalize(), "canonicalize 259")
+      //println(s"rt=$rt")
+      //println(s"rt.canonicalize() = ${rt.canonicalize()}")
+      checkSubtype(rt, rt.canonicalize(), "canonicalize 299")
     }
     locally{
       val rt = SOr(SNot(classOf[java.lang.Long]),

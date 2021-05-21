@@ -33,7 +33,7 @@ case class Singleton(td:SimpleTypeD) extends Rte {
       case genus.SAnd(operands@_*) => And( operands.map(td => Singleton(td.canonicalize()).canonicalizeOnce))
       case genus.SOr(operands@_*) => Or( operands.map(td => Singleton(td.canonicalize()).canonicalizeOnce))
       case genus.SNot(operand) => And( Not(Singleton(operand.canonicalize()).canonicalizeOnce),
-                                Sigma)
+                                       Sigma)
       case genus.STop => Sigma
       case genus.SEmpty => EmptySet
       case td if td.inhabited.contains(false) => EmptySet
@@ -54,11 +54,11 @@ case class Singleton(td:SimpleTypeD) extends Rte {
                                                 wrt=wrt,
                                                 rte=this)
   }
-  override def derivative(wrt:Option[SimpleTypeD]):Rte = td match {
-    // TODO currently don't know how to find derivative of Singleton(td) if td.inhabited=None
-    case genus.SEmpty => EmptySet.derivative(wrt)
-    case genus.STop => Sigma.derivative(wrt)
-    case td if td.inhabited.contains(false) => EmptySet.derivative(wrt)
+  override def derivative(wrt:Option[SimpleTypeD]):Rte = (wrt,td) match {
+    case (_,genus.SEmpty) => EmptySet.derivative(wrt)
+    case (_,genus.STop) => Sigma.derivative(wrt)
+    case (None,_) => this
+    case (_,td) if td.inhabited.contains(false) => EmptySet.derivative(wrt)
     case _ => super.derivative(wrt)
   }
 }

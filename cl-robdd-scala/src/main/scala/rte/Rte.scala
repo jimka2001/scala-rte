@@ -51,24 +51,29 @@ abstract class Rte {
       case (And(Seq(r1s@_*)),And(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => true
       case (rt1,rt2) =>
         val dfa = Or(And(rt1,Not(rt2)),
-                     And(rt2,Not(rt1))).toDfa
+                     And(rt2,Not(rt1))).canonicalize.toDfa()
         (dfa.F.isEmpty // no final states
-          || dfa.findSpanningPath.isEmpty) // no path to a final state from q0
+          || dfa.findSpanningPath().isEmpty) // no path to a final state from q0
     }
   }
   def toLaTeX:String
   //override def toString:String = toLaTeX
   def nullable:Boolean
   def firstTypes:Set[genus.SimpleTypeD]
-  def canonicalize:Rte = fixedPoint(this, (r:Rte) => r.canonicalizeOnce, (r1:Rte,r2:Rte)=>r1==r2)
+  def canonicalize:Rte = {
+    fixedPoint[Rte](this,
+                    (r:Rte) => r.canonicalizeOnce,
+                    (r1:Rte,r2:Rte)=>r1==r2)
+  }
   def canonicalizeOnce:Rte = this
 
-  def derivative(wrt:Option[SimpleTypeD]):Rte = (wrt match {
-    case None => this
-    case Some(td) if td.inhabited.contains(false) => EmptySet
-    case Some(td) => derivativeDown(td)
-  }).canonicalize
-
+  def derivative(wrt:Option[SimpleTypeD]):Rte = {
+    (wrt match {
+      case None => this
+      case Some(td) if td.inhabited.contains(false) => EmptySet
+      case Some(td) => derivativeDown(td)
+    }).canonicalize
+  }
   def derivativeDown(wrt:SimpleTypeD):Rte
 
   def derivatives():(Vector[Rte],Vector[Seq[(SimpleTypeD,Int)]]) = {

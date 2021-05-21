@@ -39,7 +39,7 @@ case class Star(operand:Rte) extends Rte {
     }
   }
 
-  override def canonicalizeOnce: Rte = operand.canonicalizeOnce match {
+  override def canonicalizeOnce:Rte = operand.canonicalizeOnce match {
     case EmptyWord => EmptyWord
     case EmptySet => EmptyWord
     case Star(rt) => Star(rt) // x** -> x*

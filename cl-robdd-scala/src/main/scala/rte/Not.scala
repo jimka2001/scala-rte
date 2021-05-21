@@ -40,9 +40,9 @@ case class Not(operand:Rte) extends Rte {
       // Not(Not(r)) -> Not(r)
       case Not(r) => r.canonicalizeOnce
       // Not(And(a,b)) -> Or(Not(a),Not(b))
-      case And(Seq(rs@_*)) => Or(rs.map(r => Not(r)))
+      case And(Seq(rs@_*)) => Or.createOr(rs.map(r => Not(r)))
       // Not(Or(a,b)) -> And(Not(a),Not(b))
-      case Or(Seq(rs@_*)) => And(rs.map(r => Not(r)))
+      case Or(Seq(rs@_*)) => And.createAnd(rs.map(r => Not(r)))
 
       case _ => Not(betterOperand)
     }

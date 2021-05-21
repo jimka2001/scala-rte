@@ -30,6 +30,7 @@ class GenusInhabited extends AnyFunSuite {
   trait Trait1
   trait Trait2
   trait Trait3
+  class Test1 extends Abstract1 with Trait1 with Trait2 with Trait3
 
   test("inhabited SEql"){
     assert(SEql(3).inhabited.contains(true))

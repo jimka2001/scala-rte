@@ -44,13 +44,14 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
   }
 
   override def canonicalizeOnce: Rte = {
+    //println("canonicalizing Cat: " + operands)
     val betterOperands = Cat.swapCommutables(Cat.stripRedundant(operands))
-      .map(_.canonicalizeOnce)
       .flatMap { // Cat( x, Cat(a, b), y) --> Cat(x,a,b,y)
-        case Cat(Seq(rs@_*)) => rs
-        case rt => Seq(rt)
+        case Cat(Seq(rs@_*)) => rs.map(_.canonicalizeOnce)
+        //  Cat( x, EmptyWord, y) --> Cat( x, y)
+        case EmptyWord => Seq()
+        case rt => Seq(rt.canonicalizeOnce)
       }
-      .filterNot(_ == EmptyWord) //  Cat( x, EmptyWord, y) --> Cat( x, y)
 
     if (betterOperands.isEmpty)
       EmptyWord

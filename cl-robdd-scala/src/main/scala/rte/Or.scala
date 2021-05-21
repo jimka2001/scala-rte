@@ -34,10 +34,15 @@ case class Or(operands:Seq[Rte]) extends Rte {
   def firstTypes: Set[genus.SimpleTypeD] = operands.toSet.flatMap((r: Rte) => r.firstTypes)
 
   override def canonicalizeOnce: Rte = {
+    //println("canonicalizing Or:  " + operands)
     val betterOperands = operands
-      .map(_.canonicalizeOnce)
       .distinct
-      .filterNot(_ == EmptySet)
+      .flatMap{
+        case EmptySet => Seq()
+        case Or(Seq(rs @ _*)) => rs.map(_.canonicalizeOnce)
+        case r => Seq(r.canonicalizeOnce)
+      }
+
     lazy val singletons: List[genus.SimpleTypeD] = betterOperands.flatMap {
       case Singleton(td) => List(td)
       case _ => List.empty
@@ -68,14 +73,6 @@ case class Or(operands:Seq[Rte]) extends Rte {
     }
     else if (betterOperands.contains(Rte.sigmaStar))
       Rte.sigmaStar
-    else if (betterOperands.exists(Rte.isOr)) {
-      // Or(a,Or(x,y),b) --> Or(a,x,y,b)
-      val orops = betterOperands.flatMap {
-        case Or(Seq(rs@_*)) => rs
-        case r => Seq(r)
-      }
-      Or(orops)
-    }
     else if (betterOperands.exists { r1 => Rte.isStar(r1) && betterOperands.exists { r2 => Star(r2) == r1 }
     })
     // (:or A B (:* B) C)

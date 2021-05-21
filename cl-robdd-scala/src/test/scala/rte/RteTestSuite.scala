@@ -135,9 +135,8 @@ class RteTestSuite extends MyFunSuite {
     dfaToPng(Not(rt1).toDfa(),title="not rt1",abbreviateTransitions=true)
     dfaToPng(xymbolyco.Minimize.minimize(rt1.toDfa()),title="minimized", abbreviateTransitions = true)
     println("------------------------------------")
-    val cano = Rte.withSimplifier(() => Or(And(rt1,Not(rt2)),
-                                           And(rt2,Not(rt1)))//.canonicalize
-                                  )
+    val cano = Or(And(rt1,Not(rt2)),
+                  And(rt2,Not(rt1))).canonicalize
     println(s"cano=$cano")
     dfaToPng(cano.toDfa(),title="cano",abbreviateTransitions = true)
   }
@@ -177,10 +176,10 @@ class RteTestSuite extends MyFunSuite {
     import xymbolyco.GraphViz.dfaToPng
 
     xymbolyco.Serialize.serialize(rt1.toDfa())
-    dfaToPng(rt1.toDfa,title="debug",abbreviateTransitions = true)
-    dfaToPng(Not(rt1).toDfa,title="not rt1",abbreviateTransitions=true)
+    dfaToPng(rt1.toDfa(),title="debug",abbreviateTransitions = true)
+    dfaToPng(Not(rt1).toDfa(),title="not rt1",abbreviateTransitions=true)
    Or(And(rt1,Not(rt2)),
-       And(rt2,Not(rt1))).toDfa
+       And(rt2,Not(rt1))).toDfa()
     //Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize
 
 

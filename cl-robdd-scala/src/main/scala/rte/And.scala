@@ -34,8 +34,11 @@ case class And(operands:Seq[Rte]) extends Rte{
     //println("canonicalizing And: " + operands)
     val betterOperands = operands
       .distinct
-      .map(_.canonicalizeOnce)
-      .distinct
+      .flatMap{
+        case r if r == Rte.sigmaStar => Seq()
+        case And(Seq(rs @ _*)) => rs.map(_.canonicalizeOnce)
+        case r => Seq(r.canonicalizeOnce)
+      }
     val matchesOnlySingletons:Boolean = betterOperands.contains(Sigma) || betterOperands.exists(Rte.isSingleton)
     val singletons:List[genus.SimpleTypeD] = betterOperands.flatMap{
       case Singleton(td) => List(td)

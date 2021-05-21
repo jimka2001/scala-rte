@@ -129,12 +129,16 @@ abstract class SimpleTypeD { // SimpleTypeD
     }) {
       Some(true)
     }
+      //   sub        super
     else (inhabited, t.inhabited) match {
-      case (None, _) => None
-      case (_, None) => None
-      case (Some(false), Some(false)) => Some(true) // empty set is a subset of the empty set
-      case (_, Some(false)) => Some(false) // no inhabited type is a subtype of the empty type
+      // empty set is subset of every set even if we don't know know whether the superset is inhabited or not
+      case (Some(false),_) => Some(true)
+      case (Some(true),Some(false)) => Some(false)
       case _ => None
+      //case (None, _) => None
+      //case (_, None) => None
+      //case (_, Some(false)) => Some(false) // no inhabited type is a subtype of the empty type
+      //
     }
   }
 

@@ -18,7 +18,7 @@ libraryDependencies += "org.sameersingh.scalaplot" % "scalaplot" % "0.0.4"
 //libraryDependencies += "org.typelevel" %% "spire" % "0.14.1"
 libraryDependencies += "org.typelevel" %% "spire" % "0.17.0-RC1"
 
-libraryDependencies += "org.reflections" % "reflections" % "0.9.11"
+libraryDependencies += "org.reflections" % "reflections" % "0.9.12"
 
 scalacOptions ++= Seq(
   "-feature",

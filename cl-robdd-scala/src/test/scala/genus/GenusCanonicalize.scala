@@ -191,7 +191,7 @@ class GenusCanonicalize extends AnyFunSuite {
 
     // AXBC + !X = ABC + !X
     assert(SOr(SAnd(A, classOf[X], B, C), SNot(classOf[X])).canonicalize()
-           == SOr(SAnd(A, B, C), SNot(classOf[X])))
+           == SOr(SAnd(A, B, C), SNot(classOf[X])).canonicalize())
 
 
     assert(SEql(1).subtypep(classOf[java.lang.Integer]).contains(true))

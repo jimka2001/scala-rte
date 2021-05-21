@@ -23,13 +23,14 @@ package genus
 
 // genus
 import NormalForm._
-import adjuvant.Adjuvant.trace
 
 /** The atoms of our type system: a simple type built from a native Scala/Java type.
  *
  * @param ct the class of a Scala or Java type this class will wrap (call it with `classOf[native_type]`)
  */
 case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
+  //if (ct != classOf[Nothing] && ! SAtomic.existsInstantiatableSubclass(ct))
+  //  println(s"WARNING: SAtomic($ct) is equivalent to SEmpty")
   override def toString:String = {
     val fullName = if (ct.getName.startsWith("java.lang."))
       ct.getName.drop(10)
@@ -51,7 +52,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   override protected def inhabitedDown: Some[Boolean] = {
     if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
-    else if (SAtomic.closedWorldView)
+    else if (SAtomic.closedWorldView.value)
       Some(SAtomic.existsInstantiatableSubclass(ct))
     else
       Some(true)
@@ -64,11 +65,10 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
       case SEmpty => Some(true)
       case STop => Some(false) // STop is only disjoint with SEmpty, but this != SEmpty
       case SAtomic(tp) =>
-        if (tp == ct)
+        if (inhabited.contains(false))
+          Some(true)
+        else if (tp == ct)
           Some(false)
-        else if (SAtomic.closedWorldView) {
-          Some(! SAtomic.existsCommonInstantiatableSubclass(ct, tp))
-        }
         else if (ct.isAssignableFrom(tp) || tp.isAssignableFrom(ct))
           Some(false)
         else if (SAtomic.isFinal(ct) || SAtomic.isFinal(tp)) // if either is final
@@ -83,46 +83,60 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
   // SAtomic(ct: Class[_])
   override protected def subtypepDown(s: SimpleTypeD): Option[Boolean] = {
-    s match {
-      case SEmpty => this.inhabited.map(!_)
-      case STop => Some(true)
-      // super.isAssignableFrom(sub) means sub is subtype of super
-      case SAtomic(tp) =>
-        Some(tp.isAssignableFrom(ct))
+    if ( inhabited.contains(false))
+      Some(true)
+    else
+      s match {
+        case SEmpty => this.inhabited.map(!_)
+        case STop => Some(true)
+        case SAtomic(tp) =>
+          if (s.inhabited.contains(false))
+            subtypep(SEmpty)
+          else {
+            // here we know that neither inhabited nor s.inhabited is Some(false)
+            (inhabited, s.inhabited) match {
+              // case (Some(false),_) => Some(true) // redundant case because of of if/then/else
+              case (_,None) => None
+              case (None,Some(true)) => None
+              // super.isAssignableFrom(sub) means sub is subtype of super
+              case (Some(true),Some(true)) => Some(tp.isAssignableFrom(ct))
+              case _ => throw new Exception("impossible")
+            }
+          }
 
-      case SMember(_@_*) =>
-        Some(false) // no member type exhausts all the values of an Atomic Type
+        case SMember(_@_*) =>
+          Some(false) // no member type exhausts all the values of an Atomic Type
 
-      case SEql(_) =>
-        Some(false)
-
-      case SNot(_) =>
-        super.subtypepDown(s)
-
-      case SOr(tp@_*) =>
-        if (tp.exists(x => subtypep(x).contains(true)))
-        // A < A union X,
-        // and A < B => A < B union X
-        // if this happens to be a subtype of one of the components of the union type, then it is
-        //   a subtype of the union type, but if this fails to be a subtype of every component
-        //   we can not reach any conclusion
-          Some(true)
-        else if (tp.forall(x => disjoint(x).contains(true)))
+        case SEql(_) =>
           Some(false)
-        else
+
+        case SNot(_) =>
           super.subtypepDown(s)
 
-      case SAnd(tp@_*) =>
-        if (tp.forall(x => subtypep(x).contains(true)))
-          Some(true)
-        else if (tp.forall(x => disjoint(x).contains(true)))
-          Some(false)
-        else
-          super.subtypepDown(s)
+        case SOr(tp@_*) =>
+          if (tp.exists(x => subtypep(x).contains(true)))
+          // A < A union X,
+          // and A < B => A < B union X
+          // if this happens to be a subtype of one of the components of the union type, then it is
+          //   a subtype of the union type, but if this fails to be a subtype of every component
+          //   we can not reach any conclusion
+            Some(true)
+          else if (tp.forall(x => disjoint(x).contains(true)))
+            Some(false)
+          else
+            super.subtypepDown(s)
 
-      case SCustom(_,_) =>
-        super.subtypepDown(s)
-    }
+        case SAnd(tp@_*) =>
+          if (tp.forall(x => subtypep(x).contains(true)))
+            Some(true)
+          else if (tp.forall(x => disjoint(x).contains(true)))
+            Some(false)
+          else
+            super.subtypepDown(s)
+
+        case SCustom(_, _) =>
+          super.subtypepDown(s)
+      }
   }
 
   // SAtomic(ct: Class[_])
@@ -131,7 +145,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
       SEmpty
     else if (ct == classOf[Any])
       STop
-    else if ( SAtomic.closedWorldView && ! SAtomic.existsInstantiatableSubclass(ct))
+    else if ( inhabited.contains(false))
       SEmpty
     else
       this
@@ -167,7 +181,15 @@ object SAtomic {
   //   exist which actually exist NOW, thus thus if there are not common
   //   subclasses of two given classes, then we conclude the classes are
   //   disjoint.
-  val closedWorldView: Boolean = true
+  import scala.util.DynamicVariable
+  val closedWorldView: DynamicVariable[Boolean] = new DynamicVariable[Boolean](true)
+
+  def withOpenWorldView[T](code: =>T):T = {
+    closedWorldView.withValue(false){code}
+  }
+  def withClosedWorldView[T](code: =>T):T = {
+    closedWorldView.withValue(true){code}
+  }
 
   def instantiatableSubclasses(cl: Class[_]): Array[Class[_]] = {
     val properSubs = reflections.getSubTypesOf(cl).toArray.collect {
@@ -180,7 +202,6 @@ object SAtomic {
   }
 
   def existsInstantiatableSubclass(cl: Class[_]): Boolean = {
-    for{c <- reflections.getSubTypesOf(cl).toArray} println(s"$c -> $cl")
     isInstantiatable(cl) || reflections.getSubTypesOf(cl).toArray.exists {
       case c: Class[_] => isInstantiatable(c)
       case _ => false
