@@ -40,17 +40,19 @@ class GenusBddTest extends MyFunSuite {
   abstract class Abstract2
 
   test("subclass") {
-    val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
+    SAtomic.withOpenWorldView {
+      val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
 
-    Bdd.withNewBddHash {
-      val bdd = GenusBdd(SAnd(SAtomic(classOf[Trait2]),
-                              SAtomic(classOf[Trait3])), tdToInt)
-      val dnf = bdd.dnf
-      assert(dnf == SAtomic(classOf[Trait3]))
-    }
-    Bdd.withNewBddHash {
-      val dnf = GenusBdd(SOr(classOf[Trait2], classOf[Trait3]), tdToInt).dnf
-      assert(dnf == SAtomic(classOf[Trait2]))
+      Bdd.withNewBddHash {
+        val bdd = GenusBdd(SAnd(SAtomic(classOf[Trait2]),
+                                SAtomic(classOf[Trait3])), tdToInt)
+        val dnf = bdd.dnf
+        assert(dnf == SAtomic(classOf[Trait3]))
+      }
+      Bdd.withNewBddHash {
+        val dnf = GenusBdd(SOr(classOf[Trait2], classOf[Trait3]), tdToInt).dnf
+        assert(dnf == SAtomic(classOf[Trait2]))
+      }
     }
   }
   test("disjoint") {
@@ -62,10 +64,12 @@ class GenusBddTest extends MyFunSuite {
   }
   test("disjoint and subtype") {
     val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
-    Bdd.withNewBddHash {
-      val dnf = GenusBdd(SAnd(classOf[Abstract1], SOr(SAnd(classOf[Abstract1], classOf[Trait2]),
-                                                      SAnd(classOf[Abstract2], classOf[Trait2]))), tdToInt).dnf
-      assert(dnf == SAnd(classOf[Trait2], classOf[Abstract1]))
+    SAtomic.withOpenWorldView {
+      Bdd.withNewBddHash {
+        val dnf = GenusBdd(SAnd(classOf[Abstract1], SOr(SAnd(classOf[Abstract1], classOf[Trait2]),
+                                                        SAnd(classOf[Abstract2], classOf[Trait2]))), tdToInt).dnf
+        assert(dnf == SAnd(classOf[Trait2], classOf[Abstract1]))
+      }
     }
   }
 
