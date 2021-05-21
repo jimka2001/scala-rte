@@ -173,6 +173,7 @@ object SAtomic {
     else new SAtomic(ct)
   }
 
+  import scala.util.DynamicVariable
   // closedWorldView determines semantics of disjointness.
   //   if the world view is open, then for any two interfaces (for example)
   //   we assume that it is possible to create a class inheriting from both
@@ -181,12 +182,18 @@ object SAtomic {
   //   exist which actually exist NOW, thus thus if there are not common
   //   subclasses of two given classes, then we conclude the classes are
   //   disjoint.
-  import scala.util.DynamicVariable
   val closedWorldView: DynamicVariable[Boolean] = new DynamicVariable[Boolean](true)
 
+  // evaluate a piece of code in a dynamic context where it is considers that classes
+  //   may be loaded at run-time.  Thus, for example, it is NOT considered that
+  //   two given traits are disjoint.
   def withOpenWorldView[T](code: =>T):T = {
     closedWorldView.withValue(false){code}
   }
+
+  // evaluate a piece of code in a dynamic context where it is considers that classes
+  //   may NOT be loaded at run-time.  Thus, for example, it is considered that
+  //   two given traits are disjoint if there exists no common instantiable subclass.
   def withClosedWorldView[T](code: =>T):T = {
     closedWorldView.withValue(true){code}
   }
@@ -202,6 +209,8 @@ object SAtomic {
   }
 
   def existsInstantiatableSubclass(cl: Class[_]): Boolean = {
+    // determine whether an instantiatable subclass exists.
+    //    Note that a class is considered a subclass of itself.
     isInstantiatable(cl) || reflections.getSubTypesOf(cl).toArray.exists {
       case c: Class[_] => isInstantiatable(c)
       case _ => false
