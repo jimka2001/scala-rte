@@ -55,8 +55,8 @@ object Evaluator {
     println(" Bdd ")
     for (l <- mapPermutations(n)) {
       for ((k, v) <- l) {
-        if (v) print(v + "  | ")
-        else print(v + " | ")
+        if (v) print("" + v + "  | ")
+        else print("" + v + " | ")
       }
       println(apply(b, l))
     }

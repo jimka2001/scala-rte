@@ -69,6 +69,8 @@ case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
   def typep(a:Any):Boolean = {
     bdd.directedWalk{
       case BddNode(label,_,_) => intToTd(label).typep(a)
+      case BddTrue => true
+      case BddFalse => false
     }
   }
 

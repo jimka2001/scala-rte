@@ -19,7 +19,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 package genus
 
 import genus.Types._
@@ -27,6 +26,11 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class TypesTest extends AnyFunSuite {
 
+  test("reflect.getSubTypesOf"){
+    val reflect = new org.reflections.Reflections("")
+    assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
+    assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
+  }
   test("sort 1") {
     assert(List(SEmpty, STop).sortWith(cmpTypeDesignators)
            == List(STop, SEmpty).sortWith(cmpTypeDesignators))
