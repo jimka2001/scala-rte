@@ -21,8 +21,6 @@
 
 package xymbolyco
 
-import scala.annotation.tailrec
-
 object Minimize {
 
   import adjuvant.Adjuvant._
@@ -32,11 +30,12 @@ object Minimize {
   }
 
   def findReachable(succ:Map[Int,Set[Int]], done:Set[Int],todo:Set[Int]):Set[Int] = {
+
     if (todo.isEmpty)
       done
     else {
       val q = todo.head
-      findReachable(succ,done + q, todo ++ (succ(q) diff done) - q)
+      findReachable(succ,done + q, todo ++ (succ.getOrElse(q,Set()) diff done) - q)
     }
   }
 
@@ -53,7 +52,7 @@ object Minimize {
   }
 
   def removeNonCoAccessible[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    val pred:Map[Int,Set[Int]] = dfa.successors()
+    val pred:Map[Int,Set[Int]] = dfa.predecessors()
     val coaccessible:Set[Int] = findReachable(pred,Set[Int](),dfa.Fids)
     if(coaccessible.contains(dfa.q0id)){
       new Dfa(coaccessible,

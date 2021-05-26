@@ -89,7 +89,6 @@ class AccumulatorSuite extends AnyFunSuite {
       printer("world")
     }))
   }
-
 }
 
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -24,6 +24,9 @@ package lbdd
 
 import bdd.Assignment
 
+import scala.annotation.tailrec
+import scala.language.implicitConversions
+
 
 sealed abstract class LBdd {
 
@@ -44,6 +47,7 @@ sealed abstract class LBdd {
 
   def fold[R](z: R)(f: (R, LBdd) => R): R = {
     def bfsWalk(f: LBdd => Unit): Unit = {
+      @tailrec
       def recur(generation: List[LBdd], nextGeneration: List[LBdd], done: Set[LBdd]): Unit = {
         // BFS walk of bdd, calling f exactly once on each node
         (generation, nextGeneration) match {
@@ -163,8 +167,8 @@ case class LBddNode(label: Int, positive: LBdd,
       case (LBddFalse, None, LBddTrue) => "!" + label.toString
 
         // TODO : Better printer
-      case _ if middle.nonEmpty => label + positive.toString + middle.get().toString + negative.toString
-      case _ => label + positive.toString + "N" + negative.toString
+      case _ if middle.nonEmpty => "" + label + positive.toString + middle.get().toString + negative.toString
+      case _ => "" + label + positive.toString + "N" + negative.toString
 
     }
   }
