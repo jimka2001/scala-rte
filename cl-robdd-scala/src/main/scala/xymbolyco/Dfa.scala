@@ -26,20 +26,30 @@ import scala.annotation.tailrec
 // Seq[Σ] is the type of the input sequence which the DFA is expected to match
 // L is the type of label on transitions
 // E is the type of exit values
-class Dfa[Σ,L,E](Qids:Set[Int],
-                 q0id:Int,
-                 Fids:Set[Int],
-                 protoDelta:Set[(Int,L,Int)],
+class Dfa[Σ,L,E](val Qids:Set[Int],
+                 val q0id:Int,
+                 val Fids:Set[Int],
+                 val protoDelta:Set[(Int,L,Int)],
                  val labeler:Labeler[Σ,L],
-                 fMap:Map[Int,E]) {
+                 val fMap:Map[Int,E]) {
   // q0id is in Qids
   require(Qids.contains(q0id))
   // each element of Fids is in Qids
   require(Fids.subsetOf(Qids))
   // each triple in protoDelta is of the form (x,_,y) where x and y are elements of Qids
   require(protoDelta.forall { case (from: Int, _, to: Int) => Qids.contains(from) && Qids.contains(to) })
-  // fMap maps each element of Fids to some object of type E
-  require(fMap.map { case (q, _) => q }.toSet == Fids)
+
+  // returns a map of src -> Set(dst)
+  def successors():Map[Int,Set[Int]] = {
+    for{ (src,triples) <- protoDelta.groupBy{case (src,_,dst) => src}
+         } yield src -> triples.map(_._3)
+  }
+
+  // returns a map of dst -> Set(src)
+  def predecessors():Map[Int,Set[Int]] = {
+    for{ (dst,triples) <- protoDelta.groupBy{case (src,_,dst) => dst}
+         } yield dst -> triples.map(_._1)
+  }
 
   def exitValue(q: State[Σ, L, E]): E = fMap(q.id)
 
@@ -72,18 +82,37 @@ class Dfa[Σ,L,E](Qids:Set[Int],
     }
   }
 
-  def findSpanningPath:Option[Seq[State[Σ,L,E]]] = {
+  // find some sequence of objects of labels leading
+  // from q0 to a final state.
+  def findTrace():Option[Seq[L]] = {
+    findSpanningPath().map{states =>
+      states.toList.tails.flatMap{
+        case q1::q2::_ =>
+          val Some(Transition(_,label,_)) = q1.transitions.find{
+            case Transition(_,_,dst) if dst == q2 => true
+            case _ => false
+          }
+          List(label)
+        case _ => Nil
+      }.toSeq
+    }
+  }
+
+  // if possible, returns a sequence of States which lead from q0 to a
+  // final state.
+  def findSpanningPath():Option[Seq[State[Σ,L,E]]] = {
     def augment(paths: Seq[List[State[Σ, L, E]]]): Seq[List[State[Σ, L, E]]] = {
       paths.flatMap {
         case s :: ss => for {Transition(src, label, dst) <- s.transitions
                              if s != dst && !ss.contains(dst)
                              } yield dst :: s :: ss
+        case _ => Nil // unused but silences compiler warning
       }
     }
     @tailrec
     def recur(paths:Seq[List[State[Σ, L, E]]]): Option[Seq[State[Σ, L, E]]] = {
-      lazy val found = paths.find{
-        case s::ss => F.contains(s)
+      lazy val found = paths.collectFirst{
+        case p@s::_ if F.contains(s) => p
       }
       if (paths.isEmpty)
         None

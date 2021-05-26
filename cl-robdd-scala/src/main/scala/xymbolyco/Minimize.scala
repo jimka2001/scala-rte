@@ -28,6 +28,60 @@ object Minimize {
   import adjuvant.Adjuvant._
 
   def trim[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    removeNonAccessible(removeNonCoAccessible(dfa))
+  }
+
+  def findReachable(succ:Map[Int,Set[Int]], done:Set[Int],todo:Set[Int]):Set[Int] = {
+    if (todo.isEmpty)
+      done
+    else {
+      val q = todo.head
+      findReachable(succ,done + q, todo ++ (succ(q) diff done) - q)
+    }
+  }
+
+  def removeNonAccessible[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    val succ:Map[Int,Set[Int]] = dfa.successors()
+    val accessible:Set[Int] = findReachable(succ,Set(),Set(dfa.q0.id))
+    new Dfa(accessible,
+            dfa.q0id,
+            dfa.Fids.intersect(accessible),
+            dfa.protoDelta.collect{case sld@(src,_,dst) if accessible.contains(src) && accessible.contains(dst) =>sld},
+            dfa.labeler,
+            dfa.fMap
+            )
+  }
+
+  def removeNonCoAccessible[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    val pred:Map[Int,Set[Int]] = dfa.successors()
+    val coaccessible:Set[Int] = findReachable(pred,Set[Int](),dfa.Fids)
+    if(coaccessible.contains(dfa.q0id)){
+      new Dfa(coaccessible,
+              dfa.q0id,
+              dfa.Fids,
+              dfa.protoDelta.collect{case sld@(src,_,dst) if coaccessible.contains(src) && coaccessible.contains(dst) =>sld},
+              dfa.labeler,
+              dfa.fMap)
+    }
+    else
+    {
+      val q0id = dfa.q0id
+      val allLabel = dfa.protoDelta.collect{case (src,lab,_) if src == q0id => lab}
+      val protoDelta:Set[(Int,L,Int)] = if (allLabel.isEmpty)
+        Set()
+      else
+        Set((q0id,allLabel.reduce((acc:L,lab:L)=> dfa.labeler.combineLabels(acc,lab)),q0id))
+      // make trivial dfa with only a self-loop labeled Sigma on q0
+      new Dfa(Set(q0id),
+              q0id,
+              Set(),
+              protoDelta,
+              dfa.labeler,
+              dfa.fMap
+              )
+    }
+  }
+
   def findHopcroftPartition[Σ, L, E](dfa: Dfa[Σ, L, E]): Set[Set[State[Σ, L, E]]] = {
     type STATE = State[Σ, L, E]
     type EQVCLASS = Set[STATE]

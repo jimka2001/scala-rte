@@ -49,5 +49,22 @@ class RteDfaTestSuite extends AnyFunSuite {
       // dfaView(rt.toDfa(), s"depth=$depth,rep=$rep", abbreviateTransitions=true)
     }
   }
-
+  test("dfa minimize") {
+    for {depth <- 5 to 6
+         rep <- 1 to 1000
+         dfa = Rte.randomRte(depth).toDfa()
+         } {
+      xymbolyco.Minimize.minimize(dfa)
+    }
+  }
+  test("dfa trim"){
+    for {depth <- 5 to 6
+         rep <- 1 to 1000
+         dfa = Rte.randomRte(depth).toDfa()
+         } {
+      xymbolyco.Minimize.removeNonAccessible(dfa)
+      xymbolyco.Minimize.removeNonCoAccessible(dfa)
+      xymbolyco.Minimize.trim(dfa)
+    }
+  }
 }
