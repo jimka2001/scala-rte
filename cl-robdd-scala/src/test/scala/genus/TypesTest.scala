@@ -27,7 +27,7 @@ import org.scalatest.funsuite.AnyFunSuite
 class TypesTest extends AnyFunSuite {
 
   test("reflect.getSubTypesOf"){
-    val reflect = new org.reflections.Reflections("")
+    val reflect = new org.reflections.Reflections()
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
   }
