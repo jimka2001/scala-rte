@@ -106,6 +106,10 @@ object Types {
     trait Trait3 extends Trait2
     abstract class Abstract1
     abstract class Abstract2 extends Trait3
+
+    // TODO copy the above classes and instantiate a final subclass
+    //    so they will be considered instantiatable
+
     val interestingTypes:Vector[SimpleTypeD] = Vector(
       STop,
       SEmpty,
