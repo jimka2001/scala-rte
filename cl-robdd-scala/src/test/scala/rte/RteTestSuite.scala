@@ -120,24 +120,18 @@ class RteTestSuite extends MyFunSuite {
                   Rte.Member(4,5,6))))
     val r2 = Or(Or(Cat(Rte.Eql(0),Rte.Member(1,2,3,4)),Star(Rte.Eql(-1))),
                 Not(Or(Rte.Eql(0),Rte.Member("a","b","c"))))
-
-    println(s"  r1 = $r1")
-    println(s"  r2 = $r2")
-
+    
     val rt1 = Not(And(r1,r2)).canonicalize
     val rt2 = Or(Not(r1),Not(r2))
-    println(s"  rt1 = $rt1")
-    println(s"  rt2 = $rt2")
+
     import xymbolyco.GraphViz.dfaToPng
 
     xymbolyco.Serialize.serialize(rt1.toDfa())
     dfaToPng(rt1.toDfa(),title="debug",abbreviateTransitions = true)
     dfaToPng(Not(rt1).toDfa(),title="not rt1",abbreviateTransitions=true)
     dfaToPng(xymbolyco.Minimize.minimize(rt1.toDfa()),title="minimized", abbreviateTransitions = true)
-    println("------------------------------------")
     val cano = Or(And(rt1,Not(rt2)),
                   And(rt2,Not(rt1))).canonicalize
-    println(s"cano=$cano")
     dfaToPng(cano.toDfa(),title="cano",abbreviateTransitions = true)
   }
   test("discovered case 109 infinite loop"){
@@ -164,15 +158,11 @@ class RteTestSuite extends MyFunSuite {
                     Not(number)),
                  Rte.sigmaStar
                  )
-    println("subtype? " + genus.SEql(1).subtypep(genus.SAtomic(classOf[java.lang.Integer])))
-    println("=> " + Or(Rte.Eql(1),integer).canonicalize)
-    println(s"  r1 = $r1")
-    println(s"  r2 = $r2")
+
 
     val rt1 = Not(And(r1,r2)).canonicalize
     val rt2 = Or(Not(r1),Not(r2))
-    println(s"  rt1 = $rt1")
-    println(s"  rt2 = $rt2")
+
     import xymbolyco.GraphViz.dfaToPng
 
     xymbolyco.Serialize.serialize(rt1.toDfa())
@@ -195,9 +185,7 @@ class RteTestSuite extends MyFunSuite {
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {
-      println(s"depth=$depth  r=$r")
-      println(s"  r1 = $r1")
-      println(s"  r2 = $r2")
+
       assert(Not(Not(r1)).canonicalize ~= r1.canonicalize)
       if (! (Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize)) {
         val a = Not(And(r1, r2)).canonicalize
@@ -241,20 +229,6 @@ class RteTestSuite extends MyFunSuite {
     val r2 = Sigma
     val a = Not(And(r1, r2)).canonicalize
     val b = Or(Not(r1), Not(r2)).canonicalize
-
-    //println(s"r1=$r1")
-    //println(s"r2=$r2")
-    //println(s"And(r1,r2) = And($r1,$r2) = " + And(r1,r2).canonicalize)
-    //println(s"Not(r1) = Not($r1) = " + Not(r1).canonicalize)
-    //println(s"Not(r2) = Not($r2) = " + Not(r2).canonicalize)
-    //println(s"a=$a")
-    //println(s"b=$b")
-    //xymbolyco.GraphViz.dfaView(b.toDfa(),"b",true)
-    //xymbolyco.GraphViz.dfaView(a.toDfa(),"a",true)
-    //xymbolyco.GraphViz.dfaView(And(a,Not(b)).toDfa(),"a & !b",true)
-    //xymbolyco.GraphViz.dfaView(And(b,Not(a)).toDfa(),"b & !a",true)
-
-    //println("derivative = " + And(a,Not(b)).derivative(Some(SAtomic(classOf[java.lang.Number]))))
 
     assert(And(a,Not(b)).canonicalize ~= EmptySet)
 
