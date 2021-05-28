@@ -130,8 +130,8 @@ class RteTestSuite extends MyFunSuite {
     dfaToPng(rt1.toDfa(),title="debug",abbreviateTransitions = true)
     dfaToPng(Not(rt1).toDfa(),title="not rt1",abbreviateTransitions=true)
     dfaToPng(xymbolyco.Minimize.minimize(rt1.toDfa()),title="minimized", abbreviateTransitions = true)
-    val cano = Or(And(rt1,Not(rt2)),
-                  And(rt2,Not(rt1))).canonicalize
+    val cano: Rte = Or(And(rt1, Not(rt2)),
+                       And(rt2,Not(rt1))).canonicalize
     dfaToPng(cano.toDfa(),title="cano",abbreviateTransitions = true)
   }
   test("discovered case 109 infinite loop"){
@@ -235,4 +235,19 @@ class RteTestSuite extends MyFunSuite {
     assert(a ~= b)
   }
 
+  test("rteCase") {
+    assert(classOf[String].isInstance("hello"))
+
+    val dfa = Rte.rteCase( Seq(Star(classOf[String]) -> 1,
+                               Cat(Star(classOf[String]),Singleton(SEql(1))) -> 2,
+                               Cat(Star(classOf[String]),Singleton(SEql(-1))) -> 3))
+
+    //import xymbolyco.GraphViz.dfaView
+    //dfaView(dfa,"123",abbreviateTransitions=true)
+    assert(dfa.simulate(Seq("hello")) == Some(1))
+    assert(dfa.simulate(List()) == Some(1))
+    assert(dfa.simulate(List("hello","world",1)) == Some(2))
+    assert(dfa.simulate(List("hello","world",-1)) == Some(3))
+    assert(dfa.simulate(List("hello","world",12)) == None)
+  }
 }

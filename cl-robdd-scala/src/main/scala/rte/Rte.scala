@@ -25,6 +25,8 @@ package rte
 import genus.SimpleTypeD
 import adjuvant.Adjuvant._
 
+import scala.annotation.tailrec
+
 abstract class Rte {
   def |(r: Rte): Rte = Or(this, r)
   def &(r: Rte): Rte = And(this, r)
@@ -104,6 +106,9 @@ abstract class Rte {
   import xymbolyco.Dfa
 
   def toDfa():Dfa[Any,SimpleTypeD,Boolean] = {
+    toDfa(true)
+  }
+  def toDfa[E](exitValue:E):Dfa[Any,SimpleTypeD,E] = {
     val (rtes,edges) = try {
       derivatives()
     }
@@ -119,7 +124,7 @@ abstract class Rte {
 
     val qids = rtes.indices.toSet
     val fids = qids.filter(i => rtes(i).nullable)
-    val fmap = fids.map{i => i -> true}.toMap
+    val fmap = fids.map{i => i -> exitValue}.toMap
     new Dfa(Qids=qids,
             q0id=0,
             Fids=fids,
@@ -129,6 +134,7 @@ abstract class Rte {
             labeler = xymbolyco.GenusLabeler(),
             fMap=fmap)
   }
+
 }
 
 object Rte {
@@ -204,6 +210,55 @@ object Rte {
   def randomSeq(depth: Int): Seq[Rte] = {
     val maxCompoundSize = 2
     (0 until maxCompoundSize).map { _ => randomRte(depth) }
+  }
+
+  def rteCase[E](seq:Seq[(Rte,E)]):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
+    @tailrec
+    def excludePrevious(remaining:List[(Rte,E)], previous:List[Rte], acc:List[(Rte,E)]):Seq[(Rte,E)] = {
+      remaining match {
+        case Nil => acc.toSeq
+        case (rte,e)::pairs => excludePrevious(pairs,
+                                               rte::previous,
+                                               (And(rte,Not(Or.createOr(previous))).canonicalize,e)::acc)
+      }
+    }
+    def disjoint():Seq[(Rte,E)] = {
+      excludePrevious(seq.toList,List(),List())
+    }
+
+    def funnyFold[X,Y](seq:Seq[X],f:X=>Y,g:(Y,Y)=>Y):Y = {
+      assert(seq.nonEmpty)
+      seq.tail.foldLeft(f(seq.head))((acc,x) => g(acc,f(x)))
+    }
+    def f(pair:(Rte,E)):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
+      val (rte,e) = pair
+      rte.toDfa(e)
+    }
+    funnyFold[(Rte,E),xymbolyco.Dfa[Any,SimpleTypeD,E]](disjoint(),f,dfaUnion)
+  }
+
+  def dfaUnion[E](dfa1:xymbolyco.Dfa[Any,SimpleTypeD,E],
+                  dfa2:xymbolyco.Dfa[Any,SimpleTypeD,E]):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
+    import xymbolyco.Minimize.sxp
+    def combineLabels(td1:SimpleTypeD,td2:SimpleTypeD):Option[SimpleTypeD] = {
+      val comb = genus.SAnd(td1,td2).canonicalize()
+      comb.inhabited match {
+        case Some(false) => None
+        case _ => Some(comb)
+      }
+    }
+    def combineFmap(e1:Option[E],e2:Option[E]):Option[E] = {
+      (e1,e2) match {
+        case (None,None) => None
+        case (Some(b),_) => Some(b) // f-value of dfa1 has precedence over dfa2
+        case (None,Some(b)) => Some(b)
+      }
+    }
+    sxp[Any,SimpleTypeD,E](dfa1,dfa2,
+                           combineLabels, // (L,L)=>Option[L],
+                           (a:Boolean,b:Boolean) => a || b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+                           combineFmap //:(E,E)=>E
+                           )
   }
 
   def randomRte(depth: Int): Rte = {

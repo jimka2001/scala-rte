@@ -21,6 +21,8 @@
 
 package xymbolyco
 
+import scala.annotation.tailrec
+
 object Minimize {
 
   import adjuvant.Adjuvant._
@@ -29,7 +31,8 @@ object Minimize {
     removeNonAccessible(removeNonCoAccessible(dfa))
   }
 
-  def findReachable(succ:Map[Int,Set[Int]], done:Set[Int],todo:Set[Int]):Set[Int] = {
+  @tailrec
+  def findReachable(succ:Map[Int,Set[Int]], done:Set[Int], todo:Set[Int]):Set[Int] = {
 
     if (todo.isEmpty)
       done
@@ -159,5 +162,50 @@ object Minimize {
 
     // return a newly constructed Dfa extracted from the Hopcroft partition minimization
     new Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
+  }
+
+  def sxp[Σ, L, E](dfa1:Dfa[Σ, L, E],
+                   dfa2:Dfa[Σ, L, E],
+                   combineLabels:(L,L)=>Option[L],
+                   arbitrateFinal:(Boolean,Boolean)=>Boolean,
+                   combineFmap:(Option[E],Option[E])=>Option[E]):Dfa[Σ, L, E] = {
+    val grouped1 = dfa1.protoDelta.groupBy(_._1)
+    val grouped2 = dfa2.protoDelta.groupBy(_._1)
+
+    def getEdges(pair:(Int,Int)):Seq[(L, (Int,Int))] = {
+      val (q1id,q2id) = pair
+      val x1 = grouped1.getOrElse(q1id,Set.empty)
+      val x2 = grouped2.getOrElse(q2id,Set.empty)
+
+      val edges = for { (_,lab1,dst1) <- x1
+                        (_,lab2,dst2) <- x2
+                        lab <- combineLabels(lab1,lab2)
+                        } yield (lab,(dst1,dst2))
+      edges.toSeq
+    }
+    val (vertices,edges) = traceGraph[(Int,Int),L]((dfa1.q0id,dfa2.q0id),
+                                                   getEdges)
+    assert( vertices(0) == (0,0))
+    val fIds = vertices.indices.filter{q =>
+      val (q1,q2) = vertices(q)
+      arbitrateFinal(dfa1.Fids.contains(q1),
+                     dfa2.Fids.contains(q2))
+    }
+
+    val fMap = for { q <- fIds
+                     (q1,q2) = vertices(q)
+                     e <- combineFmap(dfa1.fMap.get(q1),dfa2.fMap.get(q2))
+                     } yield q -> e
+    val protoDelta = for { (seq,src) <- edges.zipWithIndex
+                           (lab,dst) <- seq
+                           } yield (src,lab,dst)
+    val dfa = new Dfa[Σ, L, E](vertices.indices.toSet,
+                     0, // q0id:Int,
+                     fIds.toSet, // Fids:Set[Int],
+                     protoDelta.toSet, //    protoDelta:Set[(Int,L,Int)],
+                     dfa1.labeler, // labeler:Labeler[Σ,L],
+                     fMap.toMap // val fMap:Map[Int,E]
+                     )
+    trim(dfa)
   }
 }
