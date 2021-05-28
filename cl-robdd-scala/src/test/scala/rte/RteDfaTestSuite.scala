@@ -51,7 +51,7 @@ class RteDfaTestSuite extends AnyFunSuite {
   }
   test("dfa minimize") {
     for {depth <- 5 to 6
-         rep <- 1 to 1000
+         _ <- 1 to 1000 // rep
          dfa = Rte.randomRte(depth).toDfa()
          } {
       xymbolyco.Minimize.minimize(dfa)
@@ -59,7 +59,7 @@ class RteDfaTestSuite extends AnyFunSuite {
   }
   test("dfa trim") {
     for {depth <- 5 to 6
-         rep <- 1 to 1000
+         _ <- 1 to 1000 // rep
          dfa = Rte.randomRte(depth).toDfa()
          } {
       xymbolyco.Minimize.removeNonAccessible(dfa)
@@ -91,6 +91,47 @@ class RteDfaTestSuite extends AnyFunSuite {
     assert(dfa2.Qids == Set(0,1,2,3))
     assert(dfa2.Fids == Set(2))
     
+
+    assert( dfa1.simulate(Seq(1,1)).contains(true),"did not match Seq(1,1)")
+    assert( dfa2.simulate(Seq(1,1)).contains(true),"did not match Seq(1,1)")
+
+    assert(! dfa1.simulate(Seq(-1,1)).contains(true),"did not fail to match Seq(-1,1)")
+    assert(! dfa2.simulate(Seq(-1,1)).contains(true),"did not fail to match Seq(-1,1)")
+
+    assert(! dfa1.simulate(Seq(1,-1)).contains(true),"did not fail to match Seq(1,-1)")
+    assert(! dfa2.simulate(Seq(1,-1)).contains(true),"did not fail to match Seq(1,-1)")
+  }
+  test("dfa accessible 2") {
+    val dfa = new xymbolyco.Dfa[Any,genus.SimpleTypeD,Boolean](Qids = Set(0, 1, 2, 3, 4, 5, 6, 7,8, 9, 10),
+                                                               q0id = 0,
+                                                               Fids = Set(2),
+                                                               protoDelta = Set((0, genus.SEql(1), 1),
+                                                                                (0, genus.SEql(-1), 4),
+                                                                                (0, genus.SEql(-2), 6),
+                                                                                (1, genus.SEql(1), 2),
+                                                                                (3, genus.SEql(-1), 2),
+                                                                                (8, genus.SEql(-1), 5),
+                                                                                (6, genus.SEql(-1), 7),
+                                                                                (1, genus.SEql(-1), 9),
+                                                                                (9, genus.SEql(-1), 10),
+                                                                                (10, genus.SEql(-1), 9),
+                                                                                (5, genus.SEql(-1), 2)),
+                                                               labeler = new xymbolyco.GenusLabeler,
+                                                               fMap = Map(2 -> true))
+
+    assert(dfa.simulate(Seq(1,1)).contains(true),"did not match Seq(1,1)")
+    assert(! dfa.simulate(Seq(-1,1)).contains(true),"did not fail to match Seq(-1,1)")
+    assert(! dfa.simulate(Seq(1,-1)).contains(true),"did not fail to match Seq(1,-1)")
+
+    val dfa1 = xymbolyco.Minimize.removeNonAccessible(dfa)
+    assert(dfa1.q0id == 0)
+    assert(dfa1.Qids == Set(0,1,2,4,6,7,9,10))
+    assert(dfa1.Fids == Set(2))
+    val dfa2 = xymbolyco.Minimize.removeNonCoAccessible(dfa)
+    assert(dfa2.q0id == 0)
+    assert(dfa2.Qids == Set(0,1,2,3,5,8))
+    assert(dfa2.Fids == Set(2))
+
 
     assert( dfa1.simulate(Seq(1,1)).contains(true),"did not match Seq(1,1)")
     assert( dfa2.simulate(Seq(1,1)).contains(true),"did not match Seq(1,1)")

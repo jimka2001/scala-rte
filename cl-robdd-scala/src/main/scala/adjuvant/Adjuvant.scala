@@ -63,7 +63,7 @@ object Adjuvant {
               m: Vector[Seq[(L, Int)]]): (Vector[V], Vector[Seq[(L, Int)]]) = {
 
       es match {
-        case (label, v1) :: lvs if !vToInt.contains(v1) =>
+        case (_, v1) :: _ if !vToInt.contains(v1) =>
           // if we are seeing v1 for the first time, then register it
           //   in intToV and in vToInt.
           recur(v, currentStateId, nextAvailableState + 1, es,
@@ -96,7 +96,7 @@ object Adjuvant {
   def findAdjacent[A](xs: Seq[A], cmp: (A, A) => Boolean): Boolean =
     xs.toList.tails.exists {
       case Nil => false
-      case x :: Nil => false
+      case _ :: Nil => false
       case x1 :: x2 :: _ => cmp(x1, x2)
     }
 
