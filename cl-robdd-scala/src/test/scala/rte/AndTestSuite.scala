@@ -26,7 +26,37 @@ import org.scalatest.funsuite.AnyFunSuite
 //import rte.RteImplicits._
 
 class AndTestSuite extends AnyFunSuite {
-  test("canonicalize and 29"){
+  test("canonicalize and 29a"){
+    val I = Singleton(SInt)
+    val S = Singleton(SAtomic(classOf[String]))
+    val X = Singleton(SEql(-1))
+    val Y = Singleton(SEql(1))
+    val ε = EmptyWord
+    import adjuvant.Adjuvant.trace
+
+    val rte4 = Or(And(Or(Cat(Star(S),I),ε),
+                      Cat(Star(S),I)),
+                  And(Or(Cat(Star(S),I),ε),
+                      ε))
+
+    // rte5 = Or(And(Cat(Star(S),I),
+    //               Or(Cat(Star(S),I),
+    //                  ε)),
+    //           And(ε,
+    //               Or(Cat(Star(S),I),
+    //                  ε)))
+    val rte5 = trace("rte5",rte4.canonicalizeOnce)
+    // rte6 = Or(And(Or(Cat(Star(S),I),
+    //                  ε),
+    //               Cat(Star(S),I)),
+    //           And(Or(Cat(Star(S),I),
+    //                  ε),
+    //               ε))
+    val rte6 = trace("rte6",rte5.canonicalizeOnce)
+    assert(rte6 != rte4,"line 45")
+    rte6.canonicalize
+  }
+  test("canonicalize and 29b"){
     // And(Or(Cat((<String>)*,<Int?>),ε),
     //     Not(Cat((<String>)*,<[= -1]>)),
     //     Not(Cat((<String>)*,<[= 1]>)),

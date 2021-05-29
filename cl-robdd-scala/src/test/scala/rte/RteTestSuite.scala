@@ -237,17 +237,25 @@ class RteTestSuite extends MyFunSuite {
 
   test("rteCase") {
     assert(classOf[String].isInstance("hello"))
-
+    assert(SSatisfies.intp(1))
+    assert(SSatisfies.doublep(1.1))
+    assert(SInt.typep(1))
+    assert(! SInt.typep(1.0))
+    assert(! SDouble.typep(1))
+    assert(SDouble.typep(1.0))
+    println(1)
     val dfa = Rte.rteCase( Seq(Star(classOf[String]) -> 1,
                                Cat(Star(classOf[String]),Singleton(SEql(1))) -> 2,
-                               Cat(Star(classOf[String]),Singleton(SEql(-1))) -> 3))
-
-    //import xymbolyco.GraphViz.dfaView
-    //dfaView(dfa,"123",abbreviateTransitions=true)
+                               Cat(Star(classOf[String]),Singleton(SEql(-1))) -> 3,
+                               Cat(Star(classOf[String]),Singleton(SInt)) -> 4
+                               ))
+    import xymbolyco.GraphViz.dfaView
+    dfaView(dfa,"123",abbreviateTransitions=true)
     assert(dfa.simulate(Seq("hello")) == Some(1))
     assert(dfa.simulate(List()) == Some(1))
     assert(dfa.simulate(List("hello","world",1)) == Some(2))
     assert(dfa.simulate(List("hello","world",-1)) == Some(3))
-    assert(dfa.simulate(List("hello","world",12)) == None)
+    assert(dfa.simulate(List("hello","world",12)) == Some(4))
+    assert(dfa.simulate(List("hello","world",12.0)) == None)
   }
 }

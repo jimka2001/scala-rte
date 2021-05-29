@@ -100,5 +100,12 @@ class TypesTest extends AnyFunSuite {
          t3 = randomType(d)
          } triangle_inequality(t1,t2,t3)
   }
+  test("mdtd"){
+    // Set(String, Int?, [= -1], [= 1])
+    mdtd(Set(SAtomic(classOf[String]),
+             SInt,
+             SEql(-1),
+             SEql(1)))
+  }
 }
 

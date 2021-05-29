@@ -417,4 +417,33 @@ class GenusCanonicalize extends AnyFunSuite {
          }
       testDnfInverse(randomType(2))
   }
+
+  test("conversion1"){
+    trait TraitA
+    trait TraitB
+    trait TraitC
+    class ClassX extends TraitA with TraitB with TraitC
+
+    val A = SAtomic(classOf[TraitA])
+    val B = SAtomic(classOf[TraitB])
+    val C = SAtomic(classOf[TraitC])
+    val X = SAtomic(classOf[ClassX])
+    // ABC + A!BC + X -> ABC + AC + X (later -> AC + X)
+    assert(SOr.conversion1(Seq(SAnd(A,B,C),SAnd(A,SNot(B),C),X))
+             == SOr.createOr(Seq(SAnd(A,B,C),SAnd(A,C),X)), "434")
+
+    // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C ->
+    assert(SOr.conversion1(Seq(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(B),SNot(C))))
+             == SOr.createOr(Seq(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(C)))), "438")
+
+    // AB!C + A!BC + A!B!C -> does not reduce to AB!C + A!BC + A
+    assert(SOr.conversion1(Seq(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(B),SNot(C))))
+           == SOr.createOr(Seq(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(C)))))
+
+    // no change sequence
+    // !ABC + A!BC + X -> no change
+    assert(SOr.conversion1(Seq(SAnd(SNot(A),B,C),SAnd(A,SNot(B),C),X))
+             == SOr.createOr(Seq(SAnd(SNot(A),B,C),SAnd(A,SNot(B),C),X)))
+  }
+
 }
