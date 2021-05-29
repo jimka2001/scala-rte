@@ -89,8 +89,17 @@ object Adjuvant {
 
   }
 
-  def searchReplace[A](xs: Seq[A], search: A, replace: A): Seq[A] = {
-    xs.map(x => if (search == x) replace else x)
+  def searchReplace[A](xs: Seq[A], search: A, replace: Seq[A]): Seq[A] = {
+    xs.flatMap(x => if (search == x) replace else Seq(x))
+  }
+
+  def searchReplace[A](seq:Seq[A],search:A,replace:A):Seq[A] = {
+    seq.map{ s =>
+      if (s == search)
+        replace
+      else
+        search
+    }
   }
 
   def findAdjacent[A](xs: Seq[A], cmp: (A, A) => Boolean): Boolean =
@@ -170,11 +179,42 @@ object Adjuvant {
     }
   }
 
+  def sameElementsAnyOrder[A](seq1:Seq[A],seq2:Seq[A]):Boolean = {
+    seq1.toSet == seq2.toSet
+  }
+
   def trace[A](a: A): A = {
     trace("",a)
   }
   def trace[A](msg:String,a:A):A = {
     println(s"$msg: $a")
     a
+  }
+  def uniquify[A](seq1:Seq[A]):Seq[A] = {
+    @tailrec
+    def recurL(seq:List[A], acc:List[A]):List[A] = {
+      seq match {
+        case Nil => acc.reverse
+        case s :: ss if ss.contains(s) => recurL(ss,acc)
+        case s :: ss => recurL(ss,s::acc)
+      }
+    }
+    @tailrec
+    def recurS(seq:Seq[A], acc:Seq[A]):Seq[A] = {
+      seq match {
+        case Seq() => acc
+        case Seq(s) => acc ++ Seq(s)
+        case s =>
+          val t = s.tail
+          if (t.contains(s.head))
+            recurS(t,acc)
+          else
+            recurS(t,acc ++ Seq(s.head))
+      }
+    }
+    seq1 match {
+      case seq:List[A] => recurL(seq,List())
+      case seq:Seq[A] => recurS(seq,Seq())
+    }
   }
 }

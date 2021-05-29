@@ -36,12 +36,12 @@ case class Or(operands:Seq[Rte]) extends Rte {
   override def canonicalizeOnce: Rte = {
     //println("canonicalizing Or:  " + operands)
     val betterOperands = operands
-      .distinct
       .flatMap{
         case EmptySet => Seq()
         case Or(Seq(rs @ _*)) => rs.map(_.canonicalizeOnce)
         case r => Seq(r.canonicalizeOnce)
       }
+        compose adjuvant.Adjuvant.uniquify[Rte] _
 
     lazy val singletons: List[genus.SimpleTypeD] = betterOperands.flatMap {
       case Singleton(td) => List(td)

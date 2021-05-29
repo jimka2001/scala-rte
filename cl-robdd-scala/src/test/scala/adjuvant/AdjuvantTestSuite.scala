@@ -39,7 +39,24 @@ class AdjuvantTestSuite extends AnyFunSuite {
     assert(conj(s1,4).contains(2))
     assert(conj(s1,4).contains(4))
   }
+  test("uniquify"){
+    assert(uniquify(List()) == List())
+    assert(uniquify(List(1)) == List(1))
+    assert(uniquify(List(1,2)) == List(1,2))
+    assert(uniquify(List(1,2,3)) == List(1,2,3))
+    assert(uniquify(List(1,2,2,3)) == List(1,2,3))
+    assert(uniquify(List(3,1,2,2,3)) == List(1,2,3) ||
+             uniquify(List(3,1,2,2,3)) == List(3,1,2))
+    
+    assert(uniquify(Vector()) == Vector())
+    assert(uniquify(Vector(1)) == Vector(1))
+    assert(uniquify(Vector(1,2)) == Vector(1,2))
+    assert(uniquify(Vector(1,2,3)) == Vector(1,2,3))
+    assert(uniquify(Vector(1,2,2,3)) == Vector(1,2,3))
+    assert(uniquify(Vector(3,1,2,2,3)) == Vector(1,2,3) ||
+             uniquify(Vector(3,1,2,2,3)) == Vector(3,1,2))
 
+  }
 }
 
 
