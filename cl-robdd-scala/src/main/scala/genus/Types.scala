@@ -215,7 +215,7 @@ object Types {
       case _ => false
     }
   }
-  val evenType:SCustom = SCustom(isEven,"even")
+  val evenType:SSatisfies = SSatisfies(isEven, "even")
 
   def isOdd(x: Any): Boolean = {
     x match {
@@ -223,7 +223,7 @@ object Types {
       case _ => false
     }
   }
-  val oddType:SCustom = SCustom(isOdd,"odd")
+  val oddType:SSatisfies = SSatisfies(isOdd, "odd")
 
   def isPrime(x: Any): Boolean = {
     @scala.annotation.tailrec
@@ -237,7 +237,7 @@ object Types {
       case _ => false
     }
   }
-  val primeType:SCustom = SCustom(isPrime)
+  val primeType:SSatisfies = SSatisfies(isPrime)
 
   def sanityTest():Unit = {
     val a = 2

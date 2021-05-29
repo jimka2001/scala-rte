@@ -84,7 +84,7 @@ object TypeSystemWithLBdd {
       case x: SAtomic => typeAsLBdd[SAtomic](x)
       case x: SMember => typeAsLBdd[SMember](x)
       case x: SEql => typeAsLBdd[SEql](x)
-      case x: SCustom => typeAsLBdd[SCustom](x)
+      case x: SSatisfies => typeAsLBdd[SSatisfies](x)
 
         // TODO : Reduction and ordering
       case x: SOr => Or(x.tds.map(typeAsLBdd).toList)

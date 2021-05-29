@@ -109,7 +109,7 @@ class GenusBddTest extends MyFunSuite {
                     SEql(42),
                     SMember(1, 2, 3),
                     SMember(1, 3, 2),
-                    evenType, // SCustom(evenp)
+                    evenType, // SSatisfies(evenp)
                     SAnd(classOf[Trait1], classOf[Trait2]),
                     SAnd(classOf[Trait1], classOf[Trait2], classOf[Trait3]),
                     SOr(classOf[Trait1], classOf[Trait2]),
@@ -135,7 +135,7 @@ class GenusBddTest extends MyFunSuite {
     val td1 = SOr(classOf[Integer],
                   classOf[String],
                   SAnd(classOf[java.lang.Double],
-                       SNot(SCustom(pos, "pos"))))
+                       SNot(SSatisfies(pos, "pos"))))
     val goods = Seq(1, "hello", -1.0)
     val bads = Seq(1.0, true)
     val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
