@@ -110,17 +110,19 @@ object Adjuvant {
 
   def fixedPoint[V](value: V, f: V => V, cmp: (V, V) => Boolean): V = {
     @tailrec
-    def recur(value: V): V = {
+    def recur(value: V,history:Set[V]): V = {
       //println("[ fixedPoint: starting with " + value)
       val newValue = f(value)
       //println("] fixedPoint: computed "+ newValue)
       if (cmp(value, newValue))
         value
+      else if(history.contains(newValue))
+        throw new Exception(s"fixedPoint encounted a loop \n    $value \n -> $newValue")
       else
-        recur(newValue)
+        recur(newValue,history+value)
     }
 
-    recur(value)
+    recur(value,Set())
   }
 
   // The memoize method is inspired by
