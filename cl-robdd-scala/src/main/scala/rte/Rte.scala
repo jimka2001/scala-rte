@@ -70,11 +70,13 @@ abstract class Rte {
   def canonicalizeOnce:Rte = this
 
   def derivative(wrt:Option[SimpleTypeD]):Rte = {
-    (wrt match {
+    val raw = wrt match {
       case None => this
       case Some(td) if td.inhabited.contains(false) => EmptySet
       case Some(td) => derivativeDown(td)
-    }).canonicalize
+    }
+    val can = raw.canonicalize
+    can
   }
   def derivativeDown(wrt:SimpleTypeD):Rte
 
@@ -82,22 +84,23 @@ abstract class Rte {
     import adjuvant.Adjuvant.traceGraph
 
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
-      genus.Types.mdtd(rt.firstTypes)
-        .map(td => (td,
-          try rt.derivative(Some(td))
-          catch {
-            case e: CannotComputeDerivative =>
-              throw new CannotComputeDerivatives(msg=Seq(s"when generating derivatives from $this",
-                                                         "when computing edges of " + rt,
-                                                         s"  which canonicalizes to " + this.canonicalize,
-                                                         s"  computing derivative of ${e.rte}",
-                                                         s"  wrt=${e.wrt}",
-                                                         "  derivatives() reported: " + e.msg).mkString("\n"),
-                                                 rte=this,
-                                                 firstTypes = rt.firstTypes,
-                                                 mdtd = genus.Types.mdtd(rt.firstTypes)
-                                         )
-          }))
+      val fts = rt.firstTypes
+      val wrts = genus.Types.mdtd(fts)
+      wrts.map(td => (td,
+        try rt.derivative(Some(td))
+        catch {
+          case e: CannotComputeDerivative =>
+            throw new CannotComputeDerivatives(msg=Seq(s"when generating derivatives from $this",
+                                                       "when computing edges of " + rt,
+                                                       s"  which canonicalizes to " + this.canonicalize,
+                                                       s"  computing derivative of ${e.rte}",
+                                                       s"  wrt=${e.wrt}",
+                                                       "  derivatives() reported: " + e.msg).mkString("\n"),
+                                               rte=this,
+                                               firstTypes = rt.firstTypes,
+                                               mdtd = genus.Types.mdtd(rt.firstTypes)
+                                               )
+        }))
     }
 
     traceGraph(this,edges)
@@ -121,7 +124,6 @@ abstract class Rte {
                                            e.msg).mkString("\n"),
                                    rte=this)
     }
-
     val qids = rtes.indices.toSet
     val fids = qids.filter(i => rtes(i).nullable)
     val fmap = fids.map{i => i -> exitValue}.toMap
@@ -134,7 +136,6 @@ abstract class Rte {
             labeler = xymbolyco.GenusLabeler(),
             fMap=fmap)
   }
-
 }
 
 object Rte {
@@ -217,13 +218,12 @@ object Rte {
     def excludePrevious(remaining:List[(Rte,E)], previous:List[Rte], acc:List[(Rte,E)]):Seq[(Rte,E)] = {
       remaining match {
         case Nil => acc.toSeq
-        case (rte,e)::pairs => excludePrevious(pairs,
-                                               rte::previous,
-                                               (And(rte,Not(Or.createOr(previous))).canonicalize,e)::acc)
+        case (rte,e)::pairs =>
+          val excluded = And(rte,Not(Or.createOr(previous)))
+          excludePrevious(pairs,
+                          rte::previous,
+                          (excluded.canonicalize,e)::acc)
       }
-    }
-    def disjoint():Seq[(Rte,E)] = {
-      excludePrevious(seq.toList,List(),List())
     }
 
     def funnyFold[X,Y](seq:Seq[X],f:X=>Y,g:(Y,Y)=>Y):Y = {
@@ -234,7 +234,8 @@ object Rte {
       val (rte,e) = pair
       rte.toDfa(e)
     }
-    funnyFold[(Rte,E),xymbolyco.Dfa[Any,SimpleTypeD,E]](disjoint(),f,dfaUnion)
+    val disjoint:Seq[(Rte,E)] = excludePrevious(seq.toList,List(),List())
+    funnyFold[(Rte,E),xymbolyco.Dfa[Any,SimpleTypeD,E]](disjoint,f,dfaUnion)
   }
 
   def dfaUnion[E](dfa1:xymbolyco.Dfa[Any,SimpleTypeD,E],

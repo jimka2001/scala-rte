@@ -26,6 +26,20 @@ import org.scalatest.funsuite.AnyFunSuite
 //import rte.RteImplicits._
 
 class AndTestSuite extends AnyFunSuite {
+  test("and test 31"){
+    assert(And(Star(Singleton(SAtomic(classOf[String]))),
+               Rte.sigmaStar).canonicalizeOnce
+             != Rte.sigmaStar)
+    assert(And(Star(Singleton(SAtomic(classOf[String]))),
+               Rte.sigmaStar).canonicalize
+             != Rte.sigmaStar)
+    assert(And(Star(Singleton(SAtomic(classOf[String]))),
+               Not(EmptySet)).canonicalizeOnce
+             != Rte.sigmaStar)
+    assert(And(Star(Singleton(SAtomic(classOf[String]))),
+               Not(EmptySet)).canonicalize
+             != Rte.sigmaStar)
+  }
   test("canonicalize and 29a"){
     val I = Singleton(SInt)
     val S = Singleton(SAtomic(classOf[String]))

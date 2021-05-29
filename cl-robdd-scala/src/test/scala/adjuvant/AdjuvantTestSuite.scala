@@ -47,7 +47,7 @@ class AdjuvantTestSuite extends AnyFunSuite {
     assert(uniquify(List(1,2,2,3)) == List(1,2,3))
     assert(uniquify(List(3,1,2,2,3)) == List(1,2,3) ||
              uniquify(List(3,1,2,2,3)) == List(3,1,2))
-    
+
     assert(uniquify(Vector()) == Vector())
     assert(uniquify(Vector(1)) == Vector(1))
     assert(uniquify(Vector(1,2)) == Vector(1,2))
