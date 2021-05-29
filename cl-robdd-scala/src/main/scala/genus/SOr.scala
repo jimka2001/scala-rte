@@ -147,6 +147,9 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
         }
       },
       () => {
+        SOr.conversion1(tds)
+      },
+      () => {
         // A + A!B -> A + B
         // A + A!BX + Y = (A + BX + Y)
         // A + ABX + Y = (A + Y)
@@ -205,5 +208,34 @@ object SOr {
       case Seq(td) => td
       case _ => SOr(tds: _*)
     }
+  }
+
+  def conversion1(tds:Seq[SimpleTypeD]):SimpleTypeD = {
+    // TODO, this should be generalized to work for SAnd and SOr
+    // ABC + A!BC + X -> ABC + AC + X (later -> AC + X)
+    // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C ->
+    // AB!C + A!BC + A!B!C -> does not reduce to AB!C + A!BC + A
+    import adjuvant.Adjuvant.searchReplace
+    val ands = tds.collect{ case td@SAnd(_*) => td}
+    val orArgs = tds.map{
+      // A!BC -> AC
+      // ABC -> ABC
+      // X -> X
+      case td1@SAnd(andArgs@ _*) =>
+        // A!BC -> AC
+        // ABC -> ABC
+
+        val toRemove = andArgs.collectFirst{
+          case td@SNot(n) if ands.exists{
+            case SAnd(tds@_*) => tds == searchReplace(andArgs,td,Seq(n))
+          } => td
+        } // Some(!B) or None
+        toRemove match {
+          case None => td1
+          case Some(td) => SAnd.createAnd(andArgs.filterNot(_ == td))
+        }
+      case td => td // X -> X
+    }
+    SOr.createOr(orArgs)
   }
 }
