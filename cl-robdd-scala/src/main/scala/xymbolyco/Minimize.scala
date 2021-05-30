@@ -21,7 +21,10 @@
 
 package xymbolyco
 
+import xymbolyco.GraphViz.dfaView
+
 import scala.annotation.tailrec
+import scala.collection.immutable
 
 object Minimize {
 
@@ -33,7 +36,6 @@ object Minimize {
 
   @tailrec
   def findReachable(succ:Map[Int,Set[Int]], done:Set[Int], todo:Set[Int]):Set[Int] = {
-
     if (todo.isEmpty)
       done
     else {
@@ -163,25 +165,52 @@ object Minimize {
     // return a newly constructed Dfa extracted from the Hopcroft partition minimization
     new Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
   }
+  def complete[Σ,L,E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    val sinkid = dfa.Qids.maxOption match {
+      case Some(m) => m + 1
+      case _ => 0
+    }
+    val labeler = dfa.labeler
+    val toSink = for {(src, triples) <- dfa.protoDelta.groupBy(_._1)
+                      tds = triples.map(_._2).toSeq
+                      newtd = labeler.subtractLabels(labeler.universe, tds)
+                      if !labeler.inhabited(newtd).contains(false)
+                      } yield (src, newtd, sinkid)
 
+    val protoDelta = dfa.protoDelta ++
+      toSink ++
+      (if (toSink.nonEmpty) Set((sinkid, labeler.universe, sinkid)) else Set())
+
+    val dfaComplete = new Dfa[Σ, L, E](Qids = dfa.Qids + sinkid,
+                                       q0id = dfa.q0id,
+                                       Fids = dfa.Fids,
+                                       protoDelta = protoDelta,
+                                       labeler = dfa.labeler,
+                                       fMap = dfa.fMap)
+    dfaComplete
+  }
   def sxp[Σ, L, E](dfa1:Dfa[Σ, L, E],
                    dfa2:Dfa[Σ, L, E],
                    combineLabels:(L,L)=>Option[L],
                    arbitrateFinal:(Boolean,Boolean)=>Boolean,
                    combineFmap:(Option[E],Option[E])=>Option[E]):Dfa[Σ, L, E] = {
-    val grouped1 = dfa1.protoDelta.groupBy(_._1)
-    val grouped2 = dfa2.protoDelta.groupBy(_._1)
+
+    val grouped1 = complete(dfa1).protoDelta.groupBy(_._1)
+    val grouped2 = complete(dfa2).protoDelta.groupBy(_._1)
 
     def getEdges(pair:(Int,Int)):Seq[(L, (Int,Int))] = {
       val (q1id,q2id) = pair
       val x1 = grouped1.getOrElse(q1id,Set.empty)
       val x2 = grouped2.getOrElse(q2id,Set.empty)
-
       val edges = for { (_,lab1,dst1) <- x1
                         (_,lab2,dst2) <- x2
                         lab <- combineLabels(lab1,lab2)
-                        } yield (lab,(dst1,dst2))
-      edges.toSeq
+                        } yield (lab,(dst1,dst2),(lab1,lab2))
+
+      val edgeSeq = edges.toSeq
+      assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
+             s"duplicate transitions found in $edgeSeq")
+      edgeSeq.map{tr => (tr._1,tr._2)}
     }
     val (vertices,edges) = traceGraph[(Int,Int),L]((dfa1.q0id,dfa2.q0id),
                                                    getEdges)
@@ -206,6 +235,7 @@ object Minimize {
                      dfa1.labeler, // labeler:Labeler[Σ,L],
                      fMap.toMap // val fMap:Map[Int,E]
                      )
+
     trim(dfa)
   }
 }

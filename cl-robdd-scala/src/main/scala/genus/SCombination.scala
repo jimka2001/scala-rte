@@ -39,83 +39,91 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean]
   def sameCombination(td:SimpleTypeD):Boolean = false
 
+  def conversion1():SimpleTypeD = {
+    if (tds.isEmpty) {
+      // (and) -> STop,  unit=STop,   zero=SEmpty
+      // (or) -> SEmpty, unit=SEmpty,   zero=STop
+      unit
+      // (and A) -> A
+      // (or A) -> A
+    } else if (tds.tail.isEmpty)
+      tds.head
+    else
+      this
+  }
+  def conversion2():SimpleTypeD = {
+    // (and A B SEmpty C D) -> SEmpty,  unit=STop,   zero=SEmpty
+    // (or A B STop C D) -> STop,     unit=SEmpty,   zero=STop
+    if (tds.contains(zero))
+      zero
+    else
+      this
+  }
+  def conversion3():SimpleTypeD = {
+    // (and A (not A)) --> SEmpty,  unit=STop,   zero=SEmpty
+    // (or A (not A)) --> STop,     unit=SEmpty, zero=STop
+    if (tds.exists(td => tds.contains(SNot(td))))
+      zero
+    else
+      this
+  }
+  def conversion4():SimpleTypeD = {
+    // SAnd(A,STop,B) ==> SAnd(A,B),  unit=STop,   zero=SEmpty
+    // SOr(A,SEmpty,B) ==> SOr(A,B),  unit=SEmpty, zero=STop
+    if (tds.contains(unit))
+      create(tds.filterNot(_ == unit))
+    else
+      this
+  }
+  def conversion5():SimpleTypeD = {
+    // (and A B A C) -> (and A B C)
+    // (or A B A C) -> (or A B C)
+    create(adjuvant.Adjuvant.uniquify(tds))
+  }
+  def conversion6():SimpleTypeD = {
+    // (and A (and B C) D) --> (and A B C D)
+    // (or A (or B C) D) --> (or A B C D)
+    if (!tds.exists(sameCombination))
+      this
+    else {
+      create(tds.flatMap {
+        case td:SCombination if sameCombination(td) => td.tds
+        case x => Seq(x)
+      })
+    }
+  }
+  def conversion7(nf:Option[NormalForm]):SimpleTypeD = {
+    val i2 = create(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf))
+                      .sortWith(cmpTypeDesignators))
+      .maybeDnf(nf).maybeCnf(nf)
+    if (this == i2)
+      this // return the older object, hoping the newer one is more easily GC'ed, also preserves EQ-ness
+    else {
+      i2
+    }
+  }
+  def conversion8():SimpleTypeD = {
+    // (or A (not B)) --> STop   if B is subtype of A,    zero=STop
+    // (and A (not B)) --> SEmpty   if B is supertype of A,   zero=SEmpty
+    tds.find{a => tds.exists{
+      case SNot(b) if annihilator(a,b).contains(true) => true
+      case _ => false
+    }} match {
+      case None => this
+      case Some(_) => zero
+    }
+  }
   // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
-      () => {
-        if (tds.isEmpty) {
-          // (and) -> STop,  unit=STop,   zero=SEmpty
-          // (or) -> SEmpty, unit=SEmpty,   zero=STop
-          unit
-          // (and A) -> A
-          // (or A) -> A
-        } else if (tds.tail.isEmpty)
-          tds.head
-        else
-          this
-      },
-      () => {
-        // (and A B SEmpty C D) -> SEmpty,  unit=STop,   zero=SEmpty
-        // (or A B STop C D) -> STop,     unit=SEmpty,   zero=STop
-        if (tds.contains(zero))
-          zero
-        else
-          this
-      },
-      () => {
-        // (and A (not A)) --> SEmpty,  unit=STop,   zero=SEmpty
-        // (or A (not A)) --> STop,     unit=SEmpty, zero=STop
-        if (tds.exists(td => tds.contains(SNot(td))))
-          zero
-        else
-          this
-      },
-      () => {
-        // SAnd(A,STop,B) ==> SAnd(A,B),  unit=STop,   zero=SEmpty
-        // SOr(A,SEmpty,B) ==> SOr(A,B),  unit=SEmpty, zero=STop
-        if (tds.contains(unit))
-          create(tds.filterNot(_ == unit))
-        else
-          this
-      },
-      () => {
-        // (and A B A C) -> (and A B C)
-        // (or A B A C) -> (or A B C)
-        create(tds.distinct)
-      },
-      () => {
-        // (and A (and B C) D) --> (and A B C D)
-        // (or A (or B C) D) --> (or A B C D)
-        if (!tds.exists(sameCombination))
-          this
-        else {
-          create(tds.flatMap {
-            case td:SCombination if sameCombination(td) => td.tds
-            case x => Seq(x)
-          })
-        }
-      },
-      () => {
-        val i2 = create(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf))
-                          .sortWith(cmpTypeDesignators))
-          .maybeDnf(nf).maybeCnf(nf)
-        if (this == i2)
-          this // return the older object, hoping the newer one is more easily GC'ed, also preserves EQ-ness
-        else {
-          i2
-        }
-      },
-      () => {
-        // (or A (not B)) --> STop   if B is subtype of A,    zero=STop
-        // (and A (not B)) --> SEmpty   if B is supertype of A,   zero=SEmpty
-        tds.find{a => tds.exists{
-          case SNot(b) if annihilator(a,b).contains(true) => true
-          case _ => false
-        }} match {
-          case None => this
-          case Some(_) => zero
-        }
-      }
+      () => { conversion1() },
+      () => { conversion2() },
+      () => { conversion3() },
+      () => { conversion4() },
+      () => { conversion5() },
+      () => { conversion6() },
+      () => { conversion7(nf) },
+      () => { conversion8() }
       ))
   }
   // SCombination(tds: SimpleTypeD*)

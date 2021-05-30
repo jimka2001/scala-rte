@@ -25,9 +25,9 @@ object GraphViz {
 
   import java.io.{File, OutputStream}
 
-  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbreviateTransitions:Boolean=false): String = {
+  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbrev:Boolean=false): String = {
     import sys.process._
-    val png = dfaToPng(dfa,title,abbreviateTransitions=abbreviateTransitions)
+    val png = dfaToPng(dfa, title, abbrev=abbrev)
     System.getProperty("os.name") match {
       case "Mac OS X" =>
         // -g => don't bring Preview to foreground, and thus don't steal focus
@@ -38,7 +38,7 @@ object GraphViz {
     png
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbreviateTransitions:Boolean): String = {
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbrev:Boolean): String = {
     val prefix = if (title == "")
       "dfa"
     else
@@ -49,7 +49,7 @@ object GraphViz {
     val dotPath = dot.getAbsolutePath
     val alt = File.createTempFile(prefix+"-", ".plain")
     val altPath = alt.getAbsolutePath
-    dfaToPng(dfa,dotPath, title, abbreviateTransitions=abbreviateTransitions)
+    dfaToPng(dfa, dotPath, title, abbrev=abbrev)
 
     locally {
       import sys.process._
@@ -63,14 +63,14 @@ object GraphViz {
     pngPath
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],pathname: String, title:String, abbreviateTransitions:Boolean): String = {
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], pathname: String, title:String, abbrev:Boolean): String = {
     val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-    dfaToDot(dfa,stream, title, abbreviateTransitions = abbreviateTransitions)
+    dfaToDot(dfa, stream, title, abbrev = abbrev)
     stream.close()
     pathname
   }
 
-  def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],stream: OutputStream, title:String, abbreviateTransitions:Boolean): Unit = {
+  def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E], stream: OutputStream, title:String, abbrev:Boolean): Unit = {
     val qarr=dfa.Q.toArray
     val labels:Set[L] = (for { q <- dfa.Q
                                (_,transitions) <- q.transitions.groupBy(_.destination)
@@ -80,7 +80,7 @@ object GraphViz {
     val labelMap:Map[L,String] = labels.toSeq.zipWithIndex.map{ case (lab,i:Int) =>
       // TODO if abbreviateTransitions is true, need to create a label in the .dot
       //   file indicating the mapping from abbrev to actual label
-      if (abbreviateTransitions)
+      if (abbrev)
         lab -> s"t$i"
       else
         lab -> lab.toString
@@ -133,7 +133,7 @@ object GraphViz {
     lazy val transitionLabelText:String = (for{(lab,i) <- labels.toSeq.zipWithIndex
                                                } yield s"\\lt$i= $lab").mkString("","","\\l")
 
-    if(abbreviateTransitions || title != ""){
+    if(abbrev || title != ""){
       write( """  labelloc="t";""")
       write("label=\"")
       write(title)

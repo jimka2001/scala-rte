@@ -76,7 +76,7 @@ class TreeParallelReduceSuite extends AnyFunSuite {
       val t0 = System.nanoTime()
       val result = block // call-by-name
       val t1 = System.nanoTime()
-      println(s"$name: Elapsed time: ${(t1 - t0) / 1.0e6} ms")
+      //println(s"$name: Elapsed time: ${(t1 - t0) / 1.0e6} ms")
       result
     }
 
@@ -95,7 +95,7 @@ class TreeParallelReduceSuite extends AnyFunSuite {
         }.foldLeft(Rational(0, 1))(_ + _)
         assert(sum == zero)
       })
-      println()
+      // println()
     }
   }
 }

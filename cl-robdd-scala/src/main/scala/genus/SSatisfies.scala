@@ -58,4 +58,4 @@ object SSatisfies {
 }
 
 object SInt extends SSatisfies(SSatisfies.intp,"Int")
-object SDouble extends SSatisfies(SSatisfies.doublep,"Int")
+object SDouble extends SSatisfies(SSatisfies.doublep,"Double")

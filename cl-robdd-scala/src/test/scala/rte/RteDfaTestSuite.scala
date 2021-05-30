@@ -34,7 +34,7 @@ class RteDfaTestSuite extends AnyFunSuite {
          rt = Rte.randomRte(depth)
          } {
       rt.toDfa()
-      //dfaView(sdfa, abbreviateTransitions=true)
+      
     }
   }
   test("rte to png") {
@@ -45,8 +45,7 @@ class RteDfaTestSuite extends AnyFunSuite {
          rt = Rte.randomRte(depth).canonicalize
          } {
 
-      dfaToPng(rt.toDfa(), s"depth=$depth,rep=$rep", abbreviateTransitions = true)
-      // dfaView(rt.toDfa(), s"depth=$depth,rep=$rep", abbreviateTransitions=true)
+      dfaToPng(rt.toDfa(), s"depth=$depth,rep=$rep", abbrev = true)      
     }
   }
   test("dfa minimize") {
