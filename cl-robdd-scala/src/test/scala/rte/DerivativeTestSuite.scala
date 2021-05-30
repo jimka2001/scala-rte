@@ -55,8 +55,8 @@ class DerivativeTestSuite extends AnyFunSuite {
                + "nullable while r1.canonicalize="
                + r1.canonicalize
                + " is"
-               + (if (r1.canonicalize.nullable) "" else " not ")
-               + "nullable")
+               + (if (r1.canonicalize.nullable) "" else " not")
+               + " nullable")
     }
   }
 

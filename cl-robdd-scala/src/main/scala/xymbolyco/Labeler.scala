@@ -25,23 +25,40 @@ abstract class Labeler[Σ,L] {
   def member(s:Σ,lab:L):Boolean
   def combineLabels(l1:L,l2:L):L
   def equivLabels(a:L,b:L):Boolean = {a == b}
+  lazy val universe:L = ???
+  def intersectLabels(l1:L,l2:L):L = ???
+  def subtractLabels(l1:L,ls:Seq[L]):L = ???
+  def inhabited(l1:L):Option[Boolean] = ???
 }
 
 import genusbdd.GenusBdd
 
 case class GenusBddLabeler() extends Labeler[Any,GenusBdd]() {
+  import genusbdd.GenusBdd._
   def member(a:Any,gb:GenusBdd):Boolean = {
     gb.typep(a)
   }
   def combineLabels(a:GenusBdd,b:GenusBdd):GenusBdd = {
     a
   }
+  override def intersectLabels(l1:GenusBdd,l2:GenusBdd):GenusBdd = ???
+  override def subtractLabels(l1:GenusBdd,ls:Seq[GenusBdd]):GenusBdd = ???
+  override def inhabited(l1:GenusBdd):Option[Boolean] = ???
 }
 
-import genus.{SimpleTypeD,SOr}
+import genus.{SimpleTypeD}
 case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
+  import genus._
   def member(a:Any,rt:SimpleTypeD):Boolean = rt.typep(a)
   def combineLabels(a:SimpleTypeD,b:SimpleTypeD):SimpleTypeD = {
     SOr(a,b).canonicalize()
   }
+  override lazy val universe:SimpleTypeD = STop
+  override def intersectLabels(l1:SimpleTypeD,l2:SimpleTypeD):SimpleTypeD = {
+    SAnd(l1,l2).canonicalize()
+  }
+  override def subtractLabels(l1:SimpleTypeD,ls:Seq[SimpleTypeD]):SimpleTypeD = {
+    SAnd(l1,SNot(SOr(ls : _*))).canonicalize()
+  }
+  override def inhabited(l1:SimpleTypeD):Option[Boolean] = l1.inhabited
 }

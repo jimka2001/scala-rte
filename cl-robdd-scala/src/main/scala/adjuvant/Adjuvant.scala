@@ -25,6 +25,14 @@ package adjuvant
 import scala.annotation.tailrec
 
 object Adjuvant {
+  def conj[T](it:Iterable[T],obj:T):Iterable[T] = {
+    if(it.isEmpty)
+      throw new Exception(s"cannot conj to empty Iterable, $it")
+    else {
+      val (head,tail) = it.splitAt(1)
+      head.map(_=>obj) ++ head ++ tail
+    }
+  }
   def conj[T](seq: Seq[T], obj: T): Seq[T] = seq match {
     // inspired by the Clojure conj function
     // See https://clojuredocs.org/clojure.core/conj
@@ -88,18 +96,11 @@ object Adjuvant {
     recur(v0, 0, 1, edges(v0).toList, Vector(v0), Map(v0 -> 0), Vector(s0))
 
   }
-
   def searchReplace[A](xs: Seq[A], search: A, replace: Seq[A]): Seq[A] = {
     xs.flatMap(x => if (search == x) replace else Seq(x))
   }
-
   def searchReplace[A](seq:Seq[A],search:A,replace:A):Seq[A] = {
-    seq.map{ s =>
-      if (s == search)
-        replace
-      else
-        search
-    }
+    searchReplace(seq,search,Seq(replace))
   }
 
   def findAdjacent[A](xs: Seq[A], cmp: (A, A) => Boolean): Boolean =

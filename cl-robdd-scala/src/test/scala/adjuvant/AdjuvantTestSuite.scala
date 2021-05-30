@@ -57,6 +57,16 @@ class AdjuvantTestSuite extends AnyFunSuite {
              uniquify(Vector(3,1,2,2,3)) == Vector(3,1,2))
 
   }
+  test("searchReplace"){
+    assert(searchReplace(Seq(1,2,3),2,20)
+             == Seq(1,20,3))
+    assert(searchReplace(Seq(1,2,3),2,Seq(20))
+             == Seq(1,20,3))
+    assert(searchReplace(Seq(1,2,3),2,Seq())
+             == Seq(1,3))
+    assert(searchReplace(Seq(1,2,3),2,Seq(20,21,22))
+    == Seq(1,20,21,22,3))
+}
 }
 
 

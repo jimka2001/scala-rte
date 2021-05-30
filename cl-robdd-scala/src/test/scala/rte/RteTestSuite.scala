@@ -24,6 +24,7 @@ package rte
 
 import org.scalatest.funsuite.AnyFunSuite
 import RteImplicits._
+import adjuvant.Accumulators.withOutputToString
 import genus._
 import adjuvant.MyFunSuite
 
@@ -125,14 +126,15 @@ class RteTestSuite extends MyFunSuite {
     val rt2 = Or(Not(r1),Not(r2))
 
     import xymbolyco.GraphViz.dfaToPng
-
-    xymbolyco.Serialize.serialize(rt1.toDfa())
-    dfaToPng(rt1.toDfa(),title="debug",abbreviateTransitions = true)
-    dfaToPng(Not(rt1).toDfa(),title="not rt1",abbreviateTransitions=true)
-    dfaToPng(xymbolyco.Minimize.minimize(rt1.toDfa()),title="minimized", abbreviateTransitions = true)
+    withOutputToString{printer =>
+      xymbolyco.Serialize.serialize(rt1.toDfa(),printer)
+    }
+    dfaToPng(rt1.toDfa(), title="debug", abbrev = true)
+    dfaToPng(Not(rt1).toDfa(), title="not rt1", abbrev=true)
+    dfaToPng(xymbolyco.Minimize.minimize(rt1.toDfa()), title="minimized", abbrev = true)
     val cano: Rte = Or(And(rt1, Not(rt2)),
                        And(rt2,Not(rt1))).canonicalize
-    dfaToPng(cano.toDfa(),title="cano",abbreviateTransitions = true)
+    dfaToPng(cano.toDfa(), title="cano", abbrev = true)
   }
   test("discovered case 109 infinite loop"){
     // r1 = Or(Or(Or(<java.lang.String>,<[= 0]>),Or(<Abstract2$1>,<Trait2$1>)),Or((<java.lang.Integer>)*,Or(<Trait3$1>,<java.lang.Number>)))
@@ -165,9 +167,11 @@ class RteTestSuite extends MyFunSuite {
 
     import xymbolyco.GraphViz.dfaToPng
 
-    xymbolyco.Serialize.serialize(rt1.toDfa())
-    dfaToPng(rt1.toDfa(),title="debug",abbreviateTransitions = true)
-    dfaToPng(Not(rt1).toDfa(),title="not rt1",abbreviateTransitions=true)
+    withOutputToString{printer =>
+      xymbolyco.Serialize.serialize(rt1.toDfa(),printer)
+    }
+    dfaToPng(rt1.toDfa(), title="debug", abbrev = true)
+    dfaToPng(Not(rt1).toDfa(), title="not rt1", abbrev=true)
    Or(And(rt1,Not(rt2)),
        And(rt2,Not(rt1))).toDfa()
     //Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize
@@ -217,9 +221,6 @@ class RteTestSuite extends MyFunSuite {
     val a = Not(And(r1, r2)).canonicalize
     val b = Or(Not(r1), Not(r2)).canonicalize
 
-    //xymbolyco.GraphViz.dfaView(Or(And(a,Not(b)),
-    //                              And(b,Not(a))).toDfa(),"de-morgan",true)
-
     assert(a ~= b)
   }
 
@@ -243,19 +244,18 @@ class RteTestSuite extends MyFunSuite {
     assert(! SInt.typep(1.0))
     assert(! SDouble.typep(1))
     assert(SDouble.typep(1.0))
-    println(1)
     val dfa = Rte.rteCase( Seq(Star(classOf[String]) -> 1,
                                Cat(Star(classOf[String]),Singleton(SEql(1))) -> 2,
                                Cat(Star(classOf[String]),Singleton(SEql(-1))) -> 3,
-                               Cat(Star(classOf[String]),Singleton(SInt)) -> 4
+                               Cat(Star(classOf[String]),Singleton(SEql(0))) -> 4,
+                               Cat(Star(classOf[String]),Singleton(SInt)) -> 5
                                ))
-    import xymbolyco.GraphViz.dfaView
-    dfaView(dfa,"123",abbreviateTransitions=true)
     assert(dfa.simulate(Seq("hello")) == Some(1))
     assert(dfa.simulate(List()) == Some(1))
     assert(dfa.simulate(List("hello","world",1)) == Some(2))
     assert(dfa.simulate(List("hello","world",-1)) == Some(3))
-    assert(dfa.simulate(List("hello","world",12)) == Some(4))
+    assert(dfa.simulate(List("hello","world",0)) == Some(4))
+    assert(dfa.simulate(List("hello","world",12)) == Some(5))
     assert(dfa.simulate(List("hello","world",12.0)) == None)
   }
 }

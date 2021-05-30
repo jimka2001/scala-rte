@@ -29,14 +29,14 @@ class BddTestSuite extends AnyFunSuite {
 
   test("printing") {
     withNewBddHash {
-      println("true = " + BddTrue)
-      println("false= " + BddFalse)
+      BddTrue.toString 
+      BddFalse.toString
       val bdd1 = Bdd(3, BddTrue, BddFalse)
       val bdd2 = Bdd(2, BddFalse, BddTrue)
       val bdd3 = Bdd(1, bdd1, bdd2)
-      println("node1 = " + bdd1)
-      println("node2 = " + bdd2)
-      println("node3 = " + bdd3)
+      bdd1.toString
+      bdd2.toString
+      bdd3.toString
     }
   }
   test("eq-ness") {
@@ -45,15 +45,15 @@ class BddTestSuite extends AnyFunSuite {
       val bdd2 = Bdd(2, BddFalse, BddTrue)
       val bdd3 = Bdd(1, bdd1, bdd2)
 
-      println("1+2 = " + Or(1, 2))
-      println("1&2 = " + And(1, 2))
-      println("... = " + And(Or(1, Not(2)), Xor(3, AndNot(2, 3))))
+      Or(1, 2).toString
+      And(1, 2).toString
+      And(Or(1, Not(2)), Xor(3, AndNot(2, 3))).toString
 
       {
         val x = Not(And(bdd3, bdd2))
         val y = Or(Not(bdd3), Not(bdd2))
-        println("x= " + x)
-        println("y= " + y)
+        x.toString
+        y.toString
         assert(x eq y)
       }
     }
@@ -88,7 +88,6 @@ class BddTestSuite extends AnyFunSuite {
       assert(bdd1.size() == 3)
       assert(bdd2.size() == 3)
       //bdd3.bddView(true,"Testing")
-      println("-------------------------")
       assert(bdd3.size() == 5)
       for (bdd <- samples) {
         bdd match {
@@ -137,18 +136,18 @@ class BddTestSuite extends AnyFunSuite {
 
   test("printer") {
     withNewBddHash {
-      println("a+b =" + Or(Bdd(1), Bdd(2))(Assignment(Set(1))))
-      println("a+b =" + Or(Bdd(1), Bdd(2))(Assignment(Set(2))))
-      println("a+b =" + Or(Bdd(1), Bdd(2))(Assignment(Set(1, 2))))
-      println("a+b =" + Or(Bdd(1), Bdd(2))(Assignment(Set[Int]())))
+      Or(Bdd(1), Bdd(2))(Assignment(Set(1))).toString
+      Or(Bdd(1), Bdd(2))(Assignment(Set(2))).toString
+      Or(Bdd(1), Bdd(2))(Assignment(Set(1, 2))).toString
+      Or(Bdd(1), Bdd(2))(Assignment(Set[Int]())).toString
 
-      println("a&b =" + And(Bdd(1), Bdd(2))(Assignment(Set(1))))
-      println("a&b =" + And(Bdd(1), Bdd(2))(Assignment(Set(2))))
-      println("a&b =" + And(Bdd(1), Bdd(2))(Assignment(Set(1, 2))))
-      println("a&b =" + And(Bdd(1), Bdd(2))(Assignment(Set[Int]())))
+      And(Bdd(1), Bdd(2))(Assignment(Set(1))).toString
+      And(Bdd(1), Bdd(2))(Assignment(Set(2))).toString
+      And(Bdd(1), Bdd(2))(Assignment(Set(1, 2))).toString
+      And(Bdd(1), Bdd(2))(Assignment(Set[Int]())).toString
 
       val bdd = Or(Bdd(1), Not(Bdd(2)))
-      println("xnor" + Xnor(bdd, bdd))
+      Xnor(bdd, bdd).toString
     }
   }
 }

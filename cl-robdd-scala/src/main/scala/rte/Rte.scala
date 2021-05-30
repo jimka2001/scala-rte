@@ -24,6 +24,8 @@ package rte
 
 import genus.SimpleTypeD
 import adjuvant.Adjuvant._
+import xymbolyco.GraphViz.dfaView
+import xymbolyco.Minimize.trim
 
 import scala.annotation.tailrec
 
@@ -232,36 +234,49 @@ object Rte {
     }
     def f(pair:(Rte,E)):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
       val (rte,e) = pair
-      rte.toDfa(e)
+      val dfa = rte.toDfa(e)
+
+      dfa
     }
     val disjoint:Seq[(Rte,E)] = excludePrevious(seq.toList,List(),List())
     funnyFold[(Rte,E),xymbolyco.Dfa[Any,SimpleTypeD,E]](disjoint,f,dfaUnion)
   }
 
+
+  def intersectLabels(td1:SimpleTypeD,td2:SimpleTypeD):Option[SimpleTypeD] = {
+    val comb = genus.SAnd(td1,td2).canonicalize()
+    comb.inhabited match {
+      case Some(false) => None
+      case _ => Some(comb)
+    }
+  }
+  def combineFmap[E](e1:Option[E],e2:Option[E]):Option[E] = {
+    (e1,e2) match {
+      case (None,None) => None
+      case (Some(b),Some(c)) if c == b => Some(b)
+      case (Some(b),Some(c)) => {
+        println(s"warning loosing value $c, using $b")
+        Some(b) // f-value of dfa1 has precedence over dfa2
+      }
+      case (Some(b),None) => Some(b)
+      case (None,Some(b)) => Some(b)
+    }
+  }
+
   def dfaUnion[E](dfa1:xymbolyco.Dfa[Any,SimpleTypeD,E],
                   dfa2:xymbolyco.Dfa[Any,SimpleTypeD,E]):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
     import xymbolyco.Minimize.sxp
-    def combineLabels(td1:SimpleTypeD,td2:SimpleTypeD):Option[SimpleTypeD] = {
-      val comb = genus.SAnd(td1,td2).canonicalize()
-      comb.inhabited match {
-        case Some(false) => None
-        case _ => Some(comb)
-      }
-    }
-    def combineFmap(e1:Option[E],e2:Option[E]):Option[E] = {
-      (e1,e2) match {
-        case (None,None) => None
-        case (Some(b),_) => Some(b) // f-value of dfa1 has precedence over dfa2
-        case (None,Some(b)) => Some(b)
-      }
-    }
-    sxp[Any,SimpleTypeD,E](dfa1,dfa2,
-                           combineLabels, // (L,L)=>Option[L],
-                           (a:Boolean,b:Boolean) => a || b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
-                           combineFmap //:(E,E)=>E
-                           )
-  }
 
+    val dfa = sxp[Any,SimpleTypeD,E](dfa1,dfa2,
+                                     intersectLabels, // (L,L)=>Option[L],
+                                     (a:Boolean,b:Boolean) => a || b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+                                     combineFmap //:(E,E)=>E
+                                     )
+    dfa
+  }
+  def sortAlphabetically(seq:Seq[Rte]):Seq[Rte] = {
+    seq.sortBy(_.toString)
+  }
   def randomRte(depth: Int): Rte = {
     import scala.util.Random
     val random = new Random
@@ -298,7 +313,6 @@ object sanityTest2 {
          rt = Rte.randomRte(depth)
          } {
       rt.toDfa()
-      //dfaView(sdfa, abbreviateTransitions=true)
     }
   }
 }

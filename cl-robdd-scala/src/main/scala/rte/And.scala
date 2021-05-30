@@ -32,7 +32,7 @@ case class And(operands:Seq[Rte]) extends Rte{
   def firstTypes:Set[SimpleTypeD] = operands.toSet.flatMap((r:Rte) => r.firstTypes)
   override def canonicalizeOnce:Rte = {
     //println("canonicalizing And: " + operands)
-    val betterOperands = adjuvant.Adjuvant.uniquify(operands)
+    val betterOperands = Rte.sortAlphabetically(adjuvant.Adjuvant.uniquify(operands))
       .flatMap{
         case r if r == Rte.sigmaStar => Seq()
         case And(Seq(rs @ _*)) => rs.map(_.canonicalizeOnce)
