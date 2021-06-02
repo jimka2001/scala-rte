@@ -142,6 +142,21 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     }
     create(outerArgs)
   }
+  def conversion10():SimpleTypeD = {
+    // (and A B C) --> (and A C) if  A is subtype of B
+    tds.find(sub => tds.exists { sup =>
+      ((sub != sup)
+        && annihilator(sub,sup).contains(true))
+    }) match {
+      case None => this
+      case Some(sub) =>
+        // throw away all proper superclasses of sub, i.e., keep everything that is not a superclass
+        // of sub and also keep sub itself.   keep false and dont-know
+        val keep = tds.filter(sup => sup == sub || !annihilator(sub,sup).contains(true))
+        create(keep)
+    }
+  }
+
   // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
@@ -153,7 +168,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       () => { conversion6() },
       () => { conversion7(nf) },
       () => { conversion8() },
-      () => { conversion9() }
+      () => { conversion9() },
+      () => { conversion10() }
       ))
   }
   // SCombination(tds: SimpleTypeD*)

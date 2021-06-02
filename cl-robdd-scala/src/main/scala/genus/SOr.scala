@@ -92,7 +92,6 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
     findSimplifier(List[() => SimpleTypeD](
       () => { SOr.conversion1(tds, this) },
       () => { SOr.conversion2(tds, this) },
-      () => { SOr.conversion3(tds, this) },
       () => { SOr.conversion5(tds, this) },
       () => { super.canonicalizeOnce(nf)}
       ))
@@ -171,30 +170,7 @@ object SOr {
       case _ => default
     }
   }
-  def conversion3(tds:Seq[SimpleTypeD], default:SimpleTypeD):SimpleTypeD = {
-    // if Asub is subtype of Bsup then
-    // SOr(X,Asub,Y,Bsup,Z) --> SOr(X,Y,Bsup,Z)
-    // but be careful, if A < B and B < A we DO NOT want to remove both.
-    val maybeSup = tds.find { sup =>
-      tds.exists { sub =>
-        sub != sup &&
-          sub.subtypep(sup).contains(true)
-      }
-    }
-    maybeSup match {
-      case None => default
-      // if there is a super type somewhere in the sequence
-      //    then remove all sub types EXCEPT the super type itself
-      case _ => SOr.createOr(tds.flatMap { sub =>
-        if (maybeSup.contains(sub))
-          Seq(sub)
-        else if ( maybeSup.flatMap(sub.subtypep).contains(true))
-          Seq()
-        else
-          Seq(sub)
-      })
-    }
-  }
+
   def conversion1(tds:Seq[SimpleTypeD], default:SimpleTypeD):SimpleTypeD = {
     // (or (member 1 2 3) (member 2 3 4 5)) --> (member 1 2 3 4 5)
     // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))

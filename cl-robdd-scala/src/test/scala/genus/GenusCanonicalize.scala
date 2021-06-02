@@ -433,35 +433,7 @@ class GenusCanonicalize extends AnyFunSuite {
              == SOr(S,SMember(1,2,3,4,5)))
 
   }
-  test("or conversion3"){
-    abstract class ClassBsup
 
-    trait TraitX
-    trait TraitY
-    trait TraitZ
-    class XYZ extends TraitX with TraitY with TraitZ
-
-    val Asub = SAtomic(classOf[ClassAsub])
-    val Bsup = SAtomic(classOf[ClassBsup])
-    val X = SAtomic(classOf[TraitX])
-    val Y = SAtomic(classOf[TraitY])
-    val Z = SAtomic(classOf[TraitZ])
-
-    class ClassAsub extends ClassBsup
-
-    // if Asub is subtype of Bsup then
-    // SOr(X,Asub,Y,Bsup,Z) --> SOr(X,Y,Bsup,Z)
-    assert(SOr.conversion3(Seq(X, Asub, Y, Bsup, Z), SEmpty)
-             == SOr(X,Y,Bsup,Z))
-    assert(SOr.conversion3(Seq(X, Bsup, Y, Asub, Z), SEmpty)
-             == SOr(X,Bsup,Y,Z))
-
-    // but be careful, if A < B and B < A we DO NOT want to remove both.
-    assert((SOr.conversion3(Seq(Z, SOr(X, Y), SOr(Y, X)), SEmpty)
-      == SOr(Z,SOr(Y,X)))
-             || (SOr.conversion3(Seq(Z, SOr(X, Y), SOr(Y, X)), SEmpty)
-      == SOr(Z,SOr(X,Y))))
-  }
   test("or conversion2"){
     trait TraitA
     trait TraitB
@@ -593,17 +565,59 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SAnd(SOr(SNot(A), B, C), SOr(A, SNot(B), C), X).conversion9()
              == SAnd(SOr(SNot(A),B,C),SOr(A,SNot(B),C),X))
   }
-  test("and conversion5"){
+  test("combo conversion10"){
     // (and A B) --> (and A) if  A is subtype of B
-    assert(SAnd.conversion5(Seq(SMember(1, 2, 3), SMember(1, 2)), STop)
+    assert(SAnd(SMember(1, 2, 3), SMember(1, 2)).conversion10()
              == SMember(1,2))
-    assert(SAnd.conversion5(Seq(SMember(1, 2), SMember(1, 2, 3)), STop)
+    assert(SAnd(SMember(1, 2), SMember(1, 2, 3)).conversion10()
              == SMember(1,2))
     // (and A B C) --> (and A C) if  A is subtype of B
-    assert(SAnd.conversion5(Seq(SMember(1, 2), SMember(1, 2, 3), SDouble), STop)
+    assert(SAnd(SMember(1, 2), SMember(1, 2, 3), SDouble).conversion10()
              == SAnd(SMember(1,2),SDouble))
-    assert(SAnd.conversion5(Seq(SDouble, SMember(1, 2), SMember(1, 2, 3)), STop)
+    assert(SAnd(SDouble, SMember(1, 2), SMember(1, 2, 3)).conversion10()
              == SAnd(SDouble,SMember(1,2)))
+
+    // (or A B) --> (and A) if  A is supertype of B
+    assert(SOr(SMember(1, 2, 3), SMember(1, 2)).conversion10()
+             == SMember(1,2,3))
+    assert(SOr(SMember(1, 2), SMember(1, 2, 3)).conversion10()
+             == SMember(1,2,3))
+    // (or A B C) --> (or A C) if  A is supertype of B
+    assert(SOr(SMember(1, 2), SMember(1, 2, 3), SDouble).conversion10()
+             == SOr(SMember(1,2,3),SDouble))
+    assert(SOr(SDouble, SMember(1, 2), SMember(1, 2, 3)).conversion10()
+             == SOr(SDouble,SMember(1,2,3)))
+
+    locally{
+
+        abstract class ClassBsup
+
+        trait TraitX
+        trait TraitY
+        trait TraitZ
+        class XYZ extends TraitX with TraitY with TraitZ
+
+        val Asub = SAtomic(classOf[ClassAsub])
+        val Bsup = SAtomic(classOf[ClassBsup])
+        val X = SAtomic(classOf[TraitX])
+        val Y = SAtomic(classOf[TraitY])
+        val Z = SAtomic(classOf[TraitZ])
+
+        class ClassAsub extends ClassBsup
+
+        // if Asub is subtype of Bsup then
+        // SOr(X,Asub,Y,Bsup,Z) --> SOr(X,Y,Bsup,Z)
+        assert(SOr(X, Asub, Y, Bsup, Z).conversion10()
+                 == SOr(X,Y,Bsup,Z))
+        assert(SOr(X, Bsup, Y, Asub, Z).conversion10()
+                 == SOr(X,Bsup,Y,Z))
+
+        // but be careful, if A < B and B < A we DO NOT want to remove both.
+        assert((SOr(Z, SOr(X, Y), SOr(Y, X)).conversion10()
+          == SOr(Z,SOr(Y,X)))
+                 || (SOr(Z, SOr(X, Y), SOr(Y, X)).conversion10()
+          == SOr(Z,SOr(X,Y))))
+      }
   }
   test("combo conversion1"){
     // (and) -> STop,  unit=STop,   zero=SEmpty
