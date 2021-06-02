@@ -31,6 +31,7 @@ import NormalForm._
 // replacing subtypep with supertypep, etc.
 abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   def create(tds:Seq[SimpleTypeD]):SimpleTypeD
+  def createDual(tds:Seq[SimpleTypeD]):SimpleTypeD
   val unit:SimpleTypeD
   val zero:SimpleTypeD
   // TODO, not sure what is the correct name for this function.
@@ -38,6 +39,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   //                         and a.subtypep(b) for SAnd equiv b.supertypep(a)
   def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean]
   def sameCombination(td:SimpleTypeD):Boolean = false
+  def dualCombination(td:SimpleTypeD):Boolean = false
 
   def conversion1():SimpleTypeD = {
     if (tds.isEmpty) {
@@ -113,6 +115,33 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       case Some(_) => zero
     }
   }
+
+  def conversion9():SimpleTypeD = {
+    // (A+B+C)(A+!B+C)(X) -> (A+B+C)(A+C)(X)  (later -> (A+C)(X))
+    // (A+B+!C)(A+!B+C)(A+!B+!C) -> (A+B+!C)(A+!B+C)(A+!C) ->
+    // (A+B+!C)(A+!B+C)(A+!B+!C) -> does not reduce to (A+B+!C)(A+!B+C)(A)
+    import adjuvant.Adjuvant.searchReplace
+    val duals = tds.collect{ case td:SCombination if dualCombination(td)=> td}
+    val outerArgs = tds.map{
+      // A+!B+C -> A+C
+      // A+B+C -> A+B+C
+      // X -> X
+      case td1:SCombination if dualCombination(td1) =>
+        // A+!B+C -> A+C
+        // A+B+C -> A+B+C
+        val toRemove = td1.tds.collectFirst{
+          case td@SNot(n) if duals.exists{
+            case td2:SCombination if dualCombination(td2) => td2.tds == searchReplace(td1.tds,td,Seq(n))
+          } => td
+        } // Some(!B) or None
+        toRemove match {
+          case None => td1
+          case Some(td) => createDual(td1.tds.filterNot(_ == td))
+        }
+      case td => td // X -> X
+    }
+    create(outerArgs)
+  }
   // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
@@ -123,7 +152,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       () => { conversion5() },
       () => { conversion6() },
       () => { conversion7(nf) },
-      () => { conversion8() }
+      () => { conversion8() },
+      () => { conversion9() }
       ))
   }
   // SCombination(tds: SimpleTypeD*)

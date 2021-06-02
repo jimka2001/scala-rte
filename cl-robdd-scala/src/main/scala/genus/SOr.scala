@@ -33,13 +33,14 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   override def toString:String = tds.map(_.toString).mkString("[SOr ", ",", "]")
 
   override def create(tds:Seq[SimpleTypeD]):SimpleTypeD = SOr.createOr(tds)
+  override def createDual(tds:Seq[SimpleTypeD]):SimpleTypeD = SAnd.createAnd(tds)
   override val unit:SimpleTypeD = SEmpty
   override val zero:SimpleTypeD = STop
   override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
     b.subtypep(a)
   }
   override def sameCombination(td:SimpleTypeD):Boolean = orp(td)
-
+  override def dualCombination(td:SimpleTypeD):Boolean = andp(td)
   override def typep(a: Any): Boolean = {
     tds.exists(_.typep(a))
   }
@@ -89,11 +90,10 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   // SOr(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
-      () => { SOr.conversion5(tds,this) },
-      () => { SOr.conversion3(tds,this) },
-      () => { SOr.conversion4(tds,this) },
-      () => { SOr.conversion1(tds) },
-      () => { SOr.conversion2(tds,this) },
+      () => { SOr.conversion1(tds, this) },
+      () => { SOr.conversion2(tds, this) },
+      () => { SOr.conversion3(tds, this) },
+      () => { SOr.conversion5(tds, this) },
       () => { super.canonicalizeOnce(nf)}
       ))
   }
@@ -127,35 +127,7 @@ object SOr {
     }
   }
 
-  def conversion1(tds:Seq[SimpleTypeD]):SimpleTypeD = {
-    // TODO, this should be generalized to work for SAnd and SOr
-    // ABC + A!BC + X -> ABC + AC + X (later -> AC + X)
-    // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C ->
-    // AB!C + A!BC + A!B!C -> does not reduce to AB!C + A!BC + A
-    import adjuvant.Adjuvant.searchReplace
-    val ands = tds.collect{ case td@SAnd(_*) => td}
-    val orArgs = tds.map{
-      // A!BC -> AC
-      // ABC -> ABC
-      // X -> X
-      case td1@SAnd(andArgs@ _*) =>
-        // A!BC -> AC
-        // ABC -> ABC
-
-        val toRemove = andArgs.collectFirst{
-          case td@SNot(n) if ands.exists{
-            case SAnd(tds@_*) => tds == searchReplace(andArgs,td,Seq(n))
-          } => td
-        } // Some(!B) or None
-        toRemove match {
-          case None => td1
-          case Some(td) => SAnd.createAnd(andArgs.filterNot(_ == td))
-        }
-      case td => td // X -> X
-    }
-    SOr.createOr(orArgs)
-  }
-  def conversion2(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+  def conversion5(tds:Seq[SimpleTypeD], default:SimpleTypeD):SimpleTypeD = {
     // A + A! B -> A + B
     // A + A! BX + Y = (A + BX + Y)
     // A + ABX + Y = (A + Y)
@@ -183,7 +155,7 @@ object SOr {
           })
     }
   }
-  def conversion3(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+  def conversion2(tds:Seq[SimpleTypeD], default:SimpleTypeD):SimpleTypeD = {
     // AXBC + !X = ABC + !X
     tds.find{
       case SNot(x) => tds.exists{
@@ -199,7 +171,7 @@ object SOr {
       case _ => default
     }
   }
-  def conversion4(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+  def conversion3(tds:Seq[SimpleTypeD], default:SimpleTypeD):SimpleTypeD = {
     // if Asub is subtype of Bsup then
     // SOr(X,Asub,Y,Bsup,Z) --> SOr(X,Y,Bsup,Z)
     // but be careful, if A < B and B < A we DO NOT want to remove both.
@@ -223,7 +195,7 @@ object SOr {
       })
     }
   }
-  def conversion5(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+  def conversion1(tds:Seq[SimpleTypeD], default:SimpleTypeD):SimpleTypeD = {
     // (or (member 1 2 3) (member 2 3 4 5)) --> (member 1 2 3 4 5)
     // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
 

@@ -27,10 +27,10 @@ import scala.annotation.tailrec
 object Adjuvant {
   def conj[T](it:Iterable[T],obj:T):Iterable[T] = {
     if(it.isEmpty)
-      throw new Exception(s"cannot conj to empty Iterable, $it")
+      it ++ Seq(obj)
     else {
-      val (head,tail) = it.splitAt(1)
-      head.map(_=>obj) ++ head ++ tail
+      val (singleton,_) = it.splitAt(1)
+      it ++ singleton.map(_=>obj)
     }
   }
   def conj[T](seq: Seq[T], obj: T): Seq[T] = seq match {
