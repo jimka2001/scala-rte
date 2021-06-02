@@ -51,9 +51,10 @@ class MapColoringTestSuite extends AnyFunSuite {
                                            uniDirectionalGraph,
                                            biDirectionalGraph,
                                            4,
-                                           (n,size)=>println(s"plot $n $size"),
+                                           (n,size)=>println(s"plot $n ${size()}"),
                                            List(),
-                                           1)
+                                           1,
+                                           verbose=false)
       bdd.visitSatisfyingAssignments { (assignTrue,assignFalse) =>
         val colorMapping: Map[String, String] = assignColors(colorization, assignTrue,assignFalse, colors)
         colors.foreach { color =>
@@ -73,14 +74,15 @@ class MapColoringTestSuite extends AnyFunSuite {
   }
 
   test("europe"){
-    europeMapColoringTest(12)
+    europeMapColoringTest(12,false)
   }
 
   test("usa"){
     colorizeMap(20, "test-us", "AL",
-                USAgraph.stateUniGraph,USAgraph.stateBiGraph,List("MS","AL","TN"))
+                USAgraph.stateUniGraph,USAgraph.stateBiGraph,List("MS","AL","TN"),
+                false)
   }
-  def sanityCheck(numNodes:Int):Unit = {
+  def sanityCheck(numNodes:Int,verbose:Boolean):Unit = {
     import adjuvant.Accumulators._
     Bdd.withNewBddHash {
       //val (states, subGraph) = findSubGraph("AL", numNodes)
@@ -88,9 +90,10 @@ class MapColoringTestSuite extends AnyFunSuite {
                                           USAgraph.stateUniGraph,
                                           USAgraph.stateBiGraph,
                                           numNodes,
-                                          (n,size)=>println(s"plot $n ${size()}"),
+                                          (n,size)=>(if (verbose) println(s"plot $n ${size()}")),
                                           List("AZ","CO","NM","UT"),
-                                          1)
+                                          1,
+                                           verbose=verbose)
 
       //println(s"colors=$colorization")
       val countSolutions =
@@ -105,8 +108,8 @@ class MapColoringTestSuite extends AnyFunSuite {
   }
 
   test("sanity") {
-    sanityCheck(4)
-    sanityCheck(5)
-    sanityCheck(10)
+    sanityCheck(4,false)
+    sanityCheck(5,false)
+    sanityCheck(10,false)
   }
 }
