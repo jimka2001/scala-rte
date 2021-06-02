@@ -451,7 +451,7 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SOr.conversion2(Seq(SAnd(A, X, B, C), SNot(X)), SEmpty)
            == SOr(SAnd(A,B,C),SNot(X)))
   }
-  test("or conversion5"){
+  test("combo conversion11"){
     trait TraitA
     trait TraitB
     trait TraitC
@@ -465,19 +465,42 @@ class GenusCanonicalize extends AnyFunSuite {
     val Y = SAtomic(classOf[TraitY])
 
     // A + A!B -> A + B
-    assert(SOr.conversion5(Seq(A, SAnd(SNot(A), B)), SEmpty)
+    assert(SOr(A, SAnd(SNot(A), B)).conversion11()
              == SOr(A,B))
 
-    // A + ABX + Y = (A + Y)
-    assert(SOr.conversion5(Seq(A, SAnd(A, SNot(B), X), Y), SEmpty)
+    // A + A!BX + Y = (A + Y)
+    assert(SOr(A, SAnd(A, SNot(B), X), Y).conversion11()
              == SOr(A,Y))
 
     //                         A +      A! BX +      Y = (A + BX + Y)
-    assert(SOr.conversion5(Seq(A, SAnd(SNot(A), B, X), Y), SEmpty)
+    assert(SOr(A, SAnd(SNot(A), B, X), Y).conversion11()
              == SOr(A,SAnd(B,X),Y))
 
     // if rule does not apply, the it must return exactly the default
-    assert(SOr.conversion5(Seq(A, B, C), SEmpty) == SEmpty)
+    assert(SOr(A, B, C).conversion11() == SOr(A,B,C))
+
+
+
+    // ---------------
+
+    // A(A+!B) -> AB
+    assert(SAnd(A, SOr(SNot(A), B)).conversion11()
+             == SAnd(A,B))
+
+    // A(A+!B+X)Y = AY
+    assert(SAnd(A, SOr(A, SNot(B), X), Y).conversion11()
+             == SAnd(A,Y))
+
+    //                         A(!A+B+X)     Y = A(B+X)Y
+    assert(SAnd(A, SOr(SNot(A), B, X), Y).conversion11()
+             == SAnd(A,SOr(B,X),Y))
+
+    // if rule does not apply, the it must return exactly the default
+    assert(SAnd(A, B, C).conversion11() == SAnd(A,B,C))
+
+
+
+
   }
   test("or conversion9"){
     trait TraitA

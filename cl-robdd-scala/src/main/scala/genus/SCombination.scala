@@ -156,7 +156,36 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         create(keep)
     }
   }
+  def conversion11():SimpleTypeD = {
 
+    // A + A! B -> A + B
+    // A + A! BX + Y = (A + BX + Y)
+    // A + ABX + Y = (A + Y)
+
+    // TODO need to look at these relations if A < B or B < A,
+    //  I'm not yet sure what will happen, but I think there are some simplifications to be made
+    val ao = tds.find(a =>
+                        tds.exists {
+                          case td:SCombination if dualCombination(td) =>
+                            td.tds.exists {
+                              case SNot(b) if a == b => true
+                              case b if a == b => true
+                              case _ => false
+                            }
+                          case _ => false
+                        })
+    ao match {
+      case None => this
+      case Some(a) =>
+        create(
+          tds.flatMap {
+            case td:SCombination if sameCombination(td) => Seq(td)
+            case td:SCombination if td.tds.contains(a) => Seq()
+            case td:SCombination if td.tds.contains(SNot(a)) => Seq(createDual(td.tds.filterNot(_ == SNot(a))))
+            case b => Seq(b)
+          })
+    }
+  }
   // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
@@ -169,7 +198,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       () => { conversion7(nf) },
       () => { conversion8() },
       () => { conversion9() },
-      () => { conversion10() }
+      () => { conversion10() },
+      () => { conversion11() }
       ))
   }
   // SCombination(tds: SimpleTypeD*)

@@ -92,7 +92,6 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
     findSimplifier(List[() => SimpleTypeD](
       () => { SOr.conversion1(tds, this) },
       () => { SOr.conversion2(tds, this) },
-      () => { SOr.conversion5(tds, this) },
       () => { super.canonicalizeOnce(nf)}
       ))
   }
@@ -126,34 +125,7 @@ object SOr {
     }
   }
 
-  def conversion5(tds:Seq[SimpleTypeD], default:SimpleTypeD):SimpleTypeD = {
-    // A + A! B -> A + B
-    // A + A! BX + Y = (A + BX + Y)
-    // A + ABX + Y = (A + Y)
 
-    // TODO need to look at these relations if A < B or B < A,
-    //  I'm not yet sure what will happen, but I think there are some simplifications to be made
-    val ao = tds.find(a =>
-                        tds.exists {
-                          case SAnd(td2s@_*) =>
-                            td2s.exists {
-                              case SNot(b) if a == b => true
-                              case b if a == b => true
-                              case _ => false
-                            }
-                          case _ => false
-                        })
-    ao match {
-      case None => default
-      case Some(a) => // remove SNot(a) from every intersection, and if a is in intersection, replace with SEmpty
-        SOr.createOr(
-          tds.flatMap {
-            case SAnd(tds@_*) if tds.contains(a) => Seq()
-            case SAnd(tds@_*) if tds.contains(SNot(a)) => Seq(SAnd.createAnd(tds.filterNot(_ == SNot(a))))
-            case b => Seq(b)
-          })
-    }
-  }
   def conversion2(tds:Seq[SimpleTypeD], default:SimpleTypeD):SimpleTypeD = {
     // AXBC + !X = ABC + !X
     tds.find{
