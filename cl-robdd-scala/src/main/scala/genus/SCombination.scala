@@ -69,6 +69,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   }
 
   def conversion3(): SimpleTypeD = {
+
     // (and A (not A)) --> SEmpty,  unit=STop,   zero=SEmpty
     // (or A (not A)) --> STop,     unit=SEmpty, zero=STop
     if (tds.exists(td => tds.contains(SNot(td))))
@@ -87,12 +88,14 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   }
 
   def conversion5(): SimpleTypeD = {
+
     // (and A B A C) -> (and A B C)
     // (or A B A C) -> (or A B C)
     create(adjuvant.Adjuvant.uniquify(tds))
   }
 
   def conversion6(): SimpleTypeD = {
+
     // (and A (and B C) D) --> (and A B C D)
     // (or A (or B C) D) --> (or A B C D)
     if (!tds.exists(sameCombination))

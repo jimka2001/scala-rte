@@ -434,6 +434,7 @@ class GenusCanonicalize extends AnyFunSuite {
   }
 
   test("combo conversion12"){
+
     trait TraitA
     trait TraitB
     trait TraitC
