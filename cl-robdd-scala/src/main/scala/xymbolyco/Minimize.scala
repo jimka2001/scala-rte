@@ -171,19 +171,20 @@ object Minimize {
       case _ => 0
     }
     val labeler = dfa.labeler
-    val toSink: immutable.Iterable[(Int, L, Int)] = for {(src, triples) <- dfa.protoDelta.groupBy(_._1)
-                                                         tds = triples.map(_._2).toSeq
-                                                         newtd = labeler.subtractLabels(labeler.universe, tds)
-                                                         if !labeler.inhabited(newtd).contains(false)
-                                                         } yield (src, newtd, sinkid)
-    val newTriples = if (toSink.isEmpty)
-      toSink
-    else
-      conj(toSink, (sinkid, labeler.universe, sinkid))
+    val toSink = for {(src, triples) <- dfa.protoDelta.groupBy(_._1)
+                      tds = triples.map(_._2).toSeq
+                      newtd = labeler.subtractLabels(labeler.universe, tds)
+                      if !labeler.inhabited(newtd).contains(false)
+                      } yield (src, newtd, sinkid)
+
+    val protoDelta = dfa.protoDelta ++
+      toSink ++
+      (if (toSink.nonEmpty) Set((sinkid, labeler.universe, sinkid)) else Set())
+
     val dfaComplete = new Dfa[Σ, L, E](Qids = dfa.Qids + sinkid,
                                        q0id = dfa.q0id,
                                        Fids = dfa.Fids,
-                                       protoDelta = dfa.protoDelta ++ newTriples,
+                                       protoDelta = protoDelta,
                                        labeler = dfa.labeler,
                                        fMap = dfa.fMap)
     dfaComplete

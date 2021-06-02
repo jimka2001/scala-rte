@@ -33,13 +33,14 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   override def toString: String = tds.map(_.toString).mkString("[SAnd ", ",", "]")
 
   override def create(tds:Seq[SimpleTypeD]):SimpleTypeD = SAnd.createAnd(tds)
+  override def createDual(tds:Seq[SimpleTypeD]):SimpleTypeD = SOr.createOr(tds)
   override val unit:SimpleTypeD = STop
   override val zero:SimpleTypeD = SEmpty
   override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
     b.supertypep(a)
   }
   override def sameCombination(td:SimpleTypeD):Boolean = andp(td)
-
+  override def dualCombination(td:SimpleTypeD):Boolean = orp(td)
   override def typep(a: Any): Boolean = {
     tds.forall(_.typep(a))
   }
@@ -122,7 +123,6 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
       () => { SAnd.conversion1(tds,this) },
       () => { SAnd.conversion2(tds,this) },
       () => { SAnd.conversion3(tds,this) },
-      () => { SAnd.conversion4(tds,this) },
       () => { super.canonicalizeOnce(nf)}
       ))
   }
@@ -205,19 +205,5 @@ object SAnd {
       SEmpty
     else
       default
-  }
-  def conversion4(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
-    // (and A B C) --> (and A C) if  A is subtype of B
-    tds.find(sub => tds.exists { sup =>
-      ((sub != sup)
-        && sub.subtypep(sup).contains(true))
-    }) match {
-      case None => default
-      case Some(sub) =>
-        // throw away all proper superclasses of sub, i.e., keep everything that is not a superclass
-        // of sub and also keep sub itself.   keep false and dont-know
-        val keep = tds.filter(sup => sup == sub || !sub.subtypep(sup).contains(true))
-        SAnd.createAnd(keep)
-    }
   }
 }
