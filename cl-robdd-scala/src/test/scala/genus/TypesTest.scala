@@ -27,7 +27,7 @@ import org.scalatest.funsuite.AnyFunSuite
 class TypesTest extends AnyFunSuite {
 
   test("reflect.getSubTypesOf"){
-    val reflect = new org.reflections.Reflections("")
+    val reflect = new org.reflections.Reflections()
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
   }
@@ -99,6 +99,13 @@ class TypesTest extends AnyFunSuite {
          t2 = randomType(d)
          t3 = randomType(d)
          } triangle_inequality(t1,t2,t3)
+  }
+  test("mdtd"){
+    // Set(String, Int?, [= -1], [= 1])
+    mdtd(Set(SAtomic(classOf[String]),
+             SInt,
+             SEql(-1),
+             SEql(1)))
   }
 }
 

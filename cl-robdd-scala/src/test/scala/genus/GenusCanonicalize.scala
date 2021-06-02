@@ -278,8 +278,8 @@ class GenusCanonicalize extends AnyFunSuite {
                         SNot(classOf[java.lang.Number])),
                    SMember(-1, "a", "b", "c"))
       assert(t1.inhabited.contains(true))
-      println("dnf =" + t1.canonicalize(Some(Dnf)))
-      println("cnf =" + t1.canonicalize(Some(Cnf)))
+      t1.canonicalize(Some(Dnf))
+      t1.canonicalize(Some(Cnf))
       assert(t1.canonicalize(Some(Cnf)) == STop)
     }
   }
@@ -416,5 +416,240 @@ class GenusCanonicalize extends AnyFunSuite {
     for {_ <- 0 to 500
          }
       testDnfInverse(randomType(2))
+  }
+  test("or conversion5"){
+    // (or (member 1 2 3) (member 2 3 4 5)) --> (member 1 2 3 4 5)
+    // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
+    val S = SAtomic(classOf[String])
+    assert(SOr.conversion5(Seq(SMember(1,2,3),SMember(2,3,4,5)),SEmpty)
+             == SMember(1,2,3,4,5))
+
+    assert(SOr.conversion5(Seq(SMember(1,2,3),SMember(2,3,4,5)),SEmpty)
+             == SMember(1,2,3,4,5))
+
+    assert(SOr.conversion5(Seq(SMember(1,2,3),SMember(2,3,4,5),S),SEmpty)
+             == SOr(S, SMember(1,2,3,4,5)))
+    assert(SOr.conversion5(Seq(SMember(1,2,3,"hello"),SMember(2,3,4,5,"world"),S),SEmpty)
+             == SOr(S,SMember(1,2,3,4,5)))
+
+  }
+  test("or conversion4"){
+    abstract class ClassBsup
+
+    trait TraitX
+    trait TraitY
+    trait TraitZ
+    class XYZ extends TraitX with TraitY with TraitZ
+
+    val Asub = SAtomic(classOf[ClassAsub])
+    val Bsup = SAtomic(classOf[ClassBsup])
+    val X = SAtomic(classOf[TraitX])
+    val Y = SAtomic(classOf[TraitY])
+    val Z = SAtomic(classOf[TraitZ])
+
+    class ClassAsub extends ClassBsup
+
+    // if Asub is subtype of Bsup then
+    // SOr(X,Asub,Y,Bsup,Z) --> SOr(X,Y,Bsup,Z)
+    assert(SOr.conversion4(Seq(X,Asub,Y,Bsup,Z),SEmpty)
+             == SOr(X,Y,Bsup,Z))
+    assert(SOr.conversion4(Seq(X,Bsup,Y,Asub,Z),SEmpty)
+             == SOr(X,Bsup,Y,Z))
+
+    // but be careful, if A < B and B < A we DO NOT want to remove both.
+    assert((SOr.conversion4(Seq(Z,SOr(X,Y),SOr(Y,X)),SEmpty)
+      == SOr(Z,SOr(Y,X)))
+             || (SOr.conversion4(Seq(Z,SOr(X,Y),SOr(Y,X)),SEmpty)
+      == SOr(Z,SOr(X,Y))))
+  }
+  test("or conversion3"){
+    trait TraitA
+    trait TraitB
+    trait TraitC
+    trait TraitY
+    class ClassX extends TraitA with TraitB with TraitC with TraitY
+
+    val A = SAtomic(classOf[TraitA])
+    val B = SAtomic(classOf[TraitB])
+    val C = SAtomic(classOf[TraitC])
+    val X = SAtomic(classOf[ClassX])
+    val Y = SAtomic(classOf[TraitY])
+
+    // AXBC + !X = ABC + !X
+    assert(SOr.conversion3(Seq(SAnd(A,X,B,C),SNot(X)), SEmpty)
+           == SOr(SAnd(A,B,C),SNot(X)))
+  }
+  test("or conversion2"){
+    trait TraitA
+    trait TraitB
+    trait TraitC
+    trait TraitY
+    class ClassX extends TraitA with TraitB with TraitC with TraitY
+
+    val A = SAtomic(classOf[TraitA])
+    val B = SAtomic(classOf[TraitB])
+    val C = SAtomic(classOf[TraitC])
+    val X = SAtomic(classOf[ClassX])
+    val Y = SAtomic(classOf[TraitY])
+
+    // A + A!B -> A + B
+    assert(SOr.conversion2(Seq(A,SAnd(SNot(A),B)),SEmpty)
+             == SOr(A,B))
+
+    // A + ABX + Y = (A + Y)
+    assert(SOr.conversion2(Seq(A,SAnd(A,SNot(B),X),Y),SEmpty)
+             == SOr(A,Y))
+
+    //                         A +      A! BX +      Y = (A + BX + Y)
+    assert(SOr.conversion2(Seq(A,SAnd(SNot(A),B,X),Y),SEmpty)
+             == SOr(A,SAnd(B,X),Y))
+
+    // if rule does not apply, the it must return exactly the default
+    assert(SOr.conversion2(Seq(A,B,C),SEmpty) == SEmpty)
+  }
+  test("or conversion1"){
+    trait TraitA
+    trait TraitB
+    trait TraitC
+    trait TraitY
+    class ClassX extends TraitA with TraitB with TraitC with TraitY
+
+    val A = SAtomic(classOf[TraitA])
+    val B = SAtomic(classOf[TraitB])
+    val C = SAtomic(classOf[TraitC])
+    val X = SAtomic(classOf[ClassX])
+    val Y = SAtomic(classOf[TraitY])
+
+    // ABC + A!BC + X -> ABC + AC + X (later -> AC + X)
+    assert(SOr.conversion1(Seq(SAnd(A,B,C),SAnd(A,SNot(B),C),X))
+             == SOr(SAnd(A,B,C),SAnd(A,C),X), "434")
+
+    // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C ->
+    assert(SOr.conversion1(Seq(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(B),SNot(C))))
+             == SOr(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(C))), "438")
+
+    // AB!C + A!BC + A!B!C -> does not reduce to AB!C + A!BC + A
+    assert(SOr.conversion1(Seq(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(B),SNot(C))))
+           == SOr(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(C))))
+
+    // no change sequence
+    // !ABC + A!BC + X -> no change
+    assert(SOr.conversion1(Seq(SAnd(SNot(A),B,C),SAnd(A,SNot(B),C),X))
+             == SOr(SAnd(SNot(A),B,C),SAnd(A,SNot(B),C),X))
+  }
+  test("and conversion1"){
+    // SAnd(SMember(42,43,44), A, B, C)
+    //  ==> SMember(42,44)
+    assert(SAnd.conversion1(Seq(SMember(1,2,3,"hello","world"),SInt),SEmpty)
+           == SMember(1,2,3))
+  }
+  test("and conversion2"){
+    // (and Long (not (member 1 2)) (not (member 2 3 4)))
+    //  --> (and Long (not (member 1 2 3 4)))
+    assert(SAnd.conversion2(Seq(SInt,SNot(SMember(1,2,3)),SNot(SMember(2,3,4))),SEmpty)
+             == SAnd(SInt,SNot(SMember(1,2,3,4))))
+
+    // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
+    assert(SAnd.conversion2(Seq(SInt,SNot(SMember(1,2,3,"a","b")),SNot(SMember(2,3,4))),SEmpty)
+             == SAnd(SInt,SNot(SMember(1,2,3,4))))
+  }
+  test("and conversion3") {
+    // discover a disjoint pair
+    assert(SAnd.conversion3(Seq(SMember(1,2,3),SMember(4,5,6)),STop)
+             == SEmpty)
+    assert(SAnd.conversion3(Seq(SMember(1,2,3),SMember(3,4,5),SMember(4,5,6)),STop)
+             == SEmpty)
+    // else return the default
+    assert(SAnd.conversion3(Seq(SMember(1,2,3),SMember(3,4,5)),STop)
+             == STop)
+  }
+  test("and conversion4"){
+    // (and A B) --> (and A) if  A is subtype of B
+    assert(SAnd.conversion4(Seq(SMember(1,2,3),SMember(1,2)),STop)
+             == SMember(1,2))
+    assert(SAnd.conversion4(Seq(SMember(1,2),SMember(1,2,3)),STop)
+             == SMember(1,2))
+    // (and A B C) --> (and A C) if  A is subtype of B
+    assert(SAnd.conversion4(Seq(SMember(1,2),SMember(1,2,3),SDouble),STop)
+             == SAnd(SMember(1,2),SDouble))
+    assert(SAnd.conversion4(Seq(SDouble,SMember(1,2),SMember(1,2,3)),STop)
+             == SAnd(SDouble,SMember(1,2)))
+  }
+  test("combo conversion1"){
+    // (and) -> STop,  unit=STop,   zero=SEmpty
+    // (or) -> SEmpty, unit=SEmpty,   zero=STop
+    assert(SAnd().conversion1() == STop)
+    assert(SOr().conversion1() == SEmpty)
+    // (and A) -> A
+    // (or A) -> A
+    assert(SAnd(SEql(1)).conversion1() == SEql(1))
+    assert(SOr(SEql(1)).conversion1() == SEql(1))
+
+    assert(SAnd(SEql(1),SEql(2)).conversion1() == SAnd(SEql(1),SEql(2)))
+    assert(SOr(SEql(1),SEql(2)).conversion1() == SOr(SEql(1),SEql(2)))
+  }
+  test("combo conversion2"){
+    // (and A B SEmpty C D) -> SEmpty,  unit=STop,   zero=SEmpty
+    // (or A B STop C D) -> STop,     unit=SEmpty,   zero=STop
+    assert(SAnd(SEql(1),SEql(2),SEmpty,SEql(3),SEql(4)).conversion2()
+             == SEmpty)
+    assert(SOr(SEql(1),SEql(2),STop,SEql(3),SEql(4)).conversion2()
+             == STop)
+  }
+  test("combo conversion3"){
+    // (and A (not A)) --> SEmpty,  unit=STop,   zero=SEmpty
+    // (or A (not A)) --> STop,     unit=SEmpty, zero=STop
+    assert(SAnd(SEql(1),SNot(SEql(1))).conversion3()
+             == SEmpty)
+    assert(SOr(SEql(1),SNot(SEql(1))).conversion3()
+             == STop)
+  }
+  test("combo conversion4"){
+    // SAnd(A,STop,B) ==> SAnd(A,B),  unit=STop,   zero=SEmpty
+    // SOr(A,SEmpty,B) ==> SOr(A,B),  unit=SEmpty, zero=STop
+    assert(SAnd(SEql(1),STop,SEql(2)).conversion4()
+             == SAnd(SEql(1),SEql(2)))
+    assert(SOr(SEql(1),SEmpty,SEql(2)).conversion4()
+             == SOr(SEql(1),SEql(2)))
+  }
+  test("combo conversion5"){
+    // (and A B A C) -> (and A B C)
+    // (or A B A C) -> (or A B C)
+    assert(SAnd(SEql(1),SEql(2),SEql(1),SEql(3)).conversion5()
+             == SAnd(SEql(2),SEql(1),SEql(3)))
+    assert(SOr(SEql(1),SEql(2),SEql(1),SEql(3)).conversion5()
+             == SOr(SEql(2),SEql(1),SEql(3)))
+  }
+  test("combo conversion6"){
+    // (and A (and B C) D) --> (and A B C D)
+    // (or A (or B C) D) --> (or A B C D)
+    val a = SEql(1)
+    val b = SEql(2)
+    val c = SEql(3)
+    val d = SEql(4)
+    assert(SAnd(a,SAnd(b,c),d).conversion6()
+             == SAnd(a,b,c,d))
+    assert(SOr(a,SOr(b,c),d).conversion6()
+             == SOr(a,b,c,d))
+  }
+  test("combo conversion7"){
+
+  }
+  test("combo conversion8"){
+    abstract class ClassA
+    val A = SAtomic(classOf[ClassA])
+    class ClassB extends ClassA
+    val B = SAtomic(classOf[ClassB])
+    // (or A (not B)) --> STop   if B is subtype of A,    zero=STop
+    assert(SOr(A,SNot(B)).conversion8()
+             == STop)
+    assert(SOr(B,SNot(A)).conversion8()
+             == SOr(B,SNot(A)))
+
+    // (and A (not B)) --> SEmpty   if B is supertype of A,   zero=SEmpty
+    assert(SAnd(A,SNot(B)).conversion8()
+             == SAnd(A,SNot(B)))
+    assert(SAnd(B,SNot(A)).conversion8()
+             == SEmpty)
   }
 }

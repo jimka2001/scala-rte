@@ -119,67 +119,10 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   // SAnd(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
-      () => { // SAnd(SMember(42,43,44), A, B, C)
-        //  ==> SMember(42,44)
-        tds.find(memberp) match {
-          case Some(SMember(xs@_*)) =>
-            createMember(xs.filter(typep): _*)
-          case Some(SEql(a)) =>
-            createMember(Seq(a).filter(typep): _*)
-          case _ => this
-        }
-      },
-      () => {
-        // (and Long (not (member 1 2)) (not (member 3 4)))
-        //  --> (and Long (not (member 1 2 3 4)))
-        // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
-
-        val notMembers = tds.filter {
-          case SNot(SMember(_*)) => true
-          case SNot(SEql(_)) => true
-          case _ => false
-        }
-        val others: Seq[SimpleTypeD] = tds.filter {
-          case SNot(SEql(_)) => false
-          case SNot(SMember(_*)) => false
-          case _ => true
-        }
-        if (notMembers.isEmpty)
-          this
-        else {
-          // the intersection type omitting the (not (member ...)
-          val lessStrict = SAnd(others: _*)
-          val newMembers = notMembers.flatMap {
-            case SNot(SMember(xs@_*)) => xs
-            case SNot(e@SEql(_)) => e.xs
-          }
-          val newElements: Seq[Any] = newMembers.filter(x => lessStrict.typep(x))
-          val newNotMember = SNot(SMember(newElements: _*).canonicalize())
-
-          SAnd.createAnd((others ++ Seq(newNotMember)).sortWith(cmpTypeDesignators))
-        }
-      },
-      () => {
-        // TODO this checks n^2 times, need to change to n^2 / 2
-        if (tds.exists(a => tds.exists(b => a.disjoint(b).contains(true))))
-          SEmpty
-        else
-          this
-      },
-      () => {
-        // (and A B C) --> (and A C) if  A is subtype of B
-        tds.find(sub => tds.exists { sup =>
-          ((sub != sup)
-           && sub.subtypep(sup).contains(true))
-        }) match {
-          case None => this
-          case Some(sub) =>
-            // throw away all proper superclasses of sub, i.e., keep everything that is not a superclass
-            // of sub and also keep sub itself.   keep false and dont-know
-            val keep = tds.filter(sup => sup == sub || !sub.subtypep(sup).contains(true))
-            SAnd.createAnd(keep)
-        }
-      },
+      () => { SAnd.conversion1(tds,this) },
+      () => { SAnd.conversion2(tds,this) },
+      () => { SAnd.conversion3(tds,this) },
+      () => { SAnd.conversion4(tds,this) },
       () => { super.canonicalizeOnce(nf)}
       ))
   }
@@ -210,6 +153,71 @@ object SAnd {
       case Seq() => STop
       case Seq(td) => td
       case _ => SAnd(tds: _*)
+    }
+  }
+  def conversion1(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+    val td = SAnd.createAnd(tds)
+
+    // SAnd(SMember(42,43,44), A, B, C)
+    //  ==> SMember(42,44)
+    tds.find(memberp) match {
+      case Some(SMember(xs@_*)) =>
+        createMember(xs.filter(td.typep): _*)
+      case Some(SEql(a)) =>
+        createMember(Seq(a).filter(td.typep): _*)
+      case _ => default
+    }
+  }
+  def conversion2(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+
+    // (and Long (not (member 1 2)) (not (member 3 4)))
+    //  --> (and Long (not (member 1 2 3 4)))
+    // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
+
+    val notMembers = tds.filter {
+      case SNot(SMember(_*)) => true
+      case SNot(SEql(_)) => true
+      case _ => false
+    }
+    val others: Seq[SimpleTypeD] = tds.filter {
+      case SNot(SEql(_)) => false
+      case SNot(SMember(_*)) => false
+      case _ => true
+    }
+    if (notMembers.isEmpty)
+      default
+    else {
+      // the intersection type omitting the (not (member ...)
+      val lessStrict = SAnd(others: _*)
+      val newMembers = notMembers.flatMap {
+        case SNot(SMember(xs@_*)) => xs
+        case SNot(e@SEql(_)) => e.xs
+      }
+      val newElements: Seq[Any] = newMembers.filter(x => lessStrict.typep(x))
+      val newNotMember = SNot(SMember(newElements: _*).canonicalize())
+
+      SAnd.createAnd((others ++ Seq(newNotMember)).sortWith(cmpTypeDesignators))
+    }
+  }
+  def conversion3(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+    // discover a disjoint pair
+    if (tds.tails.exists(ts => ts.nonEmpty && ts.tail.exists(b => b.disjoint(ts.head).contains(true))))
+      SEmpty
+    else
+      default
+  }
+  def conversion4(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+    // (and A B C) --> (and A C) if  A is subtype of B
+    tds.find(sub => tds.exists { sup =>
+      ((sub != sup)
+        && sub.subtypep(sup).contains(true))
+    }) match {
+      case None => default
+      case Some(sub) =>
+        // throw away all proper superclasses of sub, i.e., keep everything that is not a superclass
+        // of sub and also keep sub itself.   keep false and dont-know
+        val keep = tds.filter(sup => sup == sub || !sub.subtypep(sup).contains(true))
+        SAnd.createAnd(keep)
     }
   }
 }

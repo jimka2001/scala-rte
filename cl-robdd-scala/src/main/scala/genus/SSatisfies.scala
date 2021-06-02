@@ -25,11 +25,11 @@ package genus
  *
  * @param f a function taking an object Any and returning a Boolean defining the type
  */
-case class SCustom(f   : Any => Boolean, printable:String) extends SimpleTypeD with TerminalType {
+case class SSatisfies(f   : Any => Boolean, printable:String) extends SimpleTypeD with TerminalType {
   override def typep(a: Any): Boolean = f(a)
 
   override def toString: String = printable + "?"
-  
+
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = super.disjointDown(t)
 
   override protected def inhabitedDown: Option[Boolean] = super.inhabitedDown
@@ -41,6 +41,21 @@ case class SCustom(f   : Any => Boolean, printable:String) extends SimpleTypeD w
   }
 }
 
-object SCustom {
-  def apply(f:Any=>Boolean):SCustom = new SCustom(f,f.toString)
+object SSatisfies {
+  def apply(f:Any=>Boolean):SSatisfies = new SSatisfies(f, f.toString)
+  def intp(a:Any):Boolean = {
+    a match {
+      case _:Int => true
+      case _ => false
+    }
+  }
+  def doublep(a:Any):Boolean = {
+    a match {
+      case _:Double => true
+      case _ => false
+    }
+  }
 }
+
+object SInt extends SSatisfies(SSatisfies.intp,"Int")
+object SDouble extends SSatisfies(SSatisfies.doublep,"Double")

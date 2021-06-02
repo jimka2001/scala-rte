@@ -26,7 +26,71 @@ import org.scalatest.funsuite.AnyFunSuite
 //import rte.RteImplicits._
 
 class AndTestSuite extends AnyFunSuite {
+  test("and test 31"){
+    assert(And(Star(Singleton(SAtomic(classOf[String]))),
+               Rte.sigmaStar).canonicalizeOnce
+             != Rte.sigmaStar)
+    assert(And(Star(Singleton(SAtomic(classOf[String]))),
+               Rte.sigmaStar).canonicalize
+             != Rte.sigmaStar)
+    assert(And(Star(Singleton(SAtomic(classOf[String]))),
+               Not(EmptySet)).canonicalizeOnce
+             != Rte.sigmaStar)
+    assert(And(Star(Singleton(SAtomic(classOf[String]))),
+               Not(EmptySet)).canonicalize
+             != Rte.sigmaStar)
+  }
+  test("canonicalize and 29a"){
+    val I = Singleton(SInt)
+    val S = Singleton(SAtomic(classOf[String]))
+    val X = Singleton(SEql(-1))
+    val Y = Singleton(SEql(1))
+    val ε = EmptyWord
+    import adjuvant.Adjuvant.trace
 
+    val rte4 = Or(And(Or(Cat(Star(S),I),ε),
+                      Cat(Star(S),I)),
+                  And(Or(Cat(Star(S),I),ε),
+                      ε))
+
+    // rte5 = Or(And(Cat(Star(S),I),
+    //               Or(Cat(Star(S),I),
+    //                  ε)),
+    //           And(ε,
+    //               Or(Cat(Star(S),I),
+    //                  ε)))
+    val rte5 = rte4.canonicalizeOnce
+    // rte6 = Or(And(Or(Cat(Star(S),I),
+    //                  ε),
+    //               Cat(Star(S),I)),
+    //           And(Or(Cat(Star(S),I),
+    //                  ε),
+    //               ε))
+    val rte6 = rte5.canonicalizeOnce
+
+    //assert(rte6 != rte4,"line 45")
+    rte6.canonicalize
+  }
+  test("canonicalize and 29b"){
+    // And(Or(Cat((<String>)*,<Int?>),ε),
+    //     Not(Cat((<String>)*,<[= -1]>)),
+    //     Not(Cat((<String>)*,<[= 1]>)),
+    //     Not((<String>)*))
+    val I = Singleton(SInt)
+    val S = Singleton(SAtomic(classOf[String]))
+    val X = Singleton(SEql(-1))
+    val Y = Singleton(SEql(1))
+    val rte1 = And(Or(Cat(Star(S),I), EmptyWord),
+        Not(Cat(Star(S),X)),
+        Not(Cat(Star(S),Y)),
+        Not(Star(S)))
+    import adjuvant.Adjuvant.trace
+    val rte2 = rte1.canonicalizeOnce
+    val rte3 = rte2.canonicalizeOnce
+    val rte4 = rte3.canonicalizeOnce
+    val rte5 = rte4.canonicalizeOnce
+    rte5.canonicalize
+  }
   test("canonicalize and 31"){
     assert(And(Singleton(SEql(0)), Not(Cat(Sigma,Star(Sigma)))).canonicalize != Singleton(SEql(0)))
     assert(And(Singleton(SEql(0)), Not(Cat(Sigma,Star(Sigma)))).canonicalize ~= EmptySet)
@@ -45,6 +109,25 @@ class AndTestSuite extends AnyFunSuite {
 
     assert(And(Singleton(genus.SEql(0)), Sigma).canonicalize == Singleton(genus.SEql(0)))
     assert(And(EmptySet, EmptySet).canonicalize == EmptySet)
+  }
+  test("and 114"){
+    // And(A,B,Or(X,Y,Z),C,D)
+    // --> Or(And(A,B,   X,   C, C)),
+    //        And(A,B,   Y,   C, C)),
+    //        And(A,B,   Z,   C, C)))
+    trait TraitA
+    trait TraitB
+    trait TraitX
+    trait TraitY
+    class ClassA extends TraitX with TraitY with TraitA with TraitB
+
+    val A = Singleton(SAtomic(classOf[TraitA]))
+    val B = Singleton(SAtomic(classOf[TraitB]))
+    val X = Singleton(SAtomic(classOf[TraitX]))
+    val Y = Singleton(SAtomic(classOf[TraitY]))
+
+    assert(And(A,Or(X,Y)).canonicalizeOnce == Or(And(A,X),And(A,Y)))
+    assert(And(A,Or(X,Y),B).canonicalizeOnce == Or(And(A,B,X),And(A,B,Y)))
   }
   test("canonicalize and") {
     class TestSup
@@ -77,11 +160,27 @@ class AndTestSuite extends AnyFunSuite {
       assert(And(r1, trsup, r2, trsub, r3).canonicalize ~= And(r1, r2, trsub, r3).canonicalize)
       assert(And(r1, trsub, r2, trsup, r3).canonicalize ~= And(r1, trsub, r2, r3).canonicalize)
 
-      assert(And(r1, r2, Not(r1), r3).canonicalize ~= EmptySet)
+      assert(And(r1, r2, Not(r1), r3).canonicalize ~= EmptySet,
+             "\nexpecting " +
+               And(r1, r2, Not(r1), r3) +
+               " to reduce to EmptySet" +
+               "\nnot to " + And(r1, r2, Not(r1), r3).canonicalize
+             )
       assert(And(r1, trd1, r2, trd2, r3).canonicalize ~= EmptySet)
     }
   }
+  test("and 149"){
+    val r1 = Singleton(SEql(1))
+    val r2 = Singleton(SEql(2))
+    val r3 = Singleton(SEql(3))
+    val r4 = Singleton(SEql(4))
 
+    val rte0 = And(r1,Or(r2,r3),r4)
+    val rte1 = rte0.canonicalizeOnce
+    val rte2 = rte1.canonicalizeOnce
+    val rte3 = rte2.canonicalizeOnce
+
+  }
   test("canonicalize and 88") {
 
     val r1 = Singleton(SEql(1))
@@ -94,7 +193,10 @@ class AndTestSuite extends AnyFunSuite {
            s"\nr1=$r1  r2=$r2  r3=$r3  r4=$r4" +
              s"\n  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
              "\n And(r1,r2,r4)=" + s" And($r1,$r2,$r4)=" + And(r1, r2, r4).canonicalize +
-             "\n And(r1,r3,r4)=" + s" And($r1,$r3,$r4)=" + And(r1, r3, r4).canonicalize
+             "\n And(r1,r3,r4)=" + s" And($r1,$r3,$r4)=" + And(r1, r3, r4).canonicalize +
+             "\n And(r1,Or(r2,r3),r4)=" + And(r1, Or(r2,r3), r4).canonicalize +
+             "\n Or(And(r1,r2,r4),And(r1,r3,r4))=" + Or(And(r1, r2, r4),
+                                                        And(r1, r3, r4)).canonicalize
            )
 
   }

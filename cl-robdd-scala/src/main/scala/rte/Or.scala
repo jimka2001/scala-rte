@@ -21,6 +21,7 @@
 //
 
 package rte
+import adjuvant.Adjuvant.{trace, uniquify}
 
 case class Or(operands:Seq[Rte]) extends Rte {
   override def toLaTeX: String = "(" + operands.map(_.toLaTeX).mkString("\\vee ") + ")"
@@ -35,8 +36,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
 
   override def canonicalizeOnce: Rte = {
     //println("canonicalizing Or:  " + operands)
-    val betterOperands = operands
-      .distinct
+    val betterOperands = Rte.sortAlphabetically(uniquify(operands))
       .flatMap{
         case EmptySet => Seq()
         case Or(Seq(rs @ _*)) => rs.map(_.canonicalizeOnce)
@@ -132,6 +132,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     else
       Or.createOr(betterOperands)
   }
+
   def derivativeDown(wrt:genus.SimpleTypeD):Rte = Or.createOr(operands.map(rt => rt.derivative(Some(wrt))))
 }
 

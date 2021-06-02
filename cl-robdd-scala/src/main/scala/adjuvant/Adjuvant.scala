@@ -25,6 +25,14 @@ package adjuvant
 import scala.annotation.tailrec
 
 object Adjuvant {
+  def conj[T](it:Iterable[T],obj:T):Iterable[T] = {
+    if(it.isEmpty)
+      throw new Exception(s"cannot conj to empty Iterable, $it")
+    else {
+      val (head,tail) = it.splitAt(1)
+      head.map(_=>obj) ++ head ++ tail
+    }
+  }
   def conj[T](seq: Seq[T], obj: T): Seq[T] = seq match {
     // inspired by the Clojure conj function
     // See https://clojuredocs.org/clojure.core/conj
@@ -63,7 +71,7 @@ object Adjuvant {
               m: Vector[Seq[(L, Int)]]): (Vector[V], Vector[Seq[(L, Int)]]) = {
 
       es match {
-        case (label, v1) :: lvs if !vToInt.contains(v1) =>
+        case (_, v1) :: _ if !vToInt.contains(v1) =>
           // if we are seeing v1 for the first time, then register it
           //   in intToV and in vToInt.
           recur(v, currentStateId, nextAvailableState + 1, es,
@@ -88,15 +96,17 @@ object Adjuvant {
     recur(v0, 0, 1, edges(v0).toList, Vector(v0), Map(v0 -> 0), Vector(s0))
 
   }
-
-  def searchReplace[A](xs: Seq[A], search: A, replace: A): Seq[A] = {
-    xs.map(x => if (search == x) replace else x)
+  def searchReplace[A](xs: Seq[A], search: A, replace: Seq[A]): Seq[A] = {
+    xs.flatMap(x => if (search == x) replace else Seq(x))
+  }
+  def searchReplace[A](seq:Seq[A],search:A,replace:A):Seq[A] = {
+    searchReplace(seq,search,Seq(replace))
   }
 
   def findAdjacent[A](xs: Seq[A], cmp: (A, A) => Boolean): Boolean =
     xs.toList.tails.exists {
       case Nil => false
-      case x :: Nil => false
+      case _ :: Nil => false
       case x1 :: x2 :: _ => cmp(x1, x2)
     }
 
@@ -110,17 +120,19 @@ object Adjuvant {
 
   def fixedPoint[V](value: V, f: V => V, cmp: (V, V) => Boolean): V = {
     @tailrec
-    def recur(value: V): V = {
+    def recur(value: V,history:Set[V]): V = {
       //println("[ fixedPoint: starting with " + value)
       val newValue = f(value)
       //println("] fixedPoint: computed "+ newValue)
       if (cmp(value, newValue))
         value
+      else if(history.contains(newValue))
+        throw new Exception(s"fixedPoint encounted a loop \n    $value \n -> $newValue")
       else
-        recur(newValue)
+        recur(newValue,history+value)
     }
 
-    recur(value)
+    recur(value,Set())
   }
 
   // The memoize method is inspired by
@@ -168,11 +180,42 @@ object Adjuvant {
     }
   }
 
+  def sameElementsAnyOrder[A](seq1:Seq[A],seq2:Seq[A]):Boolean = {
+    seq1.toSet == seq2.toSet
+  }
+
   def trace[A](a: A): A = {
     trace("",a)
   }
   def trace[A](msg:String,a:A):A = {
     println(s"$msg: $a")
     a
+  }
+  def uniquify[A](seq1:Seq[A]):Seq[A] = {
+    @tailrec
+    def recurL(seq:List[A], acc:List[A]):List[A] = {
+      seq match {
+        case Nil => acc.reverse
+        case s :: ss if ss.contains(s) => recurL(ss,acc)
+        case s :: ss => recurL(ss,s::acc)
+      }
+    }
+    @tailrec
+    def recurS(seq:Seq[A], acc:Seq[A]):Seq[A] = {
+      seq match {
+        case Seq() => acc
+        case Seq(s) => acc ++ Seq(s)
+        case s =>
+          val t = s.tail
+          if (t.contains(s.head))
+            recurS(t,acc)
+          else
+            recurS(t,acc ++ Seq(s.head))
+      }
+    }
+    seq1 match {
+      case seq:List[A] => recurL(seq,List())
+      case seq:Seq[A] => recurS(seq,Seq())
+    }
   }
 }

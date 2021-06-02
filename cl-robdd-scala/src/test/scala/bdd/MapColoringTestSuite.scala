@@ -27,9 +27,9 @@ class MapColoringTestSuite extends AnyFunSuite {
   import org.scalactic.source
   override def test(testName: String, testTags: Tag*)(testFun: =>Any)(implicit pos: source.Position):Unit = {
     super.test(testName, testTags :_*){
-      println(s">>> starting $testName")
+      println(s"[ starting $testName")
       testFun
-      println(s"<<< finished $testName")
+      println(s"] finished $testName")
     }
   }
   import MapColoring._
@@ -88,7 +88,7 @@ class MapColoringTestSuite extends AnyFunSuite {
                                           USAgraph.stateUniGraph,
                                           USAgraph.stateBiGraph,
                                           numNodes,
-                                          (n,size)=>println(s"plot $n $size"),
+                                          (n,size)=>println(s"plot $n ${size()}"),
                                           List("AZ","CO","NM","UT"),
                                           1)
 
@@ -100,7 +100,7 @@ class MapColoringTestSuite extends AnyFunSuite {
             count()
           }
         }
-      println(s"How many possible colorizations of the graph of $numNodes nodes = $countSolutions")
+      //println(s"How many possible colorizations of the graph of $numNodes nodes = $countSolutions")
     }
   }
 

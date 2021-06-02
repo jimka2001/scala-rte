@@ -89,91 +89,11 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   // SOr(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
-      () => {
-        // (or (member 1 2 3) (member 2 3 4 5)) --> (member 1 2 3 4 5)
-        // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
-
-        val members = tds.filter(memberp)
-        if (members.size <= 1)
-          this
-        else {
-          val others = tds.filterNot(memberp)
-          val stricter = SOr.createOr(others)
-          val content = members.flatMap{
-            case m:SMemberImpl => m.xs.filterNot(stricter.typep)
-            case _ => Seq()
-          }
-          SOr.createOr(others ++ Seq(createMember(content : _*)))
-        }
-      },
-      () => {
-        // AXBC + !X = ABC + !X
-        tds.find{
-          case SNot(x) => tds.exists{
-            case SAnd(td2s @ _*) => td2s.contains(x)
-            case _ => false
-          }
-          case _ => false
-        } match {
-          case Some(SNot(x)) => SOr.createOr(tds.map{
-            case SAnd(td2s @ _*) => SAnd.createAnd(td2s.filter(_ != x))
-            case a => a
-          })
-          case _ => this
-        }
-      },
-      () => {
-        // if Asub is subtype of Bsup then
-        // SOr(X,Asub,Y,Bsup,Z) --> SOr(X,Y,Bsup,Z)
-        // but be careful, if A < B and B < A we DO NOT want to remove both.
-        val maybeSup = tds.find { sup =>
-          tds.exists { sub =>
-            sub != sup &&
-              sub.subtypep(sup).contains(true)
-          }
-        }
-        maybeSup match {
-          case None => this
-          // if there is a super type somewhere in the sequence
-          //    then remove all sub types EXCEPT the super type itself
-          case _ => SOr.createOr(tds.flatMap { sub =>
-            if (maybeSup.contains(sub))
-              Seq(sub)
-            else if ( maybeSup.flatMap(sub.subtypep).contains(true))
-              Seq()
-            else
-              Seq(sub)
-          })
-        }
-      },
-      () => {
-        // A + A!B -> A + B
-        // A + A!BX + Y = (A + BX + Y)
-        // A + ABX + Y = (A + Y)
-
-        // TODO need to look at these relations if A < B or B < A,
-        //  I'm not yet sure what will happen, but I think there are some simplifications to be made
-        val ao = tds.find(a =>
-                            tds.exists {
-                              case SAnd(td2s@_*) =>
-                                td2s.exists {
-                                  case SNot(b) if a == b => true
-                                  case b if a == b => true
-                                  case _ => false
-                                }
-                              case _ => false
-                            })
-        ao match {
-          case None => this
-          case Some(a) => // remove SNot(a) from every intersection, and if a is in intersection, replace with SEmpty
-            SOr.createOr(
-              tds.flatMap {
-                case SAnd(tds@_*) if tds.contains(a) => Seq()
-                case SAnd(tds@_*) if tds.contains(SNot(a)) => Seq(SAnd.createAnd(tds.filterNot(_ == SNot(a))))
-                case b => Seq(b)
-              })
-        }
-      },
+      () => { SOr.conversion5(tds,this) },
+      () => { SOr.conversion3(tds,this) },
+      () => { SOr.conversion4(tds,this) },
+      () => { SOr.conversion1(tds) },
+      () => { SOr.conversion2(tds,this) },
       () => { super.canonicalizeOnce(nf)}
       ))
   }
@@ -204,6 +124,120 @@ object SOr {
       case Seq() => SEmpty
       case Seq(td) => td
       case _ => SOr(tds: _*)
+    }
+  }
+
+  def conversion1(tds:Seq[SimpleTypeD]):SimpleTypeD = {
+    // TODO, this should be generalized to work for SAnd and SOr
+    // ABC + A!BC + X -> ABC + AC + X (later -> AC + X)
+    // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C ->
+    // AB!C + A!BC + A!B!C -> does not reduce to AB!C + A!BC + A
+    import adjuvant.Adjuvant.searchReplace
+    val ands = tds.collect{ case td@SAnd(_*) => td}
+    val orArgs = tds.map{
+      // A!BC -> AC
+      // ABC -> ABC
+      // X -> X
+      case td1@SAnd(andArgs@ _*) =>
+        // A!BC -> AC
+        // ABC -> ABC
+
+        val toRemove = andArgs.collectFirst{
+          case td@SNot(n) if ands.exists{
+            case SAnd(tds@_*) => tds == searchReplace(andArgs,td,Seq(n))
+          } => td
+        } // Some(!B) or None
+        toRemove match {
+          case None => td1
+          case Some(td) => SAnd.createAnd(andArgs.filterNot(_ == td))
+        }
+      case td => td // X -> X
+    }
+    SOr.createOr(orArgs)
+  }
+  def conversion2(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+    // A + A! B -> A + B
+    // A + A! BX + Y = (A + BX + Y)
+    // A + ABX + Y = (A + Y)
+
+    // TODO need to look at these relations if A < B or B < A,
+    //  I'm not yet sure what will happen, but I think there are some simplifications to be made
+    val ao = tds.find(a =>
+                        tds.exists {
+                          case SAnd(td2s@_*) =>
+                            td2s.exists {
+                              case SNot(b) if a == b => true
+                              case b if a == b => true
+                              case _ => false
+                            }
+                          case _ => false
+                        })
+    ao match {
+      case None => default
+      case Some(a) => // remove SNot(a) from every intersection, and if a is in intersection, replace with SEmpty
+        SOr.createOr(
+          tds.flatMap {
+            case SAnd(tds@_*) if tds.contains(a) => Seq()
+            case SAnd(tds@_*) if tds.contains(SNot(a)) => Seq(SAnd.createAnd(tds.filterNot(_ == SNot(a))))
+            case b => Seq(b)
+          })
+    }
+  }
+  def conversion3(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+    // AXBC + !X = ABC + !X
+    tds.find{
+      case SNot(x) => tds.exists{
+        case SAnd(td2s @ _*) => td2s.contains(x)
+        case _ => false
+      }
+      case _ => false
+    } match {
+      case Some(SNot(x)) => SOr.createOr(tds.map{
+        case SAnd(td2s @ _*) => SAnd.createAnd(td2s.filter(_ != x))
+        case a => a
+      })
+      case _ => default
+    }
+  }
+  def conversion4(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+    // if Asub is subtype of Bsup then
+    // SOr(X,Asub,Y,Bsup,Z) --> SOr(X,Y,Bsup,Z)
+    // but be careful, if A < B and B < A we DO NOT want to remove both.
+    val maybeSup = tds.find { sup =>
+      tds.exists { sub =>
+        sub != sup &&
+          sub.subtypep(sup).contains(true)
+      }
+    }
+    maybeSup match {
+      case None => default
+      // if there is a super type somewhere in the sequence
+      //    then remove all sub types EXCEPT the super type itself
+      case _ => SOr.createOr(tds.flatMap { sub =>
+        if (maybeSup.contains(sub))
+          Seq(sub)
+        else if ( maybeSup.flatMap(sub.subtypep).contains(true))
+          Seq()
+        else
+          Seq(sub)
+      })
+    }
+  }
+  def conversion5(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
+    // (or (member 1 2 3) (member 2 3 4 5)) --> (member 1 2 3 4 5)
+    // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
+
+    val members = tds.filter(memberp)
+    if (members.size <= 1)
+      default
+    else {
+      val others = tds.filterNot(memberp)
+      val stricter = SOr.createOr(others)
+      val content = adjuvant.Adjuvant.uniquify(members.flatMap{
+        case m:SMemberImpl => m.xs.filterNot(stricter.typep)
+        case _ => Seq()
+      })
+      SOr.createOr(others ++ Seq(createMember(content : _*)))
     }
   }
 }

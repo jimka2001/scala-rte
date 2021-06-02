@@ -24,6 +24,10 @@ package rte
 
 import genus.SimpleTypeD
 import adjuvant.Adjuvant._
+import xymbolyco.GraphViz.dfaView
+import xymbolyco.Minimize.trim
+
+import scala.annotation.tailrec
 
 abstract class Rte {
   def |(r: Rte): Rte = Or(this, r)
@@ -68,11 +72,13 @@ abstract class Rte {
   def canonicalizeOnce:Rte = this
 
   def derivative(wrt:Option[SimpleTypeD]):Rte = {
-    (wrt match {
+    val raw = wrt match {
       case None => this
       case Some(td) if td.inhabited.contains(false) => EmptySet
       case Some(td) => derivativeDown(td)
-    }).canonicalize
+    }
+    val can = raw.canonicalize
+    can
   }
   def derivativeDown(wrt:SimpleTypeD):Rte
 
@@ -80,22 +86,23 @@ abstract class Rte {
     import adjuvant.Adjuvant.traceGraph
 
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
-      genus.Types.mdtd(rt.firstTypes)
-        .map(td => (td,
-          try rt.derivative(Some(td))
-          catch {
-            case e: CannotComputeDerivative =>
-              throw new CannotComputeDerivatives(msg=Seq(s"when generating derivatives from $this",
-                                                         "when computing edges of " + rt,
-                                                         s"  which canonicalizes to " + this.canonicalize,
-                                                         s"  computing derivative of ${e.rte}",
-                                                         s"  wrt=${e.wrt}",
-                                                         "  derivatives() reported: " + e.msg).mkString("\n"),
-                                                 rte=this,
-                                                 firstTypes = rt.firstTypes,
-                                                 mdtd = genus.Types.mdtd(rt.firstTypes)
-                                         )
-          }))
+      val fts = rt.firstTypes
+      val wrts = genus.Types.mdtd(fts)
+      wrts.map(td => (td,
+        try rt.derivative(Some(td))
+        catch {
+          case e: CannotComputeDerivative =>
+            throw new CannotComputeDerivatives(msg=Seq(s"when generating derivatives from $this",
+                                                       "when computing edges of " + rt,
+                                                       s"  which canonicalizes to " + this.canonicalize,
+                                                       s"  computing derivative of ${e.rte}",
+                                                       s"  wrt=${e.wrt}",
+                                                       "  derivatives() reported: " + e.msg).mkString("\n"),
+                                               rte=this,
+                                               firstTypes = rt.firstTypes,
+                                               mdtd = genus.Types.mdtd(rt.firstTypes)
+                                               )
+        }))
     }
 
     traceGraph(this,edges)
@@ -104,6 +111,9 @@ abstract class Rte {
   import xymbolyco.Dfa
 
   def toDfa():Dfa[Any,SimpleTypeD,Boolean] = {
+    toDfa(true)
+  }
+  def toDfa[E](exitValue:E):Dfa[Any,SimpleTypeD,E] = {
     val (rtes,edges) = try {
       derivatives()
     }
@@ -116,10 +126,9 @@ abstract class Rte {
                                            e.msg).mkString("\n"),
                                    rte=this)
     }
-
     val qids = rtes.indices.toSet
     val fids = qids.filter(i => rtes(i).nullable)
-    val fmap = fids.map{i => i -> true}.toMap
+    val fmap = fids.map{i => i -> exitValue}.toMap
     new Dfa(Qids=qids,
             q0id=0,
             Fids=fids,
@@ -206,6 +215,68 @@ object Rte {
     (0 until maxCompoundSize).map { _ => randomRte(depth) }
   }
 
+  def rteCase[E](seq:Seq[(Rte,E)]):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
+    @tailrec
+    def excludePrevious(remaining:List[(Rte,E)], previous:List[Rte], acc:List[(Rte,E)]):Seq[(Rte,E)] = {
+      remaining match {
+        case Nil => acc.toSeq
+        case (rte,e)::pairs =>
+          val excluded = And(rte,Not(Or.createOr(previous)))
+          excludePrevious(pairs,
+                          rte::previous,
+                          (excluded.canonicalize,e)::acc)
+      }
+    }
+
+    def funnyFold[X,Y](seq:Seq[X],f:X=>Y,g:(Y,Y)=>Y):Y = {
+      assert(seq.nonEmpty)
+      seq.tail.foldLeft(f(seq.head))((acc,x) => g(acc,f(x)))
+    }
+    def f(pair:(Rte,E)):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
+      val (rte,e) = pair
+      val dfa = rte.toDfa(e)
+
+      dfa
+    }
+    val disjoint:Seq[(Rte,E)] = excludePrevious(seq.toList,List(),List())
+    funnyFold[(Rte,E),xymbolyco.Dfa[Any,SimpleTypeD,E]](disjoint,f,dfaUnion)
+  }
+
+
+  def intersectLabels(td1:SimpleTypeD,td2:SimpleTypeD):Option[SimpleTypeD] = {
+    val comb = genus.SAnd(td1,td2).canonicalize()
+    comb.inhabited match {
+      case Some(false) => None
+      case _ => Some(comb)
+    }
+  }
+  def combineFmap[E](e1:Option[E],e2:Option[E]):Option[E] = {
+    (e1,e2) match {
+      case (None,None) => None
+      case (Some(b),Some(c)) if c == b => Some(b)
+      case (Some(b),Some(c)) => {
+        println(s"warning loosing value $c, using $b")
+        Some(b) // f-value of dfa1 has precedence over dfa2
+      }
+      case (Some(b),None) => Some(b)
+      case (None,Some(b)) => Some(b)
+    }
+  }
+
+  def dfaUnion[E](dfa1:xymbolyco.Dfa[Any,SimpleTypeD,E],
+                  dfa2:xymbolyco.Dfa[Any,SimpleTypeD,E]):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
+    import xymbolyco.Minimize.sxp
+
+    val dfa = sxp[Any,SimpleTypeD,E](dfa1,dfa2,
+                                     intersectLabels, // (L,L)=>Option[L],
+                                     (a:Boolean,b:Boolean) => a || b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+                                     combineFmap //:(E,E)=>E
+                                     )
+    dfa
+  }
+  def sortAlphabetically(seq:Seq[Rte]):Seq[Rte] = {
+    seq.sortBy(_.toString)
+  }
   def randomRte(depth: Int): Rte = {
     import scala.util.Random
     val random = new Random
@@ -242,7 +313,6 @@ object sanityTest2 {
          rt = Rte.randomRte(depth)
          } {
       rt.toDfa()
-      //dfaView(sdfa, abbreviateTransitions=true)
     }
   }
 }
