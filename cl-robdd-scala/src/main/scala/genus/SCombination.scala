@@ -30,18 +30,23 @@ import NormalForm._
 // out means replacing SEmpty with STop, or vice versa, and
 // replacing subtypep with supertypep, etc.
 abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
-  def create(tds:Seq[SimpleTypeD]):SimpleTypeD
-  def createDual(tds:Seq[SimpleTypeD]):SimpleTypeD
-  val unit:SimpleTypeD
-  val zero:SimpleTypeD
+  def create(tds: Seq[SimpleTypeD]): SimpleTypeD
+
+  def createDual(tds: Seq[SimpleTypeD]): SimpleTypeD
+
+  val unit: SimpleTypeD
+  val zero: SimpleTypeD
+
   // TODO, not sure what is the correct name for this function.
   //   it is the method which is b.subtypep(a) for SOr  equiv a.supertypep(b)
   //                         and a.subtypep(b) for SAnd equiv b.supertypep(a)
-  def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean]
-  def sameCombination(td:SimpleTypeD):Boolean = false
-  def dualCombination(td:SimpleTypeD):Boolean = false
+  def annihilator(a: SimpleTypeD, b: SimpleTypeD): Option[Boolean]
 
-  def conversion1():SimpleTypeD = {
+  def sameCombination(td: SimpleTypeD): Boolean = false
+
+  def dualCombination(td: SimpleTypeD): Boolean = false
+
+  def conversion1(): SimpleTypeD = {
     if (tds.isEmpty) {
       // (and) -> STop,  unit=STop,   zero=SEmpty
       // (or) -> SEmpty, unit=SEmpty,   zero=STop
@@ -53,7 +58,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     else
       this
   }
-  def conversion2():SimpleTypeD = {
+
+  def conversion2(): SimpleTypeD = {
     // (and A B SEmpty C D) -> SEmpty,  unit=STop,   zero=SEmpty
     // (or A B STop C D) -> STop,     unit=SEmpty,   zero=STop
     if (tds.contains(zero))
@@ -61,7 +67,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     else
       this
   }
-  def conversion3():SimpleTypeD = {
+
+  def conversion3(): SimpleTypeD = {
     // (and A (not A)) --> SEmpty,  unit=STop,   zero=SEmpty
     // (or A (not A)) --> STop,     unit=SEmpty, zero=STop
     if (tds.exists(td => tds.contains(SNot(td))))
@@ -69,7 +76,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     else
       this
   }
-  def conversion4():SimpleTypeD = {
+
+  def conversion4(): SimpleTypeD = {
     // SAnd(A,STop,B) ==> SAnd(A,B),  unit=STop,   zero=SEmpty
     // SOr(A,SEmpty,B) ==> SOr(A,B),  unit=SEmpty, zero=STop
     if (tds.contains(unit))
@@ -77,24 +85,27 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     else
       this
   }
-  def conversion5():SimpleTypeD = {
+
+  def conversion5(): SimpleTypeD = {
     // (and A B A C) -> (and A B C)
     // (or A B A C) -> (or A B C)
     create(adjuvant.Adjuvant.uniquify(tds))
   }
-  def conversion6():SimpleTypeD = {
+
+  def conversion6(): SimpleTypeD = {
     // (and A (and B C) D) --> (and A B C D)
     // (or A (or B C) D) --> (or A B C D)
     if (!tds.exists(sameCombination))
       this
     else {
       create(tds.flatMap {
-        case td:SCombination if sameCombination(td) => td.tds
+        case td: SCombination if sameCombination(td) => td.tds
         case x => Seq(x)
       })
     }
   }
-  def conversion7(nf:Option[NormalForm]):SimpleTypeD = {
+
+  def conversion7(nf: Option[NormalForm]): SimpleTypeD = {
     val i2 = create(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf))
                       .sortWith(cmpTypeDesignators))
       .maybeDnf(nf).maybeCnf(nf)
@@ -104,34 +115,37 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       i2
     }
   }
-  def conversion8():SimpleTypeD = {
+
+  def conversion8(): SimpleTypeD = {
     // (or A (not B)) --> STop   if B is subtype of A,    zero=STop
     // (and A (not B)) --> SEmpty   if B is supertype of A,   zero=SEmpty
-    tds.find{a => tds.exists{
-      case SNot(b) if annihilator(a,b).contains(true) => true
-      case _ => false
-    }} match {
+    tds.find { a =>
+      tds.exists {
+        case SNot(b) if annihilator(a, b).contains(true) => true
+        case _ => false
+      }
+    } match {
       case None => this
       case Some(_) => zero
     }
   }
 
-  def conversion9():SimpleTypeD = {
+  def conversion9(): SimpleTypeD = {
     // (A+B+C)(A+!B+C)(X) -> (A+B+C)(A+C)(X)  (later -> (A+C)(X))
     // (A+B+!C)(A+!B+C)(A+!B+!C) -> (A+B+!C)(A+!B+C)(A+!C) ->
     // (A+B+!C)(A+!B+C)(A+!B+!C) -> does not reduce to (A+B+!C)(A+!B+C)(A)
     import adjuvant.Adjuvant.searchReplace
-    val duals = tds.collect{ case td:SCombination if dualCombination(td)=> td}
-    val outerArgs = tds.map{
+    val duals = tds.collect { case td: SCombination if dualCombination(td) => td }
+    val outerArgs = tds.map {
       // A+!B+C -> A+C
       // A+B+C -> A+B+C
       // X -> X
-      case td1:SCombination if dualCombination(td1) =>
+      case td1: SCombination if dualCombination(td1) =>
         // A+!B+C -> A+C
         // A+B+C -> A+B+C
-        val toRemove = td1.tds.collectFirst{
-          case td@SNot(n) if duals.exists{
-            case td2:SCombination if dualCombination(td2) => td2.tds == searchReplace(td1.tds,td,Seq(n))
+        val toRemove = td1.tds.collectFirst {
+          case td@SNot(n) if duals.exists {
+            case td2: SCombination if dualCombination(td2) => td2.tds == searchReplace(td1.tds, td, Seq(n))
           } => td
         } // Some(!B) or None
         toRemove match {
@@ -142,21 +156,23 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     }
     create(outerArgs)
   }
-  def conversion10():SimpleTypeD = {
+
+  def conversion10(): SimpleTypeD = {
     // (and A B C) --> (and A C) if  A is subtype of B
     tds.find(sub => tds.exists { sup =>
       ((sub != sup)
-        && annihilator(sub,sup).contains(true))
+        && annihilator(sub, sup).contains(true))
     }) match {
       case None => this
       case Some(sub) =>
         // throw away all proper superclasses of sub, i.e., keep everything that is not a superclass
         // of sub and also keep sub itself.   keep false and dont-know
-        val keep = tds.filter(sup => sup == sub || !annihilator(sub,sup).contains(true))
+        val keep = tds.filter(sup => sup == sub || !annihilator(sub, sup).contains(true))
         create(keep)
     }
   }
-  def conversion11():SimpleTypeD = {
+
+  def conversion11(): SimpleTypeD = {
 
     // A + A! B -> A + B
     // A + A! BX + Y = (A + BX + Y)
@@ -166,7 +182,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     //  I'm not yet sure what will happen, but I think there are some simplifications to be made
     val ao = tds.find(a =>
                         tds.exists {
-                          case td:SCombination if dualCombination(td) =>
+                          case td: SCombination if dualCombination(td) =>
                             td.tds.exists {
                               case SNot(b) if a == b => true
                               case b if a == b => true
@@ -179,15 +195,33 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       case Some(a) =>
         create(
           tds.flatMap {
-            case td:SCombination if sameCombination(td) => Seq(td)
-            case td:SCombination if td.tds.contains(a) => Seq()
-            case td:SCombination if td.tds.contains(SNot(a)) => Seq(createDual(td.tds.filterNot(_ == SNot(a))))
+            case td: SCombination if sameCombination(td) => Seq(td)
+            case td: SCombination if td.tds.contains(a) => Seq()
+            case td: SCombination if td.tds.contains(SNot(a)) => Seq(createDual(td.tds.filterNot(_ == SNot(a))))
             case b => Seq(b)
           })
     }
   }
+
+  def conversion12(): SimpleTypeD = {
+    // AXBC + !X = ABC + !X
+    tds.find {
+      case SNot(x) => tds.exists {
+        case td: SCombination if dualCombination(td) => td.tds.contains(x)
+        case _ => false
+      }
+      case _ => false
+    } match {
+      case Some(SNot(x)) => create(tds.map {
+        case td: SCombination if dualCombination(td) => createDual(td.tds.filter(_ != x))
+        case a => a
+      })
+      case _ => this
+    }
+  }
+
   // SCombination(tds: SimpleTypeD*)
-  override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
+  override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
       () => { conversion1() },
       () => { conversion2() },
@@ -199,16 +233,18 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       () => { conversion8() },
       () => { conversion9() },
       () => { conversion10() },
-      () => { conversion11() }
+      () => { conversion11() },
+      () => { conversion12() }
       ))
   }
+
   // SCombination(tds: SimpleTypeD*)
-  override def cmpToSameClassObj(td:SimpleTypeD):Boolean = {
+  override def cmpToSameClassObj(td: SimpleTypeD): Boolean = {
     // this method is only called if td and this have exactly the same class
     if (this == td)
       false // sortWith requires returning false if A not < B, including the case that A == B.
     else td match {
-      case sc:SCombination => compareSequence(this.tds,sc.tds)
+      case sc: SCombination => compareSequence(this.tds, sc.tds)
       case _ => super.cmpToSameClassObj(td) // throws an exception
     }
   }

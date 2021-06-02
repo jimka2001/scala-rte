@@ -193,7 +193,6 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SOr(SAnd(A, classOf[X], B, C), SNot(classOf[X])).canonicalize()
            == SOr(SAnd(A, B, C), SNot(classOf[X])).canonicalize())
 
-
     assert(SEql(1).subtypep(classOf[java.lang.Integer]).contains(true))
     assert(SOr(classOf[java.lang.Integer], SNot(SEql(1))).canonicalize()
            == STop)
@@ -434,7 +433,7 @@ class GenusCanonicalize extends AnyFunSuite {
 
   }
 
-  test("or conversion2"){
+  test("combo conversion12"){
     trait TraitA
     trait TraitB
     trait TraitC
@@ -448,8 +447,12 @@ class GenusCanonicalize extends AnyFunSuite {
     val Y = SAtomic(classOf[TraitY])
 
     // AXBC + !X = ABC + !X
-    assert(SOr.conversion2(Seq(SAnd(A, X, B, C), SNot(X)), SEmpty)
-           == SOr(SAnd(A,B,C),SNot(X)))
+    assert(SOr(SAnd(A, X, B, C), SNot(X)).conversion12()
+             == SOr(SAnd(A,B,C),SNot(X)))
+
+    // (A+X+B+C)!X = (A+B+C)!X
+    assert(SAnd(SOr(A, X, B, C), SNot(X)).conversion12()
+             == SAnd(SOr(A,B,C),SNot(X)))
   }
   test("combo conversion11"){
     trait TraitA

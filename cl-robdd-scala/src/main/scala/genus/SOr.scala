@@ -91,7 +91,6 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
       () => { SOr.conversion1(tds, this) },
-      () => { SOr.conversion2(tds, this) },
       () => { super.canonicalizeOnce(nf)}
       ))
   }
@@ -122,24 +121,6 @@ object SOr {
       case Seq() => SEmpty
       case Seq(td) => td
       case _ => SOr(tds: _*)
-    }
-  }
-
-
-  def conversion2(tds:Seq[SimpleTypeD], default:SimpleTypeD):SimpleTypeD = {
-    // AXBC + !X = ABC + !X
-    tds.find{
-      case SNot(x) => tds.exists{
-        case SAnd(td2s @ _*) => td2s.contains(x)
-        case _ => false
-      }
-      case _ => false
-    } match {
-      case Some(SNot(x)) => SOr.createOr(tds.map{
-        case SAnd(td2s @ _*) => SAnd.createAnd(td2s.filter(_ != x))
-        case a => a
-      })
-      case _ => default
     }
   }
 
