@@ -298,7 +298,7 @@ object MapColoring {
                    (gcCounts, 1.0, false,
                      "GC count for Map 4-coloring",
                      "GC count",
-                     "gc-count "),
+                     "gc-count"),
                    (gcTimes, 1.0, true,
                      "GC time for map 4-coloring",
                      "GC time (ms)",
@@ -329,7 +329,8 @@ object MapColoring {
         yAxisLabel = yAxisLabel,
         yLog = yLog,
         grid = true,
-        outputFileBaseName = s"$baseName-$numNodes-4-color-$outputFileBaseName"
+        outputFileBaseName = s"$baseName-$numNodes-4-color-$outputFileBaseName",
+        verbose=verbose
         )
     }
     retain
@@ -337,7 +338,7 @@ object MapColoring {
 
   def usMapColoringTest(numRegions:Int,verbose:Boolean): Int = {
     import USAgraph._
-    biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols)
+    biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols,verbose=verbose)
     val colors = colorizeMap(numRegions, "US", "ME",
                              stateUniGraph, // removeStates(List("Russia"), stateUniGraph),
                              stateBiGraph, //removeStates(List("Russia"), stateBiGraph),
@@ -345,20 +346,22 @@ object MapColoring {
                              false)
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions-colors"
                  )(symbols = symbols,
-                   colors = { st => colors.getOrElse(st, "no-color") })
+                   colors = { st => colors.getOrElse(st, "no-color") },verbose=verbose)
   }
 
   def europeMapColoringTest(numRegions:Int,verbose:Boolean): Int = {
     import EuropeGraph._
-    biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions")(symbols = symbols)
+    biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions"
+                 )(symbols = symbols,verbose=verbose)
     val colors = colorizeMap(numRegions, "europe", "Russia",
                              stateUniGraph, //removeStates(List("Russia"), stateUniGraph),
                              stateBiGraph, // removeStates(List("Russia"), stateBiGraph),
                              List("Croatia", "Bosnia", "Serbia", "Montenegro"),
-                             false)
+                             verbose)
     biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions-colors"
                  )(symbols = symbols,
-                   colors = { st => colors.getOrElse(st, "no-color") })
+                   colors = { st => colors.getOrElse(st, "no-color") },
+                   verbose = verbose)
   }
 
   def main(argv: Array[String]): Unit = {

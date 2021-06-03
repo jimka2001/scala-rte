@@ -51,7 +51,7 @@ class MapColoringTestSuite extends AnyFunSuite {
                                            uniDirectionalGraph,
                                            biDirectionalGraph,
                                            4,
-                                           (n,size)=>println(s"plot $n ${size()}"),
+                                           (_,_)=>(),
                                            List(),
                                            1,
                                            verbose=false)
@@ -74,42 +74,46 @@ class MapColoringTestSuite extends AnyFunSuite {
   }
 
   test("europe"){
-    europeMapColoringTest(12,false)
+    europeMapColoringTest(12, verbose = false)
   }
 
   test("usa"){
     colorizeMap(20, "test-us", "AL",
-                USAgraph.stateUniGraph,USAgraph.stateBiGraph,List("MS","AL","TN"),
-                false)
+                USAgraph.stateUniGraph, USAgraph.stateBiGraph, List("MS","AL","TN"),
+                verbose = false)
   }
   def sanityCheck(numNodes:Int,verbose:Boolean):Unit = {
     import adjuvant.Accumulators._
     Bdd.withNewBddHash {
       //val (states, subGraph) = findSubGraph("AL", numNodes)
-      val (_colorization,bdd) = graphToBdd(List("CA"),
-                                          USAgraph.stateUniGraph,
-                                          USAgraph.stateBiGraph,
-                                          numNodes,
-                                          (n,size)=>(if (verbose) println(s"plot $n ${size()}")),
-                                          List("AZ","CO","NM","UT"),
-                                          1,
+      val (colorization,bdd) = graphToBdd(List("CA"),
+                                           USAgraph.stateUniGraph,
+                                           USAgraph.stateBiGraph,
+                                           numNodes,
+                                          (n,size)=> if (verbose) println(s"plot $n ${size()}"),
+                                           List("AZ","CO","NM","UT"),
+                                           1,
                                            verbose=verbose)
 
-      //println(s"colors=$colorization")
+      if (verbose) println(s"colors=$colorization")
       val countSolutions =
         withCounter { count =>
-          bdd.visitSatisfyingAssignments { (_assignTrue:Assignment,assignFalse:Assignment) =>
-            //println(s"   color assignment="+ assignColors(colorization,assign,Array("red","green","blue","yellow")))
+          bdd.visitSatisfyingAssignments { (assignTrue:Assignment,assignFalse:Assignment) =>
+            if (verbose)
+              println(s"   color assignment="+ assignColors(colorization,
+                                                            assignTrue,assignFalse,
+                                                            Array("red","green","blue","yellow")))
             count()
           }
         }
-      //println(s"How many possible colorizations of the graph of $numNodes nodes = $countSolutions")
+      if (verbose)
+        println(s"How many possible colorizations of the graph of $numNodes nodes = $countSolutions")
     }
   }
 
   test("sanity") {
-    sanityCheck(4,false)
-    sanityCheck(5,false)
-    sanityCheck(10,false)
+    sanityCheck(4, verbose = false)
+    sanityCheck(5, verbose = false)
+    sanityCheck(10, verbose = false)
   }
 }

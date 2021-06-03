@@ -40,17 +40,17 @@ object RationalFoldTest {
     println(s"$name: Elapsed time: $elapsed ms")
     elapsed
   }
-  def rationalFoldTest():Unit = {
+  def rationalFoldTest(verbose:Boolean):Unit = {
     val bounds = List(5, 10, 15, 20, 25, 30, 40, 45, 50, 55, 60, 70, 80, 90, 95
                       , 100, 125, 150, 175, 200, 300, 400, 500, 750
                       , 1000, 2000, 3000, 4000, 5000, 7500
                       , 10000
                       )
 
-    rationalFoldTest(bounds=bounds,randomize=true)
-    rationalFoldTest(bounds=bounds,randomize=false)
+    rationalFoldTest(bounds=bounds,randomize=true,verbose=verbose)
+    rationalFoldTest(bounds=bounds,randomize=false,verbose=verbose)
   }
-  def rationalFoldTest(maxBound:Int):Unit = {
+  def rationalFoldTest(maxBound:Int,verbose:Boolean):Unit = {
     require(maxBound >= 10)
     val bases = List(10, 12, 15, 20, 25, 30, 40, 45, 50, 55, 60, 70, 80, 90)
     val bounds = for {
@@ -59,10 +59,10 @@ object RationalFoldTest {
       candidate = (base * math.pow(10.0, exp.toDouble)).toInt
       if candidate <= maxBound
     } yield candidate
-    rationalFoldTest(bounds.toList,randomize=true)
-    rationalFoldTest(bounds.toList,randomize=false)
+    rationalFoldTest(bounds.toList,randomize=true,verbose=verbose)
+    rationalFoldTest(bounds.toList,randomize=false,verbose=verbose)
   }
-  def rationalFoldTest(bounds:List[Int],randomize:Boolean):Unit = {
+  def rationalFoldTest(bounds:List[Int],randomize:Boolean,verbose:Boolean):Unit = {
     import spire.implicits._
     import spire.math._
     import treereduce.TreeParallelReduce._
@@ -111,10 +111,11 @@ object RationalFoldTest {
       xAxisLabel = "Number of terms (density)", xLog = true,
       yAxisLabel = "Time (ms)", yLog = true,
       grid = true,
-      outputFileBaseName = "rational-addition" + (if (randomize) "-random" else ""))
+      outputFileBaseName = "rational-addition" + (if (randomize) "-random" else ""),
+      verbose = verbose)
   }
 
   def main(argv:Array[String]):Unit = {
-    rationalFoldTest(5000)
+    rationalFoldTest(5000,true)
   }
 }
