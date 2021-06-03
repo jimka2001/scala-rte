@@ -203,7 +203,7 @@ object EuropeGraph extends PoliticalMap {
     println("-------------------")
     for{ (st,states) <- stateBiGraph}
       println(s"$st -> $states")
-    biGraphToDot(stateBiGraph,statePositions,"europe-political")(symbols=symbols)
+    biGraphToDot(stateBiGraph,statePositions,"europe-political")(symbols=symbols,verbose=true)
     ()
   }
 }

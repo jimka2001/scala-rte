@@ -138,14 +138,17 @@ object ReducePerf {
                        //,("  mixedReduce", bdd.DimacsMixedReduce.dnfToBdd _)
                        )
 
-  def testLimitedBddConstruction():Unit = {
+  def testLimitedBddConstruction(verbose:Boolean):Unit = {
     testLimitedBddConstruction(maxNumBits = 4,
                                numVars = 30,
                                maxNumTerms = 200,
                                numTermsStep = 3,
-                               timeOutMinutes = 45)
+                               timeOutMinutes = 45,
+                               verbose=verbose)
   }
-  def testLimitedBddConstruction(maxNumBits:Int,numVars:Int,maxNumTerms:Int,numTermsStep:Int,timeOutMinutes:Int): Unit = {
+  def testLimitedBddConstruction(maxNumBits:Int,numVars:Int,
+                                 maxNumTerms:Int,numTermsStep:Int,
+                                 timeOutMinutes:Int,verbose:Boolean): Unit = {
     require (maxNumTerms > 10)
     require (numTermsStep > 1)
     require (timeOutMinutes > 1)
@@ -202,19 +205,21 @@ object ReducePerf {
               comment=s"Fold Strategy $label_y Performance of n=$numVars bits=$maxNumBits",
               xAxisLabel="Number of terms (density)",
               yAxisLabel=label_y,
-              outputFileBaseName=baseName)
+              outputFileBaseName=baseName,
+              verbose=verbose)
     }
   }
 
-  def testNumBitsConstruction():Unit = {
+  def testNumBitsConstruction(verbose:Boolean):Unit = {
     testNumBitsConstruction(numVars = 30,
                             maxNumTerms = 200,
                             numDnfs = 10,
-                            maxNumLiteralsPerTerm = 7
+                            maxNumLiteralsPerTerm = 7,
+                            verbose=verbose
                             )
   }
 
-  def testGenSizePlotPerFold(numVars:Int,numTerms:Int,maxNumLiteralsPerTerm:Int): Unit = {
+  def testGenSizePlotPerFold(numVars:Int,numTerms:Int,maxNumLiteralsPerTerm:Int,verbose:Boolean): Unit = {
     import bdd.BitFiddle.genDnfFromBitMask
     import bdd.Bdd.withNewBddHash
     val foldPairs = List(("         fold", bdd.DimacsFold.dnfToBdd2 _)
@@ -268,7 +273,8 @@ object ReducePerf {
         plotWith = "points",
         xAxisLabel = "Iteration",
         yAxisLabel = "Ratio for given termSize", yLog = true,
-        outputFileBaseName = s"bdd-ratio-fold-iterations-$label")
+        outputFileBaseName = s"bdd-ratio-fold-iterations-$label",
+        verbose = verbose)
     }
     for {(llabel,slabel,extract_y) <- List(("Memory Size", "size", (d:PLOT_DATA)=>d._4.toDouble),
                                     ("Allocation Count", "count",      (d:PLOT_DATA)=>d._6.toDouble),
@@ -289,7 +295,8 @@ object ReducePerf {
         yAxisLabel = "Ratio for given termSize", yLog = true,
         grid = true,
         plotWith = "points",
-        outputFileBaseName = s"bdd-fold-iterations-$slabel")
+        outputFileBaseName = s"bdd-fold-iterations-$slabel",
+        verbose=verbose)
     }
     for{ numLiteralsPerTerm <- 2 to maxNumLiteralsPerTerm} {
       for {(llabel, slabel, extract_y) <- List(("Cumulative Hash size", "size", (d: PLOT_DATA) => d._4.toDouble),
@@ -312,13 +319,14 @@ object ReducePerf {
           grid = true,
           plotWith = "points",
           yAxisLabel = "Number of objects allocated", yLog = true,
-          outputFileBaseName = s"bdd-fold-iterations-$numLiteralsPerTerm-$slabel")
+          outputFileBaseName = s"bdd-fold-iterations-$numLiteralsPerTerm-$slabel",
+          verbose=verbose)
       }
     }
   }
 
 
-  def testNumBitsConstruction(numVars:Int,maxNumTerms:Int,numDnfs:Int,maxNumLiteralsPerTerm:Int): Unit = {
+  def testNumBitsConstruction(numVars:Int,maxNumTerms:Int,numDnfs:Int,maxNumLiteralsPerTerm:Int,verbose:Boolean): Unit = {
     import bdd.BitFiddle.genDnfFromBitMask
     import bdd.Bdd.withNewBddHash
     val foldPairs = List(("         fold", bdd.DimacsFold.dnfToBdd _)
@@ -355,15 +363,16 @@ object ReducePerf {
         comment=s"Ratio tree-fold / default-fold for n=$numVars",
         xAxisLabel="Number of terms (density)",
         yAxisLabel="Ratio for given termSize", yLog=true,
-        outputFileBaseName="bdd-ratio")
+        outputFileBaseName="bdd-ratio",
+        verbose=verbose)
     }
   }
 
-  def testRandomBddConstruction():Unit = {
-    testRandomBddConstruction(maxNumVars=23)
+  def testRandomBddConstruction(verbose:Boolean):Unit = {
+    testRandomBddConstruction(maxNumVars=23,verbose=verbose)
   }
 
-  def testRandomBddConstruction(maxNumVars:Int): Unit = {
+  def testRandomBddConstruction(maxNumVars:Int,verbose:Boolean): Unit = {
     import bdd.BitFiddle.genRandomDnf
     import bdd.Bdd.withNewBddHash
     require(maxNumVars >= 2)
@@ -395,7 +404,8 @@ object ReducePerf {
       comment = "Fold Strategy Performance for Bdd Construction",
       xAxisLabel = "Number of Boolean variables",
       yAxisLabel = "Time (ms)", yLog = true,
-      outputFileBaseName = "bdd-construction"
+      outputFileBaseName = "bdd-construction",
+      verbose=verbose
       )
   }
 
@@ -405,12 +415,12 @@ object ReducePerf {
     //println("rationalFoldTest")
     //rationalFoldTest()
     println("testGenSizePlotPerFold")
-    testGenSizePlotPerFold(30,200,7)
+    testGenSizePlotPerFold(30,200,7,true)
     println("testLimitedBddConstruction")
-    testLimitedBddConstruction()
+    testLimitedBddConstruction(true)
     println("testNumBitsConstruction")
-    testNumBitsConstruction()
+    testNumBitsConstruction(true)
     println("testRandomBddConstruction")
-    testRandomBddConstruction()
+    testRandomBddConstruction(true)
   }
 }

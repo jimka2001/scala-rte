@@ -77,13 +77,15 @@ object MapColoring {
                  numNodes:Int,
                  consume:(Double,()=>Double)=>Unit,
                  differentColor:List[String],
-                 fold:Int): (Map[String,(Int,Int)],Bdd) = {
+                 fold:Int,
+                 verbose:Boolean): (Map[String,(Int,Int)],Bdd) = {
 
     require(differentColor.length <= 4) // states whose colors are different to reduce the size of the BDD
     import GenericGraph.orderStates
 
     val states = differentColor ++ orderStates(seed, biGraph).filter{st => !differentColor.contains(st)}.take(numNodes - differentColor.length)
-    println(s"$numNodes (${states.length}) states: $states")
+    if (verbose)
+      println(s"$numNodes (${states.length}) states: $states")
 
     val stateToVar: Map[String, (Int, Int)] = makeStateToVarMap(differentColor, states)
     // TODO we need to find C3 or C4 subgraph and fix those colors rather than taking differentColor as input parameter.
@@ -177,7 +179,8 @@ object MapColoring {
                   start:String,
                   uniGraph:Map[String,Set[String]],
                   biGraph:Map[String,Set[String]],
-                  differentColor:List[String]):Map[String,String] = {
+                  differentColor:List[String],
+                  verbose:Boolean):Map[String,String] = {
     //println(s"colorizeMap differentColor = $differentColor")
     import System.nanoTime
     val colors: Array[String] = Array("red", "green", "orange", "yellow")
@@ -199,7 +202,8 @@ object MapColoring {
                      newTime(n, nanoTime() - time0)
                    },
                    differentColor,
-                   fold = fold)
+                   fold = fold,
+                             verbose=verbose)
         //GraphViz.bddView(bdd._2,drawFalseLeaf=false,s"$baseName-$numNodes")
         bdd
       }
@@ -229,12 +233,14 @@ object MapColoring {
                                                newNumAllocations(n, numAllocations.toDouble)
                                              },
                                              differentColor,
-                                             fold = fold)
+                                             fold = fold,
+                                             verbose = verbose)
         bdd.findSatisfyingAssignment() match {
           case None => Map[String, String]()
           case Some((assignTrue, assignFalse)) =>
             val ret = assignColors(colorization, assignTrue, assignFalse, colors)
-            println(s"  $numNodes color assignment=" + ret)
+            if (verbose )
+              println(s"  $numNodes color assignment=" + ret)
             ret
         }
       }
@@ -252,7 +258,8 @@ object MapColoring {
 
     for {((folder, _),k) <- folders.zipWithIndex
          } {
-      println(s" calculating $folder for numNodes=$numNodes")
+      if (verbose)
+        println(s" calculating $folder for numNodes=$numNodes")
       retain = colorize(fold = k,
                         (n: Double, m: Double) => sizes(k) = (n -> m) :: sizes(k),
                         (n: Double, m: Double) => gcCounts(k) = (n -> m) :: gcCounts(k),
@@ -291,7 +298,7 @@ object MapColoring {
                    (gcCounts, 1.0, false,
                      "GC count for Map 4-coloring",
                      "GC count",
-                     "gc-count "),
+                     "gc-count"),
                    (gcTimes, 1.0, true,
                      "GC time for map 4-coloring",
                      "GC time (ms)",
@@ -322,34 +329,39 @@ object MapColoring {
         yAxisLabel = yAxisLabel,
         yLog = yLog,
         grid = true,
-        outputFileBaseName = s"$baseName-$numNodes-4-color-$outputFileBaseName"
+        outputFileBaseName = s"$baseName-$numNodes-4-color-$outputFileBaseName",
+        verbose=verbose
         )
     }
     retain
   }
 
-  def usMapColoringTest(numRegions:Int): Int = {
+  def usMapColoringTest(numRegions:Int,verbose:Boolean): Int = {
     import USAgraph._
-    biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols)
+    biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols,verbose=verbose)
     val colors = colorizeMap(numRegions, "US", "ME",
                              stateUniGraph, // removeStates(List("Russia"), stateUniGraph),
                              stateBiGraph, //removeStates(List("Russia"), stateBiGraph),
-                             List("MA", "VT", "NH"))
+                             List("MA", "VT", "NH"),
+                             false)
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions-colors"
                  )(symbols = symbols,
-                   colors = { st => colors.getOrElse(st, "no-color") })
+                   colors = { st => colors.getOrElse(st, "no-color") },verbose=verbose)
   }
 
-  def europeMapColoringTest(numRegions:Int): Int = {
+  def europeMapColoringTest(numRegions:Int,verbose:Boolean): Int = {
     import EuropeGraph._
-    biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions")(symbols = symbols)
+    biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions"
+                 )(symbols = symbols,verbose=verbose)
     val colors = colorizeMap(numRegions, "europe", "Russia",
                              stateUniGraph, //removeStates(List("Russia"), stateUniGraph),
                              stateBiGraph, // removeStates(List("Russia"), stateBiGraph),
-                             List("Croatia", "Bosnia", "Serbia", "Montenegro"))
+                             List("Croatia", "Bosnia", "Serbia", "Montenegro"),
+                             verbose)
     biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions-colors"
                  )(symbols = symbols,
-                   colors = { st => colors.getOrElse(st, "no-color") })
+                   colors = { st => colors.getOrElse(st, "no-color") },
+                   verbose = verbose)
   }
 
   def main(argv: Array[String]): Unit = {
@@ -359,7 +371,7 @@ object MapColoring {
       val time0 = nanoTime
       println(s" === coloring $numNodes regions")
       //europeMapColoringTest(numNodes)
-      usMapColoringTest(numNodes)
+      usMapColoringTest(numNodes,false)
       val now = nanoTime
       val elapsed = (now - time0 ) * 1e9
       println(s"Time to colorize $numNodes regions was $elapsed sec")

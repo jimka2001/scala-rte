@@ -38,12 +38,14 @@ object GnuPlot {
   def writeCsv(dataToPlot: List[(String, List[Double], List[Double])],
                xAxisLabel:String,
                outputDirName     : String,
-               outputFileBaseName: String): Unit = {
+               outputFileBaseName: String,
+               verbose: Boolean): Unit = {
     require(outputDirName.takeRight(1) == "/")
     import java.io._
     val csvName = s"$outputDirName$outputFileBaseName.csv"
     val csv = new PrintWriter(new File(csvName))
-    // println(s"[writing to $csvName\n")
+    if (verbose)
+      println(s"[writing to $csvName\n")
     // write header
     csv.write(s"$xAxisLabel")
     for {(text, _, _) <- dataToPlot} csv.write(s",$text")
@@ -66,7 +68,8 @@ object GnuPlot {
       csv.write("\n")
     }
     csv.close()
-    //println(s"finished $csvName]")
+    if (verbose)
+      println(s"finished $csvName]")
   }
   def gnuPlot(dataToPlot: List[(String, List[Double], List[Double])])(
               terminals: Set[String]=Set("png"), // e.g Set("png","tikz")
@@ -81,7 +84,8 @@ object GnuPlot {
               // outputFileBaseName is basename without the .pdf, .gnu, .png etc and without leading path
               outputFileBaseName: String = "curves",
               plotWith          : String = "linespoints",
-              key:String = "horizontal bmargin"
+              key:String = "horizontal bmargin",
+              verbose:Boolean
              ): Unit = {
     // TODO verify that "lines" can be used as plotWith, not 100% sure
     require(Set("linespoints", "points", "lines").contains(plotWith))
@@ -93,12 +97,21 @@ object GnuPlot {
     val gnuName = s"$outputDirName$outputFileBaseName.gnu"
     val gnu = new PrintWriter(new File(gnuName))
 
-    writeCsv(dataToPlot,xAxisLabel,outputDirName,outputFileBaseName)
-    //println(s"[writing to $gnuName\n")
+    writeCsv(dataToPlot,xAxisLabel,outputDirName,outputFileBaseName,verbose)
+    if (verbose)
+      println(s"[writing to $gnuName\n")
     gnu.write(s"# $comment\n")
-    if (xLog)
+    gnu.write("LC_CTYPE='en_US.UTF-8'\n")
+    def logCompatible(projection:((String,List[Double],List[Double]))=>List[Double]):Boolean = {
+      dataToPlot.forall{data =>
+        val numbers = projection(data)
+        numbers.forall(_>0) && numbers.nonEmpty && (numbers.max > numbers.min)
+      }
+    }
+    // turn off log scale if range on axis is 0 or if it contains 0 or negative values
+    if (xLog && logCompatible(_._2))
       gnu.write("set logscale x\n")
-    if (yLog)
+    if (yLog && logCompatible(_._3))
       gnu.write("set logscale y\n")
     if ("" != xAxisLabel)
       gnu.write(s"""set xlabel "$xAxisLabel"\n""")
@@ -137,20 +150,25 @@ object GnuPlot {
     }
     gnu.write(footer)
     gnu.close()
-    //println(s"finished $gnuName]")
+    if (verbose)
+      println(s"finished $gnuName]")
 
-    terminals.foreach { terminal=>
-      import sys.process._
-      val outputFileName = s"$outputDirName$outputFileBaseName.$terminal"
+    if(dataToPlot.exists{data:((String,List[Double],List[Double])) =>
+      data._2.size > 0 && data._3.size > 0
+    })
+      terminals.foreach { terminal =>
+        import sys.process._
+        val outputFileName = s"$outputDirName$outputFileBaseName.$terminal"
 
-      //println(s"[generating $outputFileName")
-      val exitCode = (Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName) #>> new File(outputFileName)).!
+        if (verbose)
+          println(s"[generating $outputFileName")
+        val exitCode = (Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName) #>> new File(outputFileName)).!
 
-      if (exitCode != 0)
-        println(s"finished $outputFileName with exit code=$exitCode]")
-      //else
-      //  println(s"finished $outputFileName]")
-    }
+        if (exitCode != 0)
+          println(s"finished $outputFileName with exit code=$exitCode verbose=$verbose]")
+        else if (verbose)
+          println(s"finished $outputFileName]")
+      }
   }
 
 }

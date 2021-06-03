@@ -100,11 +100,13 @@ class PoliticalMap {
   def biGraphToDot(biGraph:Map[String,Set[String]],
                    locations:Map[String,(Double,Double)],
                    baseName:String)(symbols: String=>String ={ x=>x},
-                                    colors: String=>String ={ _=>"no-color"}): Int = {
+                                    colors: String=>String ={ _=>"no-color"},
+                                    verbose:Boolean): Int = {
     val dotPathName = s"/tmp/$baseName.dot"
     val pngPathName = s"/tmp/$baseName.png"
     val stream = new java.io.FileOutputStream(new java.io.File(dotPathName))
-
+    if(verbose)
+      println(s"[writing to $dotPathName")
     def write(str: String): Unit = {
       for {c <- str} {
         stream.write(c.toByte)
@@ -141,12 +143,18 @@ class PoliticalMap {
 
     writeln("}")
     stream.close()
-
+    if(verbose)
+      println(s"finished $dotPathName ]")
     // convert the .dot file to a .png file
     locally {
       import sys.process._
+      if(verbose)
+        println(s"[writing to $pngPathName")
       val cmd = Seq(dotProgram, "-Tpng", dotPathName, "-o", pngPathName)
-      cmd.!
+      val status = cmd.!
+      if(verbose)
+        println(s"[finished to $pngPathName")
+      status
     }
   }
 }
