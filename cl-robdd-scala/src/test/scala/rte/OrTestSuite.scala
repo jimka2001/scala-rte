@@ -262,4 +262,188 @@ class OrTestSuite extends AnyFunSuite {
                Or(r1, And(r2, r3), r4).canonicalize)
     }
   }
+  test("or conversion1"){
+    assert(Or().conversion1() == EmptySet)
+    assert(Or(Or()).conversion1() != EmptySet)
+  }
+  test("or conversion2"){
+    assert(Or(Or()).conversion2() == Or())
+    assert(Or(Or(),Or()).conversion2() != Or())
+  }
+  test("or conversion3"){
+    // Or(... Sigma* ....) -> Sigma*
+    assert(Or(Or(),Star(Sigma),Or()).conversion3() == Star(Sigma))
+    assert(Or(Or(),Star(Sigma),Star(Sigma),Or()).conversion3() == Star(Sigma))
+    assert(Or(Or(),Or()).conversion3() != Star(Sigma))
+  }
+  test("or conversion4"){
+    // uniquify
+    assert(Or(Or(),Star(Sigma),Or()).conversion4() == Or(Star(Sigma),Or()))
+
+    // order is maintained
+    assert(Or(Or(),And()).conversion4() == Or(Or(),And()))
+  }
+  test("or conversion5"){
+    val X = Singleton(SEql(1))
+    val Y = Singleton(SEql(2))
+    assert(Or(Y,X).conversion5() == Or(X,Y))
+    assert(Or(X,Y).conversion5() == Or(X,Y))
+  }
+  test("or conversion6"){
+    // remove EmptySet and flatten Or(Or(...)...)
+    val X = Singleton(SEql(1))
+    val Y = Singleton(SEql(2))
+    assert(Or(X).conversion6() == X)
+    assert(Or(Or(X)).conversion6() == X)
+    assert(Or(Or(Or(X))).conversion6() == Or(X))
+    assert(Or(Or(X),Or(X)).conversion6() == Or(X,X))
+    assert(Or(X,Y,EmptySet).conversion6() == Or(X,Y))
+    assert(Or(EmptySet,X,EmptySet,Y,EmptySet).conversion6() == Or(X,Y))
+    assert(Or(X,Y).conversion6() == Or(X,Y))
+    assert(Or(Y,X,Y).conversion6() == Or(Y,X,Y))
+  }
+  test("or conversion7"){
+    // (:or A B (:* B) C)
+    // --> (:or A (:* B) C)
+    val A = Singleton(SEql(1))
+    val B = Singleton(SEql(2))
+    val C = Singleton(SEql(3))
+    assert(Or(A,B,Star(B),C).conversion7() == Or(A,Star(B),C))
+    assert(Or(A,Star(C),B,C).conversion7() == Or(A,Star(C),B))
+    assert(Or(A,Star(B),B,C,Star(C)).conversion7() == Or(A,Star(B),Star(C)))
+  }
+  test("or conversion8"){
+    // (:or (:* C) (:cat X (:* X)))
+    //   --> (:or (:* C) (:* X))
+
+    val A = Singleton(SEql(1))
+    val B = Singleton(SEql(2))
+    val C = Singleton(SEql(3))
+    val X = Singleton(SEql(4))
+
+    // (:or A :epsilon B (:cat X (:* X)) C)
+    //   --> (:or A :epsilon B (:* X) C )
+    assert(Or(A,EmptyWord,B,Cat(X,Star(X)),C).conversion8(true)
+           == Or(A,EmptyWord,B,Star(X),C))
+
+    // (:or :epsilon (:cat X (:* X)))
+    //   --> (:or :epsilon (:* X))
+    assert(Or(EmptyWord,Cat(X,Star(X))).conversion8(true)
+           == Or(EmptyWord,Star(X)))
+
+    // (:or (:* C) (:cat X (:* X)))
+    //   --> (:or (:* C) (:* X))
+    assert(Or(Star(C),Cat(X,Star(X))).conversion8(true)
+             == Or(Star(C),Star(X)))
+
+    // (:or (:* C) (:cat X (:* A)))
+    //   --> no change
+    assert(Or(Star(C),Cat(X,Star(A))).conversion8(true)
+             == Or(Star(C),Cat(X,Star(A))))
+  }
+  test("or conversion9"){
+    val A = Singleton(SEql("A"))
+    val B = Singleton(SEql("B"))
+    val C = Singleton(SEql("C"))
+    val X = Singleton(SEql("X"))
+    val Y = Singleton(SEql("Y"))
+    val Z = Singleton(SEql("Z"))
+
+    // (:or A :epsilon B (:cat X Y Z (:* (:cat X Y Z))) C)
+    //   --> (:or A :epsilon B (:* (:cat X Y Z)) C )
+    assert(Or(A,EmptyWord,B,Cat(X,Y,Z,Star(Cat(X,Y,Z))), C).conversion9(true)
+             == Or(A,EmptyWord,B,Star(Cat(X,Y,Z)),C))
+
+    // (:or B* (:cat X Y Z (:* (:cat X Y Z))))
+    //   --> (:or B* (:* (:cat X Y Z)))
+    assert(Or(Star(B),Cat(X,Y,Z,Star(Cat(X,Y,Z)))).conversion9(true)
+             == Or(Star(B),Star(Cat(X,Y,Z))))
+  }
+  test("or conversion10"){
+    // (:or A :epsilon B (:* X) C)
+    //   --> (:or A B (:* X) C)
+    val A = Singleton(SEql("A"))
+    val B = Singleton(SEql("B"))
+    val C = Singleton(SEql("C"))
+    val X = Singleton(SEql("X"))
+    assert(Or(A,EmptyWord,B,Star(X),C).conversion10()
+             == Or(A,B,Star(X),C))
+    assert(Or(A,EmptyWord,B,C).conversion10()
+             == Or(A,EmptyWord,B,C))
+  }
+  test("or conversion11"){
+    // filter out singletons which are a subclass of other singletons
+    val A = Singleton(SEql("A"))
+    val AB = Singleton(SMember("A","B"))
+    val BA = Singleton(SMember("B","A"))
+    val C = Singleton(SEql("C"))
+    val X = Singleton(SEql("X"))
+
+    assert(Or(A,AB,C,X).conversion11()
+             == Or(AB,C,X))
+    assert(Or(C,A,X,AB).conversion11()
+             == Or(C,X,AB))
+    assert(Or(AB,C,A,X).conversion11()
+             == Or(AB,C,X))
+    assert(Or(AB,BA).conversion11()
+           == AB ||
+             Or(AB,BA).conversion11()
+               == BA
+           )
+  }
+  test("or conversion12"){
+    // sigmaSigmaStarSigma = Cat(Sigma, Sigma, sigmaStar)
+    // Or(   A, B, ... Cat(Sigma,Sigma,Sigma*) ... Not(Singleton(X)) ...)
+    //   --> Or( A, B, ... Not(Singleton(X))
+    val A = Singleton(SEql("A"))
+    val B = Singleton(SEql("B"))
+    val X = Singleton(SEql("X"))
+    assert(Or(A,Cat(Sigma,Sigma,Star(Sigma)),B,Not(X)).conversion12()
+           == Or(A,B,Not(X)).conversion12())
+  }
+  test("or conversion13"){
+    // Or(A,Not(A),X) -> SigmaStar
+    val A = Singleton(SEql("A"))
+    val B = Singleton(SEql("B"))
+    val X = Singleton(SEql("X"))
+    assert(Or(A,B,Not(A),X).conversion13()
+           == Star(Sigma))
+    assert(Or(A,B,X).conversion13()
+             == Or(A,B,X))
+    assert(Or(A,Not(B),X).conversion13()
+             == Or(A,Not(B),X))
+  }
+  test("or conversion14"){
+    // Or(A,Not(B),X) -> Sigma* if B is subtype of A
+    val A = Singleton(SMember("A","B"))
+    val B = Singleton(SEql("B"))
+    val X = Singleton(SEql("X"))
+    assert(Or(A,Not(B),X).conversion14()
+             == Star(Sigma))
+    assert(Or(Not(A),B,X).conversion14()
+             != Star(Sigma))
+  }
+  test("or conversion15"){
+    // Or(Not(A),B*) = Not(A) if A and B  disjoint
+    //  only works if length = 2
+    val A = Singleton(SMember("A","B"))
+    val B = Singleton(SEql("B"))
+    val C = Singleton(SEql("C"))
+    val D = Singleton(SEql("D"))
+    assert(Or(Not(A),Star(C)).conversion15()
+             == Not(A))
+    assert(Or(Not(A),Star(B)).conversion15()
+             == Or(Not(A),Star(B)))
+    assert(Or(Not(A),Star(C),B).conversion15()
+             == Or(Not(A),B))
+    assert(Or(Not(A),Star(C),B,Star(D),Star(A)).conversion15()
+             == Or(Not(A),B,Star(A)))
+  }
+  test("or conversion16"){
+    // canonicalizing sub nodes
+    val A = Singleton(SMember("A","B"))
+    val B = Singleton(SEql("B"))
+    assert(Or(Or(A,A),Or(B,B)).conversion16()
+           == Or(A,B))
+  }
 }

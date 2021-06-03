@@ -130,6 +130,8 @@ class AndTestSuite extends AnyFunSuite {
     assert(And(A,Or(X,Y),B).canonicalizeOnce == Or(And(A,B,X),And(A,B,Y)))
   }
   test("canonicalize and") {
+    assert(And(EmptySet,EmptySet).canonicalize == EmptySet)
+    assert(EmptySet.canonicalize == EmptySet)
     class TestSup
     class TestSub extends TestSup
     class TestD1 // disjoint from TestD2
@@ -145,7 +147,8 @@ class AndTestSuite extends AnyFunSuite {
          r3 = Rte.randomRte(depth)
          } {
       // removing duplicates
-      assert(And(r1, r1).canonicalize == r1.canonicalize, s"And(r1,r1)=${And(r1, r1).canonicalize}   r1=${r1.canonicalize}")
+      assert(And(r1, r1).canonicalize == r1.canonicalize,
+             s"\nAnd(r1,r1)=${And(r1, r1).canonicalize}\n   r1=${r1.canonicalize}")
       assert(And(r1, r2, r1).canonicalize == And(r1, r2).canonicalize ||
                And(r1, r2, r1).canonicalize == And(r2, r1).canonicalize
              )
@@ -153,7 +156,7 @@ class AndTestSuite extends AnyFunSuite {
       assert(And(r1, EmptySet, r2).canonicalize == EmptySet)
 
       assert(And(And(r1, r2), r3).canonicalize ~= And(r1, And(r2, r3)).canonicalize,
-             s"r1=$r1  \nr2=$r2  \nr3=$r3   \ncanonicalized: ${r1.canonicalize}  ${r2.canonicalize}  ${r3.canonicalize}")
+             s"\nr1=$r1  \nr2=$r2  \nr3=$r3   \ncanonicalized: \n  r1=${r1.canonicalize}\n  r2=${r2.canonicalize}\n  r3=${r3.canonicalize}")
       assert(And(And(r1, r2), r3).canonicalize ~= And(r1, r2, r3).canonicalize)
       assert(And(r1, Rte.sigmaStar, r2, r3).canonicalize ~= And(r1, r2, r3).canonicalize)
       assert(And(r1, Sigma.*, r2, r3).canonicalize ~= And(r1, r2, r3).canonicalize)
