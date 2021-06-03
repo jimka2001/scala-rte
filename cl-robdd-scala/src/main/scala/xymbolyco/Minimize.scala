@@ -22,10 +22,7 @@
 
 package xymbolyco
 
-import xymbolyco.GraphViz.dfaView
-
 import scala.annotation.tailrec
-import scala.collection.immutable
 
 object Minimize {
 
@@ -167,22 +164,22 @@ object Minimize {
     new Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
   }
   def complete[Σ,L,E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    val sinkid = dfa.Qids.maxOption match {
+    val sinkId = dfa.Qids.maxOption match {
       case Some(m) => m + 1
       case _ => 0
     }
     val labeler = dfa.labeler
     val toSink = for {(src, triples) <- dfa.protoDelta.groupBy(_._1)
                       tds = triples.map(_._2).toSeq
-                      newtd = labeler.subtractLabels(labeler.universe, tds)
-                      if !labeler.inhabited(newtd).contains(false)
-                      } yield (src, newtd, sinkid)
+                      newTd = labeler.subtractLabels(labeler.universe, tds)
+                      if !labeler.inhabited(newTd).contains(false)
+                      } yield (src, newTd, sinkId)
 
     val protoDelta = dfa.protoDelta ++
       toSink ++
-      (if (toSink.nonEmpty) Set((sinkid, labeler.universe, sinkid)) else Set())
+      (if (toSink.nonEmpty) Set((sinkId, labeler.universe, sinkId)) else Set())
 
-    val dfaComplete = new Dfa[Σ, L, E](Qids = dfa.Qids + sinkid,
+    val dfaComplete = new Dfa[Σ, L, E](Qids = dfa.Qids + sinkId,
                                        q0id = dfa.q0id,
                                        Fids = dfa.Fids,
                                        protoDelta = protoDelta,
