@@ -225,7 +225,9 @@ class AndTestSuite extends AnyFunSuite {
            )
   }
 
-  test("canonicalize and 295") {
+  test("canonicalize and 228") {
+    assert(And(Cat(Sigma,Star(Sigma)),Sigma).canonicalize
+             == Sigma)
     for {depth <- 0 to 4
          _ <- 1 to 500
          r1 = Rte.randomRte(depth)
@@ -237,10 +239,13 @@ class AndTestSuite extends AnyFunSuite {
       // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
       assert(And(r1, Or(r2, r3), r4).canonicalize ~= Or(And(r1, r2, r4),
                                                         And(r1, r3, r4)).canonicalize,
-             s"\nr1=$r1  r2=$r2  r3=$r3  r4=$r4" +
-               s"\n  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
-               "\n And(r1,r2,r4)=" + And(r1, r2, r4).canonicalize +
-               "\n And(r1,r3,r4)=" + And(r1, r3, r4).canonicalize
+             s"\nr1=$r1  \nr2=$r2  \nr3=$r3  \nr4=$r4" +
+               s"\n  canonicalized:\n  r1=${r1.canonicalize}\n  r2=${r2.canonicalize}\n  r3=${r3.canonicalize}\n  r4=${r4.canonicalize}" +
+               "\n  And(r1,r2,r4)= " + And(r1, r2, r4).canonicalize +
+               "\n  And(r1,r3,r4)= " + And(r1, r3, r4).canonicalize +
+               "\n  Or(And(r1,r2,r4), And(r1,r3,r4))= "+Or(And(r1, r2, r4),
+                                                         And(r1, r3, r4)).canonicalize +
+               "\n  And(r1, Or(r2, r3), r4)= "+And(r1, Or(r2, r3), r4).canonicalize
              )
     }
   }
