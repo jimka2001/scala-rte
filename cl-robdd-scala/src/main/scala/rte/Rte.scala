@@ -146,6 +146,7 @@ object Rte {
   val sigmaSigmaStarSigma:Rte = Cat(Sigma, Sigma, sigmaStar)
   val notSigma: Rte = Or(sigmaSigmaStarSigma, EmptyWord)
   val notEpsilon: Rte = Cat(Sigma, sigmaStar)
+  val sigmaSigmaStar = notEpsilon
 
   def Member(xs: Any*):Rte = {
     Singleton(genus.SMember(xs : _*))

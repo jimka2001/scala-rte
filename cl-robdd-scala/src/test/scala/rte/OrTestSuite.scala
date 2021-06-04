@@ -451,6 +451,57 @@ class OrTestSuite extends AnyFunSuite {
     assert(Or(Not(A),Star(C),B,Star(D),Star(A)).conversion15()
              == Or(Not(A),B,Star(A)))
   }
+  test("or conversion16"){
+    // Or(<{1,2,3}>,<{a,b,c}>,Not(<{4,5,6}>))
+    val X = Not(Singleton(SEql(100)))
+    val Y = Not(Singleton(SEql(200)))
+    assert(Or(Singleton(SMember(1,2,3)),
+              X,
+              Singleton(SMember("a","b","c")),
+              Y,
+              Singleton(SEql(0))).conversion16()
+             == Or(X,Y,Singleton(SMember(1,2,3,"a","b","c",0))))
+    assert(Or(Singleton(SMember(1,2,3)),
+              X,
+              Singleton(SMember("a","b","c")),
+              Singleton(SMember(1,2,3)),
+              Y,
+              Singleton(SEql(0))).conversion16()
+             == Or(X,Y,Singleton(SMember("a","b","c",1,2,3,0))))
+  }
+  test("or conversion17"){
+    // Or(<{1,2,3,4}>,Not(<{3,4,5,6}>))
+    assert(Or(Singleton(SMember(1,2,3,4)),
+              Not(Singleton(SMember(3,4,5,6)))).conversion17()
+             == Or(Singleton(SMember(3,4)),
+                   Not(Singleton(SMember(3,4,5,6)))))
+
+    assert(Or(Singleton(SMember(1,2,3)),
+              Not(Singleton(SMember(1,2,3,4,5,6)))).conversion17()
+             == Or(Singleton(SMember(1,2,3)),
+                   Not(Singleton(SMember(1,2,3,4,5,6)))))
+
+    assert(Or(Singleton(SMember(7,8,9)),
+              Not(Singleton(SMember(3,4,5,6)))).conversion17()
+             == Or(Singleton(SEmpty),
+                    Not(Singleton(SMember(3,4,5,6)))))
+
+    assert(Or(Singleton(SMember(7,8,9)),
+              Singleton(SEql(0)),
+              Not(Singleton(SMember(3,4,5,6)))).conversion17()
+             == Or(Singleton(SEmpty),
+                   Singleton(SEql(0)),
+                   Not(Singleton(SMember(3,4,5,6)))))
+
+    assert(Or(Singleton(SMember(1,2,3)),
+              Singleton(SEql(0)),
+              Not(Singleton(SMember(1,2,3,4,5,6)))).conversion17()
+             == Or(Singleton(SMember(1,2,3)),
+                   Singleton(SEql(0)),
+                   Not(Singleton(SMember(1,2,3,4,5,6)))))
+
+
+  }
   test("or conversion99"){
     // canonicalizing sub nodes
     val A = Singleton(SMember("A","B"))

@@ -21,7 +21,7 @@
 //
 
 package rte
-import adjuvant.Adjuvant.{uniquify,findSimplifier}
+import adjuvant.Adjuvant.{uniquify,findSimplifier,searchReplace}
 
 case class Or(operands:Seq[Rte]) extends Rte {
   def create(operands: Seq[Rte]):Rte = {
@@ -212,6 +212,46 @@ case class Or(operands:Seq[Rte]) extends Rte {
       case _ => create(operands.diff(bs))
     }
   }
+  def conversion16():Rte = {
+    // Or(<{1,2,3}>,<{a,b,c}>,Not(<{4,5,6}>))
+
+    val members = operands.collect{
+      case s@Singleton(_:genus.SMemberImpl) => s
+    }
+    val as = members.flatMap{
+      case Singleton(m:genus.SMemberImpl) => m.xs
+      case x => throw new Exception("unexpected value $x")
+    }
+    if (members.isEmpty)
+      this
+    else {
+      // careful to put the SMember back in the place of the first
+      //   this is accomplished by replacing every SMember/SEql with the one we derive here
+      //   and then use uniquify to remove duplicates without changing order.
+      val s = Singleton(genus.Types.createMember(uniquify(as) : _*))
+      create(uniquify(operands.map{
+        case Singleton(_:genus.SMemberImpl) => s
+        case r => r
+      }))
+    }
+  }
+  def conversion17():Rte = {
+    // Or(<{1,2,3}>,Not(<{3,4,5,6}>))
+    // remove redundant element from SMember within Or
+    // because of conversion16 we know there is at most one SMember/SEql
+    val member = operands.collectFirst {
+      case s@Singleton(_: genus.SMemberImpl) => s
+    }
+    member match {
+      case None => this
+      case Some(s@Singleton(m: genus.SMemberImpl)) =>
+        val stricter = create(searchReplace(operands, s, Seq()))
+        val dfa = stricter.toDfa(true)
+        val keep = m.xs.filter { x => !dfa.simulate(Seq(x)).contains(true) }
+        val rte = Singleton(genus.Types.createMember(keep: _*))
+        create(searchReplace(operands, s, rte))
+    }
+  }
   def conversion99():Rte =
     create(operands.map(_.canonicalizeOnce))
 
@@ -234,6 +274,8 @@ case class Or(operands:Seq[Rte]) extends Rte {
       () => { conversion13()},
       () => { conversion14()},
       () => { conversion15()},
+      () => { conversion16()},
+      () => { conversion17()},
       () => { conversion99()}
       ))
   }

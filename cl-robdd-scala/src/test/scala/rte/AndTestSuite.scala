@@ -250,16 +250,56 @@ class AndTestSuite extends AnyFunSuite {
     }
   }
 
-  test("canonicalize and 147") {
-    for {depth <- 0 to 4
-         _ <- 1 to 1000
+  test("canonicalize and 253") {
+    assert(And(Star(Sigma),Star(Sigma),Sigma).canonicalize == Sigma)
+    assert(And(Star(Sigma),Or(Star(Sigma),Star(Sigma)),Sigma).canonicalize == Sigma)
+    assert(And(Singleton(STop),Not(Singleton(SMember(4,5,6)))).canonicalize
+             != Not(Singleton(SMember(4,5,6))))
+    val r1 =And(Star(Sigma), Or(Star(Sigma),Star(Singleton(SEql(1)))), Sigma)
+    val r2 = r1.canonicalize
+    locally{
+      val r1:Rte = Not(Singleton(SMember(4,5,6)))
+      val r2:Rte = Singleton(SMember("a","b","c"))
+      val r3:Rte = Or(Singleton(SMember(1,2,3,4)),Singleton(STop))
+      val r4:Rte = Sigma
+      val r5 = And(r1,Or(r2,r3),r4)
+      val r6 = r5.canonicalizeOnce
+      val r7 = r6.canonicalizeOnce
+      val r8 = r7.canonicalizeOnce
+      val r9 = r8.canonicalizeOnce
+      val r10 = r9.canonicalizeOnce
+      val r11 = r10.canonicalizeOnce
+      val r12 = r11.canonicalizeOnce
+      val r13 = r12.canonicalizeOnce
+      val r14= r13.canonicalizeOnce
+      val r15= r14.canonicalizeOnce
+
+      assert(And(r1,Or(r2,r3).canonicalize,r4).canonicalize
+             == And(r1,Or(r2,r3),r4).canonicalize)
+    }
+    assert(r2.canonicalize == Sigma)
+    for {depth <- 0 to 1
+         _ <- 1 to 5000
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
          r4 = Rte.randomRte(depth)
          } {
       assert(And(r1, Or(r2, r3).canonicalize, r4).canonicalize ~=
-               And(r1, Or(r2, r3), r4).canonicalize)
+               And(r1, Or(r2, r3), r4).canonicalize,
+             s"\nr1=$r1"+
+               s"\nr2=$r2"+
+               s"\nr3=$r3"+
+               s"\nr4=$r4"+
+               "\ncanonicalized:" +
+               s"\n  r1= " + r1.canonicalize +
+               s"\n  r2= " + r2.canonicalize +
+               s"\n  r3= " + r3.canonicalize +
+               s"\n  r4= " + r4.canonicalize +
+               s"\n Or(r2, r3).canonicalize= " + Or(r2, r3).canonicalize +
+               s"\n And(r1, Or(r2, r3).canonicalize, r4).canonicalize= " + And(r1, Or(r2, r3).canonicalize, r4).canonicalize +
+               s"\n And(r1, Or(r2, r3), r4).canonicalize= " + And(r1, Or(r2, r3), r4).canonicalize
+             )
     }
   }
 
@@ -308,5 +348,121 @@ class AndTestSuite extends AnyFunSuite {
              s"r1=$r1  r2=$r2   r3=$r3")
     }
   }
+  test("and conversion1"){
+    assert(And().conversion1() == Sigma)
+  }
+  test("and conversion2"){
+    assert(And(And()).conversion2() == And())
+  }
+  test("and conversion3"){
+    assert(And(And(),EmptySet,And()).conversion3() == EmptySet)
+  }
+  test("and conversion4"){
+    assert(And(Or(),And(),And(),Or()).conversion4() == And(And(),Or()))
+  }
+  test("and conversion5"){
+    assert(And(Singleton(SEql(2)),Singleton(SEql(1))).conversion5()
+             == And(Singleton(SEql(1)),Singleton(SEql(2))))
+    assert(And(Singleton(SEql(1)),Singleton(SEql(2))).conversion5()
+             == And(Singleton(SEql(1)),Singleton(SEql(2))))
+  }
+  test("and conversion6"){
+    // remove Sigma* and flatten And(And(...)...)
+    assert(And(Star(Sigma),
+               And(Singleton(SEql(1)),Singleton(SEql(2))),
+               And(Singleton(SEql(3)),Singleton(SEql(4))),
+               Star(Sigma)).conversion6()
+      == And(Singleton(SEql(1)),Singleton(SEql(2)),
+             Singleton(SEql(3)),Singleton(SEql(4))))
+  }
+  test("and conversion7"){
+    assert(And(EmptyWord,Singleton(SEql(1))).conversion7(true)
+           == EmptySet)
+  }
+  test("and conversion8"){
+    // if operands contains EmptyWord, then the intersection is either EmptyWord or EmptySet
+    assert(And(EmptyWord,Star(Singleton(SEql(1)))).conversion8()
+             == EmptyWord)
+    assert(And(EmptyWord,Singleton(SEql(1))).conversion8()
+             == EmptySet)
+  }
+  test("and conversion9"){
+    val x = Singleton(SEql(1))
+    val y = Singleton(SEql(1))
+    // if x matches only singleton then And(x,y*) -> And(x,y)
+    assert(And(x,Star(y)).conversion9(true)
+             == And(x,y))
+    assert(And(Star(x),y).conversion9(true)
+             == And(x,y))
+    assert(And(Star(x),Star(y)).conversion9(false)
+             == And(Star(x),Star(y)))
+    assert(And(x,y).conversion9(true)
+             == And(x,y))
+  }
+  test("and conversion10"){
+    // And(A,B,Or(X,Y,Z),C,D)
+    // --> Or(And(A,B,   X,   C, C)),
+    //        And(A,B,   Y,   C, C)),
+    //        And(A,B,   Z,   C, C)))
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val c = Singleton(SEql("c"))
+    val d = Singleton(SEql("d"))
+    val x = Singleton(SEql("x"))
+    val y = Singleton(SEql("y"))
+    val z = Singleton(SEql("z"))
+    assert(And(a,b,Or(x,y,z),c,d).conversion10()
+           == Or(And(a,b,x,c,d),
+                 And(a,b,y,c,d),
+                 And(a,b,z,c,d)))
+  }
+  test("and conversion11"){
+    // And(...,x,Not(x)...)
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    assert(And(a,b,Not(a)).conversion11()
+             == EmptySet)
+    assert(And(a,Not(b),Not(Not(b))).conversion11()
+             == EmptySet)
+  }
+  test("and conversion12"){
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    assert(And(Singleton(SEmpty),a,b).conversion12(List(SEmpty,SEql("a"),SEql("b")))
+             == EmptySet)
+  }
+  test("and conversion13"){
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    assert(And(Sigma,Singleton(SEmpty),a,b).conversion13(List(SEmpty,SEql("a"),SEql("b")))
+             == And(Singleton(SEmpty),a,b))
+    assert(And(Sigma,Singleton(SEmpty),Singleton(SEmpty)).conversion13(List(SEmpty,SEmpty))
+             == And(Sigma,Singleton(SEmpty),Singleton(SEmpty)))
+  }
+  test("and conversion15"){
 
+  }
+  test("and conversion16"){
+
+  }
+  test("and conversion17"){
+
+  }
+  test("and conversion18"){
+
+  }
+  test("and conversion19"){
+
+  }
+  test("and conversion20"){
+
+  }
+  test("and conversion21"){
+    assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2)))).conversion21()
+             == Singleton(SMember(3,4)))
+    assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2,3)))).conversion21()
+             == Singleton(SEql(4)))
+    assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2,3,4,5,6)))).conversion21()
+             == Singleton(SEmpty))
+  }
 }
