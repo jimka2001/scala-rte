@@ -52,7 +52,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
   }
 
   def conversion3():Rte = {
-    // Or(... Sigmga* ....) -> Sigma*
+    // Or(... Sigma* ....) -> Sigma*
     if (operands.contains(Rte.sigmaStar))
       Rte.sigmaStar
     else
@@ -66,7 +66,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     create(Rte.sortAlphabetically(operands))
   }
   def conversion6():Rte = {
-    // remove Emptyset and flatten Or(Or(...)...)
+    // remove EmptySet and flatten Or(Or(...)...)
     create(operands.flatMap{
       case EmptySet => Seq()
       case Or(Seq(rs @ _*)) => rs
@@ -126,6 +126,17 @@ case class Or(operands:Seq[Rte]) extends Rte {
     //   --> (:or A B (:* X) C)
     if (operands.contains(EmptyWord) && operands.exists(r => r != EmptyWord && r.nullable))
       create(operands.filterNot(_ == EmptyWord))
+    else
+      this
+  }
+  def conversion11b():Rte = {
+    // if Sigma is in the operands, then filter out all singletons
+    // Or(Singleton(A),Sigma,...) -> Or(Sigma,...)
+    if (operands.contains(Sigma))
+      create(operands.flatMap{
+        case Singleton(_) => Seq()
+        case td => Seq(td)
+      })
     else
       this
   }
@@ -201,7 +212,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       case _ => create(operands.diff(bs))
     }
   }
-  def conversion16():Rte =
+  def conversion99():Rte =
     create(operands.map(_.canonicalizeOnce))
 
   override def canonicalizeOnce: Rte = {
@@ -217,12 +228,13 @@ case class Or(operands:Seq[Rte]) extends Rte {
       () => { conversion8(existsNullable)},
       () => { conversion9(existsNullable)},
       () => { conversion10()},
+      () => { conversion11b()},
       () => { conversion11()},
       () => { conversion12()},
       () => { conversion13()},
       () => { conversion14()},
       () => { conversion15()},
-      () => { conversion16()}
+      () => { conversion99()}
       ))
   }
 

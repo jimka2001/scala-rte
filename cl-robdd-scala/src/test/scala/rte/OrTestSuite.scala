@@ -371,6 +371,18 @@ class OrTestSuite extends AnyFunSuite {
     assert(Or(A,EmptyWord,B,C).conversion10()
              == Or(A,EmptyWord,B,C))
   }
+  test("or conversion11b"){
+    // if Sigma is in the operands, then filter out all singletons
+    // Or(Singleton(A),Sigma,...) -> Or(Sigma,...)
+    val A = Singleton(SEql("A"))
+    val AB = Singleton(SMember("A","B"))
+    val C = Singleton(SEql("C"))
+    val X = Star(A)
+    assert(Or(A,AB,Sigma,C,X).conversion11b()
+             == Or(Sigma,X))
+    assert(Or(A,AB,C,X).conversion11b()
+             == Or(A,AB,C,X))
+  }
   test("or conversion11"){
     // filter out singletons which are a subclass of other singletons
     val A = Singleton(SEql("A"))
@@ -439,11 +451,11 @@ class OrTestSuite extends AnyFunSuite {
     assert(Or(Not(A),Star(C),B,Star(D),Star(A)).conversion15()
              == Or(Not(A),B,Star(A)))
   }
-  test("or conversion16"){
+  test("or conversion99"){
     // canonicalizing sub nodes
     val A = Singleton(SMember("A","B"))
     val B = Singleton(SEql("B"))
-    assert(Or(Or(A,A),Or(B,B)).conversion16()
+    assert(Or(Or(A,A),Or(B,B)).conversion99()
            == Or(A,B))
   }
 }
