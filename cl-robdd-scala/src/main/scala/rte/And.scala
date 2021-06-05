@@ -70,7 +70,7 @@ case class And(operands:Seq[Rte]) extends Rte{
       case r => Seq(r)
     })
   }
-  def conversion7(matchesOnlySingletons: =>Boolean):Rte = {
+  def conversion7():Rte = {
     if (operands.contains(EmptyWord) && matchesOnlySingletons)
       EmptySet
     else
@@ -85,7 +85,7 @@ case class And(operands:Seq[Rte]) extends Rte{
     else
       EmptySet
   }
-  def conversion9(matchesOnlySingletons: =>Boolean):Rte = {
+  def conversion9():Rte = {
     if (matchesOnlySingletons && operands.exists(Rte.isStar)) {
       // if x matches only singleton then And(x,y*) -> And(x,y)
       create(operands.map{
@@ -118,13 +118,13 @@ case class And(operands:Seq[Rte]) extends Rte{
     else
       this
   }
-  def conversion12(singletons: =>List[SimpleTypeD]):Rte = {
+  def conversion12():Rte = {
     if (singletons.exists(td => td.inhabited.contains(false)))
       EmptySet
     else
       this
   }
-  def conversion13(singletons: =>List[SimpleTypeD]):Rte = {
+  def conversion13():Rte = {
     if (operands.contains(Sigma)
       && operands.exists(Rte.isSingleton)
       && singletons.exists(td => td.inhabited.contains(true)))
@@ -137,7 +137,7 @@ case class And(operands:Seq[Rte]) extends Rte{
     assert(! operands.contains(Rte.sigmaStar))
     this
   }
-  def conversion15(singletons: =>List[SimpleTypeD]):Rte = {
+  def conversion15():Rte = {
     if ( singletons.tails.exists{
       case t1::ts => ts.exists{t2 => t1.disjoint(t2).contains(true)}
       case _ => false
@@ -146,51 +146,59 @@ case class And(operands:Seq[Rte]) extends Rte{
     else
       this
   }
-  def conversion16(singletons: =>List[SimpleTypeD]):Rte = {
-    // TODO also test And(<STop>,Not(<{4,5,6}>)) does not reduce to Not(<{4,5,6}>)
+  def conversion16():Rte = {
+    // remove superclasses
+    //  and remove Not(disjoint) if
 
-    val maybeSuper:Option[Rte] = singletons.find{sup =>
-      singletons.exists { sub =>
-        sub != sup && sub.subtypep(sup).contains(true)
-      }}.flatMap{
-      case genus.SNot(td) => Some(Not(Singleton(td)))
-      case td => Some(Singleton(td))
+    val ss = operands.collect{
+      case Singleton(td) => td
     }
-
-    maybeSuper match {
-      case None => this
-      case Some(sup) => create(searchReplace(operands,sup,Sigma))
+    val filtered = operands.map{
+      // And(super,sub) --> And(Sigma,sub)
+      case Singleton(sup) if ss.exists(sub => sub != sup && sup.supertypep(sub).contains(true)) => Sigma
+      // And(x,Not(y)) --> And(x,Sigma) if x,y disjoint
+      case Not(Singleton(td)) if ss.exists(d => td.disjoint(d).contains(true)) => Sigma
+      case r => r
     }
+    create(filtered)
   }
-  def conversion17(singletons: =>List[SimpleTypeD]):Rte = {
-    if ((operands.contains(Sigma)
-      || singletons.exists(td => td.inhabited.contains(true)))
-      && operands.exists(Rte.isCat)
-      && operands.exists{
-      case c@Cat(Seq(_*)) => c.minLength > 1
-      case _ => false
+  def conversion17():Rte = {
+    // if And(...) contains a Cat(...) with at least 2 non-nullable components,
+    //    this the Cat matches only sequences of length 2 or more.
+    // If And(...) contains a singleton, then it matches only sequences
+    //    of length 1, perhaps an empty set of such sequences if the singleton type
+    //    is empty.
+    // If both are true, then the And() matches EmptySet
+    lazy val ss = operands.collect{
+      case Singleton(td) => td
     }
+    lazy val cs:Seq[Cat] = operands.collect{
+      case c:Cat => c
+    }
+    if ((operands.contains(Sigma) || ss.nonEmpty)
+      // TODO, we don't really need to count higher than 2
+      && cs.exists(c => c.operands.count(! _.nullable) > 1 )
     )
       EmptySet
     else
       this
   }
-  def conversion18(matchesOnlySingletons: =>Boolean,canonicalizedSingletons: =>SimpleTypeD):Rte = {
-    lazy val singletonsInhabited = canonicalizedSingletons.inhabited
-
-    if (matchesOnlySingletons && singletonsInhabited.contains(false))
-      EmptySet
-    else
-      this
+  def conversion18():Rte = {
+    operands.collectFirst{
+      case Singleton(td) if td.inhabited.contains(false) => td
+    } match {
+      case None => this
+      case _ => EmptySet
+    }
   }
-  def conversion19(canonicalizedSingletons: =>SimpleTypeD):Rte = {
+  def conversion19():Rte = {
     if (canonicalizedSingletons == genus.SEmpty)
       EmptySet
     else
       this
   }
-  def conversion20(matchesOnlySingletons: =>Boolean):Rte = {
-    // e.g. And(Cat(Sigma,Star(Sigma)),Sigma,...) --> And(Sigma,...)
+  def conversion20():Rte = {
+    // e.g. And( Cat(Sigma,Star(Sigma)), Sigma,...) --> And(Sigma,...)
     if (operands.contains(Rte.sigmaSigmaStar) && matchesOnlySingletons)
       create(searchReplace(operands,Rte.sigmaSigmaStar,Seq()))
     else
@@ -212,18 +220,18 @@ case class And(operands:Seq[Rte]) extends Rte{
   def conversion99():Rte = {
     create(operands.map(_.canonicalizeOnce))
   }
+  lazy val matchesOnlySingletons:Boolean = operands.contains(Sigma) || operands.exists(Rte.isSingleton)
+
+  lazy val singletons:List[genus.SimpleTypeD] = operands.flatMap{
+    case Singleton(td) => List(td)
+    case Not(Singleton(td)) if matchesOnlySingletons => List(genus.SNot(td))
+    case _ => List.empty
+  }.toList
+  //lazy val singletonIntersection = genus.SAnd.createAnd(singletons)
+  lazy val canonicalizedSingletons = genus.SAnd.createAnd(singletons).canonicalize()
 
   override def canonicalizeOnce:Rte = {
     //println("canonicalizing And: " + operands)
-    lazy val matchesOnlySingletons:Boolean = operands.contains(Sigma) || operands.exists(Rte.isSingleton)
-    lazy val singletons:List[genus.SimpleTypeD] = operands.flatMap{
-      case Singleton(td) => List(td)
-      case Not(Singleton(td)) if matchesOnlySingletons => List(genus.SNot(td))
-      case _ => List.empty
-    }.toList
-
-    lazy val singletonIntersection = genus.SAnd.createAnd(singletons)
-    lazy val canonicalizedSingletons = singletonIntersection.canonicalize()
 
     findSimplifier(this,List[() => Rte](
       () => { conversion1() },
@@ -232,20 +240,20 @@ case class And(operands:Seq[Rte]) extends Rte{
       () => { conversion4() },
       () => { conversion5() },
       () => { conversion6() },
-      () => { conversion7(matchesOnlySingletons) },
+      () => { conversion7() },
       () => { conversion8() },
-      () => { conversion9(matchesOnlySingletons) },
+      () => { conversion9() },
       () => { conversion10() },
       () => { conversion11() },
-      () => { conversion12(singletons) },
-      () => { conversion13(singletons) },
+      () => { conversion12() },
+      () => { conversion13() },
       () => { conversion14() },
-      () => { conversion15(singletons) },
-      () => { conversion16(singletons) },
-      () => { conversion17(singletons) },
-      () => { conversion18(matchesOnlySingletons,canonicalizedSingletons) },
-      () => { conversion19(canonicalizedSingletons) },
-      () => { conversion20(matchesOnlySingletons) },
+      () => { conversion15() },
+      () => { conversion16() },
+      () => { conversion17() },
+      () => { conversion18() },
+      () => { conversion19() },
+      () => { conversion20() },
       () => { conversion21() },
       () => { conversion99() },
       ))

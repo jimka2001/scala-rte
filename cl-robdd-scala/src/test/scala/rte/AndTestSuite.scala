@@ -23,9 +23,13 @@ package rte
 
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
-//import rte.RteImplicits._
+import rte.RteImplicits._
 
 class AndTestSuite extends AnyFunSuite {
+  test("implicits"){
+    assert(And(SEql(1)) == And(Singleton(SEql(1))))
+  }
+
   test("and test 31"){
     assert(And(Star(Singleton(SAtomic(classOf[String]))),
                Rte.sigmaStar).canonicalizeOnce
@@ -126,8 +130,8 @@ class AndTestSuite extends AnyFunSuite {
     val X = Singleton(SAtomic(classOf[TraitX]))
     val Y = Singleton(SAtomic(classOf[TraitY]))
 
-    assert(And(A,Or(X,Y)).canonicalizeOnce == Or(And(A,X),And(A,Y)))
-    assert(And(A,Or(X,Y),B).canonicalizeOnce == Or(And(A,B,X),And(A,B,Y)))
+    assert(And(A,Or(X,Y)).conversion10() == Or(And(A,X),And(A,Y)))
+    assert(And(A,Or(X,Y),B).conversion10() == Or(And(A,X,B),And(A,Y,B)))
   }
   test("canonicalize and") {
     assert(And(EmptySet,EmptySet).canonicalize == EmptySet)
@@ -376,7 +380,7 @@ class AndTestSuite extends AnyFunSuite {
              Singleton(SEql(3)),Singleton(SEql(4))))
   }
   test("and conversion7"){
-    assert(And(EmptyWord,Singleton(SEql(1))).conversion7(true)
+    assert(And(EmptyWord,Singleton(SEql(1))).conversion7()
            == EmptySet)
   }
   test("and conversion8"){
@@ -390,13 +394,13 @@ class AndTestSuite extends AnyFunSuite {
     val x = Singleton(SEql(1))
     val y = Singleton(SEql(1))
     // if x matches only singleton then And(x,y*) -> And(x,y)
-    assert(And(x,Star(y)).conversion9(true)
+    assert(And(x,Star(y)).conversion9()
              == And(x,y))
-    assert(And(Star(x),y).conversion9(true)
+    assert(And(Star(x),y).conversion9()
              == And(x,y))
-    assert(And(Star(x),Star(y)).conversion9(false)
+    assert(And(Star(x),Star(y)).conversion9()
              == And(Star(x),Star(y)))
-    assert(And(x,y).conversion9(true)
+    assert(And(x,y).conversion9()
              == And(x,y))
   }
   test("and conversion10"){
@@ -428,34 +432,86 @@ class AndTestSuite extends AnyFunSuite {
   test("and conversion12"){
     val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))
-    assert(And(Singleton(SEmpty),a,b).conversion12(List(SEmpty,SEql("a"),SEql("b")))
+    assert(And(Singleton(SEmpty),a,b).conversion12()
              == EmptySet)
   }
   test("and conversion13"){
     val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))
-    assert(And(Sigma,Singleton(SEmpty),a,b).conversion13(List(SEmpty,SEql("a"),SEql("b")))
+    assert(And(Sigma,Singleton(SEmpty),a,b).conversion13()
              == And(Singleton(SEmpty),a,b))
-    assert(And(Sigma,Singleton(SEmpty),Singleton(SEmpty)).conversion13(List(SEmpty,SEmpty))
+    assert(And(Sigma,Singleton(SEmpty),Singleton(SEmpty)).conversion13()
              == And(Sigma,Singleton(SEmpty),Singleton(SEmpty)))
   }
   test("and conversion15"){
-
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val ab = Singleton(SMember("a","b"))
+    // detect intersection of disjoint
+    assert(And(a,b).conversion15()
+           == EmptySet)
+    assert(And(a,ab).conversion15()
+           == And(a,ab))
   }
   test("and conversion16"){
+    // test And(<STop>,Not(<{4,5,6}>)) does not reduce to Not(<{4,5,6}>)
+    // detect supertype
 
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val ab = Singleton(SMember("a","b"))
+    val ac = Singleton(SMember("a","c"))
+    assert(And(a,b,ab,ac).conversion16()
+           == And(a,b,Sigma,Sigma))
+
+    assert(And(ab,Not(a)).conversion16()
+           == And(ab,Not(a)))
+
+    // And(b,Not(ac)) => And(b,Sigma)
+    assert(And(b,Not(ac)).conversion16()
+           == And(b,Sigma))
+
+    assert(And(Singleton(SAtomic(classOf[Any])),Not(ab)).conversion16()
+             == And(Singleton(SAtomic(classOf[Any])),Not(ab)))
+    assert(And(Singleton(SAtomic(classOf[Any])),ab).conversion16()
+             == And(Sigma,ab))
   }
   test("and conversion17"){
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    assert(And(Sigma,Cat(a,b)).conversion17()
+             == EmptySet)
+    assert(And(Sigma,Cat(Star(a),b)).conversion17()
+             == And(Sigma,Cat(Star(a),b)))
+    assert(And(Sigma,Cat(a,Star(a),b)).conversion17()
+             == EmptySet)
 
+    assert(And(a,Cat(a,b)).conversion17()
+             == EmptySet)
+    assert(And(a,Cat(Star(a),b)).conversion17()
+             == And(a,Cat(Star(a),b)))
+    assert(And(a,Cat(a,Star(a),b)).conversion17()
+             == EmptySet)
   }
   test("and conversion18"){
-
+    // if And(...) contains a singleton which is non inhabited
+    assert(And(Singleton(SAnd(SEql(1),SEql(2)))).conversion18()
+           == EmptySet)
   }
   test("and conversion19"){
-
+    val ab = Singleton(SMember("a","b"))
+    val ac = Singleton(SMember("a","c"))
+    val bc = Singleton(SMember("b","c"))
+    assert(And(ab,ac,bc).conversion19()
+           == EmptySet)
   }
   test("and conversion20"){
-
+    // e.g. And( Cat(Sigma,Star(Sigma)), Sigma,...) --> And(Sigma,...)
+    val ab = Singleton(SMember("a","b"))
+    assert(And(Cat(Sigma,Star(Sigma)),Sigma).conversion20
+             == And(Sigma))
+    assert(And(ab,Cat(Sigma,Star(Sigma)),Sigma).conversion20
+             == And(ab,Sigma))
   }
   test("and conversion21"){
     assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2)))).conversion21()
