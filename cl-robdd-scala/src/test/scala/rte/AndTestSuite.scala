@@ -130,6 +130,8 @@ class AndTestSuite extends AnyFunSuite {
     val X = Singleton(SAtomic(classOf[TraitX]))
     val Y = Singleton(SAtomic(classOf[TraitY]))
 
+    val Z = Singleton(SAtomic(classOf[TraitX]))
+
     assert(And(A,Or(X,Y)).conversion10() == Or(And(A,X),And(A,Y)))
     assert(And(A,Or(X,Y),B).conversion10() == Or(And(A,X,B),And(A,Y,B)))
   }
@@ -279,7 +281,9 @@ class AndTestSuite extends AnyFunSuite {
       val r15= r14.canonicalizeOnce
 
       assert(And(r1,Or(r2,r3).canonicalize,r4).canonicalize
-             == And(r1,Or(r2,r3),r4).canonicalize)
+             ~= And(r1,Or(r2,r3),r4).canonicalize,
+             "\nlhs = " + And(r1,Or(r2,r3).canonicalize,r4).canonicalize +
+             "\nrhs = " + And(r1,Or(r2,r3),r4).canonicalize)
     }
     assert(r2.canonicalize == Sigma)
     for {depth <- 0 to 1
@@ -493,6 +497,83 @@ class AndTestSuite extends AnyFunSuite {
     assert(And(a,Cat(a,Star(a),b)).conversion17()
              == EmptySet)
   }
+  test("and conversion17a"){
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    // considering only the Cat's with no nullables,
+    //    they must all have the same number of operands
+    assert(And(Cat(a,a),Cat(a,a,a)).conversion17a()
+             == EmptySet)
+    assert(And(Cat(a,a,a),Cat(a,a,a)).conversion17a()
+             != EmptySet)
+    assert(And(Cat(a,a),Cat(a,a),Cat(a,a),Cat(a,a,a)).conversion17a()
+             == EmptySet)
+
+    assert(And(Cat(a,a),Cat(a,a,Star(a))).conversion17a()
+             != EmptySet)
+    assert(And(Cat(a,b),
+               Cat(b,a),
+               Star(b)).conversion17a()
+             == And(Cat(And(a,b),And(b,a)),
+                    Star(b)))
+
+    assert(And(Cat(a,b,b,a),
+               Cat(b,a,b,b),
+               Star(b)).conversion17a()
+             == And(Cat(And(a,b),
+                        And(b,a),
+                        And(b,b),
+                        And(a,b)),
+                    Star(b)))
+
+  }
+  test("and conversion17b"){
+    // if there is a Cat having no nullables,
+    //    then every cat must have that many non-nullables or
+    //    or fewer plus a nullable
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+
+    assert(And(Cat(a,a),Cat(a,a,a,Star(a))).conversion17b()
+             == EmptySet)
+
+    assert(And(Cat(a,a),Cat(a,a,Star(a))).conversion17b()
+             != EmptySet)
+    assert(And(Cat(a,a),Cat(a,Star(b),a,Star(a))).conversion17b()
+             != EmptySet)
+  }
+  test("and conversion17c"){
+    // if And(...) contains a Cat with no nullables,
+    //  then remove the nullables from ever other Cat with that many non-nullables.
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val c = Singleton(SEql("c"))
+    assert(And(Cat(a,b,Sigma),
+               Cat(Star(c),a,Star(c),b,Star(Sigma),c)).conversion17c()
+             == And(Cat(a,b,Sigma),Cat(a,b,c)))
+    assert(And(Cat(a,b,Star(Sigma)),
+               Cat(Star(c),a,Star(c),b,Star(Sigma),c)).conversion17c()
+             == And(Cat(a,b,Star(Sigma)),
+                    Cat(Star(c),a,Star(c),b,Star(Sigma),c)))
+
+    assert(And(Cat(a,b,c),
+               Cat(a,Star(b)),
+               Cat(a,b,Star(c)),
+               Cat(Star(c),a,Star(c),b,Star(Sigma),c),
+               Cat(a,a,a,a,Star(b))).conversion17c()
+             == And(Cat(a,b,c),
+                    Cat(a,Star(b)),
+                    Cat(a,b,Star(c)),
+                    Cat(a,b,c),
+                    Cat(a,a,a,a)))
+
+    // e.g. And( Cat(Sigma,Star(Sigma)), Sigma,...) --> And(Sigma,...)
+    val ab = Singleton(SMember("a","b"))
+    assert(And(Cat(Sigma,Star(Sigma)),Sigma).conversion17c()
+             == And(Sigma,Sigma))
+    assert(And(ab,Cat(Sigma,Star(Sigma)),Sigma).conversion17c()
+             == And(ab,Sigma,Sigma))
+  }
   test("and conversion18"){
     // if And(...) contains a singleton which is non inhabited
     assert(And(Singleton(SAnd(SEql(1),SEql(2)))).conversion18()
@@ -505,14 +586,7 @@ class AndTestSuite extends AnyFunSuite {
     assert(And(ab,ac,bc).conversion19()
            == EmptySet)
   }
-  test("and conversion20"){
-    // e.g. And( Cat(Sigma,Star(Sigma)), Sigma,...) --> And(Sigma,...)
-    val ab = Singleton(SMember("a","b"))
-    assert(And(Cat(Sigma,Star(Sigma)),Sigma).conversion20
-             == And(Sigma))
-    assert(And(ab,Cat(Sigma,Star(Sigma)),Sigma).conversion20
-             == And(ab,Sigma))
-  }
+
   test("and conversion21"){
     assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2)))).conversion21()
              == Singleton(SMember(3,4)))

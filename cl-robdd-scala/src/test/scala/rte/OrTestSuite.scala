@@ -24,7 +24,7 @@ package rte
 
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
-// import rte.RteImplicits._
+import rte.RteImplicits._
 
 class OrTestSuite extends AnyFunSuite {
 
@@ -58,15 +58,14 @@ class OrTestSuite extends AnyFunSuite {
     assert(Or(r1, r2, r3, r4).canonicalize ~= Or(r1, Or(r2, r3), r4).canonicalize)
   }
 
-  test("canonicalize or") {
+  test("canonicalize or a") {
     assert(Or(EmptySet, EmptySet).canonicalize == EmptySet)
     assert(Or().canonicalize == EmptySet)
     class TestSup
     class TestSub extends TestSup
     class TestD1 // disjoint from TestD2
     class TestD2 // disjoint from TestD1
-    val trsup = Singleton(genus.SAtomic(classOf[TestSup]))
-    val trsub = Singleton(genus.SAtomic(classOf[TestSub]))
+
     val trd1 = Singleton(genus.SAtomic(classOf[TestD1]))
     val trd2 = Singleton(genus.SAtomic(classOf[TestD2]))
 
@@ -84,34 +83,56 @@ class OrTestSuite extends AnyFunSuite {
     // Or(A,ε,<java.lang.String>,<java.lang.Integer>) did not equal Or(A,<java.lang.String>,ε,<java.lang.Integer>)
     assert(Or().canonicalize
              == Or().canonicalize)
+  }
+  test("avoid infinite loop a") {
+    val number = SAtomic(classOf[Number])
 
-    //                     Or(ε,A,Cat(C,B,Star(Cat(C,B))))
-    // not isomorphic with Or(A,Star(Cat(C,B)))
+    Cat(Star(Sigma),
+        number,
+        Singleton(SEql(-1))).derivative(Some(number))
+
+  }
+  test("avoid infinite loop b"){
+    // r1=Cat(Cat(Σ,(Σ)*),Cat(<Integer>,<{a,b,c}>))
+    // r2=And((<Number>)*,Or(<Trait3$1>,<[= -1]>))
+    val number = Singleton(SAtomic(classOf[Number]))
+
+    trait Trait2
+    trait Trait3 extends Trait2
+    val r3 = Or(SMember(1,2,3,4),
+                Cat(Not(SEql(-1)),
+                    number,
+                    SEql(-1)))
+    r3.canonicalizeOnce
+
+  }
+  test("canonicalize or b1") {
+    for {depth <- 2 to 2
+         r <- 1 to 5000
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         } {
+      // remove EmptySet
+      try {
+        Or(r1,r2).canonicalize }
+      catch{
+        case e: StackOverflowError =>
+          println(s"r1=$r1")
+          println(s"r2=$r2")
+          throw e
+      }
+    }
+  }
+
+  test("canonicalize or b2") {
+
     for {depth <- 0 to 5
-         _ <- 1 to 500
+         _ <- 1 to 5000
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
          r4 = Rte.randomRte(depth)
          } {
-      // remove EmptySet
-      assert(Or(r1, EmptySet, r2).canonicalize == Or(r1, r2).canonicalize)
-
-      // remove duplicate
-      assert(Or(r1, r2, r3, r2).canonicalize == Or(r1, r2, r3).canonicalize ||
-               Or(r1, r2, r3, r2).canonicalize == Or(r1, r3, r2).canonicalize
-             )
-      // Or(x) = x
-      assert(Or(r1).canonicalize ~= r1.canonicalize)
-
-      // Or(a,Star(Sigma),b) --> Star(Sigma)
-      assert(Or(r1, Star(Sigma), r2).canonicalize == Rte.sigmaStar)
-
-      // Or(a,Or(x,y)) --> Or(a,x,y)
-      assert(Or(r1, Or(r2, r3)).canonicalize ~= Or(r1, r2, r3).canonicalize,
-             s"\n   r1=$r1 \n   r2=$r2 \n   r3=$r3" +
-               s"\n   Or(r1,Or(r2,r3))= " + Or(r1, Or(r2, r3)).canonicalize +
-               s"\n   Or(r1,r2,r3)=     " + Or(r1, r2, r3))
 
       // Or(Or(x,y),b) --> Or(x,y,b)
       assert(Or(Or(r2, r3), r4).canonicalize ~= Or(r2, r3, r4).canonicalize,
@@ -128,20 +149,27 @@ class OrTestSuite extends AnyFunSuite {
       // (:or A B (:* B) C)
       // --> (:or A (:* B) C)
 
-      // (:or :epsilon (:cat X (:* X)))
-      //   --> (:or :epsilon (:* X))
-      //println("canonicalizing A " + Or(EmptyWord,Cat(r3,Star(r3)))
-      //          + " --> " + Or(EmptyWord,Cat(r3,Star(r3))).canonicalize )
-      //println("canonicalizing B " + Or(EmptyWord,Star(r3))
-      //          + " --> " + Or(EmptyWord,Star(r3)).canonicalize)
-      //     Or(ε,Cat(Cat(A,B),Star(Cat(A,B))))
-      // --> Or(ε,Cat(A,B,Star(Cat(A,B))))
-
       assert(Or(EmptyWord, Cat(r3, Star(r3))).canonicalize
                ~= Or(EmptyWord, Star(r3)).canonicalize,
              "" + Or(EmptyWord, Cat(r3, Star(r3))).canonicalize
                + " not isomorphic with "
                + Or(EmptyWord, Star(r3)).canonicalize)
+    }
+  }
+
+  test("canonicalize or c") {
+    class TestSup
+    class TestSub extends TestSup
+    val trsup = Singleton(genus.SAtomic(classOf[TestSup]))
+    val trsub = Singleton(genus.SAtomic(classOf[TestSub]))
+
+    for {depth <- 0 to 5
+         _ <- 1 to 500
+         r1 = Rte.randomRte(depth)
+         r2 = Rte.randomRte(depth)
+         r3 = Rte.randomRte(depth)
+         r4 = Rte.randomRte(depth)
+         } {
 
       // Or(:epsilon,Cat(X,Y,Z,Star(Cat(X,Y,Z))))
       //  --> Or(:epsilon,Star(Cat(X,Y,Z)))
@@ -186,6 +214,7 @@ class OrTestSuite extends AnyFunSuite {
                Or(r1, r2, trsup, r3).canonicalize)
     }
   }
+
   test("or 415") {
     assert(Or(EmptyWord, Cat(Star(Sigma), Sigma, Star(Sigma))).canonicalize
              == Star(Sigma))
@@ -471,6 +500,10 @@ class OrTestSuite extends AnyFunSuite {
   }
   test("or conversion17"){
     // Or(<{1,2,3,4}>,Not(<{3,4,5,6}>))
+    //  --> Or(<{3,4}>,Not(<{3,4,5,6}>))
+    //  i.e., 1 and 2 are already in Not(<{3,4,5,6}>), so they can
+    //     be removed from <{1,2,3,4}> without effecting the overall result
+
     assert(Or(Singleton(SMember(1,2,3,4)),
               Not(Singleton(SMember(3,4,5,6)))).conversion17()
              == Or(Singleton(SMember(3,4)),
@@ -500,7 +533,15 @@ class OrTestSuite extends AnyFunSuite {
                    Singleton(SEql(0)),
                    Not(Singleton(SMember(1,2,3,4,5,6)))))
 
+    assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
+              Singleton(SInt)).conversion17()
+             == Or(Singleton(SMember("a","b","c")),
+                   Singleton(SInt)))
 
+    assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
+              Not(Singleton(SInt))).conversion17()
+             == Or(Singleton(SMember(1,2,3)),
+                   Not(Singleton(SInt))))
   }
   test("or conversion99"){
     // canonicalizing sub nodes

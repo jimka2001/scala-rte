@@ -239,17 +239,30 @@ case class Or(operands:Seq[Rte]) extends Rte {
     // Or(<{1,2,3}>,Not(<{3,4,5,6}>))
     // remove redundant element from SMember within Or
     // because of conversion16 we know there is at most one SMember/SEql
+    // Note that we would like to form a dfa of the Rte by removing
+    //     <{1,2,3}> and then testing membership of Seq(1), Seq(2), and Seq(3)
+    //     of that dfa.   However, creating a dfa means we must find all the derivatives
+    //     and canonicalize them.   This forms an infinite loop.    If someone
+    //     can figure out how to avoid this infinite loop, we could make this
+    //     conversion17 more effective.
+    //     As an approximation, rather than checking membership of the rte,
+    //     we instead find all the Singleton() and Not(Singleton(...))
+    //     and just form a SimpleTypeD and check that.
     val member = operands.collectFirst {
       case s@Singleton(_: genus.SMemberImpl) => s
     }
     member match {
       case None => this
       case Some(s@Singleton(m: genus.SMemberImpl)) =>
-        val stricter = create(searchReplace(operands, s, Seq()))
-        val dfa = stricter.toDfa(true)
-        val keep = m.xs.filter { x => !dfa.simulate(Seq(x)).contains(true) }
+        val singletons = operands.collect{
+          case s@Singleton(td) if ! member.contains(s) => td
+          case Not(Singleton(td)) => genus.SNot(td)
+        }
+        val td = genus.SOr(singletons : _*)
+        val keep = m.xs.filter { x => ! td.typep(x)}
         val rte = Singleton(genus.Types.createMember(keep: _*))
         create(searchReplace(operands, s, rte))
+      case _ => throw new Exception("scala compiler is not smart enough to know this line is unreachable")
     }
   }
   def conversion99():Rte =
@@ -276,7 +289,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       () => { conversion15()},
       () => { conversion16()},
       () => { conversion17()},
-      () => { conversion99()}
+      () => { conversion99() }
       ))
   }
 
