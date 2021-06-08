@@ -34,7 +34,6 @@ abstract class Labeler[Σ,L] {
 import genusbdd.GenusBdd
 
 case class GenusBddLabeler() extends Labeler[Any,GenusBdd]() {
-  import genusbdd.GenusBdd._
   def member(a:Any,gb:GenusBdd):Boolean = {
     gb.typep(a)
   }
@@ -46,7 +45,7 @@ case class GenusBddLabeler() extends Labeler[Any,GenusBdd]() {
   override def inhabited(l1:GenusBdd):Option[Boolean] = ???
 }
 
-import genus.{SimpleTypeD}
+import genus.SimpleTypeD
 case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
   import genus._
   def member(a:Any,rt:SimpleTypeD):Boolean = rt.typep(a)
