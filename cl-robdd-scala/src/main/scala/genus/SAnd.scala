@@ -125,6 +125,11 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
       super.subtypepDown(t)
   }
   def conversionA1():SimpleTypeD = {
+    // Note this isn't this consumed in conversion16,
+    //  conversion16 converts SAnd(SMember(42,43,44,"a","b","c"),SInt)
+    //       to SAnd(SMember(42,43,44),SInt)
+    // while conversionA1() converts it to
+    //       SMember(42,43,44)
 
     // SAnd(SMember(42,43,44), A, B, C)
     //  ==> SMember(42,44)
@@ -180,5 +185,12 @@ object SAnd {
       case Seq(td) => td
       case _ => SAnd(tds: _*)
     }
+  }
+  def main(argv:Array[String]):Unit = {
+    // SAnd(SMember(42,43,44), A, B, C)
+    //  ==> SMember(42,44)
+    println(SAnd(SMember(42,43,44,"a","b","c"),SInt).conversionA1())
+    println(SAnd(SMember(42,43,44,"a","b","c"),SInt).conversion16())
+    println(SOr(SMember(42,43,44,"a","b","c"),SInt).conversion16())
   }
 }
