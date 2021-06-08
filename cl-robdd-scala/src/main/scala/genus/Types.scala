@@ -23,8 +23,6 @@ package genus
 
 import java.lang
 import scala.annotation.tailrec
-import NormalForm._
-
 
 object Types {
   import scala.runtime.BoxedUnit
@@ -34,7 +32,7 @@ object Types {
   //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)
   //    classOf[A] && classOf[B]
   implicit def class2type(c:Class[_]): SimpleTypeD = SAtomic(c)
-  def createMember(xs:Any*):SimpleTypeD = xs match {
+  def createMember(xs:Seq[Any]):SimpleTypeD = xs match {
     case Seq() => SEmpty
     case Seq(a) => SEql(a)
     case _ => SMember(xs :_*)
