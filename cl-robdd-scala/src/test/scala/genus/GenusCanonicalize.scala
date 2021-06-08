@@ -350,8 +350,8 @@ class GenusCanonicalize extends AnyFunSuite {
                )
       }
     }
-    SAtomic.withOpenWorldView(testit)
-    SAtomic.withClosedWorldView(testit)
+    SAtomic.withOpenWorldView(testit())
+    SAtomic.withClosedWorldView(testit())
   }
   test("randomized testing of canonicalize") {
     for {_ <- 0 to 500
