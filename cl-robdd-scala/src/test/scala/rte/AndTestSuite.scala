@@ -357,24 +357,22 @@ class AndTestSuite extends AnyFunSuite {
              s"r1=$r1  r2=$r2   r3=$r3")
     }
   }
-  test("and conversion1"){
-    assert(And().conversion1() == Sigma)
-  }
-  test("and conversion2"){
-    assert(And(And()).conversion2() == And())
-  }
+
   test("and conversion3"){
     assert(And(And(),EmptySet,And()).conversion3() == EmptySet)
   }
+
   test("and conversion4"){
     assert(And(Or(),And(),And(),Or()).conversion4() == And(And(),Or()))
   }
+
   test("and conversion5"){
     assert(And(Singleton(SEql(2)),Singleton(SEql(1))).conversion5()
              == And(Singleton(SEql(1)),Singleton(SEql(2))))
     assert(And(Singleton(SEql(1)),Singleton(SEql(2))).conversion5()
              == And(Singleton(SEql(1)),Singleton(SEql(2))))
   }
+
   test("and conversion6"){
     // remove Sigma* and flatten And(And(...)...)
     assert(And(Star(Sigma),
@@ -384,10 +382,12 @@ class AndTestSuite extends AnyFunSuite {
       == And(Singleton(SEql(1)),Singleton(SEql(2)),
              Singleton(SEql(3)),Singleton(SEql(4))))
   }
+
   test("and conversion7"){
     assert(And(EmptyWord,Singleton(SEql(1))).conversion7()
            == EmptySet)
   }
+  
   test("and conversion8"){
     // if operands contains EmptyWord, then the intersection is either EmptyWord or EmptySet
     assert(And(EmptyWord,Star(Singleton(SEql(1)))).conversion8()

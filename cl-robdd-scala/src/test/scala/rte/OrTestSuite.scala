@@ -291,14 +291,7 @@ class OrTestSuite extends AnyFunSuite {
                Or(r1, And(r2, r3), r4).canonicalize)
     }
   }
-  test("or conversion1"){
-    assert(Or().conversion1() == EmptySet)
-    assert(Or(Or()).conversion1() != EmptySet)
-  }
-  test("or conversion2"){
-    assert(Or(Or()).conversion2() == Or())
-    assert(Or(Or(),Or()).conversion2() != Or())
-  }
+
   test("or conversion3"){
     // Or(... Sigma* ....) -> Sigma*
     assert(Or(Or(),Star(Sigma),Or()).conversion3() == Star(Sigma))

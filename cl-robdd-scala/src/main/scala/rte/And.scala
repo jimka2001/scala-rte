@@ -36,20 +36,6 @@ case class And(operands:Seq[Rte]) extends Rte{
   def nullable:Boolean = operands.forall{_.nullable} // TODO should be lazy
   def firstTypes:Set[SimpleTypeD] = operands.toSet.flatMap((r:Rte) => r.firstTypes) // TODO should be lazy
 
-  def conversion1():Rte = {
-    // And() -> Sigma
-    if (operands.isEmpty)
-      Sigma
-    else
-      this
-  }
-  def conversion2():Rte = {
-    if (operands.sizeIs == 1)
-      operands.head
-    else
-      this
-  }
-
   def conversion3():Rte = {
     // And(... EmptySet ....) -> EmptySet
     if (operands.contains(EmptySet))
@@ -295,6 +281,8 @@ case class And(operands:Seq[Rte]) extends Rte{
   def conversion99():Rte = {
     create(operands.map(_.canonicalizeOnce))
   }
+  def conversion1():Rte = create(operands)
+
   lazy val matchesOnlySingletons:Boolean = operands.contains(Sigma) || operands.exists(Rte.isSingleton)
 
   lazy val singletons:List[genus.SimpleTypeD] = operands.flatMap{
@@ -310,7 +298,6 @@ case class And(operands:Seq[Rte]) extends Rte{
 
     findSimplifier(this,List[() => Rte](
       () => { conversion1() },
-      () => { conversion2() },
       () => { conversion3() },
       () => { conversion4() },
       () => { conversion5() },

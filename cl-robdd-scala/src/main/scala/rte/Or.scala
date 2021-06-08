@@ -38,19 +38,6 @@ case class Or(operands:Seq[Rte]) extends Rte {
 
   def firstTypes: Set[genus.SimpleTypeD] = operands.toSet.flatMap((r: Rte) => r.firstTypes)
 
-  def conversion1():Rte = {
-    if (operands.isEmpty)
-      EmptySet
-    else
-      this
-  }
-  def conversion2():Rte = {
-    if (operands.sizeIs == 1)
-      operands.head
-    else
-      this
-  }
-
   def conversion3():Rte = {
     // Or(... Sigma* ....) -> Sigma*
     if (operands.contains(Rte.sigmaStar))
@@ -268,11 +255,12 @@ case class Or(operands:Seq[Rte]) extends Rte {
   def conversion99():Rte =
     create(operands.map(_.canonicalizeOnce))
 
+  def conversion1():Rte = create(operands)
+
   override def canonicalizeOnce: Rte = {
     lazy val existsNullable = operands.exists(_.nullable)
     findSimplifier(this,List[() => Rte](
       () => { conversion1() },
-      () => { conversion2() },
       () => { conversion3() },
       () => { conversion4() },
       () => { conversion5() },
