@@ -220,7 +220,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     }
     val as = members.flatMap{
       case Singleton(m:genus.SMemberImpl) => m.xs
-      case x => throw new Exception("unexpected value $x")
+      case x => throw new Exception(s"unexpected value $x")
     }
     if (members.isEmpty)
       this

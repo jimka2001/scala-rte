@@ -149,12 +149,11 @@ object TypeSystemWithLBdd {
       val numericType = SAtomic(classOf[java.lang.Number])
       val numericLBdd = typeAsLBdd(numericType)
 
-      val Number = classOf[java.lang.Number]
 
-      numericLBdd.bddView(true, "numericTypeLBdd")
+      numericLBdd.bddView(drawFalseLeaf=true, "numericTypeLBdd")
 
       val b2 = typeAsLBdd(SOr(SAnd(numericType, Types.intJavaType), Types.stringType))
-      b2.bddView(true, "string or (num and int)")
+      b2.bddView(drawFalseLeaf=true, "string or (num and int)")
     }
   }
 }

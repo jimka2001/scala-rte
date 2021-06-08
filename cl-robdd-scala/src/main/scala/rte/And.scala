@@ -303,7 +303,7 @@ case class And(operands:Seq[Rte]) extends Rte{
     case _ => List.empty
   }.toList
   //lazy val singletonIntersection = genus.SAnd.createAnd(singletons)
-  lazy val canonicalizedSingletons = genus.SAnd.createAnd(singletons).canonicalize()
+  lazy val canonicalizedSingletons: SimpleTypeD = genus.SAnd.createAnd(singletons).canonicalize()
 
   override def canonicalizeOnce:Rte = {
     //println("canonicalizing And: " + operands)

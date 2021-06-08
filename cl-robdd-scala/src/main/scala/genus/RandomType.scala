@@ -21,7 +21,6 @@
 
 package genus
 
-import scala.runtime.BoxedUnit
 import scala.language.implicitConversions
 import java.lang
 import scala.annotation.tailrec

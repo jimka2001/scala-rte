@@ -22,7 +22,6 @@
 package genus
 
 import NormalForm._
-import Types._
 
 object Statistics {
   import RandomType.randomType

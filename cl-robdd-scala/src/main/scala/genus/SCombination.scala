@@ -23,7 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
-import adjuvant.Adjuvant.{uniquify}
+import adjuvant.Adjuvant.uniquify
 
 // The purpose of this class, SCombination, is to serve as a superclass
 // of both SAnd and SOr, as there is quite a bit of common code between
