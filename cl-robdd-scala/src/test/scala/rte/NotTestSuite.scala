@@ -18,33 +18,30 @@
 // LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
+
 
 package rte
 
-case class Not(operand:Rte) extends Rte {
-  override def toLaTeX:String = "\\overline{" ++  operand.toLaTeX ++ "}"
-  def nullable:Boolean = ! operand.nullable
-  def firstTypes:Set[genus.SimpleTypeD] = operand.firstTypes
+import genus._
+import org.scalatest.funsuite.AnyFunSuite
 
-  override def canonicalizeOnce:Rte = {
-    operand match {
-      case Sigma => Rte.notSigma
-      case Singleton(genus.STop) => Rte.notSigma
-      case Rte.sigmaStar => EmptySet
-      case EmptyWord => Rte.notEpsilon
-      case EmptySet => Rte.sigmaStar
-      case Singleton(genus.SEmpty) => Rte.sigmaStar
+class NotTestSuite extends AnyFunSuite {
+  test("not canonicalizeOnce"){
+    assert(Not(Sigma).canonicalizeOnce == Rte.notSigma)
+    assert(Not(Singleton(STop)).canonicalizeOnce == Rte.notSigma)
+    assert(Not(Star(Sigma)).canonicalizeOnce == EmptySet)
+    assert(Not(EmptyWord).canonicalizeOnce == Rte.notEpsilon)
+    assert(Not(EmptySet).canonicalizeOnce == Star(Sigma))
+    assert(Not(Singleton(SEmpty)).canonicalizeOnce == Star(Sigma))
+    val x = Singleton(SEql("x"))
+    val y = Singleton(SEql("y"))
+    // Not(Not(r)) -> Not(r)
+    assert(Not(Not(x)).canonicalizeOnce == x)
 
-      // Not(Not(r)) -> Not(r)
-      case Not(r) => r
-      // Not(And(a,b)) -> Or(Not(a),Not(b))
-      case And(Seq(rs@_*)) => Or.createOr(rs.map(Not))
-      // Not(Or(a,b)) -> And(Not(a),Not(b))
-      case Or(Seq(rs@_*)) => And.createAnd(rs.map(Not))
+    // Not(And(a,b)) -> Or(Not(a),Not(b))
+    assert(Not(And(x,y)).canonicalizeOnce == Or(Not(x),Not(y)))
 
-      case _ => Not(operand.canonicalizeOnce)
-    }
+    // Not(Or(a,b)) -> And(Not(a),Not(b))
+    assert(Not(Or(x,y)).canonicalizeOnce == And(Not(x),Not(y)))
   }
-  def derivativeDown(wrt:genus.SimpleTypeD):Rte = Not(operand.canonicalize.derivative(Some(wrt)))
 }

@@ -27,7 +27,7 @@ import org.scalatest.funsuite.AnyFunSuite
 import rte.RteImplicits._
 
 class CatTestSuite extends AnyFunSuite {
-  
+
   test("cat case 99"){
     assert(Cat(Sigma,Sigma,Star(Sigma),Sigma,Sigma,Star(Sigma)).canonicalize
              == Cat(Sigma,Sigma,Sigma,Sigma,Star(Sigma)).canonicalize)
