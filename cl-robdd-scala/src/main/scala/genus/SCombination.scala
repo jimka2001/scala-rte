@@ -93,14 +93,12 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   }
 
   def conversion5(): SimpleTypeD = {
-
     // (and A B A C) -> (and A B C)
     // (or A B A C) -> (or A B C)
     create(adjuvant.Adjuvant.uniquify(tds))
   }
 
   def conversion6(): SimpleTypeD = {
-
     // (and A (and B C) D) --> (and A B C D)
     // (or A (or B C) D) --> (or A B C D)
     if (!tds.exists(sameCombination))
@@ -167,6 +165,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
 
   def conversion10(): SimpleTypeD = {
     // (and A B C) --> (and A C) if  A is subtype of B
+    // (or A B C) -->  (or B C) if  A is subtype of B
     tds.find(sub => tds.exists { sup =>
       ((sub != sup)
         && annihilator(sub, sup).contains(true))
@@ -181,7 +180,6 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   }
 
   def conversion11(): SimpleTypeD = {
-
     // A + A! B -> A + B
     // A + A! BX + Y = (A + BX + Y)
     // A + ABX + Y = (A + Y)
@@ -227,6 +225,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       case _ => this
     }
   }
+
   def conversion13():SimpleTypeD = {
     // multiple !member
     // SOr( x,!{-1,1},!{1,2,3,4})
@@ -307,8 +306,6 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     // Now (after conversions 13, 14, and 15, there is at most one SMember(...) and
     //   at most one Not(SMember(...))
 
-    // (and Long (not (member 1 2)) (not (member 3 4)))
-    //  --> (and Long (not (member 1 2 3 4)))
     // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
 
     val fewer: Seq[SimpleTypeD] = tds.flatMap {
