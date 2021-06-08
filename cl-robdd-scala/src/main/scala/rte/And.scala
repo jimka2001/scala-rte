@@ -23,8 +23,8 @@
 package rte
 
 import adjuvant.Adjuvant._
-
 import scala.annotation.tailrec
+import genus._
 
 case class And(operands:Seq[Rte]) extends Rte{
   import genus.SimpleTypeD
@@ -266,17 +266,24 @@ case class And(operands:Seq[Rte]) extends Rte{
   }
 
   def conversion21():Rte = {
+    // And({1,2,3},Singleton(X),Singleton(Y))
+    //  {...} selecting elements, x, for which SAnd(X,Y).typep(x) is true
     val members = operands.collectFirst{
-      case Singleton( m:genus.SMemberImpl) => m
+      case Singleton( m:genus.SMemberImpl) => m.xs
     }
-    members match {
+    lazy val lessStrict = SAnd.createAnd(operands.flatMap{
+      case Singleton(td) => Seq(td)
+      case _ => Seq()
+    })
+    val newMember = members match {
       case None => this
-      case Some(m) =>
-        val as:Seq[Any] = m.xs
-        val dfa = this.toDfa(true)
-        val filtered = as.filter{a => dfa.simulate(Seq(a)).contains(true)}
-        Singleton(genus.Types.createMember(filtered))
+      case Some(xs) =>
+        Singleton(Types.createMember(xs.filter{lessStrict.typep}))
     }
+    create(uniquify(operands.map{
+      case _:Singleton => newMember
+      case r => r
+    }))
   }
   def conversion99():Rte = {
     create(operands.map(_.canonicalizeOnce))
