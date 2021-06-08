@@ -22,6 +22,8 @@
 
 package rte
 
+import adjuvant.Adjuvant.findSimplifier
+
 case class Star(operand:Rte) extends Rte {
   override def toLaTeX: String = "(" ++ operand.toLaTeX ++ ")^{*}"
 
@@ -38,30 +40,54 @@ case class Star(operand:Rte) extends Rte {
     }
   }
 
-  override def canonicalizeOnce:Rte = operand.canonicalizeOnce match {
-    case EmptyWord => EmptyWord
-    case EmptySet => EmptyWord
-    case Star(rt) => Star(rt) // x** -> x*
-    case Cat(Seq(x, ys@Star(y))) if x == y => ys // (x x*)* = x*
-    case Cat(Seq(xs@Star(x), y)) if x == y => xs // (x* x)* = x*
-    case Cat(Seq(xs@Star(u), x, Star(v))) if x == u && x == v => xs // (x* x x*)* = x*
-    // Star(Cat(X, Y, Z, Star( Cat(X, Y, Z))))
-    //   -->    Star( Cat(X, Y, Z))
-    case Cat(Seq(xs@_*)) if Rte.isStarCat(xs.last) && getStarCatOperands(xs.last) == xs.dropRight(1) =>
-      xs.last
-    // Star(Cat(Star( Cat(X, Y, Z)), X, Y, Z))
-    //   -->    Star( Cat(X, Y, Z))
-    case Cat(Seq(xs@_*)) if Rte.isStarCat(xs.head) && getStarCatOperands(xs.head) == xs.tail =>
-      xs.head
-    // Star(Cat(Star( Cat(X, Y, Z)), X, Y, Z, Star(Cat(X,Y,Z)))
-    //   -->    Star( Cat(X, Y, Z))
-    case Cat(Seq(xs@_*)) if xs.size > 2 &&
-      Rte.isStarCat(xs.head)
-      && Rte.isStarCat(xs.last)
-      && xs.head == xs.last
-      && getStarCatOperands(xs.head) == xs.tail.dropRight(1) =>
-      xs.head
-    case rt => Star(rt)
+  def conversion1():Rte = {
+    this match {
+      case Star(EmptyWord) => EmptyWord
+      case Star(EmptySet) => EmptyWord
+      // x** -> x*
+      case Star(Star(r)) => Star(r)
+      case _ => this
+    }
+  }
+  def conversion2():Rte = {
+    this match {
+      case Star(Cat(Seq(x, ys@Star(y)))) if x == y => ys // (x x*)* = x*
+      case Star(Cat(Seq(xs@Star(x), y))) if x == y => xs // (x* x)* = x*
+      case Star(Cat(Seq(xs@Star(u), x, Star(v)))) if x == u && x == v => xs // (x* x x*)* = x*
+      case _ => this
+    }
+  }
+  def conversion3():Rte = {
+    this match {
+      // Star(Cat(X, Y, Z, Star( Cat(X, Y, Z))))
+      //   -->    Star( Cat(X, Y, Z))
+      case Star(Cat(Seq(xs@_*))) if Rte.isStarCat(xs.last) && getStarCatOperands(xs.last) == xs.dropRight(1) =>
+        xs.last
+      // Star(Cat(Star( Cat(X, Y, Z)), X, Y, Z))
+      //   -->    Star( Cat(X, Y, Z))
+      case Star(Cat(Seq(xs@_*))) if Rte.isStarCat(xs.head) && getStarCatOperands(xs.head) == xs.tail =>
+        xs.head
+      // Star(Cat(Star( Cat(X, Y, Z)), X, Y, Z, Star(Cat(X,Y,Z)))
+      //   -->    Star( Cat(X, Y, Z))
+      case Star(Cat(Seq(xs@_*))) if xs.size > 2 &&
+        Rte.isStarCat(xs.head)
+        && Rte.isStarCat(xs.last)
+        && xs.head == xs.last
+        && getStarCatOperands(xs.head) == xs.tail.dropRight(1) =>
+        xs.head
+      case _ => this
+    }
+  }
+  def conversion99():Rte = {
+    Star(operand.canonicalizeOnce)
+  }
+  override def canonicalizeOnce:Rte = {
+    findSimplifier(this,List[() => Rte](
+      () => { conversion1() },
+      () => { conversion2() },
+      () => { conversion3() },
+      () => { conversion99() }
+      ))
   }
 
   def derivativeDown(wrt: genus.SimpleTypeD): Rte = Cat(operand.canonicalize.derivative(Some(wrt)),
