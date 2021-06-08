@@ -241,7 +241,7 @@ class GenusSubtypep extends MyFunSuite {
   test("randomized testing of subtypep with normalization") {
     import NormalForm._
 
-    for {_ <- 0 to 200
+    for {_ <- 0 to 500
          n <- 0 to 5
          rt = randomType(n)
          } {
