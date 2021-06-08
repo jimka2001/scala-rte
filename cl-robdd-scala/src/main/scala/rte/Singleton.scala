@@ -39,7 +39,7 @@ case class Singleton(td:SimpleTypeD) extends Rte {
       case SOr(operands@_*) => Or.createOr(operands.map(Singleton))
       case SNot(operand) => And( Not(Singleton(operand)),
                                  Sigma)
-      case td => Singleton(td)
+      case td2 => Singleton(td2)
     }
   }
 

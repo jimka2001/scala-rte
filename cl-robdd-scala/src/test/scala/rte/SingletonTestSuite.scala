@@ -40,19 +40,42 @@ class SingletonTestSuite extends AnyFunSuite {
     assert(Singleton(SOr(xy, yz)).canonicalizeOnce == Singleton(SMember("x","y","z")))
     assert(Singleton(SNot(x)).canonicalizeOnce == And(Not(Singleton(x)), Sigma))
   }
-  test("discovered case 43"){
+  test("discovered case 43") {
     // <[SAnd [SAnd [SOr {a,b,c},{false,true},Class2X]],![SOr Trait1,Integer],![SOr {4,5,6},String]]>
     class Class2X
     trait Trait1
-    val td =  SAnd( SAnd( SOr( SMember("a","b","c"),
-                               SMember(false,true),
-                               SAtomic(classOf[Class2X])))  ,
-                    SNot(SOr( SAtomic(classOf[Trait1]),
-                              SAtomic(classOf[Integer]))),
-                    SNot(SOr( SMember(4,5,6),
-                              SAtomic(classOf[String]))))
-    Singleton(td).canonicalize
+    val td = SAnd(SAnd(SOr(SMember("a", false),
+                           SAtomic(classOf[Class2X]))),
+                  SNot(SOr(SEql(4),
+                           SAtomic(classOf[String]))))
+    var rte: Rte = Singleton(td.canonicalize())
+    for {r <- 0 to 10} {
+      rte = rte.canonicalizeOnce
+    }
+    rte.canonicalize
   }
+
+  test("discovered case 59") {
+    class Class2X
+    trait Trait1
+      //Or(And(<Class2X$1>,Not(<[SOr String,[= 4]]>)),And(<{false,a}>,Not(<[SOr String,[= 4]]>)))
+    val c2x = Singleton(SAtomic(classOf[Class2X]))
+    val S =   SAtomic(classOf[String])
+    val rte2 = Or(And(c2x,
+                      Not(Singleton(SOr(S,SEql(4))))),
+                  And(Singleton(SMember(false,"a")),
+                      Not(Singleton(SOr(S,SEql(4))))))
+    rte2.canonicalizeOnce
+  }
+
+  test("discovered case 74"){
+    // And: ArraySeq(({false,a}), Not(((SOr String,(= 4)))))
+    val S =   SAtomic(classOf[String])
+    val rte = And(Singleton(SMember(false,"a")),
+                  Not(Singleton(SOr(S,SEql(4)))))
+    rte.canonicalize
+  }
+
   test("singleton  canonicalize") {
 
     for {depth <- 0 to 4

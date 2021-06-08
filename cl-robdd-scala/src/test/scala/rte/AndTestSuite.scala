@@ -595,5 +595,12 @@ class AndTestSuite extends AnyFunSuite {
              == Singleton(SEql(4)))
     assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2,3,4,5,6)))).conversion21()
              == Singleton(SEmpty))
+    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+               Not(Singleton(SAtomic(classOf[String]))), // gets removed by conversion21
+               Cat(Singleton(SInt))).conversion21()
+             == And(Singleton(SMember(1,2,3)),Cat(Singleton(SInt))))
+    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+               Not(Singleton(SInt))).conversion21()
+             == Singleton(SMember("a","b","c")))
   }
 }
