@@ -23,6 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
+import adjuvant.Adjuvant.{searchReplace, uniquify}
 
 // The purpose of this class, SCombination, is to serve as a superclass
 // of both SAnd and SOr, as there is quite a bit of common code between
@@ -45,6 +46,10 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   def sameCombination(td: SimpleTypeD): Boolean = false
 
   def dualCombination(td: SimpleTypeD): Boolean = false
+
+  def combinator[A](a:Seq[A],b:Seq[A]):Seq[A]
+  def dualCombinator[A](a:Seq[A],b:Seq[A]):Seq[A]
+  def filter[A](seq:Seq[A],f:A=>Boolean):Seq[A]
 
   def conversion1(): SimpleTypeD = {
     if (tds.isEmpty) {
@@ -222,6 +227,104 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       case _ => this
     }
   }
+  def conversion13():SimpleTypeD = {
+    // multiple !member
+    // SOr( x,!{-1,1},!{1,2,3,4})
+    //   --> SOr(x,!{1})   // intersection of non-member
+    // SAnd( x,!{-1,1},!{1,2,3,4})
+    //   --> SOr(x,!{-1,1,2,3,4})   // union of non-member
+
+    val notMembers = tds.collect{
+      case nc@SNot(_:SMemberImpl)  => nc
+    }
+    if (notMembers.size <= 1)
+      this
+    else {
+      val newNotMember = SNot(createMember(notMembers.map{
+        case SNot(td:SMemberImpl) => td.xs
+        case _ => throw new Exception("scalac is not smart enough to know this will never happen")
+      }.reduce(dualCombinator[Any]) : _*))
+
+      create(uniquify(tds.map{
+        case SNot(_:SMemberImpl) => newNotMember
+        case td => td
+      }))
+    }
+  }
+  def conversion14():SimpleTypeD = {
+    // multiple member
+    // (or (member 1 2 3) (member 2 3 4 5)) --> (member 1 2 3 4 5)
+    // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
+    // (and (member 1 2 3) (member 2 3 4 5)) --> (member 2 3)
+
+    val members = tds.collect{
+      case m:SMemberImpl => m
+    }
+    if (members.size <= 1)
+      this
+    else {
+      val newMember = createMember(members.map(_.xs).reduce(combinator[Any]) : _*)
+
+      create(uniquify(tds.map{
+        case _:SMemberImpl => newMember
+        case td => td
+      }))
+    }
+  }
+  def conversion15():SimpleTypeD = {
+    // SAnd(X, member, not-member)
+    // SOr(X, member,  not-member)
+    val member = tds.collectFirst {
+      case m: SMemberImpl => m
+    }
+    val notMember = tds.collectFirst {
+      case SNot(m: SMemberImpl) => m
+    }
+    (this,member,notMember) match {
+      case (_:SAnd,Some(m),Some(n)) =>
+        //    SAnd({1,2,3,a},SNot({1,2,3,b})
+        // --> SAnd({a}                    )
+        create(tds.flatMap {
+          case SNot(n2: SMemberImpl) if n2 == n => Seq()
+          case m2:SMemberImpl if m2 == m=>
+            Seq(createMember(m.xs.diff(n.xs): _*))
+          case td => Seq(td)
+        })
+      case (_:SOr,Some(m),Some(n)) =>
+        //    SOr({1,2,3,a},SNot({1,2,3,b})
+        // --> SOr(        ,SNot({b})
+        create(tds.flatMap {
+          case m2: SMemberImpl if m2 == m => Seq()
+          case SNot(n2: SMemberImpl) if n2 == n =>
+            Seq(SNot(createMember(n.xs.diff(m.xs): _*)))
+          case td => Seq(td)
+        })
+      case (_,_,_) => this
+    }
+  }
+
+  def conversion16():SimpleTypeD = {
+    // Now (after conversions 13, 14, and 15, there is at most one SMember(...) and
+    //   at most one Not(SMember(...))
+
+    // (and Long (not (member 1 2)) (not (member 3 4)))
+    //  --> (and Long (not (member 1 2 3 4)))
+    // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
+
+    val fewer: Seq[SimpleTypeD] = tds.flatMap {
+      case _: SMemberImpl => Seq()
+      case SNot(_: SMemberImpl) => Seq()
+      case td => Seq(td)
+    }
+    // stricter in the case of SOr, but laxer in the case of SAnd
+    val stricter = create(fewer)
+
+    create(tds.map {
+      case m: SMemberImpl => createMember(filter(m.xs, stricter.typep): _*)
+      case SNot(m: SMemberImpl) => SNot(createMember(filter(m.xs, stricter.typep): _*))
+      case td => td
+    })
+  }
 
   // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
@@ -237,7 +340,11 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       () => { conversion9() },
       () => { conversion10() },
       () => { conversion11() },
-      () => { conversion12() }
+      () => { conversion12() },
+      () => { conversion13() },
+      () => { conversion14() },
+      () => { conversion15() },
+      () => { conversion16() }
       ))
   }
 

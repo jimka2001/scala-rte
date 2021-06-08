@@ -60,6 +60,11 @@ object Types {
     case SOr(_*) => true
     case _ => false
   }
+  val combop: SimpleTypeD=>Boolean = {
+    case SOr(_*) => true
+    case SAnd(_*) => true
+    case _ => false
+  }
   val notp: SimpleTypeD=>Boolean = {
     case SNot(_) => true
     case _ => false

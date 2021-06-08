@@ -23,7 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
-import adjuvant.Adjuvant.conj
+import adjuvant.Adjuvant.{conj, uniquify}
 
 /** An intersection type, which is the intersection of zero or more types.
  *
@@ -41,6 +41,14 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   }
   override def sameCombination(td:SimpleTypeD):Boolean = andp(td)
   override def dualCombination(td:SimpleTypeD):Boolean = orp(td)
+  def combinator[A](a:Seq[A],b:Seq[A]):Seq[A] = {
+    a.intersect(b)
+  }
+  def dualCombinator[A](a:Seq[A],b:Seq[A]):Seq[A] = {
+    uniquify(a ++ b)
+  }
+  def filter[A](seq:Seq[A],f:A=>Boolean):Seq[A] = seq.filter(f)
+
   override def typep(a: Any): Boolean = {
     tds.forall(_.typep(a))
   }
@@ -116,13 +124,31 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     } else
       super.subtypepDown(t)
   }
+  def conversionA1():SimpleTypeD = {
 
+    // SAnd(SMember(42,43,44), A, B, C)
+    //  ==> SMember(42,44)
+    tds.find(memberp) match {
+      case Some(SMember(xs@_*)) =>
+        createMember(xs.filter(typep): _*)
+      case Some(SEql(a)) =>
+        createMember(Seq(a).filter(typep): _*)
+      case _ => this
+    }
+  }
+
+  def conversionA3():SimpleTypeD = {
+    // discover a disjoint pair
+    if (tds.tails.exists(ts => ts.nonEmpty && ts.tail.exists(b => b.disjoint(ts.head).contains(true))))
+      SEmpty
+    else
+      this
+  }
   // SAnd(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     findSimplifier(List[() => SimpleTypeD](
-      () => { SAnd.conversion1(tds,this) },
-      () => { SAnd.conversion2(tds,this) },
-      () => { SAnd.conversion3(tds,this) },
+      () => { conversionA1() },
+      () => { conversionA3() },
       () => { super.canonicalizeOnce(nf)}
       ))
   }
@@ -154,56 +180,5 @@ object SAnd {
       case Seq(td) => td
       case _ => SAnd(tds: _*)
     }
-  }
-  def conversion1(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
-    val td = SAnd.createAnd(tds)
-
-    // SAnd(SMember(42,43,44), A, B, C)
-    //  ==> SMember(42,44)
-    tds.find(memberp) match {
-      case Some(SMember(xs@_*)) =>
-        createMember(xs.filter(td.typep): _*)
-      case Some(SEql(a)) =>
-        createMember(Seq(a).filter(td.typep): _*)
-      case _ => default
-    }
-  }
-  def conversion2(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
-
-    // (and Long (not (member 1 2)) (not (member 3 4)))
-    //  --> (and Long (not (member 1 2 3 4)))
-    // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
-
-    val notMembers = tds.filter {
-      case SNot(SMember(_*)) => true
-      case SNot(SEql(_)) => true
-      case _ => false
-    }
-    val others: Seq[SimpleTypeD] = tds.filter {
-      case SNot(SEql(_)) => false
-      case SNot(SMember(_*)) => false
-      case _ => true
-    }
-    if (notMembers.isEmpty)
-      default
-    else {
-      // the intersection type omitting the (not (member ...)
-      val lessStrict = SAnd(others: _*)
-      val newMembers = notMembers.flatMap {
-        case SNot(SMember(xs@_*)) => xs
-        case SNot(e@SEql(_)) => e.xs
-      }
-      val newElements: Seq[Any] = newMembers.filter(x => lessStrict.typep(x))
-      val newNotMember = SNot(SMember(newElements: _*).canonicalize())
-
-      SAnd.createAnd((others ++ Seq(newNotMember)).sortWith(cmpTypeDesignators))
-    }
-  }
-  def conversion3(tds:Seq[SimpleTypeD],default:SimpleTypeD):SimpleTypeD = {
-    // discover a disjoint pair
-    if (tds.tails.exists(ts => ts.nonEmpty && ts.tail.exists(b => b.disjoint(ts.head).contains(true))))
-      SEmpty
-    else
-      default
   }
 }
