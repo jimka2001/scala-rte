@@ -268,22 +268,24 @@ case class And(operands:Seq[Rte]) extends Rte{
   def conversion21():Rte = {
     // And({1,2,3},Singleton(X),Singleton(Y))
     //  {...} selecting elements, x, for which SAnd(X,Y).typep(x) is true
-    val members = operands.collectFirst{
-      case Singleton( m:genus.SMemberImpl) => m.xs
-    }
-    lazy val lessStrict = SAnd.createAnd(operands.flatMap{
-      case Singleton(td) => Seq(td)
-      case _ => Seq()
-    })
-    val newMember = members match {
+    import Types.createMember
+    operands.collectFirst {
+      case Singleton(m: genus.SMemberImpl) => m.xs
+    } match {
       case None => this
       case Some(xs) =>
-        Singleton(Types.createMember(xs.filter{lessStrict.typep}))
+        val lessStrict: SimpleTypeD = SAnd.createAnd(operands.flatMap {
+          case Singleton(td) => Seq(td)
+          case Not(Singleton(td)) => Seq(SNot(td))
+          case _ => Seq()
+        })
+        val newMember: Rte = Singleton(createMember(xs.filter(lessStrict.typep)))
+        create(uniquify(operands.map {
+          case _: Singleton => newMember
+          case Not(_: Singleton) => newMember
+          case r => r
+        }))
     }
-    create(uniquify(operands.map{
-      case _:Singleton => newMember
-      case r => r
-    }))
   }
   def conversion99():Rte = {
     create(operands.map(_.canonicalizeOnce))
@@ -346,6 +348,11 @@ object And {
 
 object AndSanity {
   def main(argv:Array[String]):Unit = {
-    print(And(Singleton(genus.SEql(0)),Sigma).canonicalize)
+    var c1:Rte = And(Singleton(STop),Not(Singleton(SMember(4,5,6))))
+
+    for{ i <- 0 to 10}{
+      c1 = c1.canonicalizeOnce
+      println(s"$i: $c1")
+    }
   }
 }

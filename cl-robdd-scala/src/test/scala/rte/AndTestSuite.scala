@@ -50,7 +50,6 @@ class AndTestSuite extends AnyFunSuite {
     val X = Singleton(SEql(-1))
     val Y = Singleton(SEql(1))
     val ε = EmptyWord
-    import adjuvant.Adjuvant.trace
 
     val rte4 = Or(And(Or(Cat(Star(S),I),ε),
                       Cat(Star(S),I)),
@@ -88,7 +87,6 @@ class AndTestSuite extends AnyFunSuite {
         Not(Cat(Star(S),X)),
         Not(Cat(Star(S),Y)),
         Not(Star(S)))
-    import adjuvant.Adjuvant.trace
     val rte2 = rte1.canonicalizeOnce
     val rte3 = rte2.canonicalizeOnce
     val rte4 = rte3.canonicalizeOnce
