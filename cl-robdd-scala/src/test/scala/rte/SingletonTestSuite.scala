@@ -23,9 +23,10 @@ package rte
 
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
+import RandomType.randomType
 
 class SingletonTestSuite extends AnyFunSuite {
-  test("singleton canonicalize") {
+  test("singleton canonicalizeOnce") {
     val x = SEql("x")
     val y = SEql("y")
     val xy = SMember("x", "y")
@@ -39,4 +40,28 @@ class SingletonTestSuite extends AnyFunSuite {
     assert(Singleton(SOr(xy, yz)).canonicalizeOnce == Singleton(SMember("x","y","z")))
     assert(Singleton(SNot(x)).canonicalizeOnce == And(Not(Singleton(x)), Sigma))
   }
+  test("discovered case 43"){
+    // <[SAnd [SAnd [SOr {a,b,c},{false,true},Class2X]],![SOr Trait1,Integer],![SOr {4,5,6},String]]>
+    class Class2X
+    trait Trait1
+    val td =  SAnd( SAnd( SOr( SMember("a","b","c"),
+                               SMember(false,true),
+                               SAtomic(classOf[Class2X])))  ,
+                    SNot(SOr( SAtomic(classOf[Trait1]),
+                              SAtomic(classOf[Integer]))),
+                    SNot(SOr( SMember(4,5,6),
+                              SAtomic(classOf[String]))))
+    Singleton(td).canonicalize
+  }
+  test("singleton  canonicalize") {
+
+    for {depth <- 0 to 4
+         _ <- 1 to 10000
+         td = randomType(depth)
+         rt = Singleton(td)
+         } {
+      rt.canonicalize
+    }
+  }
+
 }
