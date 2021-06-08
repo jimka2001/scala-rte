@@ -24,23 +24,19 @@ package rte
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 
-class NotTestSuite extends AnyFunSuite {
-  test("not canonicalizeOnce"){
-    assert(Not(Sigma).canonicalizeOnce == Rte.notSigma)
-    assert(Not(Singleton(STop)).canonicalizeOnce == Rte.notSigma)
-    assert(Not(Star(Sigma)).canonicalizeOnce == EmptySet)
-    assert(Not(EmptyWord).canonicalizeOnce == Rte.notEpsilon)
-    assert(Not(EmptySet).canonicalizeOnce == Star(Sigma))
-    assert(Not(Singleton(SEmpty)).canonicalizeOnce == Star(Sigma))
-    val x = Singleton(SEql("x"))
-    val y = Singleton(SEql("y"))
-    // Not(Not(r)) -> Not(r)
-    assert(Not(Not(x)).canonicalizeOnce == x)
-
-    // Not(And(a,b)) -> Or(Not(a),Not(b))
-    assert(Not(And(x,y)).canonicalizeOnce == Or(Not(x),Not(y)))
-
-    // Not(Or(a,b)) -> And(Not(a),Not(b))
-    assert(Not(Or(x,y)).canonicalizeOnce == And(Not(x),Not(y)))
+class SingletonTestSuite extends AnyFunSuite {
+  test("singleton canonicalize") {
+    val x = SEql("x")
+    val y = SEql("y")
+    val xy = SMember("x", "y")
+    val yz = SMember("y", "z")
+    assert(Singleton(STop).canonicalizeOnce == Sigma)
+    assert(Singleton(SEmpty).canonicalizeOnce == EmptySet)
+    assert(Singleton(SAnd(x, y)).canonicalizeOnce == EmptySet)
+    assert(Singleton(SAnd(SDouble,SInt)).canonicalizeOnce == And(Singleton(SDouble),Singleton(SInt)))
+    assert(Singleton(SAnd(xy, yz)).canonicalizeOnce == Singleton(y))
+    assert(Singleton(SOr(SDouble,SInt)).canonicalizeOnce == Or(Singleton(SDouble),Singleton(SInt)))
+    assert(Singleton(SOr(xy, yz)).canonicalizeOnce == Singleton(SMember("x","y","z")))
+    assert(Singleton(SNot(x)).canonicalizeOnce == And(Not(Singleton(x)), Sigma))
   }
 }
