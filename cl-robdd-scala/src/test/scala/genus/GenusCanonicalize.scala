@@ -26,7 +26,7 @@ import genus.Types._
 import genus.NormalForm._
 import org.scalatest.Assertion
 import org.scalatest.funsuite.AnyFunSuite
-import RandomType.randomType
+import RandomType.{randomType,interestingValues}
 
 class GenusCanonicalize extends AnyFunSuite {
 
@@ -313,7 +313,6 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(cnf3 - dnf1 == SEmpty, "test 5")
     assert(dnf1 - cnf3 == SEmpty, "test 6")
 
-
     val cnf1 = SAnd(SOr(A, B),
                     SNot(SOr(C, D)))
     val dnf2 = cnf1.toDnf
@@ -325,8 +324,30 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(dnf3 - cnf1 == SEmpty, "test 8")
   }
 
+  test("rand typep") {
+    // make sure typep membership of particular values is the same before and after canonicalizing
+    for {depth <- 0 to 5
+         _ <- 0 to 5000
+         td = randomType(depth)
+         v <- interestingValues
+         cnf = td.canonicalize(Some(Cnf))
+         dnf = td.canonicalize(Some(Dnf))
+         } {
+      assert(td.typep(v) == cnf.typep(v),
+             s"\ntd=$td" +
+               s"\ncnf=$cnf" +
+               "\nlhs=" + td.typep(v) +
+               "\nrhs=" + cnf.typep(v)
+             )
+      assert(td.typep(v) == dnf.typep(v),
+             s"\ntd=$td" +
+               s"\ndnf=$dnf" +
+               "\nlhs=" + td.typep(v) +
+               "\nrhs=" + dnf.typep(v)
+             )
+    }
+  }
   test("randomized testing of canonicalize") {
-
     for {_ <- 0 to 500
          td = randomType(5)
          can = td.canonicalize(Some(Dnf))
