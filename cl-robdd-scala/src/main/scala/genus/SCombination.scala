@@ -305,7 +305,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   def conversion16():SimpleTypeD = {
     // Now (after conversions 13, 14, and 15, there is at most one SMember(...) and
     //   at most one Not(SMember(...))
-    
+
     // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
 
     val fewer: Seq[SimpleTypeD] = tds.flatMap {
