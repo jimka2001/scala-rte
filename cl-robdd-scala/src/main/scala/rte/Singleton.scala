@@ -21,7 +21,7 @@
 //
 
 package rte
-import genus.{SimpleTypeD,SAnd,SNot,STop}
+import genus._
 
 case class Singleton(td:SimpleTypeD) extends Rte {
   override def toLaTeX:String = td.toString
@@ -29,15 +29,16 @@ case class Singleton(td:SimpleTypeD) extends Rte {
   def nullable:Boolean = false
   def firstTypes:Set[SimpleTypeD] = Set(td)
   override def canonicalizeOnce:Rte = {
-    td match {
-      case genus.SAnd(operands@_*) => And( operands.map(td => Singleton(td.canonicalize()).canonicalizeOnce))
-      case genus.SOr(operands@_*) => Or( operands.map(td => Singleton(td.canonicalize()).canonicalizeOnce))
-      case genus.SNot(operand) => And( Not(Singleton(operand.canonicalize()).canonicalizeOnce),
-                                       Sigma)
-      case genus.STop => Sigma
-      case genus.SEmpty => EmptySet
-      case td if td.inhabited.contains(false) => EmptySet
-      case _ => Singleton(td.canonicalize())
+    td.canonicalize() match {
+      case STop => Sigma
+      case SEmpty => EmptySet
+      // TODO I think this can be removed because if td is not inhabited it has already been reduced to SEmpty
+      // case td if td.inhabited.contains(false) => EmptySet
+      case SAnd(operands@_*) => And.createAnd(operands.map(Singleton))
+      case SOr(operands@_*) => Or.createOr(operands.map(Singleton))
+      case SNot(operand) => And( Not(Singleton(operand)),
+                                 Sigma)
+      case td => Singleton(td)
     }
   }
   def derivativeDown(wrt:SimpleTypeD):Rte = wrt match {

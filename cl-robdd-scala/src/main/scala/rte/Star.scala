@@ -35,7 +35,7 @@ case class Star(operand:Rte) extends Rte {
 
   def getStarCatOperands(rt: Rte): Seq[Rte] = {
     rt match {
-      case Star(Cat(Seq(xs@_*))) => xs
+      case Star(Cat(xs)) => xs
       case _ => Seq.empty
     }
   }
@@ -61,15 +61,15 @@ case class Star(operand:Rte) extends Rte {
     this match {
       // Star(Cat(X, Y, Z, Star( Cat(X, Y, Z))))
       //   -->    Star( Cat(X, Y, Z))
-      case Star(Cat(Seq(xs@_*))) if Rte.isStarCat(xs.last) && getStarCatOperands(xs.last) == xs.dropRight(1) =>
+      case Star(Cat(xs)) if Rte.isStarCat(xs.last) && getStarCatOperands(xs.last) == xs.dropRight(1) =>
         xs.last
       // Star(Cat(Star( Cat(X, Y, Z)), X, Y, Z))
       //   -->    Star( Cat(X, Y, Z))
-      case Star(Cat(Seq(xs@_*))) if Rte.isStarCat(xs.head) && getStarCatOperands(xs.head) == xs.tail =>
+      case Star(Cat(xs)) if Rte.isStarCat(xs.head) && getStarCatOperands(xs.head) == xs.tail =>
         xs.head
       // Star(Cat(Star( Cat(X, Y, Z)), X, Y, Z, Star(Cat(X,Y,Z)))
       //   -->    Star( Cat(X, Y, Z))
-      case Star(Cat(Seq(xs@_*))) if xs.size > 2 &&
+      case Star(Cat(xs)) if xs.size > 2 &&
         Rte.isStarCat(xs.head)
         && Rte.isStarCat(xs.last)
         && xs.head == xs.last
