@@ -74,12 +74,22 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SAnd(SAtomic(Types.String), SMember("1", "2", "3", "4")).typep("2"))
     // (and Int (not (member 1 2)) (not (member 3 4)))
     //  --> (and Int (not (member 1 2 3 4)))
-    assert(SAnd(SAtomic(Types.String),
-                SNot(SMember("1", "2")),
-                SNot(SMember("3", "4"))).canonicalize()
-           == SAnd(SAtomic(Types.String),
-                   SNot(SMember("1", "2", "3", "4")),
-                   )
+
+
+    assert(SAnd(SAtomic(Types.String),SNot(SMember("1","2","3","4"))).canonicalizeOnce()
+           != SAtomic(Types.String))
+
+    val td1 = SAnd(SAtomic(Types.String),
+                   SNot(SMember("1", "2")),
+                   SNot(SMember("3", "4")))
+
+    assert(td1.canonicalize()
+             == SAnd(SAtomic(Types.String),
+                     SNot(SMember("1", "2", "3", "4"))),
+           s"\nlhs= " + td1.canonicalize() +
+             "\nrhs" + SAnd(SAtomic(Types.String),
+                            SNot(SMember("1", "2", "3", "4"))
+                            )
            )
     assert(SAnd(SAtomic(Types.String),
                 SNot(SMember("1", 2)),
@@ -140,8 +150,8 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SOr(SAtomic(A),
                SMember(1, 2, 3),
                SMember(3, 4, 5)).canonicalize()
-           == SOr(SAtomic(A),
-                  SMember(1, 2, 3, 4, 5)))
+             == SOr(SAtomic(A),
+                    SMember(1, 2, 3, 4, 5)))
     // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
     assert(SOr(SAtomic(Types.String),
                SMember(1, 2, "hello"),
@@ -416,23 +426,105 @@ class GenusCanonicalize extends AnyFunSuite {
          }
       testDnfInverse(randomType(2))
   }
-  test("or conversion1"){
+  test("combo conversion14"){
     // (or (member 1 2 3) (member 2 3 4 5)) --> (member 1 2 3 4 5)
     // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
     val S = SAtomic(classOf[String])
-    assert(SOr.conversion1(Seq(SMember(1, 2, 3), SMember(2, 3, 4, 5)), SEmpty)
+    assert(SOr(SMember(1, 2, 3), SMember(2, 3, 4, 5)).conversion14()
              == SMember(1,2,3,4,5))
 
-    assert(SOr.conversion1(Seq(SMember(1, 2, 3), SMember(2, 3, 4, 5)), SEmpty)
+    assert(SOr(SMember(1, 2, 3), SMember(2, 3, 4, 5)).conversion14()
              == SMember(1,2,3,4,5))
 
-    assert(SOr.conversion1(Seq(SMember(1, 2, 3), SMember(2, 3, 4, 5), S), SEmpty)
-             == SOr(S, SMember(1,2,3,4,5)))
-    assert(SOr.conversion1(Seq(SMember(1, 2, 3, "hello"), SMember(2, 3, 4, 5, "world"), S), SEmpty)
-             == SOr(S,SMember(1,2,3,4,5)))
-
+    assert(SOr(SMember(1, 2, 3), SMember(2, 3, 4, 5), S).conversion14()
+             == SOr(SMember(1,2,3,4,5),S))
+    assert(SOr(SMember(1, 2, 3, "hello"), SMember(2, 3, 4, 5, "world"), S).conversion14()
+             == SOr(SMember(1,"hello",2,3,4,5,"world"),S))
+    assert(SOr(SAtomic(A),
+               SMember(1, 2, 3),
+               SMember(3, 4, 5)).conversion14()
+             == SOr(SAtomic(A),
+                    SMember(1, 2, 3, 4, 5)))
   }
+  test("combo conversion13"){
+    assert(SAnd(SAtomic(Types.String),
+                SNot(SMember("1", "2")),
+                SNot(SMember("3", "4"))).conversion13()
+             == SAnd(SAtomic(Types.String),
+                     SNot(SMember("1", "2", "3", "4"))
+                     ))
+  }
+  test("and conversion15"){
+    val S = SAtomic(classOf[String])
+    assert(SAnd(S,SMember(1,2,3,4),SNot(SMember(3,4,5,6))).conversion15()
+             == SAnd(S,SMember(1,2)))
+  }
+  test("or conversion15"){
+    val S = SAtomic(classOf[String])
+    assert(SOr(S,SMember(1,2,3,4),SNot(SMember(3,4,5,6))).conversion15()
+             == SOr(S,SNot(SMember(5,6))))
+  }
+  test("and/or member/not-member") {
+    val S = SAtomic(classOf[String])
+    val values = List(1, 2, 3, 4, "a", "b", "c", "d", true)
 
+    for {td <- Seq(SOr(S, SMember(1, 2, 3)),
+                   SOr(S, SMember("a", "b", "c")),
+                   SOr(S, SMember("a", "b", "c", 1, 2, 3)),
+                   SAnd(S, SMember("a", "b", "c", 1, 2, 3)),
+                   SAnd(S, SMember("a", "b", "c")),
+                   SAnd(S, SMember(1, 2, 3)),
+                   SAnd(S, SNot(SMember("a", "b", "c", 1, 2, 3))),
+                   SAnd(S, SNot(SMember("a", "b", "c"))),
+                   SAnd(S, SNot(SMember(1, 2, 3))),
+                   SOr(S, SNot(SMember("a", "b", "c", 1, 2, 3))),
+                   SOr(S, SNot(SMember("a", "b", "c"))),
+                   SOr(S, SNot(SMember(1, 2, 3)))
+                   )
+         td1 = td.conversion16()
+         td2 = td.canonicalizeOnce()
+         td3 = td.canonicalize()
+         v <- values} {
+      assert(td.typep(v) == td1.typep(v))
+      assert(td.typep(v) == td2.typep(v),
+             s"\nv=$v" +
+               "\nrhs =" + td +
+               "\nlhs =" + td2)
+      assert(td.typep(v) == td3.typep(v),
+             s"\nv=$v" +
+               "\nrhs =" + td +
+               "\nlhs =" + td3)
+    }
+  }
+  test("combo conversion16") {
+    val S = SAtomic(classOf[String])
+    val values = List("a", "b", "c", "c", 1, 2, 3, 4, true)
+    for {td <- Seq(SAnd(S, SMember("a", "b", "c", 1, 2, 3)),
+                   SOr(S, SMember("a", "b", "c", 1, 2, 3)),
+                   SAnd(S, SNot(SMember("a", "b", "c", 1, 2, 3))),
+                   SOr(S, SNot(SMember("a", "b", "c", 1, 2, 3))))
+         v <- values}
+      assert(td.typep(v) == td.conversion16().typep(v))
+
+
+    assert(SAnd(S, SMember("a", "b", "c", 1, 2, 3)).conversion16()
+             == SAnd(S, SMember("a", "b", "c")))
+    assert(SAnd(S, SNot(SMember("a", "b", "c", 1, 2, 3))).conversion16()
+             == SAnd(S, SNot(SMember("a", "b", "c"))))
+    assert(SOr(S, SMember("a", "b", "c", 1, 2, 3)).conversion16()
+             == SOr(S, SMember(1, 2, 3)))
+    assert(SOr(S, SNot(SMember("a", "b", "c", 1, 2, 3))).conversion16()
+             == SOr(S, SNot(SMember(1, 2, 3))))
+
+    // (and Long (not (member 1 2)) (not (member 2 3 4)))
+    //  --> (and Long (not (member 1 2 3 4)))
+    assert(SAnd(SInt, SNot(SMember(1, 2, 3, 4))).conversion16()
+             == SAnd(SInt, SNot(SMember(1, 2, 3, 4))))
+
+    // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
+    assert(SAnd(SInt, SNot(SMember(1, 2, 3, 4, "a", "b"))).conversion16()
+             == SAnd(SInt, SNot(SMember(1, 2, 3, 4))))
+  }
   test("combo conversion12"){
 
     trait TraitA
@@ -445,7 +537,6 @@ class GenusCanonicalize extends AnyFunSuite {
     val B = SAtomic(classOf[TraitB])
     val C = SAtomic(classOf[TraitC])
     val X = SAtomic(classOf[ClassX])
-    val Y = SAtomic(classOf[TraitY])
 
     // AXBC + !X = ABC + !X
     assert(SOr(SAnd(A, X, B, C), SNot(X)).conversion12()
@@ -501,10 +592,6 @@ class GenusCanonicalize extends AnyFunSuite {
 
     // if rule does not apply, the it must return exactly the default
     assert(SAnd(A, B, C).conversion11() == SAnd(A,B,C))
-
-
-
-
   }
   test("or conversion9"){
     trait TraitA
@@ -517,7 +604,6 @@ class GenusCanonicalize extends AnyFunSuite {
     val B = SAtomic(classOf[TraitB])
     val C = SAtomic(classOf[TraitC])
     val X = SAtomic(classOf[ClassX])
-    val Y = SAtomic(classOf[TraitY])
 
     // ABC + A!BC + X -> ABC + AC + X (later -> AC + X)
     assert(SOr(SAnd(A, B, C), SAnd(A, SNot(B), C), X).conversion9()
@@ -536,31 +622,22 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SOr(SAnd(SNot(A), B, C), SAnd(A, SNot(B), C), X).conversion9()
              == SOr(SAnd(SNot(A),B,C),SAnd(A,SNot(B),C),X))
   }
-  test("and conversion1"){
+  test("and conversionA1"){
     // SAnd(SMember(42,43,44), A, B, C)
     //  ==> SMember(42,44)
-    assert(SAnd.conversion1(Seq(SMember(1,2,3,"hello","world"),SInt),SEmpty)
+    assert(SAnd(SMember(1, 2, 3, "hello", "world"), SInt).conversionA1()
            == SMember(1,2,3))
   }
-  test("and conversion2"){
-    // (and Long (not (member 1 2)) (not (member 2 3 4)))
-    //  --> (and Long (not (member 1 2 3 4)))
-    assert(SAnd.conversion2(Seq(SInt,SNot(SMember(1,2,3)),SNot(SMember(2,3,4))),SEmpty)
-             == SAnd(SInt,SNot(SMember(1,2,3,4))))
 
-    // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
-    assert(SAnd.conversion2(Seq(SInt,SNot(SMember(1,2,3,"a","b")),SNot(SMember(2,3,4))),SEmpty)
-             == SAnd(SInt,SNot(SMember(1,2,3,4))))
-  }
-  test("and conversion3") {
+  test("and conversionA3") {
     // discover a disjoint pair
-    assert(SAnd.conversion3(Seq(SMember(1,2,3),SMember(4,5,6)),STop)
+    assert(SAnd(SMember(1, 2, 3), SMember(4, 5, 6)).conversionA3()
              == SEmpty)
-    assert(SAnd.conversion3(Seq(SMember(1,2,3),SMember(3,4,5),SMember(4,5,6)),STop)
+    assert(SAnd(SMember(1, 2, 3), SMember(3, 4, 5), SMember(4, 5, 6)).conversionA3()
              == SEmpty)
     // else return the default
-    assert(SAnd.conversion3(Seq(SMember(1,2,3),SMember(3,4,5)),STop)
-             == STop)
+    assert(SAnd(SMember(1, 2, 3), SMember(3, 4, 5)).conversionA3()
+             != SEmpty)
   }
   test("and conversion9"){
     trait TraitA
@@ -573,7 +650,6 @@ class GenusCanonicalize extends AnyFunSuite {
     val B = SAtomic(classOf[TraitB])
     val C = SAtomic(classOf[TraitC])
     val X = SAtomic(classOf[ClassX])
-    val Y = SAtomic(classOf[TraitY])
 
     // ABC + A!BC + X -> ABC + AC + X (later -> AC + X)
     assert(SAnd(SOr(A, B, C), SOr(A, SNot(B), C), X).conversion9()
@@ -616,7 +692,6 @@ class GenusCanonicalize extends AnyFunSuite {
              == SOr(SDouble,SMember(1,2,3)))
 
     locally{
-
         abstract class ClassBsup
 
         trait TraitX
@@ -703,9 +778,7 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SOr(a,SOr(b,c),d).conversion6()
              == SOr(a,b,c,d))
   }
-  test("combo conversion7"){
 
-  }
   test("combo conversion8"){
     abstract class ClassA
     val A = SAtomic(classOf[ClassA])

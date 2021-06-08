@@ -24,8 +24,6 @@ package rte
 
 import genus.SimpleTypeD
 import adjuvant.Adjuvant._
-import xymbolyco.GraphViz.dfaView
-import xymbolyco.Minimize.trim
 
 import scala.annotation.tailrec
 
@@ -77,19 +75,17 @@ abstract class Rte {
       case Some(td) if td.inhabited.contains(false) => EmptySet
       case Some(td) => derivativeDown(td)
     }
-    val can = raw.canonicalize
-    can
+    raw
   }
   def derivativeDown(wrt:SimpleTypeD):Rte
 
   def derivatives():(Vector[Rte],Vector[Seq[(SimpleTypeD,Int)]]) = {
     import adjuvant.Adjuvant.traceGraph
-
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       val fts = rt.firstTypes
       val wrts = genus.Types.mdtd(fts)
       wrts.map(td => (td,
-        try rt.derivative(Some(td))
+        try rt.derivative(Some(td)).canonicalize
         catch {
           case e: CannotComputeDerivative =>
             throw new CannotComputeDerivatives(msg=Seq(s"when generating derivatives from $this",
@@ -129,14 +125,14 @@ abstract class Rte {
     val qids = rtes.indices.toSet
     val fids = qids.filter(i => rtes(i).nullable)
     val fmap = fids.map{i => i -> exitValue}.toMap
-    new Dfa(Qids=qids,
-            q0id=0,
-            Fids=fids,
-            protoDelta = (for{ src <- rtes.indices
-                            (rt,dst) <- edges(src)
-            } yield (src, rt, dst)).toSet,
+    new Dfa(Qids = qids,
+            q0id = 0,
+            Fids = fids,
+            protoDelta = (for {src <- rtes.indices
+                               (rt, dst) <- edges(src)
+                               } yield (src, rt, dst)).toSet,
             labeler = xymbolyco.GenusLabeler(),
-            fMap=fmap)
+            fMap = fmap)
   }
 }
 
@@ -146,6 +142,7 @@ object Rte {
   val sigmaSigmaStarSigma:Rte = Cat(Sigma, Sigma, sigmaStar)
   val notSigma: Rte = Or(sigmaSigmaStarSigma, EmptyWord)
   val notEpsilon: Rte = Cat(Sigma, sigmaStar)
+  val sigmaSigmaStar = notEpsilon
 
   def Member(xs: Any*):Rte = {
     Singleton(genus.SMember(xs : _*))

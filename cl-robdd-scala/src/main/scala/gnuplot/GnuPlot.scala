@@ -101,7 +101,7 @@ object GnuPlot {
     if (verbose)
       println(s"[writing to $gnuName\n")
     gnu.write(s"# $comment\n")
-    gnu.write("LC_CTYPE='en_US.UTF-8'\n")
+
     def logCompatible(projection:((String,List[Double],List[Double]))=>List[Double]):Boolean = {
       dataToPlot.forall{data =>
         val numbers = projection(data)
@@ -162,7 +162,13 @@ object GnuPlot {
 
         if (verbose)
           println(s"[generating $outputFileName")
-        val exitCode = (Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName) #>> new File(outputFileName)).!
+        gnu.write("\n")
+        val process = Process(Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName),
+                              None,
+                              // The LC_CTYPE env var prevents the following diagnostic from gnuplot
+                              // Fontconfig warning: ignoring UTF-8: not a valid region tag
+                              "LC_CTYPE" -> "en_US.UTF-8")
+        val exitCode = (process #>> new File(outputFileName)).!
 
         if (exitCode != 0)
           println(s"finished $outputFileName with exit code=$exitCode verbose=$verbose]")
@@ -170,5 +176,4 @@ object GnuPlot {
           println(s"finished $outputFileName]")
       }
   }
-
 }
