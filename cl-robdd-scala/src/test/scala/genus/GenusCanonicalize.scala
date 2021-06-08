@@ -326,26 +326,32 @@ class GenusCanonicalize extends AnyFunSuite {
 
   test("rand typep") {
     // make sure typep membership of particular values is the same before and after canonicalizing
-    for {depth <- 0 to 5
-         _ <- 0 to 5000
-         td = randomType(depth)
-         v <- interestingValues
-         cnf = td.canonicalize(Some(Cnf))
-         dnf = td.canonicalize(Some(Dnf))
-         } {
-      assert(td.typep(v) == cnf.typep(v),
-             s"\ntd=$td" +
-               s"\ncnf=$cnf" +
-               "\nlhs=" + td.typep(v) +
-               "\nrhs=" + cnf.typep(v)
-             )
-      assert(td.typep(v) == dnf.typep(v),
-             s"\ntd=$td" +
-               s"\ndnf=$dnf" +
-               "\nlhs=" + td.typep(v) +
-               "\nrhs=" + dnf.typep(v)
-             )
+    def testit() = {
+      for {depth <- 0 to 5
+           _ <- 0 to 2000
+           td = randomType(depth)
+           v <- interestingValues
+           cnf = td.canonicalize(Some(Cnf))
+           dnf = td.canonicalize(Some(Dnf))
+           } {
+        assert(td.typep(v) == cnf.typep(v),
+               "\n closedWorldView = " + SAtomic.closedWorldView.value +
+                 s"\ntd=$td" +
+                 s"\ncnf=$cnf" +
+                 "\nlhs=" + td.typep(v) +
+                 "\nrhs=" + cnf.typep(v)
+               )
+        assert(td.typep(v) == dnf.typep(v),
+               "\n closedWorldView = " + SAtomic.closedWorldView.value +
+               s"\ntd=$td" +
+                 s"\ndnf=$dnf" +
+                 "\nlhs=" + td.typep(v) +
+                 "\nrhs=" + dnf.typep(v)
+               )
+      }
     }
+    SAtomic.withOpenWorldView(testit)
+    SAtomic.withClosedWorldView(testit)
   }
   test("randomized testing of canonicalize") {
     for {_ <- 0 to 500
