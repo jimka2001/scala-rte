@@ -153,8 +153,8 @@ object GnuPlot {
     if (verbose)
       println(s"finished $gnuName]")
 
-    if(dataToPlot.exists{data:((String,List[Double],List[Double])) =>
-      data._2.size > 0 && data._3.size > 0
+    if(dataToPlot.exists{data: (String,List[Double],List[Double]) =>
+      data._2.nonEmpty && data._3.nonEmpty
     })
       terminals.foreach { terminal =>
         import sys.process._

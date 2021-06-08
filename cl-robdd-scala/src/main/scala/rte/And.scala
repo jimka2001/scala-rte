@@ -289,7 +289,7 @@ case class And(operands:Seq[Rte]) extends Rte{
         val as:Seq[Any] = m.xs
         val dfa = this.toDfa(true)
         val filtered = as.filter{a => dfa.simulate(Seq(a)).contains(true)}
-        Singleton(genus.Types.createMember(filtered : _*))
+        Singleton(genus.Types.createMember(filtered))
     }
   }
   def conversion99():Rte = {
@@ -303,7 +303,7 @@ case class And(operands:Seq[Rte]) extends Rte{
     case _ => List.empty
   }.toList
   //lazy val singletonIntersection = genus.SAnd.createAnd(singletons)
-  lazy val canonicalizedSingletons = genus.SAnd.createAnd(singletons).canonicalize()
+  lazy val canonicalizedSingletons: SimpleTypeD = genus.SAnd.createAnd(singletons).canonicalize()
 
   override def canonicalizeOnce:Rte = {
     //println("canonicalizing And: " + operands)

@@ -72,11 +72,11 @@ object GraphViz {
 
   def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E], stream: OutputStream, title:String, abbrev:Boolean): Unit = {
     val qarr=dfa.Q.toArray
-    val labels:Set[L] = (for { q <- dfa.Q
+    val labels:Set[L] = for { q <- dfa.Q
                                (_,transitions) <- q.transitions.groupBy(_.destination)
                                labels = transitions.map(_.label)
                                label = labels.reduce(dfa.labeler.combineLabels)
-                              } yield label)
+                              } yield label
     val labelMap:Map[L,String] = labels.toSeq.zipWithIndex.map{ case (lab,i:Int) =>
       // TODO if abbreviateTransitions is true, need to create a label in the .dot
       //   file indicating the mapping from abbrev to actual label

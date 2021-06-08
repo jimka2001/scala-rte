@@ -142,7 +142,7 @@ object Rte {
   val sigmaSigmaStarSigma:Rte = Cat(Sigma, Sigma, sigmaStar)
   val notSigma: Rte = Or(sigmaSigmaStarSigma, EmptyWord)
   val notEpsilon: Rte = Cat(Sigma, sigmaStar)
-  val sigmaSigmaStar = notEpsilon
+  val sigmaSigmaStar: Rte = notEpsilon
 
   def Member(xs: Any*):Rte = {
     Singleton(genus.SMember(xs : _*))
@@ -251,10 +251,9 @@ object Rte {
     (e1,e2) match {
       case (None,None) => None
       case (Some(b),Some(c)) if c == b => Some(b)
-      case (Some(b),Some(c)) => {
-        println(s"warning loosing value $c, using $b")
+      case (Some(b),Some(c)) =>
+        println(s"combineFmap: warning loosing value $c, using $b")
         Some(b) // f-value of dfa1 has precedence over dfa2
-      }
       case (Some(b),None) => Some(b)
       case (None,Some(b)) => Some(b)
     }
@@ -291,10 +290,10 @@ object Rte {
       () => And(randomSeq(depth - 1)),
       () => Cat(randomSeq(depth - 1)),
       () => Or(randomSeq(depth - 1)),
-      () => Singleton(genus.Types.randomType(0))
+      () => Singleton(genus.RandomType.randomType(0))
       )
     if (depth <= 0)
-      Singleton(genus.Types.randomType(0))
+      Singleton(genus.RandomType.randomType(0))
     else {
       val g = generators(random.nextInt(generators.length))
       g()

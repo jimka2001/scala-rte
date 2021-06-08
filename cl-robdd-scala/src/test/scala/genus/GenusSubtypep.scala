@@ -26,6 +26,7 @@ import org.scalatest.funsuite.AnyFunSuite
 import Types._
 
 import java.lang
+import RandomType.randomType
 
 class Test1
 

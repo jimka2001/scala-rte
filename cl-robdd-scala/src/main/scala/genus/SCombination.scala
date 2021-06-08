@@ -23,7 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
-import adjuvant.Adjuvant.{searchReplace, uniquify}
+import adjuvant.Adjuvant.uniquify
 
 // The purpose of this class, SCombination, is to serve as a superclass
 // of both SAnd and SOr, as there is quite a bit of common code between
@@ -243,7 +243,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       val newNotMember = SNot(createMember(notMembers.map{
         case SNot(td:SMemberImpl) => td.xs
         case _ => throw new Exception("scalac is not smart enough to know this will never happen")
-      }.reduce(dualCombinator[Any]) : _*))
+      }.reduce(dualCombinator[Any])))
 
       create(uniquify(tds.map{
         case SNot(_:SMemberImpl) => newNotMember
@@ -263,7 +263,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     if (members.size <= 1)
       this
     else {
-      val newMember = createMember(members.map(_.xs).reduce(combinator[Any]) : _*)
+      val newMember = createMember(members.map(_.xs).reduce(combinator[Any]))
 
       create(uniquify(tds.map{
         case _:SMemberImpl => newMember
@@ -287,7 +287,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         create(tds.flatMap {
           case SNot(n2: SMemberImpl) if n2 == n => Seq()
           case m2:SMemberImpl if m2 == m=>
-            Seq(createMember(m.xs.diff(n.xs): _*))
+            Seq(createMember(m.xs.diff(n.xs)))
           case td => Seq(td)
         })
       case (_:SOr,Some(m),Some(n)) =>
@@ -296,7 +296,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         create(tds.flatMap {
           case m2: SMemberImpl if m2 == m => Seq()
           case SNot(n2: SMemberImpl) if n2 == n =>
-            Seq(SNot(createMember(n.xs.diff(m.xs): _*)))
+            Seq(SNot(createMember(n.xs.diff(m.xs))))
           case td => Seq(td)
         })
       case (_,_,_) => this
@@ -320,8 +320,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     val stricter = create(fewer)
 
     create(tds.map {
-      case m: SMemberImpl => createMember(filter(m.xs, stricter.typep): _*)
-      case SNot(m: SMemberImpl) => SNot(createMember(filter(m.xs, stricter.typep): _*))
+      case m: SMemberImpl => createMember(filter(m.xs, stricter.typep))
+      case SNot(m: SMemberImpl) => SNot(createMember(filter(m.xs, stricter.typep)))
       case td => td
     })
   }

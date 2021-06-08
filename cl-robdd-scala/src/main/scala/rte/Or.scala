@@ -220,7 +220,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     }
     val as = members.flatMap{
       case Singleton(m:genus.SMemberImpl) => m.xs
-      case x => throw new Exception("unexpected value $x")
+      case x => throw new Exception(s"unexpected value $x")
     }
     if (members.isEmpty)
       this
@@ -228,7 +228,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       // careful to put the SMember back in the place of the first
       //   this is accomplished by replacing every SMember/SEql with the one we derive here
       //   and then use uniquify to remove duplicates without changing order.
-      val s = Singleton(genus.Types.createMember(uniquify(as) : _*))
+      val s = Singleton(genus.Types.createMember(uniquify(as)))
       create(uniquify(operands.map{
         case Singleton(_:genus.SMemberImpl) => s
         case r => r
@@ -260,7 +260,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
         }
         val td = genus.SOr(singletons : _*)
         val keep = m.xs.filter { x => ! td.typep(x)}
-        val rte = Singleton(genus.Types.createMember(keep: _*))
+        val rte = Singleton(genus.Types.createMember(keep))
         create(searchReplace(operands, s, rte))
       case _ => throw new Exception("scala compiler is not smart enough to know this line is unreachable")
     }

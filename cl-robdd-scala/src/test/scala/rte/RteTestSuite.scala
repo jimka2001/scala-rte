@@ -27,6 +27,7 @@ import RteImplicits._
 import adjuvant.Accumulators.withOutputToString
 import genus._
 import adjuvant.MyFunSuite
+import RandomType.randomType
 
 class RteTestSuite extends MyFunSuite {
 
@@ -95,7 +96,6 @@ class RteTestSuite extends MyFunSuite {
   }
 
   test("canonicalize Singleton") {
-    import Types.randomType
     for {
       _ <- 1 to 1000
       t1 = randomType(0)
@@ -185,7 +185,7 @@ class RteTestSuite extends MyFunSuite {
     assert(Not(EmptyWord).canonicalize == Cat(Sigma, Star(Sigma)))
     assert(Not(EmptySet).canonicalize == Star(Sigma))
     for {depth <- 0 to 2
-         r <- 1 to 1000
+         r <- 1 to 500
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {

@@ -22,6 +22,8 @@
 
 package rte
 
+import scala.annotation.tailrec
+
 final case class Cat(operands:Seq[Rte]) extends Rte {
   override def toLaTeX: String = "(" ++ operands.map(_.toLaTeX).mkString("\\cdot ") ++ ")"
 
@@ -68,7 +70,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
     case Nil => EmptyWord.derivative(Some(wrt))
     case rt :: Nil => rt.derivative(Some(wrt))
     case head :: tail =>
-      lazy val term1: Rte = Cat((head.derivative(Some(wrt)) :: tail).toSeq)
+      lazy val term1: Rte = Cat(head.derivative(Some(wrt)) :: tail)
       lazy val term2: Rte = Cat(tail).derivative(Some(wrt))
       if (head.nullable)
         Or(Seq(term1, term2))
@@ -98,13 +100,14 @@ object Cat {
   }
   def swapCommutables(rts:Seq[Rte]):Seq[Rte] = {
     // Cat(A,B,X*,X,C,D) --> Cat(A,B,X,X*,C,D)
-    def recur(rts:List[Rte],acc:List[Rte]):List[Rte] = {
+    @tailrec
+    def recur(rts:List[Rte], acc:List[Rte]):List[Rte] = {
       rts match {
         case Nil => acc.reverse
         case Star(rt1)::rt2::rs if rt1 == rt2 => recur(rt2::Star(rt1)::rs,acc)
         case rt::rs => recur(rs,rt::acc)
       }
     }
-    recur(rts.toList,Nil).toSeq
+    recur(rts.toList,Nil)
   }
 }

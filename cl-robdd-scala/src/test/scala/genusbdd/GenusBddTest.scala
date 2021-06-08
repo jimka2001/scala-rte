@@ -28,6 +28,8 @@ import genus.Types._
 
 import scala.collection.{Seq, mutable}
 import adjuvant._
+import RandomType.randomType
+
 class GenusBddTest extends MyFunSuite {
   trait Trait1
 

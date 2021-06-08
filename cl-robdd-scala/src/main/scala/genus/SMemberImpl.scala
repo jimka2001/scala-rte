@@ -61,7 +61,7 @@ abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD with TerminalType {
     xs match {
       case Seq() => SEmpty
       case Seq(x) => SEql(x)
-      case xs => createMember(xs.distinct.sortWith(cmp): _*)
+      case xs => createMember(xs.distinct.sortWith(cmp))
     }
   }
 

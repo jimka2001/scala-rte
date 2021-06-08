@@ -130,9 +130,9 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     //  ==> SMember(42,44)
     tds.find(memberp) match {
       case Some(SMember(xs@_*)) =>
-        createMember(xs.filter(typep): _*)
+        createMember(xs.filter(typep))
       case Some(SEql(a)) =>
-        createMember(Seq(a).filter(typep): _*)
+        createMember(Seq(a).filter(typep))
       case _ => this
     }
   }
