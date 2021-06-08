@@ -289,7 +289,7 @@ case class And(operands:Seq[Rte]) extends Rte{
         val as:Seq[Any] = m.xs
         val dfa = this.toDfa(true)
         val filtered = as.filter{a => dfa.simulate(Seq(a)).contains(true)}
-        Singleton(genus.Types.createMember(filtered : _*))
+        Singleton(genus.Types.createMember(filtered))
     }
   }
   def conversion99():Rte = {
