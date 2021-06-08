@@ -162,6 +162,21 @@ object Adjuvant {
       domain.groupBy(f).values.toSet
   }
 
+  def findSimplifier[T](tag: String, target: T, simplifiers: List[() => T]): T = {
+    // DEBUG version of findSimplifier,  if called with two additional arguments,
+    //   diagnostics will be printed logging the progression of simplifications
+    println(s"$tag starting with $target")
+    val s = findSimplifier(target, simplifiers)
+    if (s == target)
+      println(s"$tag remained $s")
+    else {
+      println(s"$tag")
+      println(s"  changed $target")
+      println(s"       to $s")
+    }
+    s
+  }
+
   @tailrec
   def findSimplifier[T](target: T, simplifiers: List[() => T]): T = {
     // simplifiers is a list of 0-ary functions.   calling such a function

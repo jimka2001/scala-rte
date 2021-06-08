@@ -141,22 +141,7 @@ abstract class SimpleTypeD { // SimpleTypeD
       //
     }
   }
-
-  def findSimplifier(tag: String, t: SimpleTypeD, simplifiers: List[() => SimpleTypeD]): SimpleTypeD = {
-    // DEBUG version of findSimplifier,  if called with two additional arguments,
-    //   diagnostics will be printed logging the progression of simplifications
-    println(s"$tag starting with $t")
-    val s = findSimplifier(simplifiers)
-    if (s == t)
-      println(s"$tag remained $s")
-    else {
-      println(s"$tag")
-      println(s"  changed $t")
-      println(s"       to $s")
-    }
-    s
-  }
-
+  
   final def findSimplifier(simplifiers: List[() => SimpleTypeD]): SimpleTypeD = {
     adjuvant.Adjuvant.findSimplifier(this,simplifiers)
   }
