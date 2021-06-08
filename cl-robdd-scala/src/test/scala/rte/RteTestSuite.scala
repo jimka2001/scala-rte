@@ -185,7 +185,7 @@ class RteTestSuite extends MyFunSuite {
     assert(Not(EmptyWord).canonicalize == Cat(Sigma, Star(Sigma)))
     assert(Not(EmptySet).canonicalize == Star(Sigma))
     for {depth <- 0 to 2
-         r <- 1 to 1000
+         r <- 1 to 500
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {
