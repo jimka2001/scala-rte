@@ -26,6 +26,7 @@ import genus.Types._
 import genus.NormalForm._
 import org.scalatest.Assertion
 import org.scalatest.funsuite.AnyFunSuite
+import RandomType.randomType
 
 class GenusCanonicalize extends AnyFunSuite {
 

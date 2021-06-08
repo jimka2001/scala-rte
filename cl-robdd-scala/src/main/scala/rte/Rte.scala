@@ -291,10 +291,10 @@ object Rte {
       () => And(randomSeq(depth - 1)),
       () => Cat(randomSeq(depth - 1)),
       () => Or(randomSeq(depth - 1)),
-      () => Singleton(genus.Types.randomType(0))
+      () => Singleton(genus.RandomType.randomType(0))
       )
     if (depth <= 0)
-      Singleton(genus.Types.randomType(0))
+      Singleton(genus.RandomType.randomType(0))
     else {
       val g = generators(random.nextInt(generators.length))
       g()

@@ -25,7 +25,7 @@ import NormalForm._
 import Types._
 
 object Statistics {
-
+  import RandomType.randomType
   def measureSubtypeComputability(n:Int,depth:Int,inh:Boolean):Map[String,Double] = {
     assert(n > 0, s"measureSubtypeComputability does not support n=$n")
     val m = (0 until n).foldLeft(Map[String, Int]()) { case (m, _) =>

@@ -91,63 +91,6 @@ object Types {
     distinctPartitions
   }
 
-  def randomType(depth:Int, filter:SimpleTypeD=>Boolean):SimpleTypeD = {
-    @tailrec
-    def recur():SimpleTypeD = {
-      val td = randomType(depth)
-      if (filter(td))
-        td
-      else {
-        recur()
-      }
-    }
-    recur()
-  }
-
-  def randomType(depth:Int):SimpleTypeD = {
-    val random = new scala.util.Random
-    trait Trait1
-    trait Trait2
-    trait Trait3 extends Trait2
-    abstract class Abstract1
-    abstract class Abstract2 extends Trait3
-
-    // TODO copy the above classes and instantiate a final subclass
-    //    so they will be considered instantiatable
-
-    val interestingTypes:Vector[SimpleTypeD] = Vector(
-      STop,
-      SEmpty,
-      SMember(1, 2, 3, 4),
-      SMember(4, 5, 6),
-      SEql(0),
-      SEql(1),
-      SEql(-1),
-      SMember("a", "b", "c"),
-      SAtomic(classOf[lang.Number]),
-      SAtomic(classOf[String]),
-      SAtomic(classOf[Integer]),
-      SAtomic(classOf[Trait1]),
-      SAtomic(classOf[Trait2]),
-      SAtomic(classOf[Trait3]),
-      SAtomic(classOf[Abstract1]),
-      SAtomic(classOf[Abstract2])
-      )
-    val maxCompoundSize = 2
-    val generators:Seq[()=>SimpleTypeD] = Vector(
-      () => SNot(randomType(depth - 1)),
-      // always at least one argument of SAnd and SOr
-      () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*),
-      () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*)
-      )
-    if (depth <= 0)
-      interestingTypes(random.nextInt(interestingTypes.length))
-    else {
-      val g = generators(random.nextInt(generators.length))
-      g()
-    }
-  }
-  
   def compareSequence(tds1:Seq[SimpleTypeD], tds2:Seq[SimpleTypeD]):Boolean = {
     @tailrec
     def comp(as:List[SimpleTypeD], bs:List[SimpleTypeD]):Boolean = {
@@ -213,7 +156,6 @@ object Types {
     Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanJavaType, unitRuntimeType,
       charJavaType, anyRefType, numericType)
 
-
   def isEven(x: Any): Boolean = {
     x match {
       case y: Int => y % 2 == 0
@@ -244,49 +186,4 @@ object Types {
   }
   val primeType:SSatisfies = SSatisfies(isPrime)
 
-  def sanityTest():Unit = {
-    val a = 2
-    val t = SAtomic(classOf[Int])
-
-    println("type of a = " + a.getClass)
-    println("class of Int = " + classOf[Int])
-
-    println(t.typep(a))
-    class Abstract1
-    class Abstract2
-    trait Trait1
-    trait Trait2
-    trait Trait3
-    val t1 = SAnd(SAtomic(classOf[Trait1]),
-                  SOr(SAtomic(classOf[Abstract1]),
-                      SAtomic(classOf[Abstract2])),
-                  SAtomic(classOf[Trait2]))
-    val t2 = SAnd(SAtomic(classOf[Trait1]),
-                  SNot(SOr(SAtomic(classOf[Abstract1]),
-                           SAtomic(classOf[Abstract2]))),
-                  SAtomic(classOf[Trait2]))
-    println(t1)
-    println(t2)
-    println(t2.canonicalize(nf=Some(Dnf)))
-    println(t1.canonicalize())
-    println(t1.canonicalize(nf=Some(Dnf)))
-    println(SNot(t1).canonicalize(nf=Some(Dnf)))
-    (0 to 10). foreach { i =>
-      val t = randomType(6)
-      println(s"$i:" + t)
-      println("   " + t.canonicalize())
-    }
-
-    println(t1 || t2 )
-    println(t1 && t2)
-    println(t1 ^^ t2)
-    println(t1 - t2)
-    println(!t1)
-
-    println(classOf[String] || classOf[Integer])
-  }
-
-  def main(args: Array[String]): Unit = {
-     sanityTest()
-  }
 }

@@ -23,6 +23,7 @@ package genus
 
 import genus.Types._
 import org.scalatest.funsuite.AnyFunSuite
+import RandomType.randomType
 
 class TypesTest extends AnyFunSuite {
 

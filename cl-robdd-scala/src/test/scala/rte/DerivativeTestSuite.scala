@@ -25,6 +25,7 @@ package rte
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import rte.RteImplicits._
+import RandomType.randomType
 
 class DerivativeTestSuite extends AnyFunSuite {
   test("nullable") {
@@ -102,7 +103,7 @@ class DerivativeTestSuite extends AnyFunSuite {
 
     for {depth <- 0 to 5
          _ <- 1 to 1000
-         td = Types.randomType(depth)
+         td = randomType(depth)
          rt = Singleton(td)
          } {
       if (td.inhabited.contains(true))
