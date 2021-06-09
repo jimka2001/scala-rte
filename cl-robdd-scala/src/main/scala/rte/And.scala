@@ -27,7 +27,6 @@ import scala.annotation.tailrec
 import genus._
 
 case class And(operands:Seq[Rte]) extends Rte{
-  import genus.SimpleTypeD
   def create(operands: Seq[Rte]):Rte = {
     And.createAnd(operands)
   }
@@ -264,7 +263,9 @@ case class And(operands:Seq[Rte]) extends Rte{
     }
   }
   def conversion19():Rte = {
-    if (canonicalizedSingletons == genus.SEmpty)
+    val canonicalizedSingletons: SimpleTypeD = SAnd.createAnd(singletons).canonicalize()
+
+    if (canonicalizedSingletons == SEmpty)
       EmptySet
     else
       this
@@ -275,7 +276,7 @@ case class And(operands:Seq[Rte]) extends Rte{
     //  {...} selecting elements, x, for which SAnd(X,Y).typep(x) is true
     import Types.createMember
     operands.collectFirst {
-      case Singleton(m: genus.SMemberImpl) => m.xs
+      case Singleton(m: SMemberImpl) => m.xs
     } match {
       case None => this
       case Some(xs) =>
@@ -299,13 +300,11 @@ case class And(operands:Seq[Rte]) extends Rte{
 
   lazy val matchesOnlySingletons:Boolean = operands.contains(Sigma) || operands.exists(Rte.isSingleton)
 
-  lazy val singletons:List[genus.SimpleTypeD] = operands.flatMap{
+  lazy val singletons:List[SimpleTypeD] = operands.flatMap{
     case Singleton(td) => List(td)
-    case Not(Singleton(td)) if matchesOnlySingletons => List(genus.SNot(td))
+    case Not(Singleton(td)) if matchesOnlySingletons => List(SNot(td))
     case _ => List.empty
   }.toList
-  //lazy val singletonIntersection = genus.SAnd.createAnd(singletons)
-  lazy val canonicalizedSingletons: SimpleTypeD = genus.SAnd.createAnd(singletons).canonicalize()
 
   override def canonicalizeOnce:Rte = {
     //println("canonicalizing And: " + operands)
@@ -336,7 +335,7 @@ case class And(operands:Seq[Rte]) extends Rte{
       () => { conversion99() },
       ))
   }
-  def derivativeDown(wrt:genus.SimpleTypeD):Rte = And.createAnd(operands.map(rt => rt.derivative(Some(wrt))))
+  def derivativeDown(wrt:SimpleTypeD):Rte = And.createAnd(operands.map(rt => rt.derivative(Some(wrt))))
 }
 
 object And {
