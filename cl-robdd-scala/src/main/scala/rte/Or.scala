@@ -49,9 +49,11 @@ case class Or(operands:Seq[Rte]) extends Rte {
   def conversion4():Rte = {
     create(uniquify(operands))
   }
+
   def conversion5():Rte = {
     create(Rte.sortAlphabetically(operands))
   }
+
   def conversion6():Rte = {
     // remove EmptySet and flatten Or(Or(...)...)
     create(operands.flatMap{
@@ -60,6 +62,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       case r => Seq(r)
     })
   }
+
   def conversion7():Rte = {
     // (:or A B (:* B) C)
     // --> (:or A (:* B) C)
@@ -74,6 +77,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
         case r => Seq(r)
     })
   }
+
   def conversion8(existsNullable : => Boolean):Rte = {
     val maybePlus = operands.find(Rte.isPlus)
 
@@ -93,6 +97,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     else
       this
   }
+
   def conversion9(existsNullable: =>Boolean):Rte = {
     lazy val maybeCatxyz = operands.find(Rte.catxyzp) // (:cat X Y Z (:* (:cat X Y Z)))
 
@@ -108,6 +113,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     else
       this
   }
+
   def conversion10():Rte = {
     // (:or A :epsilon B (:* X) C)
     //   --> (:or A B (:* X) C)
@@ -116,6 +122,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     else
       this
   }
+
   def conversion11b():Rte = {
     // if Sigma is in the operands, then filter out all singletons
     // Or(Singleton(A),Sigma,...) -> Or(Sigma,...)
@@ -127,6 +134,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     else
       this
   }
+
   def conversion11():Rte = {
     // filter out singletons which are a subclass of other singletons
     lazy val singletons: Seq[genus.SimpleTypeD] = operands.collect {
@@ -143,6 +151,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       case Some(td) => create(operands.filterNot(_ == Singleton(td)))
     }
   }
+
   def conversion12():Rte = {
     // TODO, this is a curious conversion.  I think it should
     //    be generalized, but not sure how.
@@ -157,6 +166,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     else
       this
   }
+
   def conversion13():Rte = {
     // Or(A,Not(A),X) -> SigmaStar
     operands.collectFirst{
@@ -182,6 +192,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       case Some(_) => Rte.sigmaStar
     }
   }
+
   def conversion15():Rte = {
     // Or(Not(A),B*,C) = Or(Not(A),C) if A and B  disjoint,
     //   i.e. remove all B* where b is disjoint from A
@@ -199,6 +210,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       case _ => create(operands.diff(bs))
     }
   }
+
   def conversion16():Rte = {
     // Or(<{1,2,3}>,<{a,b,c}>,Not(<{4,5,6}>))
 
@@ -222,6 +234,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       }))
     }
   }
+
   def conversion17():Rte = {
     // Or(<{1,2,3}>,Not(<{3,4,5,6}>))
     // remove redundant element from SMember within Or
@@ -252,6 +265,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       case _ => throw new Exception("scala compiler is not smart enough to know this line is unreachable")
     }
   }
+
   def conversion99():Rte =
     create(operands.map(_.canonicalizeOnce))
 
