@@ -22,6 +22,7 @@
 
 package rte
 import adjuvant.Adjuvant.{uniquify,findSimplifier,searchReplace}
+import genus._
 
 case class Or(operands:Seq[Rte]) extends Rte {
   def create(operands: Seq[Rte]):Rte = {
@@ -36,7 +37,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
     _.nullable
   }
 
-  def firstTypes: Set[genus.SimpleTypeD] = operands.toSet.flatMap((r: Rte) => r.firstTypes)
+  def firstTypes: Set[SimpleTypeD] = operands.toSet.flatMap((r: Rte) => r.firstTypes)
 
   def conversion3():Rte = {
     // Or(... Sigma* ....) -> Sigma*
@@ -137,7 +138,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
 
   def conversion11():Rte = {
     // filter out singletons which are a subclass of other singletons
-    lazy val singletons: Seq[genus.SimpleTypeD] = operands.collect {
+    lazy val singletons: Seq[SimpleTypeD] = operands.collect {
       case Singleton(td) => td
     }
 
@@ -215,10 +216,10 @@ case class Or(operands:Seq[Rte]) extends Rte {
     // Or(<{1,2,3}>,<{a,b,c}>,Not(<{4,5,6}>))
 
     val members = operands.collect{
-      case s@Singleton(_:genus.SMemberImpl) => s
+      case s@Singleton(_:SMemberImpl) => s
     }
     val as = members.flatMap{
-      case Singleton(m:genus.SMemberImpl) => m.xs
+      case Singleton(m:SMemberImpl) => m.xs
       case x => throw new Exception(s"unexpected value $x")
     }
     if (members.isEmpty)
@@ -227,9 +228,9 @@ case class Or(operands:Seq[Rte]) extends Rte {
       // careful to put the SMember back in the place of the first
       //   this is accomplished by replacing every SMember/SEql with the one we derive here
       //   and then use uniquify to remove duplicates without changing order.
-      val s = Singleton(genus.Types.createMember(uniquify(as)))
+      val s = Singleton(Types.createMember(uniquify(as)))
       create(uniquify(operands.map{
-        case Singleton(_:genus.SMemberImpl) => s
+        case Singleton(_:SMemberImpl) => s
         case r => r
       }))
     }
@@ -249,18 +250,18 @@ case class Or(operands:Seq[Rte]) extends Rte {
     //     we instead find all the Singleton() and Not(Singleton(...))
     //     and just form a SimpleTypeD and check that.
     val member = operands.collectFirst {
-      case s@Singleton(_: genus.SMemberImpl) => s
+      case s@Singleton(_: SMemberImpl) => s
     }
     member match {
       case None => this
-      case Some(s@Singleton(m: genus.SMemberImpl)) =>
+      case Some(s@Singleton(m: SMemberImpl)) =>
         val singletons = operands.collect{
           case s@Singleton(td) if ! member.contains(s) => td
-          case Not(Singleton(td)) => genus.SNot(td)
+          case Not(Singleton(td)) => SNot(td)
         }
-        val td = genus.SOr(singletons : _*)
+        val td = SOr(singletons : _*)
         val keep = m.xs.filter { x => ! td.typep(x)}
-        val rte = Singleton(genus.Types.createMember(keep))
+        val rte = Singleton(Types.createMember(keep))
         create(searchReplace(operands, s, rte))
       case _ => throw new Exception("scala compiler is not smart enough to know this line is unreachable")
     }
@@ -295,7 +296,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       ))
   }
 
-  def derivativeDown(wrt:genus.SimpleTypeD):Rte = create(operands.map(rt => rt.derivative(Some(wrt))))
+  def derivativeDown(wrt:SimpleTypeD):Rte = create(operands.map(rt => rt.derivative(Some(wrt))))
 }
 
 object Or {
