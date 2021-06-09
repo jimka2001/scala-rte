@@ -32,6 +32,8 @@ object EmptySet extends Rte {
 
   def firstTypes: Set[genus.SimpleTypeD] = Set.empty
 
+  def inhabited:Option[Boolean] = Some(false)
+
   def toSimpleTypeD: SimpleTypeD = SEmpty
 
   override def derivative(wrt: Option[genus.SimpleTypeD]): Rte = EmptySet

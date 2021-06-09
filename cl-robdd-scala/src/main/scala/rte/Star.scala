@@ -33,6 +33,7 @@ case class Star(operand:Rte) extends Rte {
   def nullable: Boolean = true
 
   def firstTypes: Set[genus.SimpleTypeD] = operand.firstTypes
+  def inhabited:Option[Boolean] = Some(true) // x* always contains emptyWord.
   def toSimpleTypeD:SimpleTypeD = operand.toSimpleTypeD
   def getStarCatOperands(rt: Rte): Seq[Rte] = {
     rt match {

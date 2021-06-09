@@ -29,5 +29,6 @@ object Sigma extends Rte {
   def nullable:Boolean = false
   def firstTypes:Set[SimpleTypeD] = Set(STop)
   def toSimpleTypeD:SimpleTypeD = STop
+  def inhabited:Option[Boolean] = Some(true)
   def derivativeDown(wrt:SimpleTypeD):Rte = EmptyWord
 }

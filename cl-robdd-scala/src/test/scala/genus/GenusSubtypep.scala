@@ -225,6 +225,7 @@ class GenusSubtypep extends MyFunSuite {
       checkSubtype(intersect, rt2, "x&y <: y")
     }
   }
+
   def checkSubtype(rt1: SimpleTypeD, rt2: SimpleTypeD, comment: String): Unit = {
     assert(!rt1.subtypep(rt2).contains(false),
            s": $comment: \n   rt1= $rt1 \n   rt2= $rt2" +

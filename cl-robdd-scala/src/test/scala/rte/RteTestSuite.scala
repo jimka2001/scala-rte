@@ -277,4 +277,29 @@ class RteTestSuite extends MyFunSuite {
     assert(Cat(Star(Singleton(a)),EmptyWord,Singleton(b),Singleton(c)).toSimpleTypeD == SOr(b,SEmpty,a))
     assert(Cat(Star(Singleton(a)),Star(Singleton(b)),Singleton(c)).toSimpleTypeD == SOr(c,b,a))
   }
+  test("inhabited"){
+    val x = Singleton(SSatisfies(x=>true,"x"))
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val ab = Singleton(SMember("a","b"))
+    assert(EmptySet.inhabited.contains(false))
+    assert(EmptyWord.inhabited.contains(true))
+    assert(Sigma.inhabited.contains(true))
+    assert(x.inhabited == None)
+
+    assert(Or(x,a).inhabited.contains(true))
+    assert(Or(a,b).inhabited.contains(true))
+    assert(Or(x,x).inhabited == None)
+    assert(Or(EmptySet,EmptySet).inhabited.contains(false))
+
+    assert(And(x,a).inhabited == None)
+    assert(!And(a,ab).inhabited.contains(false))
+    assert(And(a,b).inhabited.contains(false))
+
+    assert(Cat(a,b).inhabited.contains(false))
+    assert(Cat(a,EmptySet,b).inhabited.contains(false))
+    assert(Cat(a,x,b).inhabited.contains(false)) // false because a & b is empty
+    assert(Cat(a,x).inhabited == None) // because we don't know whether x is inhabited
+    assert(Cat(a,x,ab).inhabited == None) // because we don't know whether x is inhabited
+  }
 }

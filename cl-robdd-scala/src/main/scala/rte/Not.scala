@@ -28,6 +28,19 @@ case class Not(operand:Rte) extends Rte {
   def nullable:Boolean = ! operand.nullable
   def firstTypes:Set[SimpleTypeD] = operand.firstTypes
   def toSimpleTypeD:SimpleTypeD = SNot(operand.toSimpleTypeD)
+  def inhabited:Option[Boolean] = {
+    operand.inhabited match {
+      case Some(false) => Some(true)
+      case None => None
+      case Some(true) =>{
+        STop.subtypep(operand.toSimpleTypeD.canonicalize()) match {
+          case None => None
+          case Some(true) => Some(false)
+          case Some(false) => Some(true)
+        }
+      }
+    }
+  }
   override def canonicalizeOnce:Rte = {
     operand match {
       case Sigma => Rte.notSigma
