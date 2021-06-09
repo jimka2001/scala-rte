@@ -22,7 +22,7 @@
 
 package rte
 
-import genus.SimpleTypeD
+import genus._
 import adjuvant.Adjuvant._
 
 import scala.annotation.tailrec
@@ -61,7 +61,8 @@ abstract class Rte {
   def toLaTeX:String
   //override def toString:String = toLaTeX
   def nullable:Boolean
-  def firstTypes:Set[genus.SimpleTypeD]
+  def firstTypes:Set[SimpleTypeD]
+
   def canonicalize:Rte = {
     fixedPoint[Rte](this,
                     (r:Rte) => r.canonicalizeOnce,
@@ -83,7 +84,7 @@ abstract class Rte {
     import adjuvant.Adjuvant.traceGraph
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       val fts = rt.firstTypes
-      val wrts = genus.Types.mdtd(fts)
+      val wrts = Types.mdtd(fts)
       wrts.map(td => (td,
         try rt.derivative(Some(td)).canonicalize
         catch {
@@ -96,7 +97,7 @@ abstract class Rte {
                                                        "  derivatives() reported: " + e.msg).mkString("\n"),
                                                rte=this,
                                                firstTypes = rt.firstTypes,
-                                               mdtd = genus.Types.mdtd(rt.firstTypes)
+                                               mdtd = Types.mdtd(rt.firstTypes)
                                                )
         }))
     }
@@ -145,13 +146,13 @@ object Rte {
   val sigmaSigmaStar: Rte = notEpsilon
 
   def Member(xs: Any*):Rte = {
-    Singleton(genus.SMember(xs : _*))
+    Singleton(SMember(xs : _*))
   }
   def Eql(x: Any):Rte = {
-    Singleton(genus.SEql(x))
+    Singleton(SEql(x))
   }
   def Atomic(ct: Class[_]):Rte = {
-    Singleton(genus.SAtomic(ct))
+    Singleton(SAtomic(ct))
   }
 
   def isAnd(rt: Rte): Boolean = rt match {
@@ -241,7 +242,7 @@ object Rte {
 
 
   def intersectLabels(td1:SimpleTypeD,td2:SimpleTypeD):Option[SimpleTypeD] = {
-    val comb = genus.SAnd(td1,td2).canonicalize()
+    val comb = SAnd(td1,td2).canonicalize()
     comb.inhabited match {
       case Some(false) => None
       case _ => Some(comb)
@@ -290,10 +291,10 @@ object Rte {
       () => And(randomSeq(depth - 1)),
       () => Cat(randomSeq(depth - 1)),
       () => Or(randomSeq(depth - 1)),
-      () => Singleton(genus.RandomType.randomType(0))
+      () => Singleton(RandomType.randomType(0))
       )
     if (depth <= 0)
-      Singleton(genus.RandomType.randomType(0))
+      Singleton(RandomType.randomType(0))
     else {
       val g = generators(random.nextInt(generators.length))
       g()
