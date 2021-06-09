@@ -23,6 +23,7 @@
 package rte
 
 import adjuvant.Adjuvant.findSimplifier
+import genus._
 
 case class Star(operand:Rte) extends Rte {
   override def toLaTeX: String = "(" ++ operand.toLaTeX ++ ")^{*}"
@@ -32,7 +33,7 @@ case class Star(operand:Rte) extends Rte {
   def nullable: Boolean = true
 
   def firstTypes: Set[genus.SimpleTypeD] = operand.firstTypes
-
+  def toSimpleTypeD:SimpleTypeD = operand.toSimpleTypeD
   def getStarCatOperands(rt: Rte): Seq[Rte] = {
     rt match {
       case Star(Cat(xs)) => xs
@@ -94,6 +95,6 @@ case class Star(operand:Rte) extends Rte {
       ))
   }
 
-  def derivativeDown(wrt: genus.SimpleTypeD): Rte = Cat(operand.canonicalize.derivative(Some(wrt)),
-                                                        this)
+  def derivativeDown(wrt: SimpleTypeD): Rte = Cat(operand.canonicalize.derivative(Some(wrt)),
+                                                  this)
 }

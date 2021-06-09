@@ -23,7 +23,7 @@
 package rte
 
 import adjuvant.Adjuvant.findSimplifier
-
+import genus._
 import scala.annotation.tailrec
 
 final case class Cat(operands:Seq[Rte]) extends Rte {
@@ -36,7 +36,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
 
   def minLength: Int = operands.count(r => !r.nullable)
 
-  def firstTypes: Set[genus.SimpleTypeD] = {
+  def firstTypes: Set[SimpleTypeD] = {
     operands match {
       case Seq() => EmptyWord.firstTypes
       case Seq(r) => r.firstTypes
@@ -46,6 +46,19 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
         else
           r.firstTypes
     }
+  }
+  def toSimpleTypeD:SimpleTypeD = {
+    // union of types of leading operands of Cat(...) until (and including)
+    //   the first one which is non-nullable
+    def recur(rtes: List[Rte], tds: List[SimpleTypeD]): List[SimpleTypeD] = {
+      rtes match {
+        case Nil => tds
+        case r::rs if r.nullable => recur(rs,r.toSimpleTypeD::tds)
+        case r::_ => r.toSimpleTypeD::tds
+      }
+    }
+
+    SOr.createOr(recur(operands.toList,List()))
   }
 
   def conversion3():Rte = {
@@ -102,7 +115,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
       ))
   }
 
-  def derivativeDown(wrt: genus.SimpleTypeD): Rte = operands.toList match {
+  def derivativeDown(wrt: SimpleTypeD): Rte = operands.toList match {
     case Nil => EmptyWord.derivative(Some(wrt))
     case rt :: Nil => rt.derivative(Some(wrt))
     case head :: tail =>

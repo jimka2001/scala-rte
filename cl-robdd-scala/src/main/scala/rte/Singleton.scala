@@ -28,7 +28,7 @@ case class Singleton(td:SimpleTypeD) extends Rte {
   override def toString:String = "<" + td.toString + ">"
   def nullable:Boolean = false
   def firstTypes:Set[SimpleTypeD] = Set(td)
-
+  def toSimpleTypeD:SimpleTypeD = td
   override def canonicalizeOnce:Rte = {
     td.canonicalize() match {
       case STop => Sigma

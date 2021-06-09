@@ -258,4 +258,23 @@ class RteTestSuite extends MyFunSuite {
     assert(dfa.simulate(List("hello","world",12)) == Some(5))
     assert(dfa.simulate(List("hello","world",12.0)) == None)
   }
+  test("toSimpleTypeD"){
+    val a = SEql("a")
+    val b = SEql("b")
+    val c = SEql("c")
+    assert(EmptyWord.toSimpleTypeD == SEmpty)
+    assert(EmptySet.toSimpleTypeD == SEmpty)
+    assert(Sigma.toSimpleTypeD == STop)
+    assert(Singleton(a).toSimpleTypeD == a)
+    assert(Or(Singleton(a),Singleton(b)).toSimpleTypeD == SOr(a,b))
+    assert(And(Singleton(a),Singleton(b)).toSimpleTypeD == SAnd(a,b))
+    assert(Not(And(Singleton(a),Singleton(b))).toSimpleTypeD == SNot(SAnd(a,b)))
+    assert(Star(Singleton(a)).toSimpleTypeD == a)
+    assert(Cat(Singleton(a)).toSimpleTypeD == a)
+    assert(Cat(Singleton(a),Singleton(b)).toSimpleTypeD == a)
+    assert(Cat(Star(Singleton(a)),Singleton(b)).toSimpleTypeD == SOr(b,a))
+    assert(Cat(Star(Singleton(a)),Singleton(b),Singleton(c)).toSimpleTypeD == SOr(b,a))
+    assert(Cat(Star(Singleton(a)),EmptyWord,Singleton(b),Singleton(c)).toSimpleTypeD == SOr(b,SEmpty,a))
+    assert(Cat(Star(Singleton(a)),Star(Singleton(b)),Singleton(c)).toSimpleTypeD == SOr(c,b,a))
+  }
 }

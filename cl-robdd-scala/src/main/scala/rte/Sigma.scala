@@ -21,11 +21,13 @@
 //
 
 package rte
+import genus._
 
 object Sigma extends Rte {
   override def toLaTeX:String = "\\Sigma{}"
   override def toString:String = "Σ"
   def nullable:Boolean = false
-  def firstTypes:Set[genus.SimpleTypeD] = Set(genus.STop)
-  def derivativeDown(wrt:genus.SimpleTypeD):Rte = EmptyWord
+  def firstTypes:Set[SimpleTypeD] = Set(STop)
+  def toSimpleTypeD:SimpleTypeD = STop
+  def derivativeDown(wrt:SimpleTypeD):Rte = EmptyWord
 }
