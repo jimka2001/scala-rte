@@ -27,7 +27,6 @@ import scala.annotation.tailrec
 import genus._
 
 case class And(operands:Seq[Rte]) extends Rte{
-  import genus.SimpleTypeD
   def create(operands: Seq[Rte]):Rte = {
     And.createAnd(operands)
   }
@@ -47,9 +46,11 @@ case class And(operands:Seq[Rte]) extends Rte{
   def conversion4():Rte = {
     create(uniquify(operands))
   }
+
   def conversion5():Rte = {
     create(Rte.sortAlphabetically(operands))
   }
+
   def conversion6():Rte = {
     // remove Sigma* and flatten And(And(...)...)
     create(operands.flatMap{
@@ -58,12 +59,14 @@ case class And(operands:Seq[Rte]) extends Rte{
       case r => Seq(r)
     })
   }
+
   def conversion7():Rte = {
     if (operands.contains(EmptyWord) && matchesOnlySingletons)
       EmptySet
     else
       this
   }
+
   def conversion8():Rte = {
     // if operands contains EmptyWord, then the intersection is either EmptyWord or EmptySet
     if (! operands.contains(EmptyWord))
@@ -73,29 +76,28 @@ case class And(operands:Seq[Rte]) extends Rte{
     else
       EmptySet
   }
+
   def conversion9():Rte = {
-    if (matchesOnlySingletons && operands.exists(Rte.isStar)) {
-      // if x matches only singleton then And(x,y*) -> And(x,y)
-      create(operands.map{
+    if (matchesOnlySingletons && operands.exists(Rte.isStar))
+    // if x matches only singleton then And(x,y*) -> And(x,y)
+      create(operands.map {
         case Star(rt) => rt
         case rt => rt
       })
-    } else
+    else
       this
   }
-  def conversion10():Rte = {
-    if (operands.exists(Rte.isOr)) {
-      // And(A,B,Or(X,Y,Z),C,D)
-      // --> Or(And(A,B,   X,   C, C)),
-      //        And(A,B,   Y,   C, C)),
-      //        And(A,B,   Z,   C, C)))
-      val distrib = operands.find(Rte.isOr) match {
-        case Some(x@Or(Seq(rs @ _*))) =>
-          Or.createOr(rs.map{r => And.createAnd(searchReplace(operands,x,r))})
 
+  def conversion10():Rte = {
+    if (operands.exists(Rte.isOr))
+    // And(A,B,Or(X,Y,Z),C,D)
+    // --> Or(And(A,B,   X,   C, C)),
+    //        And(A,B,   Y,   C, C)),
+    //        And(A,B,   Z,   C, C)))
+      operands.find(Rte.isOr) match {
+        case Some(x@Or(Seq(rs@_*))) =>
+          Or.createOr(rs.map { r => And.createAnd(searchReplace(operands, x, r)) })
       }
-      distrib
-    }
     else
       this
   }
@@ -259,7 +261,9 @@ case class And(operands:Seq[Rte]) extends Rte{
     }
   }
   def conversion19():Rte = {
-    if (canonicalizedSingletons == genus.SEmpty)
+    val canonicalizedSingletons: SimpleTypeD = SAnd.createAnd(singletons).canonicalize()
+
+    if (canonicalizedSingletons == SEmpty)
       EmptySet
     else
       this
@@ -270,7 +274,7 @@ case class And(operands:Seq[Rte]) extends Rte{
     //  {...} selecting elements, x, for which SAnd(X,Y).typep(x) is true
     import Types.createMember
     operands.collectFirst {
-      case Singleton(m: genus.SMemberImpl) => m.xs
+      case Singleton(m: SMemberImpl) => m.xs
     } match {
       case None => this
       case Some(xs) =>
@@ -294,13 +298,11 @@ case class And(operands:Seq[Rte]) extends Rte{
 
   lazy val matchesOnlySingletons:Boolean = operands.contains(Sigma) || operands.exists(Rte.isSingleton)
 
-  lazy val singletons:List[genus.SimpleTypeD] = operands.flatMap{
+  lazy val singletons:List[SimpleTypeD] = operands.flatMap{
     case Singleton(td) => List(td)
-    case Not(Singleton(td)) if matchesOnlySingletons => List(genus.SNot(td))
+    case Not(Singleton(td)) if matchesOnlySingletons => List(SNot(td))
     case _ => List.empty
   }.toList
-  //lazy val singletonIntersection = genus.SAnd.createAnd(singletons)
-  lazy val canonicalizedSingletons: SimpleTypeD = genus.SAnd.createAnd(singletons).canonicalize()
 
   override def canonicalizeOnce:Rte = {
     //println("canonicalizing And: " + operands)
@@ -331,7 +333,7 @@ case class And(operands:Seq[Rte]) extends Rte{
       () => { conversion99() },
       ))
   }
-  def derivativeDown(wrt:genus.SimpleTypeD):Rte = And.createAnd(operands.map(rt => rt.derivative(Some(wrt))))
+  def derivativeDown(wrt:SimpleTypeD):Rte = And.createAnd(operands.map(rt => rt.derivative(Some(wrt))))
 }
 
 object And {
