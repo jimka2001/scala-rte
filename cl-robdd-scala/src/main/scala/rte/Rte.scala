@@ -71,7 +71,11 @@ abstract class Rte {
                     (r:Rte) => r.canonicalizeOnce,
                     (r1:Rte,r2:Rte)=>r1==r2)
   }
-  def canonicalizeOnce:Rte = this
+  def canonicalizeOnce:Rte = inhabited match {
+    case Some(false) => EmptySet
+    case _ => this
+  }
+
 
   def derivative(wrt:Option[SimpleTypeD]):Rte = {
     val raw = wrt match {

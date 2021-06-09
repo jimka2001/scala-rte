@@ -277,9 +277,7 @@ class OrTestSuite extends AnyFunSuite {
     }
   }
 
-
   test("canonicalize or 253") {
-
     for {depth <- 0 to 4
          _ <- 1 to 500
          r1 = Rte.randomRte(depth)
@@ -288,7 +286,21 @@ class OrTestSuite extends AnyFunSuite {
          r4 = Rte.randomRte(depth)
          } {
       assert(Or(r1, And(r2, r3).canonicalize, r4).canonicalize ~=
-               Or(r1, And(r2, r3), r4).canonicalize)
+               Or(r1, And(r2, r3), r4).canonicalize,
+             s"\nr1= $r1" +
+               s"\nr2= $r2" +
+               s"\nr3= $r3" +
+               s"\nr4= $r4" +
+               s"\ncanonicalized" +
+               s"\n   r1= ${r1.canonicalize}" +
+               s"\n   r2= ${r2.canonicalize}" +
+               s"\n   r3= ${r3.canonicalize}" +
+               s"\n   r4= ${r4.canonicalize}" +
+               s"\n   Or(r2,r3) = ${Or(r2,r3).canonicalize}" +
+               s"\n   r4= ${r4.canonicalize}" +
+               s"\nlhs = " + Or(r1, And(r2, r3).canonicalize, r4).canonicalize +
+               s"\nrhs = " + Or(r1, And(r2, r3), r4).canonicalize
+             )
     }
   }
 
@@ -535,6 +547,15 @@ class OrTestSuite extends AnyFunSuite {
               Not(Singleton(SInt))).conversion17()
              == Or(Singleton(SMember(1,2,3)),
                    Not(Singleton(SInt))))
+
+    assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
+              Cat(Star(SInt),Singleton(SEql("a")))).conversion17()
+             == Or(Singleton(SMember("b","c")),
+                   Cat(Star(SInt),Singleton(SEql("a")))))
+    assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
+              Not(Cat(Star(SInt),Singleton(SEql("a"))))).conversion17()
+             == Or(Singleton(SMember(1,2,3,"a")),
+                   Not(Cat(Star(SInt),Singleton(SEql("a"))))))
   }
   test("or conversion99"){
     // canonicalizing sub nodes

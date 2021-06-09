@@ -265,11 +265,8 @@ case class Or(operands:Seq[Rte]) extends Rte {
     member match {
       case None => this
       case Some(s@Singleton(m: SMemberImpl)) =>
-        val singletons = operands.collect{
-          case s@Singleton(td) if ! member.contains(s) => td
-          case Not(Singleton(td)) => SNot(td)
-        }
-        val td = SOr(singletons : _*)
+        val looser = create(searchReplace(operands,s,Seq()))
+        val td = looser.toSimpleTypeD
         val keep = m.xs.filter { x => ! td.typep(x)}
         val rte = Singleton(Types.createMember(keep))
         create(searchReplace(operands, s, rte))
@@ -302,7 +299,8 @@ case class Or(operands:Seq[Rte]) extends Rte {
       () => { conversion15()},
       () => { conversion16()},
       () => { conversion17()},
-      () => { conversion99() }
+      () => { conversion99() },
+      () => { super.canonicalizeOnce }
       ))
   }
 

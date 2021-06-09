@@ -30,5 +30,6 @@ object EmptyWord extends Rte {
   def firstTypes:Set[genus.SimpleTypeD] = Set.empty
   def inhabited:Option[Boolean] = Some(true)
   def toSimpleTypeD:SimpleTypeD = SEmpty
+  override def canonicalizeOnce:Rte = this
   def derivativeDown(wrt:genus.SimpleTypeD):Rte = EmptySet
 }

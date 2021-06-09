@@ -30,5 +30,6 @@ object Sigma extends Rte {
   def firstTypes:Set[SimpleTypeD] = Set(STop)
   def toSimpleTypeD:SimpleTypeD = STop
   def inhabited:Option[Boolean] = Some(true)
+  override def canonicalizeOnce:Rte = this
   def derivativeDown(wrt:SimpleTypeD):Rte = EmptyWord
 }

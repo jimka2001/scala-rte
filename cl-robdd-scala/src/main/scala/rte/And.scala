@@ -282,23 +282,24 @@ case class And(operands:Seq[Rte]) extends Rte{
   def conversion21():Rte = {
     // And({1,2,3},Singleton(X),Singleton(Y))
     //  {...} selecting elements, x, for which SAnd(X,Y).typep(x) is true
+
+    // And(Singleton(SMember(1,2,3,"a","b","c")),
+    //     Not(Singleton(SAtomic(classOf[String]))), // gets removed by conversion21
+    //     Cat(Singleton(SInt))
+    //     )
     import Types.createMember
     operands.collectFirst {
       case Singleton(m: SMemberImpl) => m.xs
     } match {
       case None => this
       case Some(xs) =>
-        val lessStrict: SimpleTypeD = SAnd.createAnd(operands.flatMap {
-          case Singleton(td) => Seq(td)
-          case Not(Singleton(td)) => Seq(SNot(td))
-          case _ => Seq()
-        })
+        val lessStrict: SimpleTypeD = toSimpleTypeD
         val newMember: Rte = Singleton(createMember(xs.filter(lessStrict.typep)))
-        create(uniquify(operands.map {
-          case _: Singleton => newMember
-          case Not(_: Singleton) => newMember
-          case r => r
-        }))
+        create(operands.flatMap{
+          case Singleton(m:SMemberImpl) if m.xs == xs => Seq(newMember)
+          case r if r.inhabited.contains(true) => Seq()
+          case r => Seq(r)
+        })
     }
   }
   def conversion99():Rte = {
@@ -341,6 +342,7 @@ case class And(operands:Seq[Rte]) extends Rte{
       () => { conversion19() },
       () => { conversion21() },
       () => { conversion99() },
+      () => { super.canonicalizeOnce}
       ))
   }
   def derivativeDown(wrt:SimpleTypeD):Rte = And.createAnd(operands.map(rt => rt.derivative(Some(wrt))))

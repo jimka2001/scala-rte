@@ -60,8 +60,10 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
         case r::_ => r.toSimpleTypeD::tds
       }
     }
-
-    SOr.createOr(recur(operands.toList,List()))
+    if ( inhabited.contains(false))
+      SEmpty
+    else
+      SOr.createOr(recur(operands.toList,List()))
   }
 
   def conversion3():Rte = {
@@ -114,7 +116,8 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
       () => { conversion4() },
       () => { conversion5() },
       () => { conversion6() },
-      () => { conversion99() }
+      () => { conversion99() },
+      () => { super.canonicalizeOnce }
       ))
   }
 

@@ -237,7 +237,25 @@ class GenusSubtypep extends MyFunSuite {
              "\n  failed rt1 > rt2" +
              s"\n   rt1.canonicalize= ${rt1.canonicalize()}"+
              s"\n   rt2.canonicalize= ${rt2.canonicalize()}")
+  }
 
+  test("discovered case 242"){
+    // Some(false) contained false : toDnf:
+    // rt1= ![SAnd ![SOr [SAnd Trait3X,Trait2],!Abstract2],!![SOr Trait3X]]
+    // rt2= [SOr !![SOr [SAnd Trait3X,Trait2],!Abstract2],!!![SOr Trait3X]]
+    // failed rt1 > rt2
+    //   rt1.canonicalize= ![SAnd Trait3X,![SOr [SAnd Trait2,Trait3X],!Abstract2]]
+    //   rt2.canonicalize= STop
+
+    val Trait3X = SAtomic(classOf[RandomType.Trait3X])
+    val Trait2 = SAtomic(classOf[RandomType.Trait2])
+    val Abstract2 = SAtomic(classOf[RandomType.Abstract2])
+
+    val rt1 = SNot(SAnd( SNot(SOr( SAnd( Trait3X,Trait2),SNot(Abstract2))),
+                         SNot(SNot(SOr( Trait3X)))))
+    val rt2 = rt1.toDnf
+    assert(!rt1.subtypep(rt2).contains(false))
+    assert(!rt2.subtypep(rt1).contains(false))
   }
 
   test("randomized testing of subtypep with normalization") {
