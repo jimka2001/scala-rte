@@ -87,19 +87,17 @@ case class And(operands:Seq[Rte]) extends Rte{
     else
       this
   }
-  def conversion10():Rte = {
-    if (operands.exists(Rte.isOr)) {
-      // And(A,B,Or(X,Y,Z),C,D)
-      // --> Or(And(A,B,   X,   C, C)),
-      //        And(A,B,   Y,   C, C)),
-      //        And(A,B,   Z,   C, C)))
-      val distrib = operands.find(Rte.isOr) match {
-        case Some(x@Or(Seq(rs @ _*))) =>
-          Or.createOr(rs.map{r => And.createAnd(searchReplace(operands,x,r))})
 
+  def conversion10():Rte = {
+    if (operands.exists(Rte.isOr))
+    // And(A,B,Or(X,Y,Z),C,D)
+    // --> Or(And(A,B,   X,   C, C)),
+    //        And(A,B,   Y,   C, C)),
+    //        And(A,B,   Z,   C, C)))
+      operands.find(Rte.isOr) match {
+        case Some(x@Or(Seq(rs@_*))) =>
+          Or.createOr(rs.map { r => And.createAnd(searchReplace(operands, x, r)) })
       }
-      distrib
-    }
     else
       this
   }
