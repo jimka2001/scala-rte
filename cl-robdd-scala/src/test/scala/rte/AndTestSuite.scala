@@ -50,7 +50,6 @@ class AndTestSuite extends AnyFunSuite {
     val X = Singleton(SEql(-1))
     val Y = Singleton(SEql(1))
     val ε = EmptyWord
-    import adjuvant.Adjuvant.trace
 
     val rte4 = Or(And(Or(Cat(Star(S),I),ε),
                       Cat(Star(S),I)),
@@ -88,7 +87,6 @@ class AndTestSuite extends AnyFunSuite {
         Not(Cat(Star(S),X)),
         Not(Cat(Star(S),Y)),
         Not(Star(S)))
-    import adjuvant.Adjuvant.trace
     val rte2 = rte1.canonicalizeOnce
     val rte3 = rte2.canonicalizeOnce
     val rte4 = rte3.canonicalizeOnce
@@ -357,24 +355,22 @@ class AndTestSuite extends AnyFunSuite {
              s"r1=$r1  r2=$r2   r3=$r3")
     }
   }
-  test("and conversion1"){
-    assert(And().conversion1() == Sigma)
-  }
-  test("and conversion2"){
-    assert(And(And()).conversion2() == And())
-  }
+
   test("and conversion3"){
     assert(And(And(),EmptySet,And()).conversion3() == EmptySet)
   }
+
   test("and conversion4"){
     assert(And(Or(),And(),And(),Or()).conversion4() == And(And(),Or()))
   }
+
   test("and conversion5"){
     assert(And(Singleton(SEql(2)),Singleton(SEql(1))).conversion5()
              == And(Singleton(SEql(1)),Singleton(SEql(2))))
     assert(And(Singleton(SEql(1)),Singleton(SEql(2))).conversion5()
              == And(Singleton(SEql(1)),Singleton(SEql(2))))
   }
+
   test("and conversion6"){
     // remove Sigma* and flatten And(And(...)...)
     assert(And(Star(Sigma),
@@ -384,10 +380,12 @@ class AndTestSuite extends AnyFunSuite {
       == And(Singleton(SEql(1)),Singleton(SEql(2)),
              Singleton(SEql(3)),Singleton(SEql(4))))
   }
+
   test("and conversion7"){
     assert(And(EmptyWord,Singleton(SEql(1))).conversion7()
            == EmptySet)
   }
+  
   test("and conversion8"){
     // if operands contains EmptyWord, then the intersection is either EmptyWord or EmptySet
     assert(And(EmptyWord,Star(Singleton(SEql(1)))).conversion8()
@@ -595,5 +593,12 @@ class AndTestSuite extends AnyFunSuite {
              == Singleton(SEql(4)))
     assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2,3,4,5,6)))).conversion21()
              == Singleton(SEmpty))
+    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+               Not(Singleton(SAtomic(classOf[String]))), // gets removed by conversion21
+               Cat(Singleton(SInt))).conversion21()
+             == And(Singleton(SMember(1,2,3)),Cat(Singleton(SInt))))
+    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+               Not(Singleton(SInt))).conversion21()
+             == Singleton(SMember("a","b","c")))
   }
 }

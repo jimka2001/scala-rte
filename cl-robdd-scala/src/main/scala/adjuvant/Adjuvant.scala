@@ -118,7 +118,7 @@ object Adjuvant {
       case x :: _ => List(x)
     }.toSeq
 
-  def fixedPoint[V](value: V, f: V => V, cmp: (V, V) => Boolean): V = {
+  def fixedPoint[V](seed: V, f: V => V, cmp: (V, V) => Boolean): V = {
     @tailrec
     def recur(value: V,history:Set[V]): V = {
       //println("[ fixedPoint: starting with " + value)
@@ -127,12 +127,12 @@ object Adjuvant {
       if (cmp(value, newValue))
         value
       else if(history.contains(newValue))
-        throw new Exception(s"fixedPoint encounted a loop \n    $value \n -> $newValue")
+        throw new Exception(s"fixedPoint encountered a loop \n    seed=$seed\n    $value \n -> $newValue")
       else
         recur(newValue,history+value)
     }
 
-    recur(value,Set())
+    recur(seed, Set())
   }
 
   // The memoize method is inspired by
@@ -160,6 +160,21 @@ object Adjuvant {
       Set(domain)
     else
       domain.groupBy(f).values.toSet
+  }
+
+  def findSimplifier[T](tag: String, target: T, simplifiers: List[() => T]): T = {
+    // DEBUG version of findSimplifier,  if called with two additional arguments,
+    //   diagnostics will be printed logging the progression of simplifications
+    println(s"$tag starting with $target")
+    val s = findSimplifier(target, simplifiers)
+    if (s == target)
+      println(s"$tag remained $s")
+    else {
+      println(s"$tag")
+      println(s"  changed $target")
+      println(s"       to $s")
+    }
+    s
   }
 
   @tailrec

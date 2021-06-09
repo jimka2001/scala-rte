@@ -37,7 +37,8 @@ object TypeSystemWithLBdd {
   def newHash(): TYPE_HASH = {
     import org.jboss.util.collection._
 
-    import scala.collection.JavaConverters._
+    //import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     new WeakValueHashMap[TerminalType, Int].asScala
   }
 

@@ -59,7 +59,7 @@ class BddTestSuite extends AnyFunSuite {
     }
   }
 
-  def genSamples() = {
+  def genSamples(): Set[Bdd] = {
     val bdd1 = Bdd(3, BddTrue, BddFalse)
     val bdd2 = Bdd(2, BddFalse, BddTrue)
     val bdd3 = Bdd(1, bdd1, bdd2)
@@ -72,7 +72,6 @@ class BddTestSuite extends AnyFunSuite {
   }
 
   test("size") {
-    import GraphViz._
     withNewBddHash {
       assert(1 == BddTrue.size())
       assert(1 == BddFalse.size())

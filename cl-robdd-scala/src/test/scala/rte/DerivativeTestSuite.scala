@@ -24,7 +24,6 @@ package rte
 
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
-import rte.RteImplicits._
 import RandomType.randomType
 
 class DerivativeTestSuite extends AnyFunSuite {
@@ -80,53 +79,92 @@ class DerivativeTestSuite extends AnyFunSuite {
 
   }
 
-  test("derivative special cases"){
+  test("derivative special cases") {
     //import genus.STop
-    assert (EmptySet.derivative(Some(STop)) == EmptySet)
-    assert (Sigma.derivative(Some(STop)) == EmptyWord)
-    assert (EmptyWord.derivative(Some(STop)) == EmptySet)
-    assert (Singleton(STop).derivative(Some(STop)) == EmptyWord)
-    assert (Singleton(SEmpty).derivative(Some(STop)) == EmptySet)
+    assert(EmptySet.derivative(Some(STop)) == EmptySet)
+    assert(Sigma.derivative(Some(STop)) == EmptyWord)
+    assert(EmptyWord.derivative(Some(STop)) == EmptySet)
+    assert(Singleton(STop).derivative(Some(STop)) == EmptyWord)
+    assert(Singleton(SEmpty).derivative(Some(STop)) == EmptySet)
 
-    assert (EmptySet.derivative(Some(SEmpty)) == EmptySet)
-    assert (Sigma.derivative(Some(SEmpty)) == EmptySet)
-    assert (EmptyWord.derivative(Some(SEmpty)) == EmptySet)
-    assert (Singleton(STop).derivative(Some(SEmpty)) == EmptySet)
-    assert (Singleton(SEmpty).derivative(Some(SEmpty)) == EmptySet)
+    assert(EmptySet.derivative(Some(SEmpty)) == EmptySet)
+    assert(Sigma.derivative(Some(SEmpty)) == EmptySet)
+    assert(EmptyWord.derivative(Some(SEmpty)) == EmptySet)
+    assert(Singleton(STop).derivative(Some(SEmpty)) == EmptySet)
+    assert(Singleton(SEmpty).derivative(Some(SEmpty)) == EmptySet)
 
     // deriv wrt EmptyWord
-    assert (EmptySet.derivative(None) == EmptySet)
-    assert (Sigma.derivative(None) == Sigma)
-    assert (EmptyWord.derivative(None) == EmptyWord)
-    assert (Singleton(STop).derivative(None) == Sigma)
-    assert (Singleton(SEmpty).derivative(None) == EmptySet)
+    assert(EmptySet.derivative(None) == EmptySet)
+    assert(Sigma.derivative(None) == Sigma)
+    assert(EmptyWord.derivative(None) == EmptyWord)
+    assert(Singleton(STop).derivative(None) == Sigma)
+    assert(Singleton(SEmpty).derivative(None) == EmptySet)
+  }
 
+  test("random derivative") {
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         td = randomType(depth)
+         //rt = Singleton(td)
+         } {
+      td.inhabited match {
+        case Some(true) =>
+          assert (Sigma.derivative (Some (td) ) == EmptyWord)
+        case Some(false) =>
+          assert (Sigma.derivative (Some (td) ) == EmptySet)
+        case None => ()
+      }
+    }
+  }
+  test("random derivative 2") {
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         td = randomType(depth)
+         rt = Singleton(td)
+         } {
+      assert(EmptySet.derivative(Some(td)) == EmptySet)
+      assert(EmptyWord.derivative(Some(td)) == EmptySet)
+    }
+  }
+  test("random derivative 3") {
     for {depth <- 0 to 5
          _ <- 1 to 1000
          td = randomType(depth)
          rt = Singleton(td)
          } {
       if (td.inhabited.contains(true))
-        assert(Sigma.derivative(Some(td)) == EmptyWord)
-      else if (td.inhabited.contains(false))
-        assert(Sigma.derivative(Some(td)) == EmptySet)
-
-      assert(EmptySet.derivative(Some(td)) == EmptySet)
-      assert(EmptyWord.derivative(Some(td)) == EmptySet)
-      if (td.inhabited.contains(true))
         assert(rt.derivative(Some(STop)) == EmptyWord,
                s"failed deriv of $rt wrt Some(STop)")
       else if (td.inhabited.contains(false))
         assert(rt.derivative(Some(STop)) == EmptySet,
                s"failed inhabited=${td.inhabited} deriv of $rt wrt Some(STop)")
+    }
+  }
+  test("random derivative 4") {
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         td = randomType(depth)
+         rt = Singleton(td)
+         } {
       assert(rt.derivative(Some(SEmpty)) == EmptySet)
-      assert(rt.derivative(None).canonicalize ~= rt.canonicalize,
-             s": deriv of $rt wrt EmptyWord/None returned ${rt.derivative(None)} \n   expecting $rt which reduces to ${rt.canonicalize}")
+    }
+  }
+  test("random derivative 5") {
+    for {depth <- 0 to 5
+         _ <- 1 to 1000
+         td = randomType(depth)
+         rt = Singleton(td)
+         } {
+      val d = rt.derivative(None)
+      val c = rt.canonicalize
+      val dc = d.canonicalize
+      assert(dc ~= c,
+             s": deriv of $rt wrt EmptyWord/None returned ${d}" +
+               s"\n   expecting $rt which reduces to ${c}")
     }
   }
 
   test("derivative random") {
-
     for {depth <- 0 to 5
          _ <- 1 to 1000
          rt = Rte.randomRte(depth)

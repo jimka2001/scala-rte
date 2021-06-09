@@ -28,8 +28,6 @@ import rte.RteImplicits._
 
 class CatTestSuite extends AnyFunSuite {
 
-
-
   test("cat case 99"){
     assert(Cat(Sigma,Sigma,Star(Sigma),Sigma,Sigma,Star(Sigma)).canonicalize
              == Cat(Sigma,Sigma,Sigma,Sigma,Star(Sigma)).canonicalize)
@@ -89,5 +87,43 @@ class CatTestSuite extends AnyFunSuite {
                     Singleton(SMember("a")))).canonicalize
              != Star(Cat(Not(Singleton(SEql(1))),
                          Singleton(SEql("a")))))
+  }
+  test("cat conversion3"){
+    // detect contains EmptySet
+    val a = Singleton(SEql("a"))
+    val x = Singleton(SEql("x"))
+    assert(Cat(a,EmptySet,x).conversion3()
+           == EmptySet)
+  }
+  test("cat conversion4"){
+    // remove EmptyWord and flatten Cat(Cat(...)...)
+    val a = Singleton(SEql("a"))
+    val x = Singleton(SEql("x"))
+
+    assert(Cat(a,EmptyWord,a,Cat(a,x),x).conversion4()
+           == Cat(a,a,a,x,x).conversion4())
+  }
+  test("cat conversion5"){
+    //  Cat(..., x*, x, x* ...) --> Cat(..., x*, x, ...)
+    //  and Cat(..., x*, x* ...) --> Cat(..., x*, ...)
+    val a = Singleton(SEql("a"))
+    val x = Singleton(SEql("x"))
+    assert(Cat(a,Star(x),x,Star(x),a).conversion5()
+           == Cat(a,x,Star(x),a).conversion5())
+    assert(Cat(a,Star(x),Star(x),a).conversion5()
+           == Cat(a,Star(x),a))
+  }
+  test("cat conversion6"){
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val c = Singleton(SEql("c"))
+    val d = Singleton(SEql("d"))
+    val x = Singleton(SEql("x"))
+    // Cat(A,B,X*,X,C,D) --> Cat(A,B,X,X*,C,D)
+    assert(Cat(a,b,Star(x),x,c,d).conversion6()
+           == Cat(a,b,x,Star(x),c,d))
+  }
+  test("cat conversion"){
+
   }
 }

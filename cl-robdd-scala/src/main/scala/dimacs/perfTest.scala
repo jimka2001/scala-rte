@@ -39,7 +39,7 @@ object perfTest{
         randomList(size, acc + gen(), gen)
     }
 
-    def randomClause:ClauseAsList = {
+    def randomClause():ClauseAsList = {
       canonicalizeClause(for {
         i <- randomList(density, Set[Int](), () => 1 + prng.nextInt(numVars))
         sign = if (0 == prng.nextInt(2)) 1 else -1

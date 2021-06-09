@@ -23,8 +23,8 @@
 package rte
 
 import adjuvant.Adjuvant._
-
 import scala.annotation.tailrec
+import genus._
 
 case class And(operands:Seq[Rte]) extends Rte{
   import genus.SimpleTypeD
@@ -35,20 +35,6 @@ case class And(operands:Seq[Rte]) extends Rte{
   override def toString:String = operands.map(_.toString).mkString("And(", ",", ")")
   def nullable:Boolean = operands.forall{_.nullable} // TODO should be lazy
   def firstTypes:Set[SimpleTypeD] = operands.toSet.flatMap((r:Rte) => r.firstTypes) // TODO should be lazy
-
-  def conversion1():Rte = {
-    // And() -> Sigma
-    if (operands.isEmpty)
-      Sigma
-    else
-      this
-  }
-  def conversion2():Rte = {
-    if (operands.sizeIs == 1)
-      operands.head
-    else
-      this
-  }
 
   def conversion3():Rte = {
     // And(... EmptySet ....) -> EmptySet
@@ -280,21 +266,32 @@ case class And(operands:Seq[Rte]) extends Rte{
   }
 
   def conversion21():Rte = {
-    val members = operands.collectFirst{
-      case Singleton( m:genus.SMemberImpl) => m
-    }
-    members match {
+    // And({1,2,3},Singleton(X),Singleton(Y))
+    //  {...} selecting elements, x, for which SAnd(X,Y).typep(x) is true
+    import Types.createMember
+    operands.collectFirst {
+      case Singleton(m: genus.SMemberImpl) => m.xs
+    } match {
       case None => this
-      case Some(m) =>
-        val as:Seq[Any] = m.xs
-        val dfa = this.toDfa(true)
-        val filtered = as.filter{a => dfa.simulate(Seq(a)).contains(true)}
-        Singleton(genus.Types.createMember(filtered))
+      case Some(xs) =>
+        val lessStrict: SimpleTypeD = SAnd.createAnd(operands.flatMap {
+          case Singleton(td) => Seq(td)
+          case Not(Singleton(td)) => Seq(SNot(td))
+          case _ => Seq()
+        })
+        val newMember: Rte = Singleton(createMember(xs.filter(lessStrict.typep)))
+        create(uniquify(operands.map {
+          case _: Singleton => newMember
+          case Not(_: Singleton) => newMember
+          case r => r
+        }))
     }
   }
   def conversion99():Rte = {
     create(operands.map(_.canonicalizeOnce))
   }
+  def conversion1():Rte = create(operands)
+
   lazy val matchesOnlySingletons:Boolean = operands.contains(Sigma) || operands.exists(Rte.isSingleton)
 
   lazy val singletons:List[genus.SimpleTypeD] = operands.flatMap{
@@ -310,7 +307,6 @@ case class And(operands:Seq[Rte]) extends Rte{
 
     findSimplifier(this,List[() => Rte](
       () => { conversion1() },
-      () => { conversion2() },
       () => { conversion3() },
       () => { conversion4() },
       () => { conversion5() },
@@ -352,6 +348,11 @@ object And {
 
 object AndSanity {
   def main(argv:Array[String]):Unit = {
-    print(And(Singleton(genus.SEql(0)),Sigma).canonicalize)
+    var c1:Rte = And(Singleton(STop),Not(Singleton(SMember(4,5,6))))
+
+    for{ i <- 0 to 10}{
+      c1 = c1.canonicalizeOnce
+      println(s"$i: $c1")
+    }
   }
 }

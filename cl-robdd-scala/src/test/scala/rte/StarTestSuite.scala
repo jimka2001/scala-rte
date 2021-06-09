@@ -45,6 +45,48 @@ class StarTestSuite extends AnyFunSuite {
       assert(Star(Cat(Star(Cat(r1,r2)),r1,r2)).canonicalize == Star(Cat(r1,r2)).canonicalize) // ((x y)* x y)* --> (x y)*
     }
   }
+  test("star conversion1"){
+    assert(Star(EmptyWord).conversion1() == EmptyWord)
+    assert(Star(EmptySet).conversion1() == EmptyWord)
+    val a = Singleton(SEql("a"))
+    assert(Star(Star(a)).conversion1() == Star(a))
+  }
+
+  test("star conversion2"){
+    // Cat(x x*)* = x*
+    // Cat(x* x)* = x*
+    // Cat(x* x x*)* = x*
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    assert(Star(Cat(a,Star(a))).conversion2() == Star(a))
+    assert(Star(Cat(Star(a),a)).conversion2() == Star(a))
+    assert(Star(Cat(Star(a),a,Star(a))).conversion2() == Star(a))
+
+    assert(Star(Cat(a,Star(b))).conversion2() == Star(Cat(a,Star(b))))
+    assert(Star(Cat(Star(b),a)).conversion2() == Star(Cat(Star(b),a)))
+    assert(Star(Cat(Star(a),b,Star(a))).conversion2() == Star(Cat(Star(a),b,Star(a))))
+  }
+  test("star conversion3"){
+    val x = Singleton(SEql("x"))
+    val y = Singleton(SEql("y"))
+    val z = Singleton(SEql("z"))
+    // Star(Cat(X, Y, Z, Star( Cat(X, Y, Z))))
+    //   -->    Star( Cat(X, Y, Z))
+    assert(Star(Cat(x,y,z,Star(Cat(x,y,z)))).conversion3()
+           == Star(Cat(x,y,z)))
+
+    // Star(Cat(Star( Cat(X, Y, Z)), X, Y, Z))
+    //   -->    Star( Cat(X, Y, Z))
+    assert(Star(Cat(Star(Cat(x,y,z)),x,y,z)).conversion3()
+           == Star(Cat(x,y,z)))
+
+    // Star(Cat(Star( Cat(X, Y, Z)), X, Y, Z, Star(Cat(X,Y,Z)))
+    //   -->    Star( Cat(X, Y, Z))
+    assert(Star(Cat( Star(Cat(x,y,z)),
+                     x,y,z,
+                     Star(Cat(x,y,z)))).conversion3()
+           == Star(Cat(x,y,z)))
+  }
 
 
 }
