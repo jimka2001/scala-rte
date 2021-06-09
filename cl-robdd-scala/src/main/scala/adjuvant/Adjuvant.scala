@@ -188,9 +188,13 @@ object Adjuvant {
       case Nil => target
       case s :: ss =>
         val t2 = s()
-        if (target == t2)
+        if (target == t2) {
+          // Pass target to recursive call, not t2.
+          // The hope is that t2 is newly allocated data
+          // and target is older.  Hoping that, holding on to older data
+          // and allowing new data to be released is better for the GC.
           findSimplifier(target, ss)
-        else
+        } else
           t2
     }
   }
