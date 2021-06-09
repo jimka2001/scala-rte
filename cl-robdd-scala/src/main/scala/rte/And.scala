@@ -47,9 +47,11 @@ case class And(operands:Seq[Rte]) extends Rte{
   def conversion4():Rte = {
     create(uniquify(operands))
   }
+
   def conversion5():Rte = {
     create(Rte.sortAlphabetically(operands))
   }
+
   def conversion6():Rte = {
     // remove Sigma* and flatten And(And(...)...)
     create(operands.flatMap{
@@ -58,12 +60,14 @@ case class And(operands:Seq[Rte]) extends Rte{
       case r => Seq(r)
     })
   }
+
   def conversion7():Rte = {
     if (operands.contains(EmptyWord) && matchesOnlySingletons)
       EmptySet
     else
       this
   }
+
   def conversion8():Rte = {
     // if operands contains EmptyWord, then the intersection is either EmptyWord or EmptySet
     if (! operands.contains(EmptyWord))
@@ -73,14 +77,15 @@ case class And(operands:Seq[Rte]) extends Rte{
     else
       EmptySet
   }
+
   def conversion9():Rte = {
-    if (matchesOnlySingletons && operands.exists(Rte.isStar)) {
-      // if x matches only singleton then And(x,y*) -> And(x,y)
-      create(operands.map{
+    if (matchesOnlySingletons && operands.exists(Rte.isStar))
+    // if x matches only singleton then And(x,y*) -> And(x,y)
+      create(operands.map {
         case Star(rt) => rt
         case rt => rt
       })
-    } else
+    else
       this
   }
   def conversion10():Rte = {
