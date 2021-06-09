@@ -112,14 +112,9 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   }
 
   def conversion7(nf: Option[NormalForm]): SimpleTypeD = {
-    val i2 = create(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf))
-                      .sortWith(cmpTypeDesignators))
+    create(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf))
+             .sortWith(cmpTypeDesignators))
       .maybeDnf(nf).maybeCnf(nf)
-    if (this == i2)
-      this // return the older object, hoping the newer one is more easily GC'ed, also preserves EQ-ness
-    else {
-      i2
-    }
   }
 
   def conversion8(): SimpleTypeD = {
