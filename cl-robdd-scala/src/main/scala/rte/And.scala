@@ -26,39 +26,31 @@ import adjuvant.Adjuvant._
 import scala.annotation.tailrec
 import genus._
 
-case class And(operands:Seq[Rte]) extends Rte{
+case class And(override val operands:Seq[Rte]) extends Combination(operands) {
+  val zero:Rte = EmptySet
+  val one:Rte = Rte.sigmaStar
+  def sameCombination(c:Combination):Boolean = {
+    c match {
+      case _:And => true
+      case _ => false
+    }
+  }
+  def dualCombination(c:Combination):Boolean = {
+    c match {
+      case _:Or => true
+      case _ => false
+    }
+  }
   def create(operands: Seq[Rte]):Rte = {
     And.createAnd(operands)
   }
+  def createDual(operands: Seq[Rte]):Rte = {
+    Or.createOr(operands)
+  }
+
   override def toLaTeX:String = operands.map(_.toLaTeX).mkString("(", "\\wedge ", ")")
   override def toString:String = operands.map(_.toString).mkString("And(", ",", ")")
   def nullable:Boolean = operands.forall{_.nullable} // TODO should be lazy
-  def firstTypes:Set[SimpleTypeD] = operands.toSet.flatMap((r:Rte) => r.firstTypes) // TODO should be lazy
-
-  def conversion3():Rte = {
-    // And(... EmptySet ....) -> EmptySet
-    if (operands.contains(EmptySet))
-      EmptySet
-    else
-      this
-  }
-
-  def conversion4():Rte = {
-    create(uniquify(operands))
-  }
-
-  def conversion5():Rte = {
-    create(Rte.sortAlphabetically(operands))
-  }
-
-  def conversion6():Rte = {
-    // remove Sigma* and flatten And(And(...)...)
-    create(operands.flatMap{
-      case Rte.sigmaStar => Seq()
-      case And(Seq(rs @ _*)) => rs
-      case r => Seq(r)
-    })
-  }
 
   def conversion7():Rte = {
     if (operands.contains(EmptyWord) && matchesOnlySingletons)
@@ -101,13 +93,7 @@ case class And(operands:Seq[Rte]) extends Rte{
     else
       this
   }
-  def conversion11():Rte = {
-    // And(...,x,Not(x)...)
-    if (operands.exists(r1 => operands.contains(Not(r1))))
-      EmptySet
-    else
-      this
-  }
+
   def conversion12():Rte = {
     if (singletons.exists(td => td.inhabited.contains(false)))
       EmptySet
@@ -327,10 +313,11 @@ case class And(operands:Seq[Rte]) extends Rte{
       () => { conversion4() },
       () => { conversion6() },
       () => { conversion7() },
+      () => { conversionC7() },
       () => { conversion8() },
       () => { conversion9() },
       () => { conversion10() },
-      () => { conversion11() },
+      () => { conversionC11() },
       () => { conversion12() },
       () => { conversion13() },
       () => { conversion14() },
@@ -348,7 +335,6 @@ case class And(operands:Seq[Rte]) extends Rte{
       () => { super.canonicalizeOnce}
       ))
   }
-  def derivativeDown(wrt:SimpleTypeD):Rte = And.createAnd(operands.map(rt => rt.derivative(Some(wrt))))
 }
 
 object And {

@@ -499,9 +499,9 @@ class AndTestSuite extends AnyFunSuite {
     // And(...,x,Not(x)...)
     val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))
-    assert(And(a,b,Not(a)).conversion11()
+    assert(And(a,b,Not(a)).conversionC11()
              == EmptySet)
-    assert(And(a,Not(b),Not(Not(b))).conversion11()
+    assert(And(a,Not(b),Not(Not(b))).conversionC11()
              == EmptySet)
   }
   test("and conversion12"){

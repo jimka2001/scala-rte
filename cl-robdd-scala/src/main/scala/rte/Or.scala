@@ -24,59 +24,33 @@ package rte
 import adjuvant.Adjuvant.{uniquify,findSimplifier,searchReplace}
 import genus._
 
-case class Or(operands:Seq[Rte]) extends Rte {
+case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
+  val zero:Rte = Rte.sigmaStar
+  val one:Rte = EmptySet
+  def sameCombination(c:Combination):Boolean = {
+    c match {
+      case _:Or => true
+      case _ => false
+    }
+  }
   def create(operands: Seq[Rte]):Rte = {
     Or.createOr(operands)
   }
-
+  def dualCombination(c:Combination):Boolean = {
+    c match {
+      case _:And => true
+      case _ => false
+    }
+  }
+  def createDual(operands: Seq[Rte]):Rte = {
+    And.createAnd(operands)
+  }
   override def toLaTeX: String = "(" + operands.map(_.toLaTeX).mkString("\\vee ") + ")"
 
   override def toString: String = operands.map(_.toString).mkString("Or(", ",", ")")
 
   def nullable: Boolean = operands.exists {
     _.nullable
-  }
-
-  def firstTypes: Set[SimpleTypeD] = operands.toSet.flatMap((r: Rte) => r.firstTypes)
-
-  def conversion3():Rte = {
-    // Or(... Sigma* ....) -> Sigma*
-    if (operands.contains(Rte.sigmaStar))
-      Rte.sigmaStar
-    else
-      this
-  }
-
-  def conversion4():Rte = {
-    create(uniquify(operands))
-  }
-
-  def conversion5():Rte = {
-    create(Rte.sortAlphabetically(operands))
-  }
-
-  def conversion6():Rte = {
-    // remove EmptySet and flatten Or(Or(...)...)
-    create(operands.flatMap{
-      case EmptySet => Seq()
-      case Or(Seq(rs @ _*)) => rs
-      case r => Seq(r)
-    })
-  }
-
-  def conversion7():Rte = {
-    // (:or A B (:* B) C)
-    // --> (:or A (:* B) C)
-    val stars = operands.collect{
-      case rt@Star(_) => rt
-    }
-    if (stars.isEmpty)
-      this
-    else
-      create(operands.flatMap{
-        case r1 if stars.contains(Star(r1)) => Seq()
-        case r => Seq(r)
-    })
   }
 
   def conversion8(existsNullable : => Boolean):Rte = {
@@ -286,10 +260,11 @@ case class Or(operands:Seq[Rte]) extends Rte {
       () => { conversion3() },
       () => { conversion4() },
       () => { conversion6() },
-      () => { conversion7() },
+      () => { conversionC7() },
       () => { conversion8(existsNullable)},
       () => { conversion9(existsNullable)},
       () => { conversion10()},
+      () => { conversionC11()},
       () => { conversion11b()},
       () => { conversion11()},
       () => { conversion12()},
@@ -304,7 +279,6 @@ case class Or(operands:Seq[Rte]) extends Rte {
       ))
   }
 
-  def derivativeDown(wrt:SimpleTypeD):Rte = create(operands.map(rt => rt.derivative(Some(wrt))))
 }
 
 object Or {

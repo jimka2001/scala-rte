@@ -383,9 +383,9 @@ class OrTestSuite extends AnyFunSuite {
     val A = Singleton(SEql(1))
     val B = Singleton(SEql(2))
     val C = Singleton(SEql(3))
-    assert(Or(A,B,Star(B),C).conversion7() == Or(A,Star(B),C))
-    assert(Or(A,Star(C),B,C).conversion7() == Or(A,Star(C),B))
-    assert(Or(A,Star(B),B,C,Star(C)).conversion7() == Or(A,Star(B),Star(C)))
+    assert(Or(A,B,Star(B),C).conversionC7() == Or(A, Star(B), C))
+    assert(Or(A,Star(C),B,C).conversionC7() == Or(A, Star(C), B))
+    assert(Or(A,Star(B),B,C,Star(C)).conversionC7() == Or(A, Star(B), Star(C)))
   }
   test("or conversion8"){
     // (:or (:* C) (:cat X (:* X)))
