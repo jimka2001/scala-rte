@@ -416,15 +416,15 @@ class AndTestSuite extends AnyFunSuite {
          } {
 
       assert(And(r1, Not(r1)).canonicalize ~= EmptySet,
-             s"r1=$r1")
+             s"\n  r1=$r1")
       assert(And(r1, r2, Not(r1)).canonicalize ~= EmptySet,
-             s"r1=$r1  r2=$r2 ")
+             s"\n  r1=$r1\n  r2=$r2 ")
       assert(And(r1, r2, Not(r1), r3).canonicalize ~= EmptySet,
-             s"r1=$r1  r2=$r2   r3=$r3")
+             s"\n  r1=$r1\n  r2=$r2   r3=$r3")
       assert(And(r1, Not(r1), r3).canonicalize ~= EmptySet,
-             s"r1=$r1  r3=$r3")
+             s"\n  r1=$r1\n  r3=$r3")
       assert(And(r1, trd1, r2, trd2, r3).canonicalize ~= EmptySet,
-             s"r1=$r1  r2=$r2   r3=$r3")
+             s"\n  r1=$r1\n  r2=$r2\n  r3=$r3")
     }
   }
 
@@ -499,9 +499,9 @@ class AndTestSuite extends AnyFunSuite {
     // And(...,x,Not(x)...)
     val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))
-    assert(And(a,b,Not(a)).conversion11()
+    assert(And(a,b,Not(a)).conversionC11()
              == EmptySet)
-    assert(And(a,Not(b),Not(Not(b))).conversion11()
+    assert(And(a,Not(b),Not(Not(b))).conversionC11()
              == EmptySet)
   }
   test("and conversion12"){
@@ -528,7 +528,7 @@ class AndTestSuite extends AnyFunSuite {
     assert(And(a,ab).conversion15()
            == And(a,ab))
   }
-  test("and conversion16"){
+  test("and conversionC16"){
     // test And(<STop>,Not(<{4,5,6}>)) does not reduce to Not(<{4,5,6}>)
     // detect supertype
 
@@ -536,20 +536,35 @@ class AndTestSuite extends AnyFunSuite {
     val b = Singleton(SEql("b"))
     val ab = Singleton(SMember("a","b"))
     val ac = Singleton(SMember("a","c"))
-    assert(And(a,b,ab,ac).conversion16()
-           == And(a,b,Sigma,Sigma))
+    assert(And(a,b,ab,ac).conversionC16()
+           == And(a,b))
 
-    assert(And(ab,Not(a)).conversion16()
+    assert(And(ab,Not(a)).conversionC16()
            == And(ab,Not(a)))
 
-    // And(b,Not(ac)) => And(b,Sigma)
-    assert(And(b,Not(ac)).conversion16()
-           == And(b,Sigma))
 
-    assert(And(Singleton(SAtomic(classOf[Any])),Not(ab)).conversion16()
-             == And(Singleton(SAtomic(classOf[Any])),Not(ab)))
-    assert(And(Singleton(SAtomic(classOf[Any])),ab).conversion16()
-             == And(Sigma,ab))
+
+    assert(And(Singleton(SAtomic(classOf[Any])),Not(ab)).conversionC16()
+           == And(Singleton(SAtomic(classOf[Any])),Not(ab)))
+    assert(And(Singleton(SAtomic(classOf[Any])),ab).conversionC16()
+           == ab)
+  }
+  test("and conversionC16b"){
+    // test And(<STop>,Not(<{4,5,6}>)) does not reduce to Not(<{4,5,6}>)
+    // detect supertype
+
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val ab = Singleton(SMember("a","b"))
+    val ac = Singleton(SMember("a","c"))
+
+
+    // And(b,Not(ac)) => And(b)
+    assert(And(b,Not(ac)).conversionC16b()
+           == b)
+
+    assert(And(Singleton(SAtomic(classOf[Any])),Not(ab)).conversionC16b()
+           == And(Singleton(SAtomic(classOf[Any])),Not(ab)))
   }
   test("and conversion17"){
     val a = Singleton(SEql("a"))

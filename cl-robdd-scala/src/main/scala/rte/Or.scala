@@ -24,59 +24,36 @@ package rte
 import adjuvant.Adjuvant.{uniquify,findSimplifier,searchReplace}
 import genus._
 
-case class Or(operands:Seq[Rte]) extends Rte {
+case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
+  val zero:Rte = Rte.sigmaStar
+  val one:Rte = EmptySet
+  def sameCombination(c:Combination):Boolean = {
+    c match {
+      case _:Or => true
+      case _ => false
+    }
+  }
   def create(operands: Seq[Rte]):Rte = {
     Or.createOr(operands)
   }
-
+  def dualCombination(c:Combination):Boolean = {
+    c match {
+      case _:And => true
+      case _ => false
+    }
+  }
+  def createDual(operands: Seq[Rte]):Rte = {
+    And.createAnd(operands)
+  }
+  override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
+    b.subtypep(a)
+  }
   override def toLaTeX: String = "(" + operands.map(_.toLaTeX).mkString("\\vee ") + ")"
 
   override def toString: String = operands.map(_.toString).mkString("Or(", ",", ")")
 
   def nullable: Boolean = operands.exists {
     _.nullable
-  }
-
-  def firstTypes: Set[SimpleTypeD] = operands.toSet.flatMap((r: Rte) => r.firstTypes)
-
-  def conversion3():Rte = {
-    // Or(... Sigma* ....) -> Sigma*
-    if (operands.contains(Rte.sigmaStar))
-      Rte.sigmaStar
-    else
-      this
-  }
-
-  def conversion4():Rte = {
-    create(uniquify(operands))
-  }
-
-  def conversion5():Rte = {
-    create(Rte.sortAlphabetically(operands))
-  }
-
-  def conversion6():Rte = {
-    // remove EmptySet and flatten Or(Or(...)...)
-    create(operands.flatMap{
-      case EmptySet => Seq()
-      case Or(Seq(rs @ _*)) => rs
-      case r => Seq(r)
-    })
-  }
-
-  def conversion7():Rte = {
-    // (:or A B (:* B) C)
-    // --> (:or A (:* B) C)
-    val stars = operands.collect{
-      case rt@Star(_) => rt
-    }
-    if (stars.isEmpty)
-      this
-    else
-      create(operands.flatMap{
-        case r1 if stars.contains(Star(r1)) => Seq()
-        case r => Seq(r)
-    })
   }
 
   def conversion8(existsNullable : => Boolean):Rte = {
@@ -237,11 +214,21 @@ case class Or(operands:Seq[Rte]) extends Rte {
       }))
     }
   }
-
+  def conversionC16b():Rte = {
+    val nn = operands.collect{
+      case Not(Singleton(td)) => td
+    }
+    val filtered = operands.flatMap{
+      // Or(A,x,Not(y))  --> Or(A,Not(y))
+      case Singleton(td) if nn.exists(d => td.disjoint(d).contains(true)) => Seq()
+      case r => Seq(r)
+    }
+    create(filtered)
+  }
   def conversion17():Rte = {
     // Or(<{1,2,3}>,Not(<{3,4,5,6}>))
     // remove redundant element from SMember within Or
-    // because of conversion16 we know there is at most one SMember/SEql
+    // because of conversionC16 we know there is at most one SMember/SEql
     // Note that we would like to form a dfa of the Rte by removing
     //     <{1,2,3}> and then testing membership of Seq(1), Seq(2), and Seq(3)
     //     of that dfa.   However, creating a dfa means we must find all the derivatives
@@ -274,11 +261,6 @@ case class Or(operands:Seq[Rte]) extends Rte {
     }
   }
 
-  def conversion99():Rte =
-    create(operands.map(_.canonicalizeOnce))
-
-  def conversion1():Rte = create(operands)
-
   override def canonicalizeOnce: Rte = {
     lazy val existsNullable = operands.exists(_.nullable)
     findSimplifier(tag="or",target=this,step=0,verbose=false,List[() => Rte](
@@ -286,11 +268,14 @@ case class Or(operands:Seq[Rte]) extends Rte {
       () => { conversion3() },
       () => { conversion4() },
       () => { conversion6() },
-      () => { conversion7() },
+      () => { conversionC7() },
       () => { conversion8(existsNullable)},
       () => { conversion9(existsNullable)},
       () => { conversion10()},
+      () => { conversionC11()},
       () => { conversion11b()},
+      () => { conversionC16()},
+      () => { conversionC16b()},
       () => { conversion11()},
       () => { conversion12()},
       () => { conversion13()},
@@ -304,7 +289,6 @@ case class Or(operands:Seq[Rte]) extends Rte {
       ))
   }
 
-  def derivativeDown(wrt:SimpleTypeD):Rte = create(operands.map(rt => rt.derivative(Some(wrt))))
 }
 
 object Or {

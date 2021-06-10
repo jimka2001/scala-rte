@@ -223,7 +223,46 @@ class OrTestSuite extends AnyFunSuite {
     assert(Or(Not(Singleton(SEql(0))),
               Star(Singleton(SEql(1)))).canonicalize == Not(Singleton(SEql(0))))
   }
+  test("or conversionC16"){
+    // detect and remove subtype
 
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val ab = Singleton(SMember("a","b"))
+    val ac = Singleton(SMember("a","c"))
+    assert(Or(a,b,ab,ac).conversionC16()
+           == Or(ab,ac))
+
+    assert(Or(ab,Not(a)).conversionC16()
+           == Or(ab,Not(a)))
+
+    // Or(b,Not(ac)) => Or(b,Sigma)
+    assert(Or(b,Not(ac)).conversionC16()
+           == Or(b,Not(ac)))
+
+    assert(Or(Singleton(SAtomic(classOf[Any])),ab).conversionC16()
+           == Singleton(SAtomic(classOf[Any])))
+  }
+  test("or conversionC16b"){
+    // detect Or(a,Not(b)) with a disjoint from b, remove a
+
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val ab = Singleton(SMember("a","b"))
+    val ac = Singleton(SMember("a","c"))
+
+
+    assert(Or(ab,Not(a)).conversionC16b()
+           == Or(ab,Not(a)))
+
+    // Or(b,Not(ac)) => Or(Not(ac))
+    assert(Or(b,Not(ac)).conversionC16b()
+           == Not(ac))
+
+    assert(Or(Singleton(SAtomic(classOf[Any])),Not(ab)).conversionC16b()
+           == Or(Singleton(SAtomic(classOf[Any])),Not(ab)))
+
+  }
   test("canonicalize or 203") {
     abstract class Abstract2
     val r1 = Singleton(SAtomic(classOf[Abstract2]))
@@ -383,9 +422,9 @@ class OrTestSuite extends AnyFunSuite {
     val A = Singleton(SEql(1))
     val B = Singleton(SEql(2))
     val C = Singleton(SEql(3))
-    assert(Or(A,B,Star(B),C).conversion7() == Or(A,Star(B),C))
-    assert(Or(A,Star(C),B,C).conversion7() == Or(A,Star(C),B))
-    assert(Or(A,Star(B),B,C,Star(C)).conversion7() == Or(A,Star(B),Star(C)))
+    assert(Or(A,B,Star(B),C).conversionC7() == Or(A, Star(B), C))
+    assert(Or(A,Star(C),B,C).conversionC7() == Or(A, Star(C), B))
+    assert(Or(A,Star(B),B,C,Star(C)).conversionC7() == Or(A, Star(B), Star(C)))
   }
   test("or conversion8"){
     // (:or (:* C) (:cat X (:* X)))
@@ -526,7 +565,7 @@ class OrTestSuite extends AnyFunSuite {
     assert(Or(Not(A),Star(C),B,Star(D),Star(A)).conversion15()
              == Or(Not(A),B,Star(A)))
   }
-  test("or conversion16"){
+  test("or conversionC16 2"){
     // Or(<{1,2,3}>,<{a,b,c}>,Not(<{4,5,6}>))
     val X = Not(Singleton(SEql(100)))
     val Y = Not(Singleton(SEql(200)))
