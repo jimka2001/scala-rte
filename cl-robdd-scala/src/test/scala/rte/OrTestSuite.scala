@@ -276,6 +276,12 @@ class OrTestSuite extends AnyFunSuite {
           )
     }
   }
+  test("discovered case 279"){
+    val s = Singleton(SEql(-1))
+    val c = Cat(Sigma,Sigma,Star(Sigma))
+    val r1 = Or(And(c,s),s)
+    r1.canonicalizeDebug(5)
+  }
 
   test("canonicalize or 253") {
     for {depth <- 0 to 4
@@ -537,25 +543,29 @@ class OrTestSuite extends AnyFunSuite {
              == Or(Singleton(SMember(1,2,3)),
                    Singleton(SEql(0)),
                    Not(Singleton(SMember(1,2,3,4,5,6)))))
-
+    val i = Singleton(SMember(0,1,2,3,4,5))
     assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
-              Singleton(SInt)).conversion17()
+              Or(i )).conversion17()
              == Or(Singleton(SMember("a","b","c")),
-                   Singleton(SInt)))
+                   Or(i)))
 
     assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
-              Not(Singleton(SInt))).conversion17()
+              Not(i)).conversion17()
              == Or(Singleton(SMember(1,2,3)),
-                   Not(Singleton(SInt))))
+                   Not(i)))
 
     assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
-              Cat(Star(SInt),Singleton(SEql("a")))).conversion17()
+              Cat(Star(i),Singleton(SEql("a")))).conversion17()
              == Or(Singleton(SMember("b","c")),
-                   Cat(Star(SInt),Singleton(SEql("a")))))
+                   Cat(Star(i),Singleton(SEql("a")))))
     assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
-              Not(Cat(Star(SInt),Singleton(SEql("a"))))).conversion17()
+              Not(Cat(Star(i),Singleton(SEql("a"))))).conversion17()
              == Or(Singleton(SMember(1,2,3,"a")),
-                   Not(Cat(Star(SInt),Singleton(SEql("a"))))))
+                   Not(Cat(Star(i),Singleton(SEql("a"))))))
+    // can't convert because we cannot figure how whether And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1)))
+    //   is inhabited.
+    assert(Or(And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1))), Singleton(SEql(-1))).conversion17()
+           == Or(And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1))), Singleton(SEql(-1))))
   }
   test("or conversion99"){
     // canonicalizing sub nodes

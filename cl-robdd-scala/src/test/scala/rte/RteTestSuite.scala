@@ -296,10 +296,14 @@ class RteTestSuite extends MyFunSuite {
     assert(!And(a,ab).inhabited.contains(false))
     assert(And(a,b).inhabited.contains(false))
 
-    assert(Cat(a,b).inhabited.contains(false))
+    assert(Singleton(SEql("a")).inhabited.contains(true))
+    assert(Cat(a,b).inhabited.contains(true))
     assert(Cat(a,EmptySet,b).inhabited.contains(false))
-    assert(Cat(a,x,b).inhabited.contains(false)) // false because a & b is empty
+    assert(Cat(a,x,b).inhabited == None) // becasue we dont know whether x is inhabited
+    assert(Cat(a,x,EmptySet).inhabited.contains(false)) // because even if we don't know whethe x is inhabited, we know that EmptySet is not
     assert(Cat(a,x).inhabited == None) // because we don't know whether x is inhabited
     assert(Cat(a,x,ab).inhabited == None) // because we don't know whether x is inhabited
+    assert(Cat(Star(EmptySet),a).inhabited.contains(true))
+    assert(Cat(Star(EmptySet),SInt).inhabited == None)
   }
 }
