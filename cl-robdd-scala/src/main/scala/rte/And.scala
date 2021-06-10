@@ -279,7 +279,7 @@ case class And(operands:Seq[Rte]) extends Rte{
     //     )
     import Types.createMember
     operands.collectFirst {
-      case s@Singleton(m: SMemberImpl) => s
+      case s@Singleton(_: SMemberImpl) => s
     } match {
       case None => this
       case Some(s@Singleton(m: SMemberImpl)) =>

@@ -281,7 +281,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
 
   override def canonicalizeOnce: Rte = {
     lazy val existsNullable = operands.exists(_.nullable)
-    findSimplifier("or",this,0,false,List[() => Rte](
+    findSimplifier(tag="or",target=this,step=0,verbose=false,List[() => Rte](
       () => { conversion1() },
       () => { conversion3() },
       () => { conversion4() },
