@@ -285,7 +285,6 @@ case class Or(operands:Seq[Rte]) extends Rte {
       () => { conversion1() },
       () => { conversion3() },
       () => { conversion4() },
-      () => { conversion5() },
       () => { conversion6() },
       () => { conversion7() },
       () => { conversion8(existsNullable)},
@@ -300,6 +299,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
       () => { conversion16()},
       () => { conversion17()},
       () => { conversion99() },
+      () => { conversion5() },
       () => { super.canonicalizeOnce }
       ))
   }

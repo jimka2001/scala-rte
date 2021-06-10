@@ -322,7 +322,6 @@ case class And(operands:Seq[Rte]) extends Rte{
       () => { conversion1() },
       () => { conversion3() },
       () => { conversion4() },
-      () => { conversion5() },
       () => { conversion6() },
       () => { conversion7() },
       () => { conversion8() },
@@ -342,6 +341,7 @@ case class And(operands:Seq[Rte]) extends Rte{
       () => { conversion19() },
       () => { conversion21() },
       () => { conversion99() },
+      () => { conversion5() },
       () => { super.canonicalizeOnce}
       ))
   }
