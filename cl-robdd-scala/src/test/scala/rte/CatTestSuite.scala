@@ -123,6 +123,16 @@ class CatTestSuite extends AnyFunSuite {
     assert(Cat(a,b,Star(x),x,c,d).conversion6()
            == Cat(a,b,x,Star(x),c,d))
   }
+  test("discovered case 126"){
+    val r1 = Cat(Star(Singleton(SEql(1))),
+                 Not(Cat(Sigma,Star(Sigma))))
+    assert(Star(Singleton(SEql(1))).inhabited.contains(true))
+    assert(Cat(Sigma,Star(Sigma)).inhabited.contains(true))
+    assert(! Not(Cat(Sigma,Star(Sigma))).inhabited.contains(false))
+    assert(! r1.inhabited.contains(false))
+    assert(r1.canonicalize
+           != EmptySet)
+  }
   test("cat conversion"){
 
   }
