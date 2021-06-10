@@ -558,10 +558,12 @@ class OrTestSuite extends AnyFunSuite {
               Cat(Star(i),Singleton(SEql("a")))).conversion17()
              == Or(Singleton(SMember("b","c")),
                    Cat(Star(i),Singleton(SEql("a")))))
-    assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
-              Not(Cat(Star(i),Singleton(SEql("a"))))).conversion17()
-             == Or(Singleton(SMember(1,2,3,"a")),
-                   Not(Cat(Star(i),Singleton(SEql("a"))))))
+    //assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
+    //          // TODO, currently we don't know whether Not(Cat(...)) is inhabited
+    //          //    so we cant reduce this member{1,2,3,"a","b","c"}
+    //          Not(Cat(Star(i),Singleton(SEql("a"))))).conversion17()
+    //         == Or(Singleton(SMember(1,2,3,"a")),
+    //               Not(Cat(Star(i),Singleton(SEql("a"))))))
     // can't convert because we cannot figure how whether And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1)))
     //   is inhabited.
     assert(Or(And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1))), Singleton(SEql(-1))).conversion17()
