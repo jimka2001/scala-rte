@@ -22,7 +22,6 @@
 
 package rte
 
-import org.scalatest.funsuite.AnyFunSuite
 import RteImplicits._
 import adjuvant.Accumulators.withOutputToString
 import genus._
@@ -185,7 +184,7 @@ class RteTestSuite extends MyFunSuite {
     assert(Not(EmptyWord).canonicalize == Cat(Sigma, Star(Sigma)))
     assert(Not(EmptySet).canonicalize == Star(Sigma))
     for {depth <- 0 to 2
-         r <- 1 to 500
+         _ <- 1 to 500
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {
@@ -195,7 +194,7 @@ class RteTestSuite extends MyFunSuite {
         val a = Not(And(r1, r2)).canonicalize
         val b = Or(Not(r1), Not(r2)).canonicalize
         xymbolyco.GraphViz.dfaToPng(Or(And(a,Not(b)),
-                                      And(b,Not(a))).toDfa(),"de-morgan",true)
+                                      And(b,Not(a))).toDfa(),"de-morgan",abbrev=true)
         assert(Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize,
                s"\nr1=$r1  \nr2=$r2" +
                  s"\n  Not(And(r1, r2)) = Not(And($r1, $r2)) = " + Not(And(r1, r2)).canonicalize +
@@ -250,12 +249,12 @@ class RteTestSuite extends MyFunSuite {
                                Cat(Star(classOf[String]),Singleton(SEql(0))) -> 4,
                                Cat(Star(classOf[String]),Singleton(SInt)) -> 5
                                ))
-    assert(dfa.simulate(Seq("hello")) == Some(1))
-    assert(dfa.simulate(List()) == Some(1))
-    assert(dfa.simulate(List("hello","world",1)) == Some(2))
-    assert(dfa.simulate(List("hello","world",-1)) == Some(3))
-    assert(dfa.simulate(List("hello","world",0)) == Some(4))
-    assert(dfa.simulate(List("hello","world",12)) == Some(5))
-    assert(dfa.simulate(List("hello","world",12.0)) == None)
+    assert(dfa.simulate(Seq("hello")).contains(1))
+    assert(dfa.simulate(List()).contains(1))
+    assert(dfa.simulate(List("hello", "world", 1)).contains(2))
+    assert(dfa.simulate(List("hello", "world", -1)).contains(3))
+    assert(dfa.simulate(List("hello", "world", 0)).contains(4))
+    assert(dfa.simulate(List("hello", "world", 12)).contains(5))
+    assert(dfa.simulate(List("hello", "world", 12.0)).isEmpty)
   }
 }
