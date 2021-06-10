@@ -170,6 +170,8 @@ case class Or(operands:Seq[Rte]) extends Rte {
     // sigmaSigmaStarSigma = Cat(Sigma, Sigma, sigmaStar)
     // Or(   A, B, ... Cat(Sigma,Sigma,Sigma*) ... Not(Singleton(X)) ...)
     //   --> Or( A, B, ... Not(Singleton(X))
+    // This is correct because Cat(Σ,Σ,(Σ)*) is the set of all sequences of length 2 or more
+    //    and Not(Singleton(X)) includes the set of all sequences of length 2 or more
     if (operands.contains(Rte.sigmaSigmaStarSigma) && operands.exists{
       case Not(Singleton(_)) => true
       case _ => false})
