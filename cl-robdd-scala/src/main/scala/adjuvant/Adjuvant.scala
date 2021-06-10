@@ -177,8 +177,11 @@ object Adjuvant {
     s
   }
 
-  @tailrec
   def findSimplifier[T](target: T, simplifiers: List[() => T]): T = {
+    findSimplifier("",target,0,false, simplifiers)
+  }
+  @tailrec
+  def findSimplifier[T](tag:String, target: T, step:Int, verbose:Boolean, simplifiers: List[() => T]): T = {
     // simplifiers is a list of 0-ary functions.   calling such a function
     //   either returns `target` or something else.   we call all the functions
     //   in turn, as long as they return `target`.  As soon as such a function
@@ -193,9 +196,14 @@ object Adjuvant {
           // The hope is that t2 is newly allocated data
           // and target is older.  Hoping that, holding on to older data
           // and allowing new data to be released is better for the GC.
-          findSimplifier(target, ss)
-        } else
+          findSimplifier(tag,target, step+1, verbose, ss)
+        } else {
+          if (verbose) {
+            println(s"$tag starting $step with  $target")
+            println(s"    $tag step:$step ----> $t2")
+          }
           t2
+        }
     }
   }
 

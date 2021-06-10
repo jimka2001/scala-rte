@@ -71,6 +71,23 @@ abstract class Rte {
                     (r:Rte) => r.canonicalizeOnce,
                     (r1:Rte,r2:Rte)=>r1==r2)
   }
+  // This method is used for debugging to print the different
+  //   stages of development for canonicalize.
+  def canonicalizeDebug(n:Int,f:(Rte,Rte)=>Unit):Rte = {
+    var r1 = this
+    println(s"starting with $this")
+    for{i <- 0 to n}{
+      val r2 = r1.canonicalizeOnce
+      println(s"$i: "+ r2)
+      f(r1,r2)
+      r1 = r2
+    }
+    r1
+  }
+  def canonicalizeDebug(n:Int):Rte = {
+    canonicalizeDebug(n,(r1:Rte,r2:Rte)=>())
+  }
+
   def canonicalizeOnce:Rte = inhabited match {
     case Some(false) => EmptySet
     case _ => this
