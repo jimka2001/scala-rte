@@ -136,10 +136,7 @@ abstract class Rte {
 
   import xymbolyco.Dfa
 
-  def toDfa():Dfa[Any,SimpleTypeD,Boolean] = {
-    toDfa(true)
-  }
-  def toDfa[E](exitValue:E):Dfa[Any,SimpleTypeD,E] = {
+  def toDfa[E](exitValue:E=true):Dfa[Any,SimpleTypeD,E] = {
     val (rtes,edges) = try {
       derivatives()
     }
