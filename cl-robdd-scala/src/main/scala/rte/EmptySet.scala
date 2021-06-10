@@ -21,6 +21,7 @@
 //
 
 package rte
+import genus._
 
 object EmptySet extends Rte {
   override def toLaTeX: String = "\\emptyset "
@@ -30,6 +31,10 @@ object EmptySet extends Rte {
   def nullable: Boolean = false
 
   def firstTypes: Set[genus.SimpleTypeD] = Set.empty
+
+  def inhabited:Option[Boolean] = Some(false)
+
+  override def canonicalizeOnce:Rte = this
 
   override def derivative(wrt: Option[genus.SimpleTypeD]): Rte = EmptySet
 

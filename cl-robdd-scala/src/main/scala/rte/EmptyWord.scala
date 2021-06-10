@@ -21,12 +21,14 @@
 //
 
 package rte
+import genus._
 
 object EmptyWord extends Rte {
   override def toLaTeX:String = "\\varepsilon "
   override def toString:String = "ε"
   def nullable:Boolean = true
   def firstTypes:Set[genus.SimpleTypeD] = Set.empty
+  def inhabited:Option[Boolean] = Some(true)
+  override def canonicalizeOnce:Rte = this
   def derivativeDown(wrt:genus.SimpleTypeD):Rte = EmptySet
-
 }

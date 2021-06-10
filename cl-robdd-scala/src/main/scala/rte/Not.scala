@@ -21,20 +21,21 @@
 //
 
 package rte
+import genus._
 
 case class Not(operand:Rte) extends Rte {
   override def toLaTeX:String = "\\overline{" ++  operand.toLaTeX ++ "}"
   def nullable:Boolean = ! operand.nullable
-  def firstTypes:Set[genus.SimpleTypeD] = operand.firstTypes
+  def firstTypes:Set[SimpleTypeD] = operand.firstTypes
 
   override def canonicalizeOnce:Rte = {
     operand match {
       case Sigma => Rte.notSigma
-      case Singleton(genus.STop) => Rte.notSigma
+      case Singleton(STop) => Rte.notSigma
       case Rte.sigmaStar => EmptySet
       case EmptyWord => Rte.notEpsilon
       case EmptySet => Rte.sigmaStar
-      case Singleton(genus.SEmpty) => Rte.sigmaStar
+      case Singleton(SEmpty) => Rte.sigmaStar
 
       // Not(Not(r)) -> Not(r)
       case Not(r) => r
@@ -46,5 +47,5 @@ case class Not(operand:Rte) extends Rte {
       case _ => Not(operand.canonicalizeOnce)
     }
   }
-  def derivativeDown(wrt:genus.SimpleTypeD):Rte = Not(operand.canonicalize.derivative(Some(wrt)))
+  def derivativeDown(wrt:SimpleTypeD):Rte = Not(operand.canonicalize.derivative(Some(wrt)))
 }

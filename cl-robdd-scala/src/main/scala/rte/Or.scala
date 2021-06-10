@@ -160,6 +160,8 @@ case class Or(operands:Seq[Rte]) extends Rte {
     // sigmaSigmaStarSigma = Cat(Sigma, Sigma, sigmaStar)
     // Or(   A, B, ... Cat(Sigma,Sigma,Sigma*) ... Not(Singleton(X)) ...)
     //   --> Or( A, B, ... Not(Singleton(X))
+    // This is correct because Cat(Σ,Σ,(Σ)*) is the set of all sequences of length 2 or more
+    //    and Not(Singleton(X)) includes the set of all sequences of length 2 or more
     if (operands.contains(Rte.sigmaSigmaStarSigma) && operands.exists{
       case Not(Singleton(_)) => true
       case _ => false})
@@ -255,14 +257,19 @@ case class Or(operands:Seq[Rte]) extends Rte {
     member match {
       case None => this
       case Some(s@Singleton(m: SMemberImpl)) =>
-        val singletons = operands.collect{
-          case s@Singleton(td) if ! member.contains(s) => td
+        val looser = searchReplace(operands,s,Seq()).collect{
+          case Singleton(td) => td
           case Not(Singleton(td)) => SNot(td)
         }
-        val td = SOr(singletons : _*)
-        val keep = m.xs.filter { x => ! td.typep(x)}
-        val rte = Singleton(Types.createMember(keep))
-        create(searchReplace(operands, s, rte))
+        looser match {
+          case Seq() => this
+          case tds =>
+            val td = SOr.createOr(tds)
+            val keep = m.xs.filter { x => ! td.typep(x)}
+            val rte = Singleton(Types.createMember(keep))
+            create(searchReplace(operands, s, rte))
+        }
+
       case _ => throw new Exception("scala compiler is not smart enough to know this line is unreachable")
     }
   }
@@ -274,11 +281,10 @@ case class Or(operands:Seq[Rte]) extends Rte {
 
   override def canonicalizeOnce: Rte = {
     lazy val existsNullable = operands.exists(_.nullable)
-    findSimplifier(this,List[() => Rte](
+    findSimplifier("or",this,0,false,List[() => Rte](
       () => { conversion1() },
       () => { conversion3() },
       () => { conversion4() },
-      () => { conversion5() },
       () => { conversion6() },
       () => { conversion7() },
       () => { conversion8(existsNullable)},
@@ -292,7 +298,9 @@ case class Or(operands:Seq[Rte]) extends Rte {
       () => { conversion15()},
       () => { conversion16()},
       () => { conversion17()},
-      () => { conversion99() }
+      () => { conversion99() },
+      () => { conversion5() },
+      () => { super.canonicalizeOnce }
       ))
   }
 

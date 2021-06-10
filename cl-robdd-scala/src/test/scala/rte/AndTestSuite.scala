@@ -26,11 +26,11 @@ import org.scalatest.funsuite.AnyFunSuite
 import rte.RteImplicits._
 
 class AndTestSuite extends AnyFunSuite {
-  test("implicits"){
+  test("implicits") {
     assert(And(SEql(1)) == And(Singleton(SEql(1))))
   }
 
-  test("and test 31"){
+  test("and test 31") {
     assert(And(Star(Singleton(SAtomic(classOf[String]))),
                Rte.sigmaStar).canonicalizeOnce
              != Rte.sigmaStar)
@@ -44,16 +44,16 @@ class AndTestSuite extends AnyFunSuite {
                Not(EmptySet)).canonicalize
              != Rte.sigmaStar)
   }
-  test("canonicalize and 29a"){
+  test("canonicalize and 29a") {
     val I = Singleton(SInt)
     val S = Singleton(SAtomic(classOf[String]))
     val X = Singleton(SEql(-1))
     val Y = Singleton(SEql(1))
     val ε = EmptyWord
 
-    val rte4 = Or(And(Or(Cat(Star(S),I),ε),
-                      Cat(Star(S),I)),
-                  And(Or(Cat(Star(S),I),ε),
+    val rte4 = Or(And(Or(Cat(Star(S), I), ε),
+                      Cat(Star(S), I)),
+                  And(Or(Cat(Star(S), I), ε),
                       ε))
 
     // rte5 = Or(And(Cat(Star(S),I),
@@ -74,7 +74,7 @@ class AndTestSuite extends AnyFunSuite {
     //assert(rte6 != rte4,"line 45")
     rte6.canonicalize
   }
-  test("canonicalize and 29b"){
+  test("canonicalize and 29b") {
     // And(Or(Cat((<String>)*,<Int?>),ε),
     //     Not(Cat((<String>)*,<[= -1]>)),
     //     Not(Cat((<String>)*,<[= 1]>)),
@@ -83,19 +83,19 @@ class AndTestSuite extends AnyFunSuite {
     val S = Singleton(SAtomic(classOf[String]))
     val X = Singleton(SEql(-1))
     val Y = Singleton(SEql(1))
-    val rte1 = And(Or(Cat(Star(S),I), EmptyWord),
-        Not(Cat(Star(S),X)),
-        Not(Cat(Star(S),Y)),
-        Not(Star(S)))
+    val rte1 = And(Or(Cat(Star(S), I), EmptyWord),
+                   Not(Cat(Star(S), X)),
+                   Not(Cat(Star(S), Y)),
+                   Not(Star(S)))
     val rte2 = rte1.canonicalizeOnce
     val rte3 = rte2.canonicalizeOnce
     val rte4 = rte3.canonicalizeOnce
     val rte5 = rte4.canonicalizeOnce
     rte5.canonicalize
   }
-  test("canonicalize and 31"){
-    assert(And(Singleton(SEql(0)), Not(Cat(Sigma,Star(Sigma)))).canonicalize != Singleton(SEql(0)))
-    assert(And(Singleton(SEql(0)), Not(Cat(Sigma,Star(Sigma)))).canonicalize ~= EmptySet)
+  test("canonicalize and 31") {
+    assert(And(Singleton(SEql(0)), Not(Cat(Sigma, Star(Sigma)))).canonicalize != Singleton(SEql(0)))
+    assert(And(Singleton(SEql(0)), Not(Cat(Sigma, Star(Sigma)))).canonicalize ~= EmptySet)
   }
 
   test("canonicalize and 242") {
@@ -112,7 +112,7 @@ class AndTestSuite extends AnyFunSuite {
     assert(And(Singleton(genus.SEql(0)), Sigma).canonicalize == Singleton(genus.SEql(0)))
     assert(And(EmptySet, EmptySet).canonicalize == EmptySet)
   }
-  test("and 114"){
+  test("and 114") {
     // And(A,B,Or(X,Y,Z),C,D)
     // --> Or(And(A,B,   X,   C, C)),
     //        And(A,B,   Y,   C, C)),
@@ -130,11 +130,11 @@ class AndTestSuite extends AnyFunSuite {
 
     val Z = Singleton(SAtomic(classOf[TraitX]))
 
-    assert(And(A,Or(X,Y)).conversion10() == Or(And(A,X),And(A,Y)))
-    assert(And(A,Or(X,Y),B).conversion10() == Or(And(A,X,B),And(A,Y,B)))
+    assert(And(A, Or(X, Y)).conversion10() == Or(And(A, X), And(A, Y)))
+    assert(And(A, Or(X, Y), B).conversion10() == Or(And(A, X, B), And(A, Y, B)))
   }
   test("canonicalize and") {
-    assert(And(EmptySet,EmptySet).canonicalize == EmptySet)
+    assert(And(EmptySet, EmptySet).canonicalize == EmptySet)
     assert(EmptySet.canonicalize == EmptySet)
     class TestSup
     class TestSub extends TestSup
@@ -160,7 +160,7 @@ class AndTestSuite extends AnyFunSuite {
       assert(And(r1, EmptySet, r2).canonicalize == EmptySet)
 
       assert(And(And(r1, r2), r3).canonicalize ~= And(r1, And(r2, r3)).canonicalize,
-             s"\nr1=$r1  \nr2=$r2  \nr3=$r3"+
+             s"\nr1=$r1  \nr2=$r2  \nr3=$r3" +
                s"\ncanonicalized: \n  r1=${r1.canonicalize}\n  r2=${r2.canonicalize}\n  r3=${r3.canonicalize}")
       assert(And(And(r1, r2), r3).canonicalize ~= And(r1, r2, r3).canonicalize)
       assert(And(r1, Rte.sigmaStar, r2, r3).canonicalize ~= And(r1, r2, r3).canonicalize)
@@ -177,13 +177,13 @@ class AndTestSuite extends AnyFunSuite {
       assert(And(r1, trd1, r2, trd2, r3).canonicalize ~= EmptySet)
     }
   }
-  test("and 149"){
+  test("and 149") {
     val r1 = Singleton(SEql(1))
     val r2 = Singleton(SEql(2))
     val r3 = Singleton(SEql(3))
     val r4 = Singleton(SEql(4))
 
-    val rte0 = And(r1,Or(r2,r3),r4)
+    val rte0 = And(r1, Or(r2, r3), r4)
     val rte1 = rte0.canonicalizeOnce
     val rte2 = rte1.canonicalizeOnce
     val rte3 = rte2.canonicalizeOnce
@@ -202,7 +202,7 @@ class AndTestSuite extends AnyFunSuite {
              s"\n  canonicalized: r1=${r1.canonicalize}  r2=${r2.canonicalize}  r3=${r3.canonicalize}  r4=${r4.canonicalize}" +
              "\n And(r1,r2,r4)=" + s" And($r1,$r2,$r4)=" + And(r1, r2, r4).canonicalize +
              "\n And(r1,r3,r4)=" + s" And($r1,$r3,$r4)=" + And(r1, r3, r4).canonicalize +
-             "\n And(r1,Or(r2,r3),r4)=" + And(r1, Or(r2,r3), r4).canonicalize +
+             "\n And(r1,Or(r2,r3),r4)=" + And(r1, Or(r2, r3), r4).canonicalize +
              "\n Or(And(r1,r2,r4),And(r1,r3,r4))=" + Or(And(r1, r2, r4),
                                                         And(r1, r3, r4)).canonicalize
            )
@@ -231,7 +231,7 @@ class AndTestSuite extends AnyFunSuite {
   }
 
   test("canonicalize and 228") {
-    assert(And(Cat(Sigma,Star(Sigma)),Sigma).canonicalize
+    assert(And(Cat(Sigma, Star(Sigma)), Sigma).canonicalize
              == Sigma)
     for {depth <- 0 to 4
          _ <- 1 to 500
@@ -248,20 +248,78 @@ class AndTestSuite extends AnyFunSuite {
                s"\n  canonicalized:\n  r1=${r1.canonicalize}\n  r2=${r2.canonicalize}\n  r3=${r3.canonicalize}\n  r4=${r4.canonicalize}" +
                "\n  And(r1,r2,r4)= " + And(r1, r2, r4).canonicalize +
                "\n  And(r1,r3,r4)= " + And(r1, r3, r4).canonicalize +
-               "\n  Or(And(r1,r2,r4), And(r1,r3,r4))= "+Or(And(r1, r2, r4),
-                                                         And(r1, r3, r4)).canonicalize +
-               "\n  And(r1, Or(r2, r3), r4)= "+And(r1, Or(r2, r3), r4).canonicalize
+               "\n  Or(And(r1,r2,r4), And(r1,r3,r4))= " + Or(And(r1, r2, r4),
+                                                             And(r1, r3, r4)).canonicalize +
+               "\n  And(r1, Or(r2, r3), r4)= " + And(r1, Or(r2, r3), r4).canonicalize
              )
     }
   }
 
-  test("canonicalize and 253") {
-    assert(And(Star(Sigma),Star(Sigma),Sigma).canonicalize == Sigma)
-    assert(And(Star(Sigma),Or(Star(Sigma),Star(Sigma)),Sigma).canonicalize == Sigma)
-    assert(And(Singleton(STop),Not(Singleton(SMember(4,5,6)))).canonicalize
-             != Not(Singleton(SMember(4,5,6))))
-    val r1 =And(Star(Sigma), Or(Star(Sigma),Star(Singleton(SEql(1)))), Sigma)
-    val r2 = r1.canonicalize
+  test("discovered case 258") {
+    // r1=<STop>
+    // r2=Or(Cat(Σ,Σ,(Σ)*),ε)
+    //      // r3=Not(<{a,b,c}>)
+    // r4=(<[= -1]>)*
+    val r1 = Singleton(STop)
+    val r2 = Or(Cat(Sigma, Sigma, Star(Sigma)), EmptyWord)
+    val r3 = Not(Singleton(SMember("a", "b", "c")))
+    // Or( Cat(Σ,Σ,(Σ)*), Not(<{a,b,c}>))
+    //   --> Not(<{a,b,c}>)
+    assert(Or(Cat(Sigma, Sigma, Star(Sigma)),r3).canonicalizeOnce
+             == r3)
+
+    val r4 = Star(Singleton(SEql(-1)))
+    val r5a = And(r1, Or(r2, r3).canonicalize, r4)
+    val r5b = And(r1, Or(r2, r3), r4)
+    // Or(Or(Cat(Σ,Σ,(Σ)*),ε),Not(<{a,b,c}>))
+    assert(Or(r2, r3).canonicalize == Not(Singleton(SMember("a", "b", "c"))))
+    val r5bc = r5b.canonicalizeDebug(50,(r1,r2)=>{
+      val dfa1 = r1.toDfa(true)
+      val dfa2 = r2.toDfa(true)
+      for{ v <- List("a","b","c","d",0,-1)}
+        {
+          val lhs = dfa1.simulate(Seq(v))
+          val rhs = dfa2.simulate(Seq(v))
+          assert(lhs == rhs,
+                 s"\ntesting with v=$v, lhs=$lhs, rhs=$rhs" +
+                   s"\nr1=$r1" +
+                   s"\nr2=$r2"
+                 )
+        }
+    })
+    //val dfa5a = r5a.toDfa(true)
+    //val dfa5ac = r5a.canonicalize.toDfa(true)
+    val dfa5b = r5b.toDfa(true)
+    val dfa5bc = r5bc.toDfa(true)
+    for{ v <- List("a","b","c","d",0,-1)}
+      {
+        println(s"testing with $v")
+        //assert(dfa5a.simulate(Seq(v)) == dfa5ac.simulate(Seq(v)))
+        assert(dfa5b.simulate(Seq(v)) == dfa5bc.simulate(Seq(v)),
+               s"\nlhs=$r5b" +
+                 s"\nrhs=${r5b.canonicalize}" +
+                 s"\n  failed on v=$v"
+               )
+        //assert(dfa5a.simulate(Seq(v)) == dfa5b.simulate(Seq(v)))
+        //assert(dfa5ac.simulate(Seq(v)) == dfa5bc.simulate(Seq(v)))
+      }
+    assert(r5a.canonicalize ~= r5b.canonicalize,
+           s"\nr1=$r1" +
+             s"\nr2=$r2" +
+             s"\nr3=$r3" +
+             s"\nr4=$r4" +
+             "\ncanonicalized:" +
+             s"\n  r1= " + r1.canonicalize +
+             s"\n  r2= " + r2.canonicalize +
+             s"\n  r3= " + r3.canonicalize +
+             s"\n  r4= " + r4.canonicalize +
+             s"\n Or(r2, r3).canonicalize= " + Or(r2, r3).canonicalize +
+             s"\n And(r1, Or(r2, r3).canonicalize, r4).canonicalize= " + And(r1, Or(r2, r3).canonicalize, r4).canonicalize +
+             s"\n And(r1, Or(r2, r3), r4).canonicalize= " + And(r1, Or(r2, r3), r4).canonicalize
+           )
+  }
+
+  test("discovered case 285"){
     locally{
       val r1:Rte = Not(Singleton(SMember(4,5,6)))
       val r2:Rte = Singleton(SMember("a","b","c"))
@@ -280,11 +338,25 @@ class AndTestSuite extends AnyFunSuite {
       val r15= r14.canonicalizeOnce
 
       assert(And(r1,Or(r2,r3).canonicalize,r4).canonicalize
-             ~= And(r1,Or(r2,r3),r4).canonicalize,
+               ~= And(r1,Or(r2,r3),r4).canonicalize,
              "\nlhs = " + And(r1,Or(r2,r3).canonicalize,r4).canonicalize +
-             "\nrhs = " + And(r1,Or(r2,r3),r4).canonicalize)
+               "\nrhs = " + And(r1,Or(r2,r3),r4).canonicalize)
     }
-    assert(r2.canonicalize == Sigma)
+  }
+  test("discovered case 309"){
+    locally {
+      val r1 = And(Star(Sigma), Or(Star(Sigma), Star(Singleton(SEql(1)))), Sigma)
+      val r2 = r1.canonicalize
+      assert(r2.canonicalize == Sigma)
+    }
+  }
+  test("discovered case 316"){
+    assert(And(Star(Sigma),Star(Sigma),Sigma).canonicalize == Sigma)
+    assert(And(Star(Sigma),Or(Star(Sigma),Star(Sigma)),Sigma).canonicalize == Sigma)
+    assert(And(Singleton(STop),Not(Singleton(SMember(4,5,6)))).canonicalize
+             != Not(Singleton(SMember(4,5,6))))
+  }
+  test("canonicalize and 253") {
     for {depth <- 0 to 1
          _ <- 1 to 5000
          r1 = Rte.randomRte(depth)
@@ -593,12 +665,56 @@ class AndTestSuite extends AnyFunSuite {
              == Singleton(SEql(4)))
     assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2,3,4,5,6)))).conversion21()
              == Singleton(SEmpty))
-    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
-               Not(Singleton(SAtomic(classOf[String]))), // gets removed by conversion21
-               Cat(Singleton(SInt))).conversion21()
-             == And(Singleton(SMember(1,2,3)),Cat(Singleton(SInt))))
+    // TODO we cannot reduce the following member, because we don't know whether Not(Cat(...)) is inhabited
+    //    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+    //               Not(Singleton(SAtomic(classOf[String]))), // gets removed by conversion21
+    //               Cat(Singleton(SInt))
+    //               ).conversion21()
+    //             == And(Singleton(SMember(1,2,3)), Cat(Singleton(SInt))),
+    //           s"\nlhs = " + And(Singleton(SMember(1,2,3,"a","b","c")),
+    //                             Not(Singleton(SAtomic(classOf[String]))), // gets removed by conversion21
+    //                             Cat(Singleton(SInt))
+    //                             ).conversion21() +
+    //             s"\nrhs = " +Singleton(SMember(1,2,3))
+    //           )
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Not(Singleton(SInt))).conversion21()
              == Singleton(SMember("a","b","c")))
+    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+               Not(Cat(Singleton(SInt)))).conversion21()
+             == And(Singleton(SMember(1,2,3,"a","b","c")),
+                    Not(Cat(Singleton(SInt)))))
+    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+               Or(Cat(Singleton(SEql(1))),
+                  Cat(Singleton(SEql("a"))))).conversion21()
+             == And(Singleton(SMember(1,2,3,"a","b","c")),
+                    Or(Cat(Singleton(SEql(1))),
+                       Cat(Singleton(SEql("a"))))))
+    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+               Cat(Singleton(SEql("a"))),
+               Singleton(SEmpty)).conversion21()
+             == And(Singleton(SEmpty),
+                    Cat(Singleton(SEql("a")))))
+    val s1 = Singleton(SSatisfies(_=>true,"satisfies"))
+    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+               Cat(Singleton(SEql("a")),
+                   s1)).conversion21()
+             == And(Singleton(SMember(1,2,3,"a","b","c")),
+                    Cat(Singleton(SEql("a")),
+                        s1)))
+    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+               Singleton(SEql("a")),
+               Cat(s1)).conversion21()
+             == And(Singleton(SEql("a")),
+                    Cat(s1)))
+
+    val s2 = Singleton(SSatisfies(_=>false,"satisfies"))
+    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+               Cat(Singleton(SEql("a")),
+                   s1)).conversion21()
+             == And(Singleton(SMember(1,2,3,"a","b","c")),
+                    Cat(Singleton(SEql("a")),
+                        s1)))
+
   }
 }

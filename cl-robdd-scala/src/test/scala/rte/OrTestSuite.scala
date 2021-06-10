@@ -276,10 +276,49 @@ class OrTestSuite extends AnyFunSuite {
           )
     }
   }
+  test("discovered case 279"){
+    val s = Singleton(SEql(-1))
+    val c = Cat(Sigma,Sigma,Star(Sigma))
+    val r1 = Or(And(c,s),s)
+    r1.canonicalizeDebug(5)
+  }
 
+  test("discovered case 286") {
+    // r1= <[= 1]>
+    // r2= Or(Cat(And(<Trait3X>,<[= true]>),Not(<Integer>)),Or(Or(Cat(Σ,Σ,(Σ)*),ε),ε))
+    // r3= <STop>
+    // r4= And(((<[= false]>)*)*,ε)
+    val r1 = Singleton(SEql(1))
+    val ra = Cat(And(Singleton(SAtomic(classOf[RandomType.Trait3X])),
+                     Singleton(SEql(true))),
+                 Not(Singleton(SAtomic(classOf[Integer]))))
+    val r2 = Or(ra,
+                Or(Or(Cat(Sigma, Sigma, Star(Sigma)), EmptyWord), EmptyWord))
+    val r3 = Singleton(STop)
+    val r4 = And(Star(Star(Singleton(SEql(false)))), EmptyWord)
+
+    // Or(<[= 1]>,And(Cat(And(<Trait3X>,<[= true]>),Not(<Integer>)),<STop>),And(Or(Or(Cat(Σ,Σ,(Σ)*),ε),ε),<STop>),ε)
+    val r5 = Or(r1,
+                And(ra, r3),
+                And(Or(Or(Cat(Sigma, Sigma, Star(Sigma)), EmptyWord), EmptyWord), r3),
+                EmptyWord)
+    //r5.canonicalizeDebug(10,List("a",1,0,true,false))
+
+    ///And(r2,r3).canonicalizeDebug(10,List("a",1,0,true,false))
+
+    val lhs = Or(r1, And(r2, r3).canonicalize, r4)
+    val rhs = Or(r1, And(r2, r3), r4)
+    //println(s"lhs=$lhs")
+    //println(s"rhs=$rhs")
+    // lhs.canonicalizeDebug(10,List("a",1,0,true,false))
+
+    //rhs.canonicalizeDebug(10,List("a",1,0,true,false))
+
+    assert(lhs.canonicalize ~=
+             rhs.canonicalize)
+  }
 
   test("canonicalize or 253") {
-
     for {depth <- 0 to 4
          _ <- 1 to 500
          r1 = Rte.randomRte(depth)
@@ -288,7 +327,21 @@ class OrTestSuite extends AnyFunSuite {
          r4 = Rte.randomRte(depth)
          } {
       assert(Or(r1, And(r2, r3).canonicalize, r4).canonicalize ~=
-               Or(r1, And(r2, r3), r4).canonicalize)
+               Or(r1, And(r2, r3), r4).canonicalize,
+             s"\nr1= $r1" +
+               s"\nr2= $r2" +
+               s"\nr3= $r3" +
+               s"\nr4= $r4" +
+               s"\ncanonicalized" +
+               s"\n   r1= ${r1.canonicalize}" +
+               s"\n   r2= ${r2.canonicalize}" +
+               s"\n   r3= ${r3.canonicalize}" +
+               s"\n   r4= ${r4.canonicalize}" +
+               s"\n   Or(r2,r3) = ${Or(r2,r3).canonicalize}" +
+               s"\n   r4= ${r4.canonicalize}" +
+               s"\nlhs = " + Or(r1, And(r2, r3).canonicalize, r4).canonicalize +
+               s"\nrhs = " + Or(r1, And(r2, r3), r4).canonicalize
+             )
     }
   }
 
@@ -525,16 +578,31 @@ class OrTestSuite extends AnyFunSuite {
              == Or(Singleton(SMember(1,2,3)),
                    Singleton(SEql(0)),
                    Not(Singleton(SMember(1,2,3,4,5,6)))))
+    val i = Singleton(SMember(0,1,2,3,4,5))
+    assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
+              Or(i )).conversion17()
+             == Or(Singleton(SMember(1,2,3,"a","b","c")),
+                   Or(i)))
 
     assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
-              Singleton(SInt)).conversion17()
-             == Or(Singleton(SMember("a","b","c")),
-                   Singleton(SInt)))
-
-    assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
-              Not(Singleton(SInt))).conversion17()
+              Not(i)).conversion17()
              == Or(Singleton(SMember(1,2,3)),
-                   Not(Singleton(SInt))))
+                   Not(i)))
+
+    assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
+              Cat(Star(i),Singleton(SEql("a")))).conversion17()
+             == Or(Singleton(SMember(1,2,3,"a", "b","c")),
+                   Cat(Star(i),Singleton(SEql("a")))))
+    //assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
+    //          // TODO, currently we don't know whether Not(Cat(...)) is inhabited
+    //          //    so we cant reduce this member{1,2,3,"a","b","c"}
+    //          Not(Cat(Star(i),Singleton(SEql("a"))))).conversion17()
+    //         == Or(Singleton(SMember(1,2,3,"a")),
+    //               Not(Cat(Star(i),Singleton(SEql("a"))))))
+    // can't convert because we cannot figure how whether And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1)))
+    //   is inhabited.
+    assert(Or(And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1))), Singleton(SEql(-1))).conversion17()
+           == Or(And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1))), Singleton(SEql(-1))))
   }
   test("or conversion99"){
     // canonicalizing sub nodes

@@ -50,9 +50,9 @@ class DerivativeTestSuite extends AnyFunSuite {
          r1 = Rte.randomRte(depth)
          } {
       assert(r1.nullable == r1.canonicalize.nullable,
-             s"r1=$r1 is"
-               + (if (r1.nullable) "" else " not ")
-               + "nullable while r1.canonicalize="
+             s"\nr1=$r1 is"
+               + (if (r1.nullable) "" else " not")
+               + " nullable while r1.canonicalize="
                + r1.canonicalize
                + " is"
                + (if (r1.canonicalize.nullable) "" else " not")
