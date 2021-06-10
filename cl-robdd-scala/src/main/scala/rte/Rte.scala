@@ -84,6 +84,19 @@ abstract class Rte {
     }
     r1
   }
+  def canonicalizeDebug(n:Int,samples:Seq[Any]):Rte = {
+        canonicalizeDebug(n,
+                          (r1:Rte,r2:Rte)=> {
+                            val dfa1 = r1.toDfa(true)
+                            val dfa2 = r2.toDfa(true)
+                            for{v <- samples}{
+                              assert(dfa1.simulate(Seq(v)) == dfa2.simulate(Seq(v)),
+                                     s"\nv=$v" +
+                                       s"\n   r1=$r1"+
+                                       s"\n   r2=$r2")
+                            }
+                          })
+  }
   def canonicalizeDebug(n:Int):Rte = {
     canonicalizeDebug(n,(r1:Rte,r2:Rte)=>())
   }

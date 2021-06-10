@@ -283,6 +283,41 @@ class OrTestSuite extends AnyFunSuite {
     r1.canonicalizeDebug(5)
   }
 
+  test("discovered case 286") {
+    // r1= <[= 1]>
+    // r2= Or(Cat(And(<Trait3X>,<[= true]>),Not(<Integer>)),Or(Or(Cat(Σ,Σ,(Σ)*),ε),ε))
+    // r3= <STop>
+    // r4= And(((<[= false]>)*)*,ε)
+    val r1 = Singleton(SEql(1))
+    val ra = Cat(And(Singleton(SAtomic(classOf[RandomType.Trait3X])),
+                     Singleton(SEql(true))),
+                 Not(Singleton(SAtomic(classOf[Integer]))))
+    val r2 = Or(ra,
+                Or(Or(Cat(Sigma, Sigma, Star(Sigma)), EmptyWord), EmptyWord))
+    val r3 = Singleton(STop)
+    val r4 = And(Star(Star(Singleton(SEql(false)))), EmptyWord)
+
+    // Or(<[= 1]>,And(Cat(And(<Trait3X>,<[= true]>),Not(<Integer>)),<STop>),And(Or(Or(Cat(Σ,Σ,(Σ)*),ε),ε),<STop>),ε)
+    val r5 = Or(r1,
+                And(ra, r3),
+                And(Or(Or(Cat(Sigma, Sigma, Star(Sigma)), EmptyWord), EmptyWord), r3),
+                EmptyWord)
+    //r5.canonicalizeDebug(10,List("a",1,0,true,false))
+
+    ///And(r2,r3).canonicalizeDebug(10,List("a",1,0,true,false))
+
+    val lhs = Or(r1, And(r2, r3).canonicalize, r4)
+    val rhs = Or(r1, And(r2, r3), r4)
+    //println(s"lhs=$lhs")
+    //println(s"rhs=$rhs")
+    // lhs.canonicalizeDebug(10,List("a",1,0,true,false))
+
+    //rhs.canonicalizeDebug(10,List("a",1,0,true,false))
+
+    assert(lhs.canonicalize ~=
+             rhs.canonicalize)
+  }
+
   test("canonicalize or 253") {
     for {depth <- 0 to 4
          _ <- 1 to 500
@@ -546,7 +581,7 @@ class OrTestSuite extends AnyFunSuite {
     val i = Singleton(SMember(0,1,2,3,4,5))
     assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
               Or(i )).conversion17()
-             == Or(Singleton(SMember("a","b","c")),
+             == Or(Singleton(SMember(1,2,3,"a","b","c")),
                    Or(i)))
 
     assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
@@ -556,7 +591,7 @@ class OrTestSuite extends AnyFunSuite {
 
     assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
               Cat(Star(i),Singleton(SEql("a")))).conversion17()
-             == Or(Singleton(SMember("b","c")),
+             == Or(Singleton(SMember(1,2,3,"a", "b","c")),
                    Cat(Star(i),Singleton(SEql("a")))))
     //assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
     //          // TODO, currently we don't know whether Not(Cat(...)) is inhabited

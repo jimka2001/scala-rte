@@ -267,11 +267,19 @@ case class Or(operands:Seq[Rte]) extends Rte {
     member match {
       case None => this
       case Some(s@Singleton(m: SMemberImpl)) =>
-        val looser = create(searchReplace(operands,s,Seq()))
-        val td = looser.toSimpleTypeD
-        val keep = m.xs.filter { x => ! td.typep(x)}
-        val rte = Singleton(Types.createMember(keep))
-        create(searchReplace(operands, s, rte))
+        val looser = searchReplace(operands,s,Seq()).collect{
+          case Singleton(td) => td
+          case Not(Singleton(td)) => SNot(td)
+        }
+        looser match {
+          case Seq() => this
+          case tds =>
+            val td = SOr.createOr(tds)
+            val keep = m.xs.filter { x => ! td.typep(x)}
+            val rte = Singleton(Types.createMember(keep))
+            create(searchReplace(operands, s, rte))
+        }
+
       case _ => throw new Exception("scala compiler is not smart enough to know this line is unreachable")
     }
   }
@@ -283,7 +291,7 @@ case class Or(operands:Seq[Rte]) extends Rte {
 
   override def canonicalizeOnce: Rte = {
     lazy val existsNullable = operands.exists(_.nullable)
-    findSimplifier(this,List[() => Rte](
+    findSimplifier("or",this,0,false,List[() => Rte](
       () => { conversion1() },
       () => { conversion3() },
       () => { conversion4() },
