@@ -54,21 +54,6 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
           r.firstTypes
     }
   }
-  def toSimpleTypeD:SimpleTypeD = {
-    // union of types of leading operands of Cat(...) until (and including)
-    //   the first one which is non-nullable
-    def recur(rtes: List[Rte], tds: List[SimpleTypeD]): List[SimpleTypeD] = {
-      rtes match {
-        case Nil => tds
-        case r::rs if r.nullable => recur(rs,r.toSimpleTypeD::tds)
-        case r::_ => r.toSimpleTypeD::tds
-      }
-    }
-    if ( inhabited.contains(false))
-      SEmpty
-    else
-      SOr.createOr(recur(operands.toList,List()))
-  }
 
   def conversion3():Rte = {
     if (operands.contains(EmptySet))

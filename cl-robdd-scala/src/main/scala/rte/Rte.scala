@@ -62,10 +62,7 @@ abstract class Rte {
   //override def toString:String = toLaTeX
   def nullable:Boolean
   def firstTypes:Set[SimpleTypeD]
-  // An Rte matches a set of sequences.  The method, toSimpleTypeD,
-  //   determines the type of the set of first elements of that set.
   def inhabited:Option[Boolean]
-  def toSimpleTypeD:SimpleTypeD
   def canonicalize:Rte = {
     fixedPoint[Rte](this,
                     (r:Rte) => r.canonicalizeOnce,

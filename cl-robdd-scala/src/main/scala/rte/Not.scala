@@ -27,7 +27,6 @@ case class Not(operand:Rte) extends Rte {
   override def toLaTeX:String = "\\overline{" ++  operand.toLaTeX ++ "}"
   def nullable:Boolean = ! operand.nullable
   def firstTypes:Set[SimpleTypeD] = operand.firstTypes
-  def toSimpleTypeD:SimpleTypeD = SNot(operand.toSimpleTypeD)
   def inhabited:Option[Boolean] = {
     operand match {
       case Singleton(_: SMemberImpl) => Some(true) // Not({1,2,3}) is inhabited

@@ -34,9 +34,6 @@ object EmptySet extends Rte {
 
   def inhabited:Option[Boolean] = Some(false)
 
-
-  def toSimpleTypeD: SimpleTypeD = SEmpty
-
   override def canonicalizeOnce:Rte = this
 
   override def derivative(wrt: Option[genus.SimpleTypeD]): Rte = EmptySet

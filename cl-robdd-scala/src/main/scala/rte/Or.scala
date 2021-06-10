@@ -38,7 +38,6 @@ case class Or(operands:Seq[Rte]) extends Rte {
   }
 
   def firstTypes: Set[SimpleTypeD] = operands.toSet.flatMap((r: Rte) => r.firstTypes)
-  def toSimpleTypeD:SimpleTypeD = SOr.createOr(operands.map(_.toSimpleTypeD))
 
   def inhabited:Option[Boolean] = {
     if (operands.exists(_.inhabited.contains(true)))

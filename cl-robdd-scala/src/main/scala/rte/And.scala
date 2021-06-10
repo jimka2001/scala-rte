@@ -34,7 +34,6 @@ case class And(operands:Seq[Rte]) extends Rte{
   override def toString:String = operands.map(_.toString).mkString("And(", ",", ")")
   def nullable:Boolean = operands.forall{_.nullable} // TODO should be lazy
   def firstTypes:Set[SimpleTypeD] = operands.toSet.flatMap((r:Rte) => r.firstTypes) // TODO should be lazy
-  def toSimpleTypeD:SimpleTypeD = SAnd.createAnd(operands.map(_.toSimpleTypeD))
   def inhabited:Option[Boolean] = {
     if (operands.exists(_.inhabited.contains(false)))
       Some(false)
