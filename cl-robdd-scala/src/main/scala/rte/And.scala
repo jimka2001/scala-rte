@@ -289,17 +289,30 @@ case class And(operands:Seq[Rte]) extends Rte{
     //     )
     import Types.createMember
     operands.collectFirst {
-      case Singleton(m: SMemberImpl) => m.xs
+      case s@Singleton(m: SMemberImpl) => s
     } match {
       case None => this
-      case Some(xs) =>
-        val lessStrict: SimpleTypeD = toSimpleTypeD
-        val newMember: Rte = Singleton(createMember(xs.filter(lessStrict.typep)))
-        create(operands.flatMap{
-          case Singleton(m:SMemberImpl) if m.xs == xs => Seq(newMember)
-          case r if r.inhabited.contains(true) => Seq()
-          case r => Seq(r)
-        })
+      case Some(s@Singleton(m: SMemberImpl)) =>
+        val singletonRtes = searchReplace(operands, s, Seq()).collect {
+          case s:Singleton => s
+          case n@Not(Singleton(_)) => n
+        }
+        val looser = singletonRtes.collect {
+          case Singleton(td) => td
+          case Not(Singleton(td)) => SNot(td)
+        }
+        looser match {
+          case Seq() => this
+          case tds =>
+            val td = SAnd.createAnd(tds)
+            val rte = Singleton(createMember(m.xs.filter(td.typep)))
+
+            create(operands.flatMap {
+              case s1:Singleton if s == s1 => Seq(rte)
+              case r if singletonRtes.contains(r) => Seq()
+              case r => Seq(r)
+            })
+        }
     }
   }
   def conversion99():Rte = {

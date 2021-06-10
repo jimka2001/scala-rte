@@ -679,33 +679,40 @@ class AndTestSuite extends AnyFunSuite {
     //           )
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Not(Singleton(SInt))).conversion21()
-             == And(Singleton(SMember("a","b","c")),
-                    Not(Singleton(SInt))))
+             == Singleton(SMember("a","b","c")))
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Not(Cat(Singleton(SInt)))).conversion21()
-             == And(Singleton(SMember("a","b","c")),
+             == And(Singleton(SMember(1,2,3,"a","b","c")),
                     Not(Cat(Singleton(SInt)))))
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Or(Cat(Singleton(SEql(1))),
                   Cat(Singleton(SEql("a"))))).conversion21()
-             == Singleton(SMember(1,"a")))
+             == And(Singleton(SMember(1,2,3,"a","b","c")),
+                    Or(Cat(Singleton(SEql(1))),
+                       Cat(Singleton(SEql("a"))))))
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Cat(Singleton(SEql("a"))),
                Singleton(SEmpty)).conversion21()
              == And(Singleton(SEmpty),
-                    Singleton(SEmpty)))
+                    Cat(Singleton(SEql("a")))))
     val s1 = Singleton(SSatisfies(_=>true,"satisfies"))
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Cat(Singleton(SEql("a")),
                    s1)).conversion21()
-             == And(Singleton(SEql("a")),
+             == And(Singleton(SMember(1,2,3,"a","b","c")),
                     Cat(Singleton(SEql("a")),
                         s1)))
+    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
+               Singleton(SEql("a")),
+               Cat(s1)).conversion21()
+             == And(Singleton(SEql("a")),
+                    Cat(s1)))
+
     val s2 = Singleton(SSatisfies(_=>false,"satisfies"))
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Cat(Singleton(SEql("a")),
                    s1)).conversion21()
-             == And(Singleton(SEql("a")),
+             == And(Singleton(SMember(1,2,3,"a","b","c")),
                     Cat(Singleton(SEql("a")),
                         s1)))
 
