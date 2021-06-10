@@ -39,15 +39,6 @@ case class Or(operands:Seq[Rte]) extends Rte {
 
   def firstTypes: Set[SimpleTypeD] = operands.toSet.flatMap((r: Rte) => r.firstTypes)
 
-  def inhabited:Option[Boolean] = {
-    if (operands.exists(_.inhabited.contains(true)))
-      Some(true)
-    else if (operands.exists(_.inhabited.isEmpty))
-      None
-    else
-      Some(false)
-  }
-
   def conversion3():Rte = {
     // Or(... Sigma* ....) -> Sigma*
     if (operands.contains(Rte.sigmaStar))

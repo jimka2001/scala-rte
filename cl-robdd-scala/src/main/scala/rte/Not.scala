@@ -27,23 +27,6 @@ case class Not(operand:Rte) extends Rte {
   override def toLaTeX:String = "\\overline{" ++  operand.toLaTeX ++ "}"
   def nullable:Boolean = ! operand.nullable
   def firstTypes:Set[SimpleTypeD] = operand.firstTypes
-  def inhabited:Option[Boolean] = {
-    operand match {
-      case Singleton(_: SMemberImpl) => Some(true) // Not({1,2,3}) is inhabited
-      case _ =>
-        operand.inhabited match {
-          case Some(false) => Some(true)
-          case None => None
-          case Some(true) => {
-            val r1 = operand.canonicalize
-            r1 match {
-              case Star(Sigma) => Some(false)
-              case _ => None
-            }
-          }
-        }
-    }
-  }
 
   override def canonicalizeOnce:Rte = {
     operand match {

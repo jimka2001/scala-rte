@@ -62,7 +62,6 @@ abstract class Rte {
   //override def toString:String = toLaTeX
   def nullable:Boolean
   def firstTypes:Set[SimpleTypeD]
-  def inhabited:Option[Boolean]
   def canonicalize:Rte = {
     fixedPoint[Rte](this,
                     (r:Rte) => r.canonicalizeOnce,
@@ -98,11 +97,7 @@ abstract class Rte {
     canonicalizeDebug(n,(r1:Rte,r2:Rte)=>())
   }
 
-  def canonicalizeOnce:Rte = inhabited match {
-    case Some(false) => EmptySet
-    case _ => this
-  }
-
+  def canonicalizeOnce:Rte = this
 
   def derivative(wrt:Option[SimpleTypeD]):Rte = {
     val raw = wrt match {

@@ -35,14 +35,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
   def nullable: Boolean = operands.forall(_.nullable)
 
   def minLength: Int = operands.count(r => !r.nullable)
-  def inhabited:Option[Boolean] = {
-    if (operands.forall(_.inhabited.contains(true)))
-      Some(true)
-    else if (operands.exists(_.inhabited.contains(false)))
-      Some(false)
-    else
-      None
-  }
+
   def firstTypes: Set[SimpleTypeD] = {
     operands match {
       case Seq() => EmptyWord.firstTypes
