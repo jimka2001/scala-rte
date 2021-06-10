@@ -36,8 +36,12 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
 
   def minLength: Int = operands.count(r => !r.nullable)
   def inhabited:Option[Boolean] = {
-    // happens to be the same code as And
-    And.createAnd(operands).inhabited
+    if (operands.forall(_.inhabited.contains(true)))
+      Some(true)
+    else if (operands.exists(_.inhabited.contains(false)))
+      Some(false)
+    else
+      None
   }
   def firstTypes: Set[SimpleTypeD] = {
     operands match {
