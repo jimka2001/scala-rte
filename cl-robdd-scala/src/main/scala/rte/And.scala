@@ -47,10 +47,11 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
   def create(operands: Seq[Rte]):Rte = {
     And.createAnd(operands)
   }
+  def createTypeD(operands: Seq[SimpleTypeD]):SimpleTypeD = SAnd.createAnd(operands)
   def createDual(operands: Seq[Rte]):Rte = {
     Or.createOr(operands)
   }
-
+  def orInvert(x:Boolean):Boolean = x
   override def toLaTeX:String = operands.map(_.toLaTeX).mkString("(", "\\wedge ", ")")
   override def toString:String = operands.map(_.toString).mkString("And(", ",", ")")
   def nullable:Boolean = operands.forall{_.nullable} // TODO should be lazy
@@ -255,43 +256,6 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversion21():Rte = {
-    // And({1,2,3},Singleton(X),Singleton(Y))
-    //  {...} selecting elements, x, for which SAnd(X,Y).typep(x) is true
-
-    // And(Singleton(SMember(1,2,3,"a","b","c")),
-    //     Not(Singleton(SAtomic(classOf[String]))), // gets removed by conversion21
-    //     Cat(Singleton(SInt))
-    //     )
-    import Types.createMember
-    operands.collectFirst {
-      case s@Singleton(_: SMemberImpl) => s
-    } match {
-      case None => this
-      case Some(s@Singleton(m: SMemberImpl)) =>
-        val singletonRtes = searchReplace(operands, s, Seq()).collect {
-          case s:Singleton => s
-          case n@Not(Singleton(_)) => n
-        }
-        val looser = singletonRtes.collect {
-          case Singleton(td) => td
-          case Not(Singleton(td)) => SNot(td)
-        }
-        looser match {
-          case Seq() => this
-          case tds =>
-            val td = SAnd.createAnd(tds)
-            val rte = Singleton(createMember(m.xs.filter(td.typep)))
-
-            create(operands.flatMap {
-              case s1:Singleton if s == s1 => Seq(rte)
-              case r if singletonRtes.contains(r) => Seq()
-              case r => Seq(r)
-            })
-        }
-    }
-  }
-
   lazy val matchesOnlySingletons:Boolean = operands.contains(Sigma) || operands.exists(Rte.isSingleton)
 
   lazy val singletons:List[SimpleTypeD] = operands.flatMap{
@@ -326,7 +290,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       () => { conversion17c() },
       () => { conversion18() },
       () => { conversion19() },
-      () => { conversion21() },
+      () => { conversionC17() },
       () => { conversion99() },
       () => { conversion5() },
       () => { super.canonicalizeOnce}
