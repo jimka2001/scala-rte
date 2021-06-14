@@ -518,15 +518,22 @@ class AndTestSuite extends AnyFunSuite {
     assert(And(Sigma,Singleton(SEmpty),Singleton(SEmpty)).conversion13()
              == And(Sigma,Singleton(SEmpty),Singleton(SEmpty)))
   }
-  test("and conversion15"){
+  test("and conversion21"){
     val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))
     val ab = Singleton(SMember("a","b"))
     // detect intersection of disjoint
-    assert(And(a,b).conversion15()
+    assert(And(a,b).conversion21()
            == EmptySet)
-    assert(And(a,ab).conversion15()
+    assert(And(a,ab).conversion21()
            == And(a,ab))
+    assert(Or(a,b).conversion21()
+           == Or(a,b))
+    assert(Or(Not(a),Not(b)).conversion21()
+           == Star(Sigma))
+    assert(Or(a,ab).conversion21()
+           == Or(a,ab))
+
   }
   test("and conversionC16"){
     // test And(<STop>,Not(<{4,5,6}>)) does not reduce to Not(<{4,5,6}>)

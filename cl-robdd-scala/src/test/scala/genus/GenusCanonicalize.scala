@@ -482,12 +482,12 @@ class GenusCanonicalize extends AnyFunSuite {
                      SNot(SMember("1", "2", "3", "4"))
                      ))
   }
-  test("and conversion15"){
+  test("and conversion20"){
     val S = SAtomic(classOf[String])
     assert(SAnd(S,SMember(1,2,3,4),SNot(SMember(3,4,5,6))).conversion15()
              == SAnd(S,SMember(1,2)))
   }
-  test("or conversion15"){
+  test("or conversion20"){
     val S = SAtomic(classOf[String])
     assert(SOr(S,SMember(1,2,3,4),SNot(SMember(3,4,5,6))).conversion15()
              == SOr(S,SNot(SMember(5,6))))

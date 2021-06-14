@@ -117,20 +117,6 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversion14():Rte = {
-    // TODO this test should be removed.
-    assert(! operands.contains(Rte.sigmaStar))
-    this
-  }
-  def conversion15():Rte = {
-    if ( singletons.tails.exists{
-      case t1::ts => ts.exists{t2 => t1.disjoint(t2).contains(true)}
-      case _ => false
-    })
-      EmptySet
-    else
-      this
-  }
   def conversionC16b():Rte = {
     val ss = operands.collect{
       case Singleton(td) => td
@@ -277,8 +263,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       () => { conversionC11() },
       () => { conversion12() },
       () => { conversion13() },
-      () => { conversion14() },
-      () => { conversion15() },
+      () => { conversion21() },
       () => { conversionC15() },
       () => { conversionC16() },
       () => { conversionC16b() },

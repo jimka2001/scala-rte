@@ -190,6 +190,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
     }
     create(filtered)
   }
+
   override def canonicalizeOnce: Rte = {
     lazy val existsNullable = operands.exists(_.nullable)
     findSimplifier(tag="or",target=this,step=0,verbose=false,List[() => Rte](
@@ -209,6 +210,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
       () => { conversion13()},
       () => { conversion14()},
       () => { conversion15()},
+      () => { conversion21()},
       () => { conversionC15()},
       () => { conversionC17()},
       () => { conversion99() },

@@ -181,7 +181,19 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
         }
     }
   }
-
+  def conversion21():Rte = { // TODO I think this is already in Combination
+    val singletons = this match {
+      case _:And => operands.collect{case Singleton(td) => td}.toList
+      case _:Or => operands.collect{case Not(Singleton(td)) => td}.toList
+    }
+    if ( singletons.tails.exists{
+      case t1::ts => ts.exists{t2 => t1.disjoint(t2).contains(true)}
+      case _ => false
+    })
+      zero
+    else
+      this
+  }
   def conversion99():Rte =
     create(operands.map(_.canonicalizeOnce))
 
