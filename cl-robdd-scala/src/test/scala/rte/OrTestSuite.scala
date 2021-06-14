@@ -223,7 +223,46 @@ class OrTestSuite extends AnyFunSuite {
     assert(Or(Not(Singleton(SEql(0))),
               Star(Singleton(SEql(1)))).canonicalize == Not(Singleton(SEql(0))))
   }
+  test("or conversionC16"){
+    // detect and remove subtype
 
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val ab = Singleton(SMember("a","b"))
+    val ac = Singleton(SMember("a","c"))
+    assert(Or(a,b,ab,ac).conversionC16()
+           == Or(ab,ac))
+
+    assert(Or(ab,Not(a)).conversionC16()
+           == Or(ab,Not(a)))
+
+    // Or(b,Not(ac)) => Or(b,Sigma)
+    assert(Or(b,Not(ac)).conversionC16()
+           == Or(b,Not(ac)))
+
+    assert(Or(Singleton(SAtomic(classOf[Any])),ab).conversionC16()
+           == Singleton(SAtomic(classOf[Any])))
+  }
+  test("or conversionC16b"){
+    // detect Or(a,Not(b)) with a disjoint from b, remove a
+
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val ab = Singleton(SMember("a","b"))
+    val ac = Singleton(SMember("a","c"))
+
+
+    assert(Or(ab,Not(a)).conversionC16b()
+           == Or(ab,Not(a)))
+
+    // Or(b,Not(ac)) => Or(Not(ac))
+    assert(Or(b,Not(ac)).conversionC16b()
+           == Not(ac))
+
+    assert(Or(Singleton(SAtomic(classOf[Any])),Not(ab)).conversionC16b()
+           == Or(Singleton(SAtomic(classOf[Any])),Not(ab)))
+
+  }
   test("canonicalize or 203") {
     abstract class Abstract2
     val r1 = Singleton(SAtomic(classOf[Abstract2]))
@@ -526,7 +565,7 @@ class OrTestSuite extends AnyFunSuite {
     assert(Or(Not(A),Star(C),B,Star(D),Star(A)).conversion15()
              == Or(Not(A),B,Star(A)))
   }
-  test("or conversion16"){
+  test("or conversionC16 2"){
     // Or(<{1,2,3}>,<{a,b,c}>,Not(<{4,5,6}>))
     val X = Not(Singleton(SEql(100)))
     val Y = Not(Singleton(SEql(200)))
@@ -544,64 +583,64 @@ class OrTestSuite extends AnyFunSuite {
               Singleton(SEql(0))).conversion16()
              == Or(X,Y,Singleton(SMember("a","b","c",1,2,3,0))))
   }
-  test("or conversion17"){
+  test("or conversionC17"){
     // Or(<{1,2,3,4}>,Not(<{3,4,5,6}>))
     //  --> Or(<{3,4}>,Not(<{3,4,5,6}>))
     //  i.e., 1 and 2 are already in Not(<{3,4,5,6}>), so they can
     //     be removed from <{1,2,3,4}> without effecting the overall result
 
     assert(Or(Singleton(SMember(1,2,3,4)),
-              Not(Singleton(SMember(3,4,5,6)))).conversion17()
+              Not(Singleton(SMember(3,4,5,6)))).conversionC17()
              == Or(Singleton(SMember(3,4)),
                    Not(Singleton(SMember(3,4,5,6)))))
 
     assert(Or(Singleton(SMember(1,2,3)),
-              Not(Singleton(SMember(1,2,3,4,5,6)))).conversion17()
+              Not(Singleton(SMember(1,2,3,4,5,6)))).conversionC17()
              == Or(Singleton(SMember(1,2,3)),
                    Not(Singleton(SMember(1,2,3,4,5,6)))))
 
     assert(Or(Singleton(SMember(7,8,9)),
-              Not(Singleton(SMember(3,4,5,6)))).conversion17()
+              Not(Singleton(SMember(3,4,5,6)))).conversionC17()
              == Or(Singleton(SEmpty),
                     Not(Singleton(SMember(3,4,5,6)))))
 
     assert(Or(Singleton(SMember(7,8,9)),
               Singleton(SEql(0)),
-              Not(Singleton(SMember(3,4,5,6)))).conversion17()
+              Not(Singleton(SMember(3,4,5,6)))).conversionC17()
              == Or(Singleton(SEmpty),
                    Singleton(SEql(0)),
                    Not(Singleton(SMember(3,4,5,6)))))
 
     assert(Or(Singleton(SMember(1,2,3)),
               Singleton(SEql(0)),
-              Not(Singleton(SMember(1,2,3,4,5,6)))).conversion17()
+              Not(Singleton(SMember(1,2,3,4,5,6)))).conversionC17()
              == Or(Singleton(SMember(1,2,3)),
                    Singleton(SEql(0)),
                    Not(Singleton(SMember(1,2,3,4,5,6)))))
     val i = Singleton(SMember(0,1,2,3,4,5))
     assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
-              Or(i )).conversion17()
+              Or(i )).conversionC17()
              == Or(Singleton(SMember(1,2,3,"a","b","c")),
                    Or(i)))
 
     assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
-              Not(i)).conversion17()
+              Not(i)).conversionC17()
              == Or(Singleton(SMember(1,2,3)),
                    Not(i)))
 
     assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
-              Cat(Star(i),Singleton(SEql("a")))).conversion17()
+              Cat(Star(i),Singleton(SEql("a")))).conversionC17()
              == Or(Singleton(SMember(1,2,3,"a", "b","c")),
                    Cat(Star(i),Singleton(SEql("a")))))
     //assert(Or(Singleton(SMember(1,2,3,"a","b","c")),
     //          // TODO, currently we don't know whether Not(Cat(...)) is inhabited
     //          //    so we cant reduce this member{1,2,3,"a","b","c"}
-    //          Not(Cat(Star(i),Singleton(SEql("a"))))).conversion17()
+    //          Not(Cat(Star(i),Singleton(SEql("a"))))).conversionC17()
     //         == Or(Singleton(SMember(1,2,3,"a")),
     //               Not(Cat(Star(i),Singleton(SEql("a"))))))
     // can't convert because we cannot figure how whether And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1)))
     //   is inhabited.
-    assert(Or(And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1))), Singleton(SEql(-1))).conversion17()
+    assert(Or(And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1))), Singleton(SEql(-1))).conversionC17()
            == Or(And(Cat(Sigma,Sigma,Star(Sigma)),Singleton(SEql(-1))), Singleton(SEql(-1))))
   }
   test("or conversion99"){

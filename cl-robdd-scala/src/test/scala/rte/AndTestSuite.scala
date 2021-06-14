@@ -416,15 +416,15 @@ class AndTestSuite extends AnyFunSuite {
          } {
 
       assert(And(r1, Not(r1)).canonicalize ~= EmptySet,
-             s"r1=$r1")
+             s"\n  r1=$r1")
       assert(And(r1, r2, Not(r1)).canonicalize ~= EmptySet,
-             s"r1=$r1  r2=$r2 ")
+             s"\n  r1=$r1\n  r2=$r2 ")
       assert(And(r1, r2, Not(r1), r3).canonicalize ~= EmptySet,
-             s"r1=$r1  r2=$r2   r3=$r3")
+             s"\n  r1=$r1\n  r2=$r2   r3=$r3")
       assert(And(r1, Not(r1), r3).canonicalize ~= EmptySet,
-             s"r1=$r1  r3=$r3")
+             s"\n  r1=$r1\n  r3=$r3")
       assert(And(r1, trd1, r2, trd2, r3).canonicalize ~= EmptySet,
-             s"r1=$r1  r2=$r2   r3=$r3")
+             s"\n  r1=$r1\n  r2=$r2\n  r3=$r3")
     }
   }
 
@@ -528,7 +528,7 @@ class AndTestSuite extends AnyFunSuite {
     assert(And(a,ab).conversion15()
            == And(a,ab))
   }
-  test("and conversion16"){
+  test("and conversionC16"){
     // test And(<STop>,Not(<{4,5,6}>)) does not reduce to Not(<{4,5,6}>)
     // detect supertype
 
@@ -536,20 +536,35 @@ class AndTestSuite extends AnyFunSuite {
     val b = Singleton(SEql("b"))
     val ab = Singleton(SMember("a","b"))
     val ac = Singleton(SMember("a","c"))
-    assert(And(a,b,ab,ac).conversion16()
-           == And(a,b,Sigma,Sigma))
+    assert(And(a,b,ab,ac).conversionC16()
+           == And(a,b))
 
-    assert(And(ab,Not(a)).conversion16()
+    assert(And(ab,Not(a)).conversionC16()
            == And(ab,Not(a)))
 
-    // And(b,Not(ac)) => And(b,Sigma)
-    assert(And(b,Not(ac)).conversion16()
-           == And(b,Sigma))
 
-    assert(And(Singleton(SAtomic(classOf[Any])),Not(ab)).conversion16()
-             == And(Singleton(SAtomic(classOf[Any])),Not(ab)))
-    assert(And(Singleton(SAtomic(classOf[Any])),ab).conversion16()
-             == And(Sigma,ab))
+
+    assert(And(Singleton(SAtomic(classOf[Any])),Not(ab)).conversionC16()
+           == And(Singleton(SAtomic(classOf[Any])),Not(ab)))
+    assert(And(Singleton(SAtomic(classOf[Any])),ab).conversionC16()
+           == ab)
+  }
+  test("and conversionC16b"){
+    // test And(<STop>,Not(<{4,5,6}>)) does not reduce to Not(<{4,5,6}>)
+    // detect supertype
+
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    val ab = Singleton(SMember("a","b"))
+    val ac = Singleton(SMember("a","c"))
+
+
+    // And(b,Not(ac)) => And(b)
+    assert(And(b,Not(ac)).conversionC16b()
+           == b)
+
+    assert(And(Singleton(SAtomic(classOf[Any])),Not(ab)).conversionC16b()
+           == And(Singleton(SAtomic(classOf[Any])),Not(ab)))
   }
   test("and conversion17"){
     val a = Singleton(SEql("a"))
@@ -658,63 +673,58 @@ class AndTestSuite extends AnyFunSuite {
            == EmptySet)
   }
 
-  test("and conversion21"){
-    assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2)))).conversion21()
-             == Singleton(SMember(3,4)))
-    assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2,3)))).conversion21()
-             == Singleton(SEql(4)))
-    assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2,3,4,5,6)))).conversion21()
-             == Singleton(SEmpty))
-    // TODO we cannot reduce the following member, because we don't know whether Not(Cat(...)) is inhabited
-    //    assert(And(Singleton(SMember(1,2,3,"a","b","c")),
-    //               Not(Singleton(SAtomic(classOf[String]))), // gets removed by conversion21
-    //               Cat(Singleton(SInt))
-    //               ).conversion21()
-    //             == And(Singleton(SMember(1,2,3)), Cat(Singleton(SInt))),
-    //           s"\nlhs = " + And(Singleton(SMember(1,2,3,"a","b","c")),
-    //                             Not(Singleton(SAtomic(classOf[String]))), // gets removed by conversion21
-    //                             Cat(Singleton(SInt))
-    //                             ).conversion21() +
-    //             s"\nrhs = " +Singleton(SMember(1,2,3))
-    //           )
+  test("and conversionC17"){
+    assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2)))).conversionC17()
+             == And(Singleton(SMember(3,4)),Not(Singleton(SMember(1,2)))))
+    assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2,3)))).conversionC17()
+             == And(Singleton(SEql(4)),Not(Singleton(SMember(1,2,3)))))
+    assert(And(Singleton(SMember(1,2,3,4)),Not(Singleton(SMember(1,2,3,4,5,6)))).conversionC17()
+             == And(Singleton(SEmpty),Not(Singleton(SMember(1,2,3,4,5,6)))))
+
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
-               Not(Singleton(SInt))).conversion21()
-             == Singleton(SMember("a","b","c")))
+               Not(Singleton(SInt))).conversionC17()
+             == And(Singleton(SMember("a","b","c")),
+                    Not(Singleton(SInt))))
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
-               Not(Cat(Singleton(SInt)))).conversion21()
+               Not(Cat(Singleton(SInt)))).conversionC17()
              == And(Singleton(SMember(1,2,3,"a","b","c")),
                     Not(Cat(Singleton(SInt)))))
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Or(Cat(Singleton(SEql(1))),
-                  Cat(Singleton(SEql("a"))))).conversion21()
+                  Cat(Singleton(SEql("a"))))).conversionC17()
              == And(Singleton(SMember(1,2,3,"a","b","c")),
                     Or(Cat(Singleton(SEql(1))),
                        Cat(Singleton(SEql("a"))))))
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Cat(Singleton(SEql("a"))),
-               Singleton(SEmpty)).conversion21()
-             == And(Singleton(SEmpty),
-                    Cat(Singleton(SEql("a")))))
+               Singleton(SEmpty)).conversionC17()
+           == And(Singleton(SEmpty),
+                  Cat(Singleton(SEql("a"))),
+                  Singleton(SEmpty)))
+    assert(And(Singleton(SEmpty),
+               Cat(Singleton(SEql("a")),EmptySet))
+           == And(Singleton(SEmpty),
+                  Cat(Singleton(SEql("a")),EmptySet)))
     val s1 = Singleton(SSatisfies(_=>true,"satisfies"))
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Cat(Singleton(SEql("a")),
-                   s1)).conversion21()
+                   s1)).conversionC17()
              == And(Singleton(SMember(1,2,3,"a","b","c")),
                     Cat(Singleton(SEql("a")),
                         s1)))
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Singleton(SEql("a")),
-               Cat(s1)).conversion21()
+               Cat(s1)).conversionC17()
              == And(Singleton(SEql("a")),
+                    Singleton(SEql("a")),
                     Cat(s1)))
 
     val s2 = Singleton(SSatisfies(_=>false,"satisfies"))
     assert(And(Singleton(SMember(1,2,3,"a","b","c")),
                Cat(Singleton(SEql("a")),
-                   s1)).conversion21()
+                   s2)).conversionC17()
              == And(Singleton(SMember(1,2,3,"a","b","c")),
                     Cat(Singleton(SEql("a")),
-                        s1)))
-
+                        s2)))
   }
 }

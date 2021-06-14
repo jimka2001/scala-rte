@@ -36,6 +36,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
   def create(operands: Seq[Rte]):Rte = {
     Or.createOr(operands)
   }
+  def createTypeD(operands: Seq[SimpleTypeD]):SimpleTypeD = SOr.createOr(operands)
   def dualCombination(c:Combination):Boolean = {
     c match {
       case _:And => true
@@ -45,6 +46,10 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
   def createDual(operands: Seq[Rte]):Rte = {
     And.createAnd(operands)
   }
+  override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
+    b.subtypep(a)
+  }
+  def orInvert(x:Boolean):Boolean = ! x
   override def toLaTeX: String = "(" + operands.map(_.toLaTeX).mkString("\\vee ") + ")"
 
   override def toString: String = operands.map(_.toString).mkString("Or(", ",", ")")
@@ -211,48 +216,17 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
       }))
     }
   }
-
-  def conversion17():Rte = {
-    // Or(<{1,2,3}>,Not(<{3,4,5,6}>))
-    // remove redundant element from SMember within Or
-    // because of conversion16 we know there is at most one SMember/SEql
-    // Note that we would like to form a dfa of the Rte by removing
-    //     <{1,2,3}> and then testing membership of Seq(1), Seq(2), and Seq(3)
-    //     of that dfa.   However, creating a dfa means we must find all the derivatives
-    //     and canonicalize them.   This forms an infinite loop.    If someone
-    //     can figure out how to avoid this infinite loop, we could make this
-    //     conversion17 more effective.
-    //     As an approximation, rather than checking membership of the rte,
-    //     we instead find all the Singleton() and Not(Singleton(...))
-    //     and just form a SimpleTypeD and check that.
-    val member = operands.collectFirst {
-      case s@Singleton(_: SMemberImpl) => s
+  def conversionC16b():Rte = {
+    val nn = operands.collect{
+      case Not(Singleton(td)) => td
     }
-    member match {
-      case None => this
-      case Some(s@Singleton(m: SMemberImpl)) =>
-        val looser = searchReplace(operands,s,Seq()).collect{
-          case Singleton(td) => td
-          case Not(Singleton(td)) => SNot(td)
-        }
-        looser match {
-          case Seq() => this
-          case tds =>
-            val td = SOr.createOr(tds)
-            val keep = m.xs.filter { x => ! td.typep(x)}
-            val rte = Singleton(Types.createMember(keep))
-            create(searchReplace(operands, s, rte))
-        }
-
-      case _ => throw new Exception("scala compiler is not smart enough to know this line is unreachable")
+    val filtered = operands.flatMap{
+      // Or(A,x,Not(y))  --> Or(A,Not(y))
+      case Singleton(td) if nn.exists(d => td.disjoint(d).contains(true)) => Seq()
+      case r => Seq(r)
     }
+    create(filtered)
   }
-
-  def conversion99():Rte =
-    create(operands.map(_.canonicalizeOnce))
-
-  def conversion1():Rte = create(operands)
-
   override def canonicalizeOnce: Rte = {
     lazy val existsNullable = operands.exists(_.nullable)
     findSimplifier(tag="or",target=this,step=0,verbose=false,List[() => Rte](
@@ -266,13 +240,15 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
       () => { conversion10()},
       () => { conversionC11()},
       () => { conversion11b()},
+      () => { conversionC16()},
+      () => { conversionC16b()},
       () => { conversion11()},
       () => { conversion12()},
       () => { conversion13()},
       () => { conversion14()},
       () => { conversion15()},
       () => { conversion16()},
-      () => { conversion17()},
+      () => { conversionC17()},
       () => { conversion99() },
       () => { conversion5() },
       () => { super.canonicalizeOnce }

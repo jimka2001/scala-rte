@@ -29,11 +29,13 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
   val zero:Rte
   val one:Rte
   def create(operands: Seq[Rte]):Rte
+  def createTypeD(operands: Seq[SimpleTypeD]):SimpleTypeD
   def createDual(operands: Seq[Rte]):Rte
   def sameCombination(c:Combination):Boolean
   def dualCombination(d:Combination):Boolean
   def firstTypes: Set[SimpleTypeD] = operands.toSet.flatMap((r: Rte) => r.firstTypes)
-
+  def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean]
+  def orInvert(x:Boolean):Boolean
   def conversion3():Rte = {
     // Or(... Sigma* ....) -> Sigma*
     // And(... EmptySet ....) -> EmptySet
@@ -86,6 +88,64 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     else
       this
   }
+
+  def conversionC16():Rte = {
+    // remove superclasses
+    //  and remove Not(disjoint) if
+
+    val ss = operands.collect{
+      case Singleton(td) => td
+    }
+    val filtered = operands.flatMap{
+      // And(super,sub) --> And(Sigma,sub)
+      // Or(super,sub) --> Or(super,EmptySet)
+      // case Singleton(sup) if ss.exists(sub => sub != sup && sup.supertypep(sub).contains(true)) => Sigma
+      // TODO, we should remove the object rather than replacing with one
+      //    be careful not to convert something that matches only singleton
+      //    to match more than singleton
+      case Singleton(sup) if ss.exists(sub => sub != sup && annihilator(sub,sup).contains(true)) => Seq()
+      case r => Seq(r)
+    }
+    create(filtered)
+  }
+
+  def conversionC16b():Rte
+
+
+  def conversionC17():Rte = {
+    // And({1,2,3},Singleton(X),Not(Singleton(Y)))
+    //  {...} selecting elements, x, for which SAnd(X,SNot(Y)).typep(x) is true
+
+    // Or({1,2,3},Singleton(X),Not(Singleton(Y)))
+    //  {...} deleting elements, x, for which SOr(X,SNot(Y)).typep(x) is true
+
+    operands.collectFirst {
+      case s@Singleton(_: SMemberImpl) => s
+    } match {
+      case None => this
+      case Some(s@Singleton(m: SMemberImpl)) =>
+        val singletonRtes = searchReplace(operands, s, Seq()).collect {
+          case s:Singleton => s
+          case n@Not(Singleton(_)) => n
+        }
+        val looser = singletonRtes.collect {
+          case Singleton(td) => td
+          case Not(Singleton(td)) => SNot(td)
+        }
+        looser match {
+          case Seq() => this
+          case tds =>
+            val td = createTypeD(tds)
+            val rte = Singleton(Types.createMember(m.xs.filter(a => orInvert(td.typep(a)))))
+            create(searchReplace(operands, s, rte))
+        }
+    }
+  }
+
+  def conversion99():Rte =
+    create(operands.map(_.canonicalizeOnce))
+
+  def conversion1():Rte = create(operands)
 
   override def canonicalizeOnce: Rte = {
     findSimplifier(tag="combination",target=this,step=0,verbose=false,List[() => Rte](
