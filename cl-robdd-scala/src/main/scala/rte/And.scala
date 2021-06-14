@@ -150,12 +150,6 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
     //    And(Cat(a,b,c),Cat(x,y,z) ...)
     //    --> And(Cat(And(a,x),And(b,y),And(c,z),...)
 
-    // TODO this could be extended to intersect the leading non-nullable
-    //   operands of Cat(...)s which contain a nullable.
-    //   E.g., And(Cat(a,b*),Cat(x,y*))
-    //     ->  And(Cat(And(a,x),b*),
-    //             Cat(And(a,x),y*))
-    //   But I'm not sure how to avoid infinite loop.
     val cats: Seq[Seq[Rte]] = operands.collect{
       case Cat(tds) if tds.forall(td => !td.nullable) => tds
     }
