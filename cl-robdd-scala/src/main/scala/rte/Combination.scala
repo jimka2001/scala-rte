@@ -130,20 +130,39 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     }
   }
   def conversionC16():Rte = {
+    // WARNING, this function assumes there are no repeated elements
+    //     according to ==
+    //     If there are repeated elements, both will be removed.
+
     // remove And superclasses
     // remove Or subclasses
+
+    // Must be careful, e.g. if Or(A,B) with A a subset of B and B a subset of A
+    //    but A != B, then don't remove both.
 
     val ss = operands.collect{
       case Singleton(td) => td
     }
+
+    val redundant = ss.toList.tails.flatMap { tail =>
+      if (tail.size < 2)
+        List()
+      else {
+        val td1 = tail.head
+        tail.tail.flatMap { td2 =>
+          if (annihilator(td1, td2).contains(true)) {
+            List(td2)
+          } else if (annihilator(td2, td1).contains(true)) {
+            List(td1)
+          } else
+            List()
+        }
+      }
+    }.toList
     val filtered = operands.flatMap{
-      // And(super,sub) --> And(Sigma,sub)
-      // Or(super,sub) --> Or(super,EmptySet)
-      // case Singleton(sup) if ss.exists(sub => sub != sup && sup.supertypep(sub).contains(true)) => Sigma
-      // TODO, we should remove the object rather than replacing with one
-      //    be careful not to convert something that matches only singleton
-      //    to match more than singleton
-      case Singleton(sup) if ss.exists(sub => sub != sup && annihilator(sub,sup).contains(true)) => Seq()
+      // And(super,sub,...) --> And(sub,...)
+      // Or(super,sub,...) --> Or(super,...)
+      case Singleton(sup) if redundant.contains(sup) => Seq()
       case r => Seq(r)
     }
     create(filtered)

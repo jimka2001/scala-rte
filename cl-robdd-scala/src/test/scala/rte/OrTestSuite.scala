@@ -505,6 +505,10 @@ class OrTestSuite extends AnyFunSuite {
     val C = Singleton(SEql("C"))
     val X = Singleton(SEql("X"))
 
+    assert(Or(A,C).conversionC16()
+           == Or(A,C))
+    assert(And(A,C).conversionC16()
+           == And(A,C))
     assert(Or(A,AB,C,X).conversionC16()
              == Or(AB,C,X))
     assert(Or(C,A,X,AB).conversionC16()
@@ -513,8 +517,13 @@ class OrTestSuite extends AnyFunSuite {
              == Or(AB,C,X))
     assert(Or(AB,BA).conversionC16()
            == AB ||
-             Or(AB,BA).conversionC16()
-               == BA
+           Or(AB,BA).conversionC16()
+           == BA
+           )
+    assert(And(AB,BA).conversionC16()
+           == AB ||
+           And(AB,BA).conversionC16()
+           == BA
            )
   }
   test("or conversion12"){

@@ -47,7 +47,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
     And.createAnd(operands)
   }
   override def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean] = {
-    b.subtypep(a)
+    a.supertypep(b)
   }
   def orInvert(x:Boolean):Boolean = ! x
   def setDualOperation(a:Seq[Any],b:Seq[Any]):Seq[Any] = a.filter(x => b.contains(x)) // intersection
