@@ -497,7 +497,7 @@ class OrTestSuite extends AnyFunSuite {
     assert(Or(A,AB,C,X).conversion11b()
              == Or(A,AB,C,X))
   }
-  test("or conversion11"){
+  test("or conversionC16 b"){
     // filter out singletons which are a subclass of other singletons
     val A = Singleton(SEql("A"))
     val AB = Singleton(SMember("A","B"))
@@ -505,15 +505,15 @@ class OrTestSuite extends AnyFunSuite {
     val C = Singleton(SEql("C"))
     val X = Singleton(SEql("X"))
 
-    assert(Or(A,AB,C,X).conversion11()
+    assert(Or(A,AB,C,X).conversionC16()
              == Or(AB,C,X))
-    assert(Or(C,A,X,AB).conversion11()
+    assert(Or(C,A,X,AB).conversionC16()
              == Or(C,X,AB))
-    assert(Or(AB,C,A,X).conversion11()
+    assert(Or(AB,C,A,X).conversionC16()
              == Or(AB,C,X))
-    assert(Or(AB,BA).conversion11()
+    assert(Or(AB,BA).conversionC16()
            == AB ||
-             Or(AB,BA).conversion11()
+             Or(AB,BA).conversionC16()
                == BA
            )
   }

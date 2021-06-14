@@ -118,23 +118,6 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversion11():Rte = {
-    // filter out singletons which are a subclass of other singletons
-    lazy val singletons: Seq[SimpleTypeD] = operands.collect {
-      case Singleton(td) => td
-    }
-
-    val maybeSub = singletons.find { sub =>
-      singletons.exists { sup =>
-        sub != sup && sub.subtypep(sup).contains(true)
-      }
-    }
-    maybeSub match {
-      case None => this
-      case Some(td) => create(operands.filterNot(_ == Singleton(td)))
-    }
-  }
-
   def conversion12():Rte = {
     // TODO, this is a curious conversion.  I think it should
     //    be generalized, but not sure how.
@@ -222,7 +205,6 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
       () => { conversion11b()},
       () => { conversionC16()},
       () => { conversionC16b()},
-      () => { conversion11()},
       () => { conversion12()},
       () => { conversion13()},
       () => { conversion14()},

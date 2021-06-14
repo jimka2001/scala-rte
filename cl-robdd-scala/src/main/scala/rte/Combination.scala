@@ -130,8 +130,8 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     }
   }
   def conversionC16():Rte = {
-    // remove superclasses
-    //  and remove Not(disjoint) if
+    // remove And superclasses
+    // remove Or subclasses
 
     val ss = operands.collect{
       case Singleton(td) => td
