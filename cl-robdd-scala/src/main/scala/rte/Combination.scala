@@ -36,6 +36,9 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
   def firstTypes: Set[SimpleTypeD] = operands.toSet.flatMap((r: Rte) => r.firstTypes)
   def annihilator(a:SimpleTypeD,b:SimpleTypeD):Option[Boolean]
   def orInvert(x:Boolean):Boolean
+  def setOperation(a:Seq[Any],b:Seq[Any]):Seq[Any]
+  def setDualOperation(a:Seq[Any],b:Seq[Any]):Seq[Any]
+
   def conversion3():Rte = {
     // Or(... Sigma* ....) -> Sigma*
     // And(... EmptySet ....) -> EmptySet
@@ -88,7 +91,44 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     else
       this
   }
-
+  def conversionC15():Rte = {
+    // simplify to maximum of one SMember(...) and maximum of one Not(SMember(...))
+    // Or(<{1,2,3,4}>,<{4,5,6,7}>,Not(<{10,11,12,13}>,Not(<{12,13,14,15}>)))
+    //   --> Or(<{1,2,3,4,6,7}>,Not(<{12,13}>))
+    //
+    // And(<{1,2,3,4}>,<{4,5,6,7}>,Not(<{10,11,12,13}>,Not(<{12,13,14,15}>)))
+    //   --> And(<{3,4}>,Not(<{10,11,12,13,14,15}>))
+    val members = operands.collect{
+      case s@Singleton(_:SMemberImpl) => s
+    }
+    val notMembers = operands.collect{
+      case s@Not(Singleton(_:SMemberImpl)) => s
+    }
+    if (members.size <= 1 && notMembers.size <= 1)
+      this
+    else{
+      val newMember:Rte = members
+        .collect{case Singleton(mi:SMemberImpl) => mi.xs }
+        .reduceOption(setOperation) match {
+        case None => one
+        case Some(memberOperands) => Singleton(Types.createMember(memberOperands))
+      }
+      val newNotMember:Rte = notMembers
+        .collect{case Not(Singleton(mi:SMemberImpl)) => mi.xs }
+        .reduceOption(setDualOperation) match {
+        case None => one
+        case Some(notMemberOperands) => Not(Singleton(Types.createMember(notMemberOperands)))
+      }
+      // careful to put the SMember back in the place of the first
+      //   this is accomplished by replacing every SMember/SEql with the one we derive here
+      //   and then use uniquify to remove duplicates without changing order.
+      create(uniquify(operands.map{
+        case Singleton(_:SMemberImpl) => newMember
+        case Not(Singleton(_:SMemberImpl)) => newNotMember
+        case r => r
+      }))
+    }
+  }
   def conversionC16():Rte = {
     // remove superclasses
     //  and remove Not(disjoint) if

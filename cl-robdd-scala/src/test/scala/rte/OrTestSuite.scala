@@ -565,23 +565,37 @@ class OrTestSuite extends AnyFunSuite {
     assert(Or(Not(A),Star(C),B,Star(D),Star(A)).conversion15()
              == Or(Not(A),B,Star(A)))
   }
-  test("or conversionC16 2"){
+
+  test("combo conversionC15"){
     // Or(<{1,2,3}>,<{a,b,c}>,Not(<{4,5,6}>))
+    assert(Or(Singleton(SMember(1,2,3,4)),
+              Singleton(SMember(3,4,5,6)),
+              Not(Singleton(SMember(10,11,12,13))),
+              Not(Singleton(SMember(12,13,14,15)))).conversionC15()
+           == Or(Singleton(SMember(1,2,3,4,5,6)),
+                 Not(Singleton(SMember(12,13)))))
+    assert(And(Singleton(SMember(1,2,3,4)),
+               Singleton(SMember(3,4,5,6)),
+               Not(Singleton(SMember(10,11,12,13))),
+               Not(Singleton(SMember(12,13,14,15)))).conversionC15()
+           == And(Singleton(SMember(3,4)),
+                 Not(Singleton(SMember(10,11,12,13,14,15)))))
+
     val X = Not(Singleton(SEql(100)))
     val Y = Not(Singleton(SEql(200)))
     assert(Or(Singleton(SMember(1,2,3)),
               X,
               Singleton(SMember("a","b","c")),
               Y,
-              Singleton(SEql(0))).conversion16()
-             == Or(X,Y,Singleton(SMember(1,2,3,"a","b","c",0))))
+              Singleton(SEql(0))).conversionC15()
+           == Or(Not(Singleton(SEmpty)),Singleton(SMember(1,2,3,"a","b","c",0))))
     assert(Or(Singleton(SMember(1,2,3)),
               X,
               Singleton(SMember("a","b","c")),
               Singleton(SMember(1,2,3)),
               Y,
-              Singleton(SEql(0))).conversion16()
-             == Or(X,Y,Singleton(SMember("a","b","c",1,2,3,0))))
+              Singleton(SEql(0))).conversionC15()
+           == Or(Not(Singleton(SEmpty)),Singleton(SMember(1,2,3,"a","b","c",0))))
   }
   test("or conversionC17"){
     // Or(<{1,2,3,4}>,Not(<{3,4,5,6}>))

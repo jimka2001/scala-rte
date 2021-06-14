@@ -21,7 +21,7 @@
 //
 
 package rte
-import adjuvant.Adjuvant.{uniquify,findSimplifier,searchReplace}
+import adjuvant.Adjuvant.{uniquify,findSimplifier}
 import genus._
 
 case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
@@ -50,6 +50,9 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
     b.subtypep(a)
   }
   def orInvert(x:Boolean):Boolean = ! x
+  def setDualOperation(a:Seq[Any],b:Seq[Any]):Seq[Any] = a.filter(x => b.contains(x)) // intersection
+  def setOperation(a:Seq[Any],b:Seq[Any]):Seq[Any] = a ++ b.diff(a) // union
+
   override def toLaTeX: String = "(" + operands.map(_.toLaTeX).mkString("\\vee ") + ")"
 
   override def toString: String = operands.map(_.toString).mkString("Or(", ",", ")")
@@ -193,29 +196,6 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
     }
   }
 
-  def conversion16():Rte = {
-    // Or(<{1,2,3}>,<{a,b,c}>,Not(<{4,5,6}>))
-
-    val members = operands.collect{
-      case s@Singleton(_:SMemberImpl) => s
-    }
-    val as = members.flatMap{
-      case Singleton(m:SMemberImpl) => m.xs
-      case x => throw new Exception(s"unexpected value $x")
-    }
-    if (members.isEmpty)
-      this
-    else {
-      // careful to put the SMember back in the place of the first
-      //   this is accomplished by replacing every SMember/SEql with the one we derive here
-      //   and then use uniquify to remove duplicates without changing order.
-      val s = Singleton(Types.createMember(uniquify(as)))
-      create(uniquify(operands.map{
-        case Singleton(_:SMemberImpl) => s
-        case r => r
-      }))
-    }
-  }
   def conversionC16b():Rte = {
     val nn = operands.collect{
       case Not(Singleton(td)) => td
@@ -247,7 +227,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
       () => { conversion13()},
       () => { conversion14()},
       () => { conversion15()},
-      () => { conversion16()},
+      () => { conversionC15()},
       () => { conversionC17()},
       () => { conversion99() },
       () => { conversion5() },

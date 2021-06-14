@@ -52,6 +52,8 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
     Or.createOr(operands)
   }
   def orInvert(x:Boolean):Boolean = x
+  def setOperation(a:Seq[Any],b:Seq[Any]):Seq[Any] = a.filter(x => b.contains(x)) // intersection
+  def setDualOperation(a:Seq[Any],b:Seq[Any]):Seq[Any] = a ++ b.diff(a) // union
 
   override def toLaTeX:String = operands.map(_.toLaTeX).mkString("(", "\\wedge ", ")")
   override def toString:String = operands.map(_.toString).mkString("And(", ",", ")")
@@ -283,6 +285,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       () => { conversion13() },
       () => { conversion14() },
       () => { conversion15() },
+      () => { conversionC15() },
       () => { conversionC16() },
       () => { conversionC16b() },
       () => { conversion17() },
