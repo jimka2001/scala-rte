@@ -24,6 +24,7 @@ package rte
 
 import adjuvant.Adjuvant.findSimplifier
 import genus._
+
 import scala.annotation.tailrec
 
 final case class Cat(operands:Seq[Rte]) extends Rte {
@@ -34,7 +35,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
 
   def nullable: Boolean = operands.forall(_.nullable)
 
-  def minLength: Int = operands.count(r => !r.nullable)
+  // def minLength: Int = operands.count(r => !r.nullable)
 
   def firstTypes: Set[SimpleTypeD] = {
     operands match {
