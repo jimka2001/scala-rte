@@ -97,7 +97,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
 
   // SOr(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
-    findSimplifier(this,List[(String,() => SimpleTypeD)](
+    findSimplifier(tag="SOr",this,verbose=false,List[(String,() => SimpleTypeD)](
       "super" -> (() => { super.canonicalizeOnce(nf)})
       ))
   }

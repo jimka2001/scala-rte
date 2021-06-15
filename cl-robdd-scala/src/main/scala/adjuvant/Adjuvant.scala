@@ -23,6 +23,7 @@
 package adjuvant
 
 import scala.annotation.tailrec
+import scala.collection.mutable
 
 object Adjuvant {
   def conj[T](it:Iterable[T],obj:T):Iterable[T] = {
@@ -162,11 +163,11 @@ object Adjuvant {
       domain.groupBy(f).values.toSet
   }
 
-  def findSimplifier[T](tag: String, target: T, simplifiers: List[(String, () => T)]): T = {
+  def findSimplifierDebug[T](tag: String, target: T, simplifiers: List[(String, () => T)]): T = {
     // DEBUG version of findSimplifier,  if called with two additional arguments,
     //   diagnostics will be printed logging the progression of simplifications
     println(s"$tag starting with $target")
-    val s = findSimplifier(target, simplifiers)
+    val s = findSimplifier(tag, target, verbose = true, simplifiers)
     if (s == target)
       println(s"$tag remained $s")
     else {
@@ -177,9 +178,8 @@ object Adjuvant {
     s
   }
 
-  def findSimplifier[T](target: T, simplifiers: List[(String,() => T)]): T = {
-    findSimplifier("",target,false, simplifiers)
-  }
+  val simplifierUsed:mutable.Map[(String,String),Int] = mutable.Map()
+
   @tailrec
   def findSimplifier[T](tag:String, target: T, verbose:Boolean, simplifiers: List[(String, () => T)]): T = {
     // simplifiers is a list of 0-ary functions.   calling such a function
@@ -187,21 +187,26 @@ object Adjuvant {
     //   in turn, as long as they return `target`.  As soon as such a function
     //   returns something other than `target`, then that new value is returned
     //   from findSimplifier.  As a last resort, `target` is returned.
+
     simplifiers match {
       case Nil => target
-      case (comment,s) :: ss =>
+      case (comment, s) :: ss =>
         val t2 = s()
         if (target == t2) {
           // Pass target to recursive call, not t2.
           // The hope is that t2 is newly allocated data
           // and target is older.  Hoping that, holding on to older data
           // and allowing new data to be released is better for the GC.
-          findSimplifier(tag,target, verbose, ss)
+          findSimplifier(tag = tag, target, verbose=verbose, ss)
         } else {
           if (verbose) {
             println(s"$tag starting with  $target")
             println(s"    $tag $comment")
             println(s"    $tag ----> $t2")
+            simplifierUsed.updateWith(tag -> comment) {
+              case None => Some(1)
+              case Some(a) => Some(a + 1)
+            }
           }
           t2
         }

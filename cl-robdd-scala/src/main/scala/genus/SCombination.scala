@@ -320,7 +320,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
 
   // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
-    findSimplifier(this, List[(String,() => SimpleTypeD)](
+    findSimplifier(tag="SCombo", this, verbose=false,List[(String,() => SimpleTypeD)](
       "1" -> (() => { conversion1() }),
       "2" -> (() => { conversion2() }),
       "3" -> (() => { conversion3() }),

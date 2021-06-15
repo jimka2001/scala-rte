@@ -85,6 +85,9 @@ class RteTestSuite extends MyFunSuite {
          } {
       r1.canonicalize
     }
+    //println(adjuvant.Adjuvant.simplifierUsed.toList.sortBy{
+    //  case ((x,y),i) => (x,i)
+    //}.map(println))
   }
 
   test("canonicalize") {

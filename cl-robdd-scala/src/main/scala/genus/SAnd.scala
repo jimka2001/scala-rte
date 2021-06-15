@@ -151,7 +151,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   }
   // SAnd(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
-    findSimplifier(this,List[(String,() => SimpleTypeD)](
+    findSimplifier(tag="SAnd",this,verbose=false,List[(String,() => SimpleTypeD)](
       ("conversionA1" , () => { conversionA1() }),
       ("conversionA3" , () => { conversionA3() }),
       ("super" , () => { super.canonicalizeOnce(nf)})
