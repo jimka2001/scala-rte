@@ -21,7 +21,7 @@
 //
 
 package rte
-import adjuvant.Adjuvant.{uniquify,findSimplifier}
+import adjuvant.Adjuvant.findSimplifier
 import genus._
 
 case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
@@ -177,28 +177,28 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
   override def canonicalizeOnce: Rte = {
     lazy val existsNullable = operands.exists(_.nullable)
     findSimplifier(tag="or",target=this,verbose=false,List[(String,() => Rte)](
-      ("1" -> (() => { conversion1() })),
-      ("3" -> (() => { conversion3() })),
-      ("4" -> (() => { conversion4() })),
-      ("6" -> (() => { conversion6() })),
-      ("7" -> (() => { conversionC7() })),
-      ("8" -> (() => { conversion8(existsNullable)})),
-      ("9" -> (() => { conversion9(existsNullable)})),
-      ("10" -> (() => { conversion10()})),
-      ("C11" -> (() => { conversionC11()})),
-      ("11b" -> (() => { conversion11b()})),
-      ("C16" -> (() => { conversionC16()})),
-      ("C16b" -> (() => { conversionC16b()})),
-      ("C12" -> (() => { conversionC12()})),
-      ("13" -> (() => { conversion13()})),
-      ("14" -> (() => { conversion14()})),
-      ("15" -> (() => { conversion15()})),
-      ("21" -> (() => { conversion21()})),
-      ("C15" -> (() => { conversionC15()})),
-      ("C17" -> (() => { conversionC17()})),
-      ("99" -> (() => { conversion99() })),
-      ("5" -> (() => { conversion5() })),
-      ("super" -> (() => { super.canonicalizeOnce }))
+      "1" -> (() => { conversion1() }),
+      "3" -> (() => { conversion3() }),
+      "4" -> (() => { conversion4() }),
+      "6" -> (() => { conversion6() }),
+      "7" -> (() => { conversionC7() }),
+      "8" -> (() => { conversion8(existsNullable)}),
+      "9" -> (() => { conversion9(existsNullable)}),
+      "10" -> (() => { conversion10()}),
+      "C11" -> (() => { conversionC11()}),
+      "11b" -> (() => { conversion11b()}),
+      "C16" -> (() => { conversionC16()}),
+      "C16b" -> (() => { conversionC16b()}),
+      "C12" -> (() => { conversionC12()}),
+      "13" -> (() => { conversion13()}),
+      "14" -> (() => { conversion14()}),
+      "15" -> (() => { conversion15()}),
+      "21" -> (() => { conversion21()}),
+      "C15" -> (() => { conversionC15()}),
+      "C17" -> (() => { conversionC17()}),
+      "99" -> (() => { conversion99() }),
+      "5" -> (() => { conversion5() }),
+      "super" -> (() => { super.canonicalizeOnce })
       ))
   }
 
