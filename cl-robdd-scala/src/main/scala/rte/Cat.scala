@@ -92,14 +92,14 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
   def conversion1():Rte = create(operands)
 
   override def canonicalizeOnce: Rte = {
-    findSimplifier(this,List[() => Rte](
-      () => { conversion1() },
-      () => { conversion3() },
-      () => { conversion4() },
-      () => { conversion5() },
-      () => { conversion6() },
-      () => { conversion99() },
-      () => { super.canonicalizeOnce }
+    findSimplifier(this,List[(String,() => Rte)](
+      "1" -> (() => { conversion1() }),
+      "3" -> (() => { conversion3() }),
+      "4" -> (() => { conversion4() }),
+      "5" -> (() => { conversion5() }),
+      "6" -> (() => { conversion6() }),
+      "99" -> (() => { conversion99() }),
+      "super" -> (() => { super.canonicalizeOnce })
       ))
   }
 

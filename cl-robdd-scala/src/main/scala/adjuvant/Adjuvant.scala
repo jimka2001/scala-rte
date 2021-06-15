@@ -162,7 +162,7 @@ object Adjuvant {
       domain.groupBy(f).values.toSet
   }
 
-  def findSimplifier[T](tag: String, target: T, simplifiers: List[() => T]): T = {
+  def findSimplifier[T](tag: String, target: T, simplifiers: List[(String, () => T)]): T = {
     // DEBUG version of findSimplifier,  if called with two additional arguments,
     //   diagnostics will be printed logging the progression of simplifications
     println(s"$tag starting with $target")
@@ -177,11 +177,11 @@ object Adjuvant {
     s
   }
 
-  def findSimplifier[T](target: T, simplifiers: List[() => T]): T = {
-    findSimplifier("",target,0,false, simplifiers)
+  def findSimplifier[T](target: T, simplifiers: List[(String,() => T)]): T = {
+    findSimplifier("",target,false, simplifiers)
   }
   @tailrec
-  def findSimplifier[T](tag:String, target: T, step:Int, verbose:Boolean, simplifiers: List[() => T]): T = {
+  def findSimplifier[T](tag:String, target: T, verbose:Boolean, simplifiers: List[(String, () => T)]): T = {
     // simplifiers is a list of 0-ary functions.   calling such a function
     //   either returns `target` or something else.   we call all the functions
     //   in turn, as long as they return `target`.  As soon as such a function
@@ -189,18 +189,19 @@ object Adjuvant {
     //   from findSimplifier.  As a last resort, `target` is returned.
     simplifiers match {
       case Nil => target
-      case s :: ss =>
+      case (comment,s) :: ss =>
         val t2 = s()
         if (target == t2) {
           // Pass target to recursive call, not t2.
           // The hope is that t2 is newly allocated data
           // and target is older.  Hoping that, holding on to older data
           // and allowing new data to be released is better for the GC.
-          findSimplifier(tag,target, step+1, verbose, ss)
+          findSimplifier(tag,target, verbose, ss)
         } else {
           if (verbose) {
-            println(s"$tag starting $step with  $target")
-            println(s"    $tag step:$step ----> $t2")
+            println(s"$tag starting with  $target")
+            println(s"    $tag $comment")
+            println(s"    $tag ----> $t2")
           }
           t2
         }

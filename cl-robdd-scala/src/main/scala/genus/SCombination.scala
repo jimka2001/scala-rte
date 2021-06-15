@@ -23,7 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
-import adjuvant.Adjuvant.uniquify
+import adjuvant.Adjuvant.{findSimplifier, uniquify}
 
 // The purpose of this class, SCombination, is to serve as a superclass
 // of both SAnd and SOr, as there is quite a bit of common code between
@@ -320,23 +320,23 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
 
   // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
-    findSimplifier(List[() => SimpleTypeD](
-      () => { conversion1() },
-      () => { conversion2() },
-      () => { conversion3() },
-      () => { conversion4() },
-      () => { conversion5() },
-      () => { conversion6() },
-      () => { conversion7(nf) },
-      () => { conversion8() },
-      () => { conversion9() },
-      () => { conversion10() },
-      () => { conversion11() },
-      () => { conversion12() },
-      () => { conversion13() },
-      () => { conversion14() },
-      () => { conversion15() },
-      () => { conversion16() }
+    findSimplifier(this, List[(String,() => SimpleTypeD)](
+      "1" -> (() => { conversion1() }),
+      "2" -> (() => { conversion2() }),
+      "3" -> (() => { conversion3() }),
+      "4" -> (() => { conversion4() }),
+      "5" -> (() => { conversion5() }),
+      "6" -> (() => { conversion6() }),
+      "7" -> (() => { conversion7(nf) }),
+      "8" -> (() => { conversion8() }),
+      "9" -> (() => { conversion9() }),
+      "10" -> (() => { conversion10() }),
+      "11" -> (() => { conversion11() }),
+      "12" -> (() => { conversion12() }),
+      "13" -> (() => { conversion13() }),
+      "14" -> (() => { conversion14() }),
+      "15" -> (() => { conversion15() }),
+      "16" -> (() => { conversion16() })
       ))
   }
 

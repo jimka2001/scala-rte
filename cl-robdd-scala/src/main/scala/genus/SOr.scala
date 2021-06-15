@@ -23,7 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
-import adjuvant.Adjuvant.{conj, uniquify}
+import adjuvant.Adjuvant.{conj, findSimplifier, uniquify}
 
 /** A union type, which is the union of zero or more types.
  *
@@ -97,8 +97,8 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
 
   // SOr(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
-    findSimplifier(List[() => SimpleTypeD](
-      () => { super.canonicalizeOnce(nf)}
+    findSimplifier(this,List[(String,() => SimpleTypeD)](
+      "super" -> (() => { super.canonicalizeOnce(nf)})
       ))
   }
 

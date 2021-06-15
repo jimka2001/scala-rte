@@ -142,10 +142,6 @@ abstract class SimpleTypeD { // SimpleTypeD
     }
   }
   
-  final def findSimplifier(simplifiers: List[() => SimpleTypeD]): SimpleTypeD = {
-    adjuvant.Adjuvant.findSimplifier(this,simplifiers)
-  }
-
   lazy val toDnf: SimpleTypeD = computeDnf()
 
   def computeDnf(): SimpleTypeD = this

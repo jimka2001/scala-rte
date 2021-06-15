@@ -193,29 +193,29 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
 
   override def canonicalizeOnce: Rte = {
     lazy val existsNullable = operands.exists(_.nullable)
-    findSimplifier(tag="or",target=this,step=0,verbose=false,List[() => Rte](
-      () => { conversion1() },
-      () => { conversion3() },
-      () => { conversion4() },
-      () => { conversion6() },
-      () => { conversionC7() },
-      () => { conversion8(existsNullable)},
-      () => { conversion9(existsNullable)},
-      () => { conversion10()},
-      () => { conversionC11()},
-      () => { conversion11b()},
-      () => { conversionC16()},
-      () => { conversionC16b()},
-      () => { conversion12()},
-      () => { conversion13()},
-      () => { conversion14()},
-      () => { conversion15()},
-      () => { conversion21()},
-      () => { conversionC15()},
-      () => { conversionC17()},
-      () => { conversion99() },
-      () => { conversion5() },
-      () => { super.canonicalizeOnce }
+    findSimplifier(tag="or",target=this,verbose=false,List[(String,() => Rte)](
+      ("1" -> (() => { conversion1() })),
+      ("3" -> (() => { conversion3() })),
+      ("4" -> (() => { conversion4() })),
+      ("6" -> (() => { conversion6() })),
+      ("7" -> (() => { conversionC7() })),
+      ("8" -> (() => { conversion8(existsNullable)})),
+      ("9" -> (() => { conversion9(existsNullable)})),
+      ("10" -> (() => { conversion10()})),
+      ("C11" -> (() => { conversionC11()})),
+      ("11b" -> (() => { conversion11b()})),
+      ("C16" -> (() => { conversionC16()})),
+      ("C16b" -> (() => { conversionC16b()})),
+      ("C12" -> (() => { conversionC12()})),
+      ("13" -> (() => { conversion13()})),
+      ("14" -> (() => { conversion14()})),
+      ("15" -> (() => { conversion15()})),
+      ("21" -> (() => { conversion21()})),
+      ("C15" -> (() => { conversionC15()})),
+      ("C17" -> (() => { conversionC17()})),
+      ("99" -> (() => { conversion99() })),
+      ("5" -> (() => { conversion5() })),
+      ("super" -> (() => { super.canonicalizeOnce }))
       ))
   }
 

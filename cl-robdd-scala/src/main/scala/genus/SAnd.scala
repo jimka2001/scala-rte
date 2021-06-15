@@ -23,7 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
-import adjuvant.Adjuvant.{conj, uniquify}
+import adjuvant.Adjuvant.{conj, findSimplifier, uniquify}
 
 /** An intersection type, which is the intersection of zero or more types.
  *
@@ -151,10 +151,10 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   }
   // SAnd(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
-    findSimplifier(List[() => SimpleTypeD](
-      () => { conversionA1() },
-      () => { conversionA3() },
-      () => { super.canonicalizeOnce(nf)}
+    findSimplifier(this,List[(String,() => SimpleTypeD)](
+      ("conversionA1" , () => { conversionA1() }),
+      ("conversionA3" , () => { conversionA3() }),
+      ("super" , () => { super.canonicalizeOnce(nf)})
       ))
   }
 
