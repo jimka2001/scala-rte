@@ -108,11 +108,10 @@ class OrTestSuite extends AnyFunSuite {
   }
   test("canonicalize or b1") {
     for {depth <- 2 to 2
-         r <- 1 to 5000
+         r <- 1 to 1000
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {
-      // remove EmptySet
       try {
         Or(r1,r2).canonicalize }
       catch{

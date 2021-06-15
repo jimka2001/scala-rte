@@ -73,8 +73,11 @@ class RteTestSuite extends MyFunSuite {
       assert(r1.+ == Cat(r1, Star(r1)))
       assert((r1 ^ 0) == EmptyWord)
       assert((r1 ^ 1) == r1)
-      assert((r1 ^ 2).canonicalize == Cat(r1, r1).canonicalize, s"r1=$r1")
-      assert((r1 ^ 3).canonicalize == Cat(r1, r1, r1).canonicalize)
+      assert((r1 ^ 2).canonicalize ~= Cat(r1, r1).canonicalize,
+             s"\nr1= $r1" +
+               s"\n  (r1 ^ 2).canonicalize= " + (r1 ^ 2).canonicalize +
+               s"\n  Cat(r1, r1).canonicalize= "+ Cat(r1, r1).canonicalize)
+      assert((r1 ^ 3).canonicalize ~= Cat(r1, r1, r1).canonicalize)
     }
   }
 
