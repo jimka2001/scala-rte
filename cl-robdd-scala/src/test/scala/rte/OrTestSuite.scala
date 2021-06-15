@@ -526,15 +526,17 @@ class OrTestSuite extends AnyFunSuite {
            == BA
            )
   }
-  test("or conversion12"){
+  test("or conversionC12"){
     // sigmaSigmaStarSigma = Cat(Sigma, Sigma, sigmaStar)
     // Or(   A, B, ... Cat(Sigma,Sigma,Sigma*) ... Not(Singleton(X)) ...)
     //   --> Or( A, B, ... Not(Singleton(X))
     val A = Singleton(SEql("A"))
     val B = Singleton(SEql("B"))
     val X = Singleton(SEql("X"))
-    assert(Or(A,Cat(Sigma,Sigma,Star(Sigma)),B,Not(X)).conversion12()
-           == Or(A,B,Not(X)).conversion12())
+    assert(Or(A,Cat(Sigma,Sigma,Star(Sigma)),B,Not(X)).conversionC12()
+           == Or(A,B,Not(X)).conversionC12())
+    assert(And(A,Cat(Sigma,Sigma,Star(Sigma)),B,Not(X)).conversionC12()
+           == And(A,Cat(Sigma,Sigma,Star(Sigma)),B).conversionC12())
   }
   test("or conversion13"){
     // Or(A,Not(A),X) -> SigmaStar

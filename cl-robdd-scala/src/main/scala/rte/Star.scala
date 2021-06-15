@@ -86,11 +86,11 @@ case class Star(operand:Rte) extends Rte {
   }
 
   override def canonicalizeOnce:Rte = {
-    findSimplifier(this,List[() => Rte](
-      () => { conversion1() },
-      () => { conversion2() },
-      () => { conversion3() },
-      () => { conversion99() }
+    findSimplifier(this,List[(String,() => Rte)](
+      "1" -> (() => { conversion1() }),
+      "2" -> (() => { conversion2() }),
+      "3" -> (() => { conversion3() }),
+      "4" -> (() => { conversion99() })
       ))
   }
 

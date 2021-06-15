@@ -118,23 +118,6 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversion12():Rte = {
-    // TODO, this is a curious conversion.  I think it should
-    //    be generalized, but not sure how.
-
-    // sigmaSigmaStarSigma = Cat(Sigma, Sigma, sigmaStar)
-    // Or(   A, B, ... Cat(Sigma,Sigma,Sigma*) ... Not(Singleton(X)) ...)
-    //   --> Or( A, B, ... Not(Singleton(X))
-    // This is correct because Cat(Σ,Σ,(Σ)*) is the set of all sequences of length 2 or more
-    //    and Not(Singleton(X)) includes the set of all sequences of length 2 or more
-    if (operands.contains(Rte.sigmaSigmaStarSigma) && operands.exists{
-      case Not(Singleton(_)) => true
-      case _ => false})
-      create(operands.filter(_!= Rte.sigmaSigmaStarSigma))
-    else
-      this
-  }
-
   def conversion13():Rte = {
     // Or(A,Not(A),X) -> SigmaStar
     operands.collectFirst{

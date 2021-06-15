@@ -26,6 +26,22 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class RteDfaTestSuite extends AnyFunSuite {
 
+  test("dfa discovered case 29"){
+    val rte1 = Not(Sigma)
+    val rte2 = Star(Not(Sigma))
+    val dfa1 = rte1.toDfa(true)
+    val dfa2 = rte2.toDfa(true)
+    // sequences not in Sigma, thus in Not(Sigma)
+    assert(dfa1.simulate(Seq()).contains(true))
+    assert(dfa1.simulate(Seq(1,1)).contains(true))
+    assert(dfa1.simulate(Seq(1,1,1)).contains(true))
+
+    // sequences in Not(Sigma) must also be in Star(Not(Sigma))
+    assert(dfa2.simulate(Seq()).contains(true))
+    assert(dfa2.simulate(Seq(1,1)).contains(true))
+    assert(dfa2.simulate(Seq(1,1,1)).contains(true))
+  }
+
   test("rte to dfa") {
     //import xymbolyco.GraphViz._
 
@@ -34,9 +50,9 @@ class RteDfaTestSuite extends AnyFunSuite {
          rt = Rte.randomRte(depth)
          } {
       rt.toDfa()
-      
     }
   }
+
   test("rte to png") {
     import xymbolyco.GraphViz._
 

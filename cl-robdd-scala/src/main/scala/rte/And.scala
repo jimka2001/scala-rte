@@ -250,7 +250,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
   override def canonicalizeOnce:Rte = {
     //println("canonicalizing And: " + operands)
 
-    findSimplifier(tag="and", this, verbose=true,List[(String,() => Rte)](
+    findSimplifier(tag="and", this, verbose=false,List[(String,() => Rte)](
      "1" -> (() => { conversion1() }),
      "3" -> (() => { conversion3() }),
      "4" -> (() => { conversion4() }),

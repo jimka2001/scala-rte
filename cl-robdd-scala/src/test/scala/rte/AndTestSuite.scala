@@ -418,6 +418,7 @@ class AndTestSuite extends AnyFunSuite {
       assert(And(r1, Not(r1)).canonicalize ~= EmptySet,
              s"\n  r1=$r1")
       assert(And(r1, r2, Not(r1)).canonicalize ~= EmptySet,
+             s"And(r1, r2, Not(r1))" +
              s"\n  r1=$r1\n  r2=$r2 ")
       assert(And(r1, r2, Not(r1), r3).canonicalize ~= EmptySet,
              s"\n  r1=$r1\n  r2=$r2   r3=$r3")
@@ -428,6 +429,12 @@ class AndTestSuite extends AnyFunSuite {
     }
   }
 
+  test("discovered case 432"){
+    val r1 = Star(Not(Sigma))
+    val r2 = Not(Sigma)
+    assert(! (r1 ~= EmptyWord))
+    assert( r1 ~= r2)
+  }
   test("and conversion3"){
     assert(And(And(),EmptySet,And()).conversion3() == EmptySet)
   }
@@ -504,7 +511,7 @@ class AndTestSuite extends AnyFunSuite {
     assert(And(a,Not(b),Not(Not(b))).conversionC11()
              == EmptySet)
   }
-  test("and conversion12"){
+  test("and conversionC12"){
     val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))
     assert(And(Singleton(SEmpty),a,b).conversion12()

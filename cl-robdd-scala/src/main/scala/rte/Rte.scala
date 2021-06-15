@@ -74,19 +74,24 @@ abstract class Rte {
     println(s"starting with $this")
     for{i <- 0 to n}{
       val r2 = r1.canonicalizeOnce
-      println(s"$i: "+ r2)
+      println(s"  $i: "+ r1)
+      println(s"    --> " + r2)
       f(r1,r2)
       r1 = r2
     }
     r1
   }
-  def canonicalizeDebug(n:Int,samples:Seq[Any]):Rte = {
+  def canonicalizeDebug(n:Int,samples:Seq[Seq[Any]]):Rte = {
         canonicalizeDebug(n,
                           (r1:Rte,r2:Rte)=> {
                             val dfa1 = r1.toDfa(true)
                             val dfa2 = r2.toDfa(true)
+                            println(s"r1 = " + r1)
+                            println(s"r2 = " + r2)
                             for{v <- samples}{
-                              assert(dfa1.simulate(Seq(v)) == dfa2.simulate(Seq(v)),
+                              println(s"dfa1.simulate($v) -> " + dfa1.simulate(v))
+                              println(s"dfa2.simulate($v) -> " + dfa2.simulate(v))
+                              assert(dfa1.simulate(v) == dfa2.simulate(v),
                                      s"\nv=$v" +
                                        s"\n   r1=$r1"+
                                        s"\n   r2=$r2")

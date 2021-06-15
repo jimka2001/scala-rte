@@ -553,7 +553,7 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SAnd(SInt, SNot(SMember(1, 2, 3, 4, "a", "b"))).conversion16()
              == SAnd(SInt, SNot(SMember(1, 2, 3, 4))))
   }
-  test("combo conversion12"){
+  test("combo conversionC12"){
 
     trait TraitA
     trait TraitB

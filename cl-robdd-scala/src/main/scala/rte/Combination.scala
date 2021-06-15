@@ -91,6 +91,33 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     else
       this
   }
+
+  def conversionC12():Rte = {
+    lazy val cats: Seq[Cat] = operands.collect{
+      case c:Cat if c.operands.count{o => ! o.nullable} > 1 => c
+    }
+    val notSing: Seq[Not] = operands.collect{
+      case n@Not(Singleton(_)) => n
+    }
+    // sigmaSigmaStarSigma = Cat(Sigma, Sigma, sigmaStar)
+    // Or(   A, B, ... Cat(Sigma,Sigma,Sigma*) ... Not(Singleton(X)) ...)
+    //   --> Or( A, B, ... Not(Singleton(X))
+    // This is correct because Cat(Σ,Σ,(Σ)*) is the set of all sequences of length 2 or more
+    //    and Not(Singleton(X)) includes the set of all sequences of length 2 or more
+    // Similarly, any Cat(...) which contains at least two non-nullables is either the
+    //    empty set, or a set of sequences each of length 2 or more.
+    //    And Not(Singleton(X)) contains all all sequences of length 2 or more.
+    // So se can remove all such sequences.
+    if (notSing.isEmpty || cats.isEmpty)
+      this
+    else
+      this match {
+        case _:Or => create(operands.filterNot(cats.contains) )
+        case _:And => create(operands.filterNot(notSing.contains) )
+        case _ => throw new Exception(s"expecting And or Or, not $this")
+    }
+  }
+
   def conversionC15():Rte = {
     // simplify to maximum of one SMember(...) and maximum of one Not(SMember(...))
     // Or(<{1,2,3,4}>,<{4,5,6,7}>,Not(<{10,11,12,13}>,Not(<{12,13,14,15}>)))
@@ -213,14 +240,15 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     else
       this
   }
-  def conversion99():Rte =
+  def conversion99():Rte = {
     create(operands.map(_.canonicalizeOnce))
+  }
 
   def conversion1():Rte = create(operands)
 
   override def canonicalizeOnce: Rte = {
-    findSimplifier(tag="combination",target=this,step=0,verbose=false,List[() => Rte](
-      () => { super.canonicalizeOnce }
+    findSimplifier(tag="combination",target=this,verbose=false,List[(String,() => Rte)](
+      "super" -> (() => { super.canonicalizeOnce })
       ))
   }
 
