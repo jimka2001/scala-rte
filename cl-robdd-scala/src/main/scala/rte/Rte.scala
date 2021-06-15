@@ -109,6 +109,13 @@ abstract class Rte {
   }
   def derivativeDown(wrt:SimpleTypeD):Rte
 
+  // Computes a pair of Vectors: (Vector[Rte], Vector[Seq[(SimpleTypeD,Int)]])
+  //   Vector[Rte] is a mapping from Int to Rte designating the states
+  //      of a Dfa.  Each state, i, corresponds to the i'th Rte in this vector.
+  //  Vector[Seq[(SimpleTypeD,Int)]] designates the transitions from each state.
+  //      the i'th component designates a Seq of transitions, each of the form
+  //      (td:SimpleTypeD,j:Int), indicating that in state i, an object of type
+  //      td transitions to state j.
   def derivatives():(Vector[Rte],Vector[Seq[(SimpleTypeD,Int)]]) = {
     import adjuvant.Adjuvant.traceGraph
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
