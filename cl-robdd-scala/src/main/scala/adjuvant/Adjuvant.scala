@@ -26,6 +26,13 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 
 object Adjuvant {
+  // inspired by the Clojure conj function
+  // See https://clojuredocs.org/clojure.core/conj
+  // given an object and a sequence, add the element to the sequence
+  // either at the beginning or end, depending on the type of Seq.
+  // It is easier to add to the begging of a list, but to the end of a vector.
+  // The caller calls this function when it is not important whether the
+  // new element be added to the beginning or the end.
   def conj[T](it:Iterable[T],obj:T):Iterable[T] = {
     if(it.isEmpty)
       it ++ Seq(obj)
@@ -34,14 +41,14 @@ object Adjuvant {
       it ++ singleton.map(_=>obj)
     }
   }
+  // inspired by the Clojure conj function
+  // See https://clojuredocs.org/clojure.core/conj
+  // given an object and a sequence, add the element to the sequence
+  // either at the beginning or end, depending on the type of Seq.
+  // It is easier to add to the begging of a list, but to the end of a vector.
+  // The caller calls this function when it is not important whether the
+  // new element be added to the beginning or the end.
   def conj[T](seq: Seq[T], obj: T): Seq[T] = seq match {
-    // inspired by the Clojure conj function
-    // See https://clojuredocs.org/clojure.core/conj
-    // given an object and a sequence, add the element to the sequence
-    // either at the beginning or end, depending on the type of Seq.
-    // It is easier to add to the begging of a list, but to the end of a vector.
-    // The caller calls this function when it is not important whether the
-    // new element be added to the beginning or the end.
     case Seq() => Seq(obj)
     case l: List[T] => obj :: l
     case _ => seq :+ obj
@@ -95,11 +102,16 @@ object Adjuvant {
     }
 
     recur(v0, 0, 1, edges(v0).toList, Vector(v0), Map(v0 -> 0), Vector(s0))
-
   }
+
+  // find and replace all occurrences of `search` in the given sequence,
+  //   and replace them by splicing with the elements of `replace`
   def searchReplace[A](xs: Seq[A], search: A, replace: Seq[A]): Seq[A] = {
     xs.flatMap(x => if (search == x) replace else Seq(x))
   }
+
+  // find and replace all occurrences of `search` in the given sequence,
+  //   and replace them with the element `replace`
   def searchReplace[A](seq:Seq[A],search:A,replace:A):Seq[A] = {
     searchReplace(seq,search,Seq(replace))
   }
@@ -111,6 +123,9 @@ object Adjuvant {
       case x1 :: x2 :: _ => cmp(x1, x2)
     }
 
+  // Make a copy of a sequence but removing adjacent duplicates,
+  //   which the given function, cmp, is used to determine whether
+  //   elements are considered duplicates.
   def removeAdjacent[A](xs: Seq[A], cmp: (A, A) => Boolean): Seq[A] =
     xs.toList.tails.flatMap {
       case Nil => Nil
@@ -163,7 +178,7 @@ object Adjuvant {
   }
 
   def findSimplifierDebug[T](tag: String, target: T, simplifiers: List[(String, () => T)]): T = {
-    // DEBUG version of findSimplifier,  if called with two additional arguments,
+    // DEBUG version of findSimplifier,
     //   diagnostics will be printed logging the progression of simplifications
     println(s"$tag starting with $target")
     val s = findSimplifier(tag, target, verbose = true, simplifiers)
@@ -179,13 +194,18 @@ object Adjuvant {
 
   val simplifierUsed:mutable.Map[(String,String),Int] = mutable.Map()
 
+  // simplifiers *designates* a list of 0-ary functions.   Calling such a function
+  //   either returns `target` or something else.   We call all the functions
+  //   in turn, as long as each returns `target`.  As soon as such a function
+  //   returns something other than `target`, then that new value is returned
+  //   from findSimplifier.  As a last resort, `target` is returned.
+  // simplifiers is actually a list of pairs (comment,function).  The function's
+  //   implement the semantics, which the comment's are used for debugging.
+  //   If verbose=true, then diagnostic messages will be printed to attempt
+  //   to help the user understand which of the functions is the one which
+  //   successfully simplifies the value.
   @tailrec
   def findSimplifier[T](tag:String, target: T, verbose:Boolean, simplifiers: List[(String, () => T)]): T = {
-    // simplifiers is a list of 0-ary functions.   calling such a function
-    //   either returns `target` or something else.   we call all the functions
-    //   in turn, as long as they return `target`.  As soon as such a function
-    //   returns something other than `target`, then that new value is returned
-    //   from findSimplifier.  As a last resort, `target` is returned.
 
     simplifiers match {
       case Nil => target
@@ -216,13 +236,24 @@ object Adjuvant {
     seq1.toSet == seq2.toSet
   }
 
+  // debugging function which prints the given value and returns
+  //  the same value.   trace(...) may be wrapped around any
+  //  expression without changing the evaluation semantics
+  //  of the expression.
   def trace[A](a: A): A = {
     trace("",a)
   }
+  // two argument from of trace, which also prints a prefixed
+  // message before printing the given value.
   def trace[A](msg:String,a:A):A = {
     println(s"$msg: $a")
     a
   }
+  // the standard library method .distinct is not documented
+  //   as to whether it preserves order or not.  This function,
+  //   uniquify, guarantees order to be preserved.
+  //   Duplicates early in the sequence are omitted, preserving
+  //   the right-most elements in case duplicates are detected.
   def uniquify[A](seq1:Seq[A]):Seq[A] = {
     @tailrec
     def recurL(seq:List[A], acc:List[A]):List[A] = {
