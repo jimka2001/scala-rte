@@ -74,13 +74,15 @@ class MapColoringTestSuite extends AnyFunSuite {
   }
 
   test("europe"){
-    europeMapColoringTest(12, verbose = false)
+    import bdd.sampleColoring.europeTimedMapColoringTest
+
+    europeTimedMapColoringTest(12, verbose = false)
   }
 
   test("usa"){
-    colorizeMap(20, "test-us", "AL",
-                USAgraph.stateUniGraph, USAgraph.stateBiGraph, List("MS","AL","TN"),
-                verbose = false)
+    timedColorizeMap(20, "test-us", "AL",
+                     USAgraph.stateUniGraph, USAgraph.stateBiGraph, List("MS","AL","TN"),
+                     verbose = false)
   }
   def sanityCheck(numNodes:Int,verbose:Boolean):Unit = {
     import adjuvant.Accumulators._

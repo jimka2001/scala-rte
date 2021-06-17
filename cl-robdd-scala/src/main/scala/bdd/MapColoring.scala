@@ -22,72 +22,92 @@
 package bdd
 
 import scala.annotation.tailrec
+import scala.util.Random
 
 object MapColoring {
-  type FOLD_FUN = (Seq[String], Bdd, String=>Bdd,(Bdd,Bdd)=>Bdd)=>Bdd
+  type FOLD_FUN[V] = (Seq[V], Bdd, V => Bdd, (Bdd, Bdd) => Bdd) => Bdd
 
-  val folders:Array[(String,FOLD_FUN)] = {
+  def folders[V](): Array[(String, FOLD_FUN[V])] = {
     import treereduce.TreeReducible._ // This imports the TreeReducible instances.
     import treereduce.TreeReduce._ // This imports the obj.treeMapReduce() syntax.
     Array((
-           "tree-fold",
-           (states, top, getConstraints, op) =>
-             states.treeMapReduce(top)(getConstraints, op)),
-         (
-           "fold-left",
-           (states, top, getConstraints, op) =>
-             states.map(getConstraints).foldLeft(top)(op)))
+            "tree-fold",
+            (states, top, getConstraints, op) =>
+              states.treeMapReduce(top)(getConstraints, op)),
+          (
+            "fold-left",
+            (states, top, getConstraints, op) =>
+              states.map(getConstraints).foldLeft(top)(op)))
   }
 
   // assign every state two Boolean variables to represent 1 of 4 colors
-  def makeStateToVarMap(differentColor:List[String], allStates: List[String]): Map[String, (Int, Int)]  = {
-    def correlate(bias:Int, states:List[String]):Map[String, (Int, Int)]  = states.zipWithIndex.map {
-      case (st, index) => st -> (bias*2 + 2 * index + 1, bias*2 + 2 * index + 2)
+  def makeStateToVarMap[V](differentColor: List[V], allStates: List[V]): Map[V, (Int, Int)] = {
+    def correlate(bias: Int, states: List[V]): Map[V, (Int, Int)] = states.zipWithIndex.map {
+      case (st, index) => st -> (bias * 2 + 2 * index + 1, bias * 2 + 2 * index + 2)
     }.toMap
+
     val list2 = allStates.filterNot(x => differentColor.contains(x))
     correlate(0, differentColor) ++ correlate(differentColor.length, list2.reverse)
   }
 
-  def uniGraphToBiGraph(uniGraph:Map[String,Set[String]]):Map[String,Set[String]] = {
-    uniGraph.foldLeft(Map[String,Set[String]]()){
-      case (acc:Map[String,Set[String]],(st1:String,states:Set[String])) =>
-        acc ++ states.flatMap{st2 => Map(st1 -> (uniGraph(st1) + st2),
-                                         st2 -> (uniGraph(st2)+st1))}}
+  def uniGraphToBiGraph[V](uniGraph: Map[V, Set[V]]): Map[V, Set[V]] = {
+    uniGraph.foldLeft(Map[V, Set[V]]()) {
+      case (acc: Map[V, Set[V]], (st1, states: Set[V])) =>
+        acc ++ states.flatMap { st2 =>
+          Map(st1 -> (uniGraph(st1) + st2),
+              st2 -> (uniGraph(st2) + st1))
+        }
+    }
   }
 
-  def breadthFirstOrder(states:Set[String], uniGraph:Map[String,Set[String]]):List[String] = {
+  def biGraphToUniGraph[V](biGraph:Map[V,Set[V]]): Map[V,Set[V]] = {
+    val vertexToIndex = biGraph.keys.toVector.zipWithIndex.toMap
+    biGraph.map{case (v,neighbors:Set[V]) =>
+      v -> neighbors.filter{n => vertexToIndex(n) <= vertexToIndex(v)}
+    }.filter {
+      case (_, neighbors: Set[V]) => neighbors.nonEmpty
+    }
+  }
+
+  def breadthFirstOrder[V](states: Set[V], uniGraph: Map[V, Set[V]]): List[V] = {
 
     val biGraph = uniGraphToBiGraph(uniGraph)
+
     @scala.annotation.tailrec
-    def recur(generation:Set[String], generations:List[Set[String]]):List[String] = {
-      val successors:Set[String] = generation.flatMap{biGraph}
-      val nextGeneration = successors.filter{s => ! generations.exists(g => g.contains(s))} diff generation
+    def recur(generation: Set[V], generations: List[Set[V]]): List[V] = {
+      val successors: Set[V] = generation.flatMap {
+        biGraph
+      }
+      val nextGeneration = successors.filter { s => !generations.exists(g => g.contains(s)) } diff generation
       if (nextGeneration.isEmpty)
         generations.reverse.flatten
       else {
-        recur(nextGeneration, generation::generations)
+        recur(nextGeneration, generation :: generations)
       }
     }
+
     recur(Set(states.head), List()) // just start with any one, doesn't matter for now
   }
 
-  def graphToBdd(seed: List[String],
-                 uniGraph:Map[String,Set[String]],
-                 biGraph: Map[String, Set[String]],
-                 numNodes:Int,
-                 consume:(Double,()=>Double)=>Unit,
-                 differentColor:List[String],
-                 fold:Int,
-                 verbose:Boolean): (Map[String,(Int,Int)],Bdd) = {
+  def graphToBdd[V](seed: List[V],
+                    uniGraph: Map[V, Set[V]],
+                    biGraph: Map[V, Set[V]],
+                    numNodes: Int,
+                    consume: (Double, () => Double) => Unit,
+                    differentColor: List[V],
+                    fold: Int,
+                    verbose: Boolean): (Map[V, (Int, Int)], Bdd) = {
 
     require(differentColor.length <= 4) // states whose colors are different to reduce the size of the BDD
     import GenericGraph.orderStates
 
-    val states = differentColor ++ orderStates(seed, biGraph).filter{st => !differentColor.contains(st)}.take(numNodes - differentColor.length)
+    val states = differentColor ++ orderStates(seed, biGraph)
+      .filter { st => !differentColor.contains(st) }
+      .take(numNodes - differentColor.length)
     if (verbose)
       println(s"$numNodes (${states.length}) states: $states")
 
-    val stateToVar: Map[String, (Int, Int)] = makeStateToVarMap(differentColor, states)
+    val stateToVar: Map[V, (Int, Int)] = makeStateToVarMap(differentColor, states)
     // TODO we need to find C3 or C4 subgraph and fix those colors rather than taking differentColor as input parameter.
     val top: Bdd = differentColor.zipWithIndex.foldLeft(BddTrue: Bdd) { case (bdd, (st, index)) =>
       val (a, b) = stateToVar(st)
@@ -99,7 +119,7 @@ object MapColoring {
           if (bit2) Bdd(b) else Bdd(-b))
     }
 
-    def computeBorderConstraints(ab: String): Bdd = {
+    def computeBorderConstraints(ab: V): Bdd = {
       // convert the connection (neighbor) information from a state (ab)
       //   to a Bdd representing the color constraints because neighboring
       //   states cannot have the same color.   a and b are the color bits
@@ -112,7 +132,7 @@ object MapColoring {
       val neighbors = uniGraph.getOrElse(ab, Set())
       //val top: Bdd = BddTrue
       // println(s"    neighbors of $ab --> $neighbors")
-      neighbors.foldLeft(top) { (acc2: Bdd, cd: String) =>
+      neighbors.foldLeft(top) { (acc2: Bdd, cd: V) =>
         if (states.contains(cd)) {
           val (c, d) = stateToVar(cd)
           // println(s"$ab -> $cd")
@@ -125,25 +145,25 @@ object MapColoring {
 
     var n = 0
     (stateToVar,
-      folders(fold)._2(states,
-                       top,
-                       computeBorderConstraints,
-                       { (acc: Bdd, bdd: Bdd) =>
-                         n = n + 1
-                         val answer = And(acc, bdd)
-                         val size = () => answer.size().toDouble
-                         //GraphViz.bddView(answer,drawFalseLeaf=false,s"intermediate-$n-of-$numNodes")
-                         consume(n.toDouble, size)
-                         answer
-                       }))
+      folders[V]()(fold)._2(states,
+                            top,
+                            computeBorderConstraints,
+        { (acc: Bdd, bdd: Bdd) =>
+          n = n + 1
+          val answer = And(acc, bdd)
+          val size = () => answer.size().toDouble
+          //GraphViz.bddView(answer,drawFalseLeaf=false,s"intermediate-$n-of-$numNodes")
+          consume(n.toDouble, size)
+          answer
+        }))
   }
 
   // calculate a mapping from graph node to color given that the hard work
   // of solving the Boolean equation has already been done.
-  def assignColors[T](colorization:Map[String,(Int,Int)],
-                      assignTrue:Assignment,
-                      assignFalse:Assignment,
-                      colors:Array[T]):Map[String,T] = {
+  def assignColors[V, T](colorization: Map[V, (Int, Int)],
+                         assignTrue: Assignment,
+                         assignFalse: Assignment,
+                         colors: Array[T]): Map[V, T] = {
     // colorization maps the graph node to a pair of integers which represent the bitmask of the color
     //      which the node has been assigned.  such a Map[String,(Int,Int)] can be obtained from graphToBdd(...)
     // assign is an object which specifies which variables in the Bdd are set to true. such a value can
@@ -151,62 +171,139 @@ object MapColoring {
     // colors is an Array of length 4, each array entry is a user color,
     //      e.g. Array("red","green","blue","yellow")
     require(colors.length == 4)
-    colorization.map{case (node,(v1,v2)) =>
+    colorization.map { case (node, (v1, v2)) =>
       // v1 and v2 are labels (or variables within the Bdd), their Boolean value
       //    represents two bits of a color.  If the variable is not in the assignTrue
       //    object nor assignFalse it is a don't care (having been reduced from the Bdd)
       //    so we implicitly assume it is false.  that's good enough.
       val c1 = assignTrue.value(v1)
       val c2 = assignTrue.value(v2)
-      val color = 2* (if (c1) 1 else 0 ) +  (if (c2) 1 else 0)
+      val color = 2 * (if (c1) 1 else 0) + (if (c2) 1 else 0)
       node -> colors(color)
     }
   }
 
-  def removeState(stateToRemove:String, biGraph:Map[String,Set[String]]):Map[String,Set[String]] = {
-    (biGraph - stateToRemove ).map{case (st,states) =>
+  def removeState[V](stateToRemove: V, gr: Map[V, Set[V]]): Map[V, Set[V]] = {
+    (gr - stateToRemove).map { case (st, states) =>
       st -> (states - stateToRemove)
     }
   }
 
   @tailrec
-  def removeStates(statesToRemove:List[String], biGraph:Map[String,Set[String]]):Map[String,Set[String]] = {
+  def removeStates[V](statesToRemove: List[V], gr: Map[V, Set[V]]): Map[V, Set[V]] = {
     statesToRemove match {
-      case Nil => biGraph
-      case head::tail => removeStates(tail,removeState(head,biGraph))
+      case Nil => gr
+      case head :: tail => removeStates(tail, removeState(head, gr))
     }
   }
 
-  def colorizeMap(numNodes:Int,
-                  baseName:String,
-                  start:String,
-                  uniGraph:Map[String,Set[String]],
-                  biGraph:Map[String,Set[String]],
-                  differentColor:List[String],
-                  verbose:Boolean):Map[String,String] = {
-    //println(s"colorizeMap differentColor = $differentColor")
-    import System.nanoTime
-    val colors: Array[String] = Array("red", "green", "orange", "yellow")
+  def addEdge[V](v1:V,v2:V,biGraph:Map[V,Set[V]]):Map[V,Set[V]] = {
+    biGraph
+      .updated(v1,biGraph.getOrElse(v1,Set[V]()) + v2)
+      .updated(v2,biGraph.getOrElse(v2,Set[V]()) + v1)
+  }
 
-    def colorize(fold             : Int,
-                 newSize          : (Double, Double) => Unit,
-                 newGcCount       : (Double, Double) => Unit,
-                 newGcTime        : (Double, Double) => Unit,
-                 newHashSize      : (Double, Double) => Unit,
+  @tailrec
+  def addEdges[V](biGraph:Map[V,Set[V]],edges:List[(V,V)]):Map[V,Set[V]] = {
+    edges match {
+      case Nil => biGraph
+      case (v1,v2)::edges => addEdges(addEdge(v1,v2,biGraph),edges)
+    }
+  }
+  @tailrec
+  def unwindSimpleVertices[V](numCrayons: Int,
+                              biGraph: Map[V, Set[V]],
+                              unwind: List[(V, Set[V])]): (Map[V, Set[V]],
+    Map[V, Set[V]], List[(V, Set[V])]) = {
+
+    biGraph.iterator.find {
+      case (_, neighbors: Set[V]) => neighbors.size < numCrayons
+    } match {
+      case None => (biGraphToUniGraph(biGraph), biGraph,unwind)
+      case Some((v, neighbors: Set[V])) =>
+        unwindSimpleVertices(numCrayons, removeState(v, biGraph), (v, neighbors) :: unwind)
+    }
+  }
+
+  @tailrec
+  def rewindSimpleVertices[V](colors:Array[String] = Array("red", "green", "orange", "yellow"),
+                              biGraph:Map[V,Set[V]],
+                              colorized:Map[V,String],
+                              unwind:List[(V,Set[V])]):Map[V,String] = {
+    unwind match {
+      case Nil => colorized
+      case (v,neighbors)::vns =>
+        Random.shuffle(colors.toSeq).find{c =>
+          ! neighbors.exists(n => colorized.getOrElse(n,-1) == c)
+        } match {
+          case None => throw new Exception(s"failed to colorize using simple algorithm")
+          case Some(c) => rewindSimpleVertices(colors,
+                                               addEdges(biGraph,neighbors.map{n => v -> n}.toList),
+                                               colorized + (v -> c),
+                                               vns)
+        }
+    }
+  }
+  
+  def colorizeMap[V](givenBiGraph: Map[V, Set[V]],
+                     palette: Array[String] = Array("red", "green", "orange", "yellow"),
+                    ): Map[V, String] = {
+
+    def colorize(uniGraph:Map[V, Set[V]],biGraph:Map[V, Set[V]]):Map[V, String] = {
+      if (uniGraph.isEmpty)
+        Map()
+      else
+        Bdd.withNewBddHash {
+          val (colorization, bdd) = graphToBdd(List(biGraph.head._1), uniGraph, biGraph, biGraph.size,
+                                               (n: Double, size: () => Double) => {
+                                                 ()
+                                               },
+                                               Nil,
+                                               fold = 0,
+                                               verbose = false)
+          bdd.findSatisfyingAssignment() match {
+            case None => Map[V, String]()
+            case Some((assignTrue, assignFalse)) =>
+              assignColors(colorization, assignTrue, assignFalse, palette)
+          }
+        }
+    }
+    val (uniGraph,biGraph,unwind) = unwindSimpleVertices(4, givenBiGraph, Nil)
+
+    rewindSimpleVertices(palette,biGraph,colorize(uniGraph,biGraph),unwind)
+  }
+
+  def timedColorizeMap[V](numNodes: Int,
+                          baseName: String,
+                          start: V,
+                          uniGraph: Map[V, Set[V]],
+                          biGraph: Map[V, Set[V]],
+                          differentColor: List[V],
+                          colors: Array[String] = Array("red", "green", "orange", "yellow"),
+                          verbose: Boolean): Map[V, String] = {
+    if (verbose)
+      println(s"colorizeMap differentColor = $differentColor")
+    import System.nanoTime
+
+    def colorize(fold: Int,
+                 newSize: (Double, Double) => Unit,
+                 newGcCount: (Double, Double) => Unit,
+                 newGcTime: (Double, Double) => Unit,
+                 newHashSize: (Double, Double) => Unit,
                  newNumAllocations: (Double, Double) => Unit,
-                 newTime          : (Double, Double) => Unit): Map[String, String] = {
+                 newTime: (Double, Double) => Unit): Map[V, String] = {
       Bdd.withNewBddHash {
         // we first convert the graph to a Bdd without counting the size, because counting
         // the size is exponential in complexity given that the size of the Bdd grows
         // exponentially.
         val time0 = nanoTime.toDouble
         val bdd = graphToBdd(List(start), uniGraph, biGraph, numNodes,
-                   (n                          : Double, _: () => Double) => {
-                     newTime(n, nanoTime() - time0)
-                   },
-                   differentColor,
-                   fold = fold,
-                             verbose=verbose)
+                             (n: Double, _: () => Double) => {
+                               newTime(n, nanoTime() - time0)
+                             },
+                             differentColor,
+                             fold = fold,
+                             verbose = verbose)
         //GraphViz.bddView(bdd._2,drawFalseLeaf=false,s"$baseName-$numNodes")
         bdd
       }
@@ -239,10 +336,10 @@ object MapColoring {
                                              fold = fold,
                                              verbose = verbose)
         bdd.findSatisfyingAssignment() match {
-          case None => Map[String, String]()
+          case None => Map[V, String]()
           case Some((assignTrue, assignFalse)) =>
-            val ret = assignColors(colorization, assignTrue, assignFalse, colors)
-            if (verbose )
+            val ret: Map[V, String] = assignColors(colorization, assignTrue, assignFalse, colors)
+            if (verbose)
               println(s"  $numNodes color assignment=" + ret)
             ret
         }
@@ -256,10 +353,9 @@ object MapColoring {
     val hashSizes: Array[List[(Double, Double)]] = Array(List(), List())
     val numAllocations: Array[List[(Double, Double)]] = Array(List(), List())
 
+    var retain: Map[V, String] = null
 
-    var retain: Map[String, String] = null
-
-    for {((folder, _),k) <- folders.zipWithIndex
+    for {((folder, _), k) <- folders[V]().zipWithIndex
          } {
       if (verbose)
         println(s" calculating $folder for numNodes=$numNodes")
@@ -314,7 +410,7 @@ object MapColoring {
                      "Num Allocations for Map 4-coloring",
                      "Num Allocations accumulated through step (K objects)",
                      "num-allocations"),
-                   (reclaimed, 1/1000.0, true,
+                   (reclaimed, 1 / 1000.0, true,
                      "Num Objects reclaimed for Map 4-coloring",
                      "Num Objects reclaimed through step (K objects)",
                      "reclaimed"),
@@ -325,59 +421,75 @@ object MapColoring {
                    )} {
       import gnuplot.GnuPlot._
 
-      gnuPlot(folders.zipWithIndex.map{case((folder,_),k) =>
-        (s"Using $folder", measurements(k).map(_._1), measurements(k).map(_._2).map(_ * scale))}.toList)(
+      gnuPlot(folders[V]().zipWithIndex.map { case ((folder, _), k) =>
+        (s"Using $folder", measurements(k).map(_._1), measurements(k).map(_._2).map(_ * scale))
+      }.toList)(
         title = title,
         xAxisLabel = "Step",
         yAxisLabel = yAxisLabel,
         yLog = yLog,
         grid = true,
         outputFileBaseName = s"$baseName-$numNodes-4-color-$outputFileBaseName",
-        verbose=verbose
+        verbose = verbose
         )
     }
     retain
   }
+}
 
-  def usMapColoringTest(numRegions:Int,verbose:Boolean): Int = {
+object sampleColoring {
+  import MapColoring._
+  import GenericGraph._
+  def usTimedMapColoringTest(numRegions:Int, verbose:Boolean): Int = {
     import USAgraph._
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols,verbose=verbose)
-    val colors = colorizeMap(numRegions, "US", "ME",
-                             stateUniGraph, // removeStates(List("Russia"), stateUniGraph),
-                             stateBiGraph, //removeStates(List("Russia"), stateBiGraph),
-                             List("MA", "VT", "NH"),
-                             verbose = false)
+    val colors = timedColorizeMap(numRegions, "US", "ME",
+                                  stateUniGraph, // removeStates(List("Russia"), stateUniGraph),
+                                  stateBiGraph, //removeStates(List("Russia"), stateBiGraph),
+                                  List("MA", "VT", "NH"),
+                                  verbose = false)
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions-colors"
                  )(symbols = symbols,
                    colors = { st => colors.getOrElse(st, "no-color") },verbose=verbose)
   }
 
-  def europeMapColoringTest(numRegions:Int,verbose:Boolean): Int = {
+  def europeTimedMapColoringTest(numRegions:Int, verbose:Boolean): Int = {
     import EuropeGraph._
-    biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions"
-                 )(symbols = symbols,verbose=verbose)
-    val colors = colorizeMap(numRegions, "europe", "Russia",
-                             stateUniGraph, //removeStates(List("Russia"), stateUniGraph),
-                             stateBiGraph, // removeStates(List("Russia"), stateBiGraph),
-                             List("Croatia", "Bosnia", "Serbia", "Montenegro"),
-                             verbose)
+    val pallet = Array("red", "green", "orange", "yellow")
+
+    biGraphToDot[String](stateBiGraph, statePositions, s"europe-political-$numRegions"
+                         )(symbols = symbols,verbose=verbose)
+
+    val colors = timedColorizeMap(numRegions, "europe", "Russia",
+                                  stateUniGraph, //removeStates(List("Russia"), stateUniGraph),
+                                  stateBiGraph, // removeStates(List("Russia"), stateBiGraph),
+                                  List("Croatia", "Bosnia", "Serbia", "Montenegro"),
+                                  colors = pallet,
+                                  verbose)
+
     biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions-colors"
                  )(symbols = symbols,
                    colors = { st => colors.getOrElse(st, "no-color") },
                    verbose = verbose)
   }
 
-  def main(argv: Array[String]): Unit = {
-    for {numNodes <- 35 to 49} {
-      import java.lang.System.nanoTime
+  def europeMapColoringTest(): Int = {
+    import EuropeGraph._
+    val palette = Array("red", "green", "orange", "yellow")
+    val numRegions = stateUniGraph.size
+    biGraphToDot[String](stateBiGraph, statePositions, s"europe-political-$numRegions"
+                         )(symbols = symbols,verbose=false)
+    val colorized = colorizeMap( stateBiGraph, palette)
 
-      val time0 = nanoTime
-      println(s" === coloring $numNodes regions")
-      //europeMapColoringTest(numNodes)
-      usMapColoringTest(numNodes, verbose = false)
-      val now = nanoTime
-      val elapsed = (now - time0 ) * 1e9
-      println(s"Time to colorize $numNodes regions was $elapsed sec")
-    }
+    biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions-colors"
+                 )(symbols = symbols,
+                   colors = { st => colorized.getOrElse(st, "no-color") },
+                   verbose = false)
+  }
+
+  def main(argv: Array[String]): Unit = {
+
+      europeMapColoringTest()
+
   }
 }

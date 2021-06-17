@@ -21,7 +21,7 @@
 
 package bdd
 
-object USAgraph extends PoliticalMap {
+object USAgraph extends PoliticalMap[String] {
   // this object contains connectivity information about the states in the USA.
 
   // set of state IDs excluding Alaska and Hawaii but including Washington DC
@@ -138,5 +138,4 @@ object USAgraph extends PoliticalMap {
   assert (stateBiGraph("ID") == Set("WA","OR","NV","UT","WY","MT")) // just a quick check
   assert(stateBiGraph("ME") == Set("NH"))
   checkBiMap(allStates,stateBiGraph)
-
 }

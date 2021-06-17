@@ -21,7 +21,7 @@
 
 package bdd
 
-object EuropeGraph extends PoliticalMap {
+object EuropeGraph extends PoliticalMap[String] {
   val allStates: Set[String] = Set("Albania",
                                    "Andorra",
                                    "Austria",
@@ -200,9 +200,11 @@ object EuropeGraph extends PoliticalMap {
   assert (allStates.forall{state => stateBiGraph.contains(state)})
 
   def main(argv:Array[String]):Unit = {
+    import GenericGraph._
     println("-------------------")
     for{ (st,states) <- stateBiGraph}
       println(s"$st -> $states")
+
     biGraphToDot(stateBiGraph,statePositions,"europe-political")(symbols=symbols,verbose=true)
     ()
   }

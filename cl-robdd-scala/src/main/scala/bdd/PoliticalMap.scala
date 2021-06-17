@@ -21,17 +21,19 @@
 
 package bdd
 
+import adjuvant.Adjuvant.openGraphicalFile
+
 import scala.annotation.tailrec
 
 
-class PoliticalMap {
-  def uniMapToBiMap(all:Set[String], uniGraph:Map[String,Set[String]]):Map[String,Set[String]] = {
-    val empty: Set[String] = Set()
-    val map0: Map[String, Set[String]] = Map()
-    all.foldLeft(map0) { (m1, state1: String) =>
+class PoliticalMap[V] {
+  def uniMapToBiMap(all:Set[V], uniGraph:Map[V,Set[V]]):Map[V,Set[V]] = {
+    val empty: Set[V] = Set()
+    val map0: Map[V, Set[V]] = Map()
+    all.foldLeft(map0) { (m1, state1: V) =>
       uniGraph.get(state1) match {
         case None => m1
-        case Some(states) => states.foldLeft(m1) { (m2: Map[String, Set[String]], state2: String) =>
+        case Some(states) => states.foldLeft(m1) { (m2: Map[V, Set[V]], state2: V) =>
           // add state1 -> state2 and state2 -> state1 into m2 and return new map
           val states1 = m2.getOrElse(state1, empty)
           val states2 = m2.getOrElse(state2, empty)
@@ -42,16 +44,16 @@ class PoliticalMap {
     }
   }
 
-  def biMapToUniMap(biGraph:Map[String,Set[String]]):Map[String,Set[String]] = {
-    val nil:Map[String,Set[String]] = Map()
-    val (newMap,_) =  biGraph.foldLeft((nil, Set[String]())) { case ((m: Map[String, Set[String]], done: Set[String]), (st: String, states: Set[String])) =>
-      println(s"$st -> ${states diff done}")
-      (m + (st -> (states diff done)), done + st)
+  def biMapToUniMap(biGraph:Map[V,Set[V]]):Map[V,Set[V]] = {
+    val nil:Map[V,Set[V]] = Map()
+    val (newMap,_) =  biGraph.foldLeft((nil, Set[V]())) {
+      case ((m: Map[V, Set[V]], done: Set[V]), (st, states: Set[V])) =>
+        (m + (st -> (states diff done)), done + st)
     }
     newMap
   }
 
-  def checkUniMap(all:Set[String],uniGraph:Map[String,Set[String]]):Unit = {
+  def checkUniMap(all:Set[V],uniGraph:Map[V,Set[V]]):Unit = {
     for {st <- all}
       assert(uniGraph.contains(st) ||
         uniGraph.count { case (_, v) =>
@@ -71,23 +73,9 @@ class PoliticalMap {
     }, "fail4")
   }
 
-  def checkBiMap(all:Set[String],biGraph:Map[String,Set[String]]):Unit = {
+  def checkBiMap(all:Set[V],biGraph:Map[V,Set[V]]):Unit = {
     // assert that stateBiGraph does not contain any isolates vertices
     assert(all.forall { state => biGraph.contains(state) })
-  }
-
-  def orderStates(states:List[String], biGraph:Map[String,Set[String]]):List[String] = {
-
-    @tailrec
-    def recur(states: List[String]): List[String] = {
-      val nextState: Option[(String, Set[String])] = biGraph.find { case (state, neighbors) => !states.contains(state) && states.exists { st => neighbors.contains(st) } }
-      nextState match {
-        case None => states
-        case Some((state, _)) => recur(states ++ List(state))
-      }
-    }
-
-    recur(states)
   }
 
   val dotProgram:String = locally{
@@ -97,10 +85,29 @@ class PoliticalMap {
       case Some(path) => path
     }
   }
-  def biGraphToDot(biGraph:Map[String,Set[String]],
-                   locations:Map[String,(Double,Double)],
-                   baseName:String)(symbols: String=>String ={ x=>x},
-                                    colors: String=>String ={ _=>"no-color"},
+}
+
+object GenericGraph extends PoliticalMap {
+  def orderStates[V](states:List[V], biGraph:Map[V,Set[V]]):List[V] = {
+
+    @tailrec
+    def recur(states: List[V]): List[V] = {
+      val nextState: Option[(V, Set[V])] = biGraph.find {
+        case (state, neighbors) => !states.contains(state) && states.exists { st => neighbors.contains(st) }
+      }
+      nextState match {
+        case None => states
+        case Some((state, _)) => recur(states ++ List(state))
+      }
+    }
+
+    recur(states)
+  }
+
+  def biGraphToDot[V](biGraph:Map[V,Set[V]],
+                   locations:Map[V,(Double,Double)],
+                   baseName:String)(symbols: V=>V ={ x:V=>x},
+                                    colors: V=>String = { _:V=>"no-color"},
                                     verbose:Boolean): Int = {
     val dotPathName = s"/tmp/$baseName.dot"
     val pngPathName = s"/tmp/$baseName.png"
@@ -118,7 +125,7 @@ class PoliticalMap {
       write("\n")
     }
 
-    val nodes: Map[String, Int] = biGraph.keys.zipWithIndex.toMap
+    val nodes: Map[V, Int] = biGraph.keys.zipWithIndex.toMap
     writeln("graph G {")
     writeln("node [fontsize=32]")
     for {(st, index) <- nodes} {
@@ -152,11 +159,10 @@ class PoliticalMap {
         println(s"[writing to $pngPathName")
       val cmd = Seq(dotProgram, "-Tpng", dotPathName, "-o", pngPathName)
       val status = cmd.!
+      openGraphicalFile(pngPathName)
       if(verbose)
         println(s"[finished to $pngPathName")
       status
     }
   }
 }
-
-object GenericGraph extends PoliticalMap
