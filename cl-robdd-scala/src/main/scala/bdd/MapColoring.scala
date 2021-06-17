@@ -106,7 +106,7 @@ object MapColoring {
       //   of state ab.  c and d are the color bits of the neighbor.
       //   The constraint (per neighbor) is that either a and c are different
       //   or b and d are different.
-      //   The computeBorderConstraints function AND's all these constraints for the
+      //   The computeBorderConstraints function intersects all these constraints for the
       //   neighbors of a given state.
       val (a, b) = stateToVar(ab)
       val neighbors = uniGraph.getOrElse(ab, Set())
@@ -140,7 +140,10 @@ object MapColoring {
 
   // calculate a mapping from graph node to color given that the hard work
   // of solving the Boolean equation has already been done.
-  def assignColors[T](colorization:Map[String,(Int,Int)],assignTrue:Assignment,assignFalse:Assignment,colors:Array[T]):Map[String,T] = {
+  def assignColors[T](colorization:Map[String,(Int,Int)],
+                      assignTrue:Assignment,
+                      assignFalse:Assignment,
+                      colors:Array[T]):Map[String,T] = {
     // colorization maps the graph node to a pair of integers which represent the bitmask of the color
     //      which the node has been assigned.  such a Map[String,(Int,Int)] can be obtained from graphToBdd(...)
     // assign is an object which specifies which variables in the Bdd are set to true. such a value can
@@ -343,7 +346,7 @@ object MapColoring {
                              stateUniGraph, // removeStates(List("Russia"), stateUniGraph),
                              stateBiGraph, //removeStates(List("Russia"), stateBiGraph),
                              List("MA", "VT", "NH"),
-                             false)
+                             verbose = false)
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions-colors"
                  )(symbols = symbols,
                    colors = { st => colors.getOrElse(st, "no-color") },verbose=verbose)
@@ -371,7 +374,7 @@ object MapColoring {
       val time0 = nanoTime
       println(s" === coloring $numNodes regions")
       //europeMapColoringTest(numNodes)
-      usMapColoringTest(numNodes,false)
+      usMapColoringTest(numNodes, verbose = false)
       val now = nanoTime
       val elapsed = (now - time0 ) * 1e9
       println(s"Time to colorize $numNodes regions was $elapsed sec")
