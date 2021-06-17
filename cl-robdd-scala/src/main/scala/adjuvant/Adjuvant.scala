@@ -155,17 +155,11 @@ object Adjuvant {
   // Returning a memoized version of a referentially transparent function. The
   // memoized version of the function keeps a cache of the mapping from arguments
   // to results and, when calls with the same arguments are repeated often, has
-  // higher performance at the expense of higher memory use.
+  // better performance at the expense of higher memory use.
   def memoize[F, T](f: F => T): F => T = {
     val hash = scala.collection.mutable.Map[F, T]()
 
-    def mem(i: F): T = {
-      hash.getOrElse(i, locally {
-        val v: T = f(i)
-        hash(i) = v
-        v
-      })
-    }
+    def mem(i: F): T = hash.getOrElseUpdate(i, f(i))
 
     mem
   }
