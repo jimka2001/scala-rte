@@ -21,21 +21,15 @@
 
 package xymbolyco
 
+import adjuvant.Adjuvant.openGraphicalFile
+
 object GraphViz {
 
   import java.io.{File, OutputStream}
 
   def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbrev:Boolean=false): String = {
-    import sys.process._
     val png = dfaToPng(dfa, title, abbrev=abbrev)
-    System.getProperty("os.name") match {
-      case "Mac OS X" =>
-        // -g => don't bring Preview to foreground, and thus don't steal focus
-        val cmd = Seq ("open", "-g", "-a", "Preview", png)
-        cmd.!
-      case os => println(s"cannot view png file $png because os.name is $os")
-    }
-    png
+    openGraphicalFile(png)
   }
 
   def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbrev:Boolean): String = {

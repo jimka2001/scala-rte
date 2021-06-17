@@ -275,4 +275,13 @@ object Adjuvant {
       case seq:Seq[A] => recurS(seq,Seq())
     }
   }
+  def openGraphicalFile(fileName:String) = {
+    import sys.process._
+    val cmd = Seq("open", "-g", "-a", "Preview", fileName)
+    if ("Mac OS X" == System.getProperty("os.name"))
+      cmd.!
+    else
+      sys.error(s"cannot open $fileName because OS = ${System.getProperty("os.name")}")
+    fileName
+  }
 }

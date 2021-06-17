@@ -21,16 +21,15 @@
 
 package lbdd
 
+import adjuvant.Adjuvant.openGraphicalFile
+
 object GraphViz {
 
   import java.io.{File, OutputStream}
 
   def bddView(bdd: LBdd, drawFalseLeaf: Boolean, title:String=""): String = {
-    import sys.process._
     val png = bddToPng(bdd,drawFalseLeaf,title)
-    val cmd = Seq("open", png)
-    cmd.!
-    png
+    openGraphicalFile(png)
   }
 
   val dotProgram:String = locally{

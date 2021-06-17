@@ -21,19 +21,15 @@
 
 package bdd
 
+import adjuvant.Adjuvant.openGraphicalFile
+
 object GraphViz {
 
   import java.io.{File, OutputStream}
 
   def bddView(bdd: Bdd, drawFalseLeaf: Boolean, title:String="", labelToString:Int=>String): String = {
-    import sys.process._
     val png = bddToPng(bdd,drawFalseLeaf,title,labelToString)
-    val cmd = Seq("open", png)
-    if ("Mac OS X" == System.getProperty("os.name"))
-      cmd.!
-    else
-      sys.error(s"bddView($bdd) cannot evoking open because OS = ${System.getProperty("os.name")}")
-    png
+    openGraphicalFile(png)
   }
 
   val dotProgram:String = locally{
