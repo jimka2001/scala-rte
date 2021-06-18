@@ -76,7 +76,7 @@ class MapColoringTestSuite extends AnyFunSuite {
   test("europe"){
     import bdd.sampleColoring.europeTimedMapColoringTest
 
-    europeTimedMapColoringTest(12, verbose = false)
+    europeTimedMapColoringTest(12, view=false, verbose = false)
   }
 
   test("usa"){

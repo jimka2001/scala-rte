@@ -430,9 +430,11 @@ object MapColoring {
 object sampleColoring {
   import MapColoring._
   import GenericGraph._
-  def usTimedMapColoringTest(numRegions:Int, verbose:Boolean): Int = {
+  def usTimedMapColoringTest(numRegions:Int, view:Boolean, verbose:Boolean): Int = {
     import USAgraph._
-    biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols,verbose=verbose)
+    biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols,
+                                                                            view=view,
+                                                                            verbose=verbose)
     val colors = timedColorizeMap(numRegions, "US", "ME",
                                   stateUniGraph, // removeStates(List("Russia"), stateUniGraph),
                                   stateBiGraph, //removeStates(List("Russia"), stateBiGraph),
@@ -440,15 +442,19 @@ object sampleColoring {
                                   verbose = false)
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions-colors"
                  )(symbols = symbols,
-                   colors = { st => colors.getOrElse(st, "no-color") },verbose=verbose)
+                   colors = { st => colors.getOrElse(st, "no-color") },
+                   view=view,
+                   verbose=verbose)
   }
 
-  def europeTimedMapColoringTest(numRegions:Int, verbose:Boolean): Int = {
+  def europeTimedMapColoringTest(numRegions:Int, view:Boolean, verbose:Boolean): Int = {
     import EuropeGraph._
     val pallet = Array("red", "green", "orange", "yellow")
 
     biGraphToDot[String](stateBiGraph, statePositions, s"europe-political-$numRegions"
-                         )(symbols = symbols,verbose=verbose)
+                         )(symbols = symbols,
+                           view=view,
+                           verbose=verbose)
 
     val colors = timedColorizeMap(numRegions, "europe", "Russia",
                                   stateUniGraph, //removeStates(List("Russia"), stateUniGraph),
@@ -460,6 +466,7 @@ object sampleColoring {
     biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions-colors"
                  )(symbols = symbols,
                    colors = { st => colors.getOrElse(st, "no-color") },
+                   view = view,
                    verbose = verbose)
   }
 
@@ -468,12 +475,13 @@ object sampleColoring {
     val palette = Array("red", "green", "orange", "yellow")
     val numRegions = stateUniGraph.size
     biGraphToDot[String](stateBiGraph, statePositions, s"europe-political-$numRegions"
-                         )(symbols = symbols,verbose=false)
+                         )(symbols = symbols,view=false,verbose=false)
     val colorized = colorizeMap( stateBiGraph, palette)
 
     biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions-colors"
                  )(symbols = symbols,
                    colors = { st => colorized.getOrElse(st, "no-color") },
+                   view=false,
                    verbose = false)
   }
 

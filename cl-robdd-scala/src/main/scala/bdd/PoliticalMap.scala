@@ -108,6 +108,7 @@ object GenericGraph extends PoliticalMap {
                    locations:Map[V,(Double,Double)],
                    baseName:String)(symbols: V=>V ={ x:V=>x},
                                     colors: V=>String = { _:V=>"no-color"},
+                                    view:Boolean,
                                     verbose:Boolean): Int = {
     val dotPathName = s"/tmp/$baseName.dot"
     val pngPathName = s"/tmp/$baseName.png"
@@ -159,7 +160,8 @@ object GenericGraph extends PoliticalMap {
         println(s"[writing to $pngPathName")
       val cmd = Seq(dotProgram, "-Tpng", dotPathName, "-o", pngPathName)
       val status = cmd.!
-      openGraphicalFile(pngPathName)
+      if (view)
+        openGraphicalFile(pngPathName)
       if(verbose)
         println(s"[finished to $pngPathName")
       status
