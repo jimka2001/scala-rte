@@ -259,7 +259,7 @@ object MapColoring {
                                                Nil,
                                                fold = 0,
                                                verbose = false)
-          bdd.findSatisfyingAssignment() match {
+          bdd.findSatisfyingAssignment(determinist=false) match {
             case None => Map[V, String]()
             case Some((assignTrue, assignFalse)) =>
               assignColors(colorization, assignTrue, assignFalse, palette)
@@ -333,7 +333,7 @@ object MapColoring {
                                              differentColor,
                                              fold = fold,
                                              verbose = verbose)
-        bdd.findSatisfyingAssignment() match {
+        bdd.findSatisfyingAssignment(determinist=false) match {
           case None => Map[V, String]()
           case Some((assignTrue, assignFalse)) =>
             val ret: Map[V, String] = assignColors(colorization, assignTrue, assignFalse, colors)

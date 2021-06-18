@@ -22,7 +22,8 @@
 package bdd
 
 import scala.annotation.tailrec
-import scala.util.DynamicVariable
+import scala.collection.mutable
+import scala.util.{DynamicVariable, Random}
 
 sealed abstract class Bdd {
 
@@ -58,14 +59,31 @@ sealed abstract class Bdd {
     recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))
   }
 
-  def findSatisfyingAssignment():Option[(Assignment,Assignment)] = {
+  def findSatisfyingAssignment(determinist:Boolean):Option[(Assignment,Assignment)] = {
     def recur(bdd: Bdd, assignTrue: Assignment, assignFalse:Assignment): Option[(Assignment,Assignment)] = {
       bdd match {
         case BddFalse => None
         case BddTrue => Some((assignTrue,assignFalse))
+        case BddNode(label, BddFalse, negative) =>
+          // don't recur into BddFalse because we are trying to find a *satisfying* assignment
+          recur(negative, assignTrue, Assignment(assignFalse.trueVariables + label))
+        case BddNode(label, positive, BddFalse) =>
+          // don't recur into BddFalse because we are trying to find a *satisfying* assignment
+          recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse)
+        case BddNode(label, positive, _) if determinist =>
+          // There is guaranteed to be a satisfying assignment on the positive
+          //   side and the negative size, so if determinist choose the positive side.
+          recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse)
         case BddNode(label, positive, negative) =>
-          recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse) orElse
-            recur(negative, assignTrue, Assignment(assignFalse.trueVariables + label))
+          // There is guaranteed to be a satisfying assignment on both the positive
+          //   side and the negative size, so if determinist=false choose the positive
+          //   or negative side with 50% likelihood
+         val choices = Seq( () => recur(positive, Assignment(assignTrue.trueVariables + label),assignFalse),
+                            () => recur(negative, assignTrue, Assignment(assignFalse.trueVariables + label)))
+          // Select one of the thunks and call it.
+          //   This either recurs the positive branch or the negative branch of the Bdd
+          //   with equal likelihood.
+          choices(Random.nextInt(2))()
       }
     }
     recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))
