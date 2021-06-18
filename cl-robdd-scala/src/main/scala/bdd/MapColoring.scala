@@ -255,9 +255,7 @@ object MapColoring {
       else
         Bdd.withNewBddHash {
           val (colorization, bdd) = graphToBdd(List(biGraph.head._1), uniGraph, biGraph, biGraph.size,
-                                               (n: Double, size: () => Double) => {
-                                                 ()
-                                               },
+                                               (n: Double, size: () => Double) => (),
                                                Nil,
                                                fold = 0,
                                                verbose = false)
