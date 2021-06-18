@@ -43,13 +43,12 @@ object RandomType {
   class Class1X extends Abstract1X
   class Class2X extends Abstract2X
 
-  // TODO copy the above classes and instantiate a final subclass
-  //    so they will be considered instantiatable
-  // TODO hard code a sequence of values which are the constants
-  //    in the interestingTypes vector, and instances of the
-  //    classes.   Then we can test whether a value is in instance
-  //    of a type and also of type canonicalized.
-
+  def oddp(a:Any):Boolean = {
+    a match {
+      case a:Int => a % 2 == 1
+      case _ => false
+    }
+  }
   val interestingTypes:Vector[SimpleTypeD] = Vector(
     STop,
     SEmpty,
@@ -60,6 +59,9 @@ object RandomType {
     SEql(-1),
     SEql(true),
     SEql(false),
+    SInt,
+    SDouble,
+    SSatisfies(oddp,"oddp"),
     SMember(false,true),
     SMember("a", "b", "c"),
     SAtomic(classOf[lang.Number]),
