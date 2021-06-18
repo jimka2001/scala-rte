@@ -326,7 +326,7 @@ object MapColoring {
                                                newGcCount(n, gcCount() - gcCount0)
                                                newGcTime(n, gcTime() - gcTime0)
                                                newSize(n, size())
-                                               val (hashSize, numAllocations) = Bdd.getBddSizeCount()
+                                               val (hashSize, numAllocations) = Bdd.getBddSizeCount
                                                newHashSize(n, hashSize.toDouble)
                                                newNumAllocations(n, numAllocations.toDouble)
                                              },

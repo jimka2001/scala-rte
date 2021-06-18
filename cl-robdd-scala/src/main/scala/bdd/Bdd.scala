@@ -89,8 +89,7 @@ sealed abstract class Bdd {
     recur(this, Assignment(Set[Int]()), Assignment(Set[Int]()))
   }
 
-  def toDnf():String = toDnf("x")
-  def toDnf(x:String):String = {
+  def toDnf(x:String = "x"):String = {
     import Assignment.toMinTerm
     import adjuvant.Accumulators._
     val substrings:List[String] = withCollector(collect =>
@@ -290,8 +289,8 @@ object Bdd {
   //def newCache(): Cache = CacheByJboss()
   def newCache(): Cache = CacheByWeakRef()
 
-  def getBddSizeCount():(Long,Long) = {
-    maybeNodeHash.value.get.getBddSizeCount()
+  def getBddSizeCount:(Long,Long) = {
+    maybeNodeHash.value.get.getBddSizeCount
   }
 
   // constructor Bdd(var,bddPositive,bddNegative)
@@ -311,7 +310,7 @@ abstract class Cache {
   def getOrCreate(label:Short, positive:Bdd, negative:Bdd):BddNode
   // this function is provided for debug purposes, to allow memory allocation
   // monitoring during intense computations.
-  def getBddSizeCount():(Long,Long)
+  def getBddSizeCount:(Long,Long)
 
   var numAllocations:Long = 0L
 }
@@ -326,7 +325,7 @@ case class CacheByWeakRef() extends Cache{
 
   val nodesIndex: mutable.WeakHashMap[BddNode, WeakReference[BddNode]] = mutable.WeakHashMap.empty
 
-  override def getBddSizeCount():(Long,Long) = {
+  override def getBddSizeCount:(Long,Long) = {
     (nodesIndex.size, numAllocations)
   }
   override def getOrCreate(label: Short, positive: Bdd, negative: Bdd): BddNode = {
@@ -350,9 +349,9 @@ case class CacheByJboss() extends Cache {
   import org.jboss.util.collection._
 
   import scala.jdk.CollectionConverters._
-  val hash = new WeakValueHashMap[(Int, Bdd, Bdd), BddNode].asScala
+  val hash: mutable.Map[(Int, Bdd, Bdd), BddNode] = new WeakValueHashMap[(Int, Bdd, Bdd), BddNode].asScala
 
-  override def getBddSizeCount():(Long,Long) = {
+  override def getBddSizeCount:(Long,Long) = {
     (hash.size, numAllocations)
   }
 

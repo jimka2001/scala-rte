@@ -179,8 +179,8 @@ object ReducePerf {
         withNewBddHash {
           f(dnf)
           // (size,count) = bdd.Bdd.getBddSizeCount()
-          size = bdd.Bdd.getBddSizeCount()._1
-          count = bdd.Bdd.getBddSizeCount()._2
+          size = bdd.Bdd.getBddSizeCount._1
+          count = bdd.Bdd.getBddSizeCount._2
         }
       })
     } yield (text // _1
@@ -243,7 +243,7 @@ object ReducePerf {
               // we must generate (text, List[x], List[y])
               // at each step in the iteration get the size, delta-size, count, and delta-count
               //println(s"iteration=$iteration numLiteralsPerTerm=$numLiteralsPerTerm  text=$text")
-              val (size, count) = getBddSizeCount()
+              val (size, count) = getBddSizeCount
               collect((text, numLiteralsPerTerm, iteration, size, oldSize - size, count, oldCount - count))
               iteration = iteration + 1
               oldCount = count
@@ -410,12 +410,9 @@ object ReducePerf {
   }
 
   def main(argv: Array[String]): Unit = {
-    //import treereduce.RationalFoldTest.rationalFoldTest
 
-    //println("rationalFoldTest")
-    //rationalFoldTest()
     println("testGenSizePlotPerFold")
-    testGenSizePlotPerFold(30,200,7,true)
+    testGenSizePlotPerFold(30,200,7,verbose=true)
     println("testLimitedBddConstruction")
     testLimitedBddConstruction(true)
     println("testNumBitsConstruction")
