@@ -22,7 +22,6 @@
 package bdd
 
 import scala.annotation.tailrec
-import scala.util.Random
 
 object MapColoring {
   type FOLD_FUN[V] = (Seq[V], Bdd, V => Bdd, (Bdd, Bdd) => Bdd) => Bdd
@@ -230,6 +229,7 @@ object MapColoring {
                               biGraph:Map[V,Set[V]],
                               colorized:Map[V,String],
                               unwind:List[(V,Set[V])]):Map[V,String] = {
+    import scala.util.Random
     unwind match {
       case Nil => colorized
       case (v,neighbors)::vns =>
@@ -367,12 +367,6 @@ object MapColoring {
                         (n: Double, m: Double) => numAllocations(k) = (n -> m) :: numAllocations(k),
                         (n: Double, m: Double) => times(k) = (n -> m) :: times(k))
     }
-    //    val reclaimed: Array[List[(Double, Double)]] = for {(numAllocation:List[(Double,Double)],hashSize:List[(Double,Double)]) <- numAllocations.zip(hashSizes)
-    //                                                        ((n1:Double,numObj1:Double),(n2:Double,numObj2:Double)) <- numAllocation.zip(hashSize)
-    //                                                        } yield {
-    //      assert(n1 == n2)
-    //      (n1,numObj1 - numObj2)
-    //    }
 
     val reclaimed: Array[List[(Double, Double)]] = numAllocations.zip(hashSizes)
       .map { case (numAllocation: List[(Double, Double)], hashSizes: List[(Double, Double)]) =>
@@ -384,9 +378,7 @@ object MapColoring {
             else List((n1, numObj1 - numObj2))
           }
         }
-
         tmp(numAllocation, hashSizes)
-
       }
 
     for {(measurements, scale, yLog, title, yAxisLabel, outputFileBaseName)
