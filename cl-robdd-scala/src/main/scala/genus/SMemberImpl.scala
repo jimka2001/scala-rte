@@ -26,7 +26,7 @@ import Types._
 import NormalForm._
 import scala.annotation.tailrec
 
-abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD with TerminalType {
+abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD {
 
   override def toString:String = xs.map(_.toString).mkString("{", ",", "}")
 

@@ -27,4 +27,4 @@ package genus
  *
  * @param xs var-arg, the members of the type
  */
-case class SMember(override val xs: Any*) extends SMemberImpl(xs :_*)
+case class SMember(override val xs: Any*) extends SMemberImpl(xs :_*) with TerminalType

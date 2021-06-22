@@ -25,7 +25,7 @@ package genus
  *
  * @param a the object defining the type
  */
-case class SEql(a: Any) extends SMemberImpl(a) {
+case class SEql(a: Any) extends SMemberImpl(a) with TerminalType {
   override def toString = s"[= $a]"
 
   override def typep(b: Any): Boolean = {
