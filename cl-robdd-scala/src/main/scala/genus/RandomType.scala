@@ -163,6 +163,18 @@ object RandomType {
   }
 
   def main(args: Array[String]): Unit = {
-    sanityTest()
+    case class Box(value: Any)
+    println(SAtomic(classOf[scala.runtime.RichInt]).typep(1))
+    println(SAtomic(classOf[Int]).typep(Box(1).value))
+    println(SAtomic(classOf[java.lang.Integer]).typep(Box(1).value))
+    println(SAtomic(classOf[java.lang.Integer]).typep(1)) // works
+    println(SAtomic(classOf[Integer]).typep(1)) // works
+    println(classOf[java.lang.Integer].isInstance(1)) // works
+    println(classOf[Int].isInstance(1))
+    println(1.isInstanceOf[Int])
+    println(1.isInstanceOf[Any])
+    println(classOf[Any].isInstance(1))
+    println(classOf[java.lang.Object].isInstance(1))
+
   }
 }
