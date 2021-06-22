@@ -99,6 +99,8 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
               case (_,None) => None
               case (None,Some(true)) => None
               // super.isAssignableFrom(sub) means sub is subtype of super
+              //   we ask where whether ct is a subtype of tp
+              //  i.e    this.ct subtype of s.ct
               case (Some(true),Some(true)) => Some(tp.isAssignableFrom(ct))
               case _ => throw new Exception("impossible")
             }
