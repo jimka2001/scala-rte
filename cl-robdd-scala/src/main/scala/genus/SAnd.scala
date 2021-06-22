@@ -100,6 +100,8 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
 
     // (disjoint? (and B C) A)
     // (disjoint? (and String (not (member a b c 1 2 3))) java.lang.Comparable)
+      // TODO, why is this inside the SAnd code?   this is a condition that holds for
+      //  all types.
     else if (inhabited_t2
              && inhabited_this
              && tds.exists(t1 =>

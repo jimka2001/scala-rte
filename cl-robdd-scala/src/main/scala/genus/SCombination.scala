@@ -176,6 +176,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
 
   def conversion11(): SimpleTypeD = {
     // A + A! B -> A + B
+    // A + AB --> A
+    // A + AB + C --> A + C
     // A + A! BX + Y = (A + BX + Y)
     // A + ABX + Y = (A + Y)
 
@@ -274,6 +276,9 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     val notMember = tds.collectFirst {
       case SNot(m: SMemberImpl) => m
     }
+    // Here we have a case for SAnd and SOr,
+    //   ideally it should be treated in an OO way, but I'm
+    //   not sure how to do it.
     (this,member,notMember) match {
       case (_:SAnd,Some(m),Some(n)) =>
         //    SAnd({1,2,3,a},SNot({1,2,3,b})
@@ -299,7 +304,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
 
   def conversion16():SimpleTypeD = {
     // Now (after conversions 13, 14, and 15, there is at most one SMember(...) and
-    //   at most one Not(SMember(...))
+    //   at most one SNot(SMember(...))
 
     // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
 
