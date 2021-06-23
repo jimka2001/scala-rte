@@ -47,7 +47,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   def dualCombinator[A](a:Seq[A],b:Seq[A]):Seq[A] = {
     uniquify(a ++ b)
   }
-  def filter[A](seq:Seq[A],f:A=>Boolean):Seq[A] = seq.filter(f)
+  def comboFilter[A](seq:Seq[A], f:A=>Boolean):Seq[A] = seq.filter(f)
 
   override def typep(a: Any): Boolean = {
     tds.forall(_.typep(a))

@@ -47,7 +47,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
   def dualCombinator[A](a:Seq[A],b:Seq[A]):Seq[A] = {
     a.intersect(b)
   }
-  def filter[A](seq:Seq[A],f:A=>Boolean):Seq[A] = seq.filterNot(f)
+  def comboFilter[A](seq:Seq[A], f:A=>Boolean):Seq[A] = seq.filterNot(f)
 
   override def typep(a: Any): Boolean = {
     tds.exists(_.typep(a))

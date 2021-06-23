@@ -49,7 +49,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
 
   def combinator[A](a:Seq[A],b:Seq[A]):Seq[A]
   def dualCombinator[A](a:Seq[A],b:Seq[A]):Seq[A]
-  def filter[A](seq:Seq[A],f:A=>Boolean):Seq[A]
+  def comboFilter[A](seq:Seq[A], f:A=>Boolean):Seq[A]
 
   def conversion1(): SimpleTypeD = {
     if (tds.isEmpty) {
@@ -315,12 +315,12 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     }
     // stricter in the case of SOr, but laxer in the case of SAnd
     val stricter = create(fewer)
-
-    create(tds.map {
-      case m: SMemberImpl => createMember(filter(m.xs, stricter.typep))
-      case SNot(m: SMemberImpl) => SNot(createMember(filter(m.xs, stricter.typep)))
+    val newargs = tds.map {
+      case m: SMemberImpl => createMember(comboFilter(m.xs, stricter.typep))
+      case SNot(m: SMemberImpl) => SNot(createMember(comboFilter(m.xs, stricter.typep)))
       case td => td
-    })
+    }
+    create(newargs)
   }
 
   // SCombination(tds: SimpleTypeD*)
