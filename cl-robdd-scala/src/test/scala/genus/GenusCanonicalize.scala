@@ -524,7 +524,7 @@ class GenusCanonicalize extends AnyFunSuite {
                "\nlhs =" + td3)
     }
   }
-  test("combo conversionC16") {
+  test("combo conversion16") {
     val S = SAtomic(classOf[String])
     val values = List("a", "b", "c", "c", 1, 2, 3, 4, true)
     for {td <- Seq(SAnd(S, SMember("a", "b", "c", 1, 2, 3)),
