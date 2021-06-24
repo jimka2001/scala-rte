@@ -39,10 +39,10 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
     val shortName = fullName.dropWhile(_ != '$')
 
-    if (shortName == "")
+    "SAtomic:" + (if (shortName == "")
       fullName
     else
-      shortName.drop(1)
+      shortName.drop(1))
   }
 
   override def typep(a: Any): Boolean = {

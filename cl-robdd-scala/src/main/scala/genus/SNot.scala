@@ -52,7 +52,10 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
   }
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
-    if (t.subtypep(s).getOrElse(false))
+    // is SNot(s) disjoint with t
+    //    first we ask whether t is a subtype of s,
+    //    t<s => not(s) // t
+    if (t.subtypep(s).contains(true))
       Some(true)
     else super.disjointDown(t)
   }
