@@ -250,7 +250,6 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   def conversion14():SimpleTypeD = {
     // multiple member
     // (or (member 1 2 3) (member 2 3 4 5)) --> (member 1 2 3 4 5)
-    // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
     // (and (member 1 2 3) (member 2 3 4 5)) --> (member 2 3)
 
     val members = tds.collect{
@@ -322,6 +321,9 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     }
     create(newargs)
   }
+  def conversionD1():SimpleTypeD
+
+  def conversionD3():SimpleTypeD
 
   // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
@@ -341,7 +343,9 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       "13" -> (() => { conversion13() }),
       "14" -> (() => { conversion14() }),
       "15" -> (() => { conversion15() }),
-      "16" -> (() => { conversion16() })
+      "16" -> (() => { conversion16() }),
+      "conversionD1" -> (() => { conversionD1() }),
+      "conversionD3" -> (() => { conversionD3() })
       ))
   }
 

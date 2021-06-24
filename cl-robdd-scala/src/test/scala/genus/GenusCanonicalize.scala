@@ -621,7 +621,7 @@ class GenusCanonicalize extends AnyFunSuite {
     // if rule does not apply, the it must return exactly the default
     assert(SAnd(A, B, C).conversion11() == SAnd(A,B,C))
   }
-  test("or conversion9"){
+  test("combo conversion9"){
     trait TraitA
     trait TraitB
     trait TraitC
@@ -649,23 +649,55 @@ class GenusCanonicalize extends AnyFunSuite {
     // !ABC + A!BC + X -> no change
     assert(SOr(SAnd(SNot(A), B, C), SAnd(A, SNot(B), C), X).conversion9()
              == SOr(SAnd(SNot(A),B,C),SAnd(A,SNot(B),C),X))
+
+
+    // -----------------
+
+    assert(SAnd(SOr(A, B, C), SOr(A, SNot(B), C), X).conversion9()
+             == SAnd(SOr(A,B,C),SOr(A,C),X), "434")
+
+    assert(SAnd(SOr(A, B, SNot(C)), SOr(A, SNot(B), C), SOr(A, SNot(B), SNot(C))).conversion9()
+             == SAnd(SOr(A,B,SNot(C)),SOr(A,SNot(B),C),SOr(A,SNot(C))), "438")
+
+    assert(SAnd(SOr(A, B, SNot(C)), SOr(A, SNot(B), C), SOr(A, SNot(B), SNot(C))).conversion9()
+             == SAnd(SOr(A,B,SNot(C)),SOr(A,SNot(B),C),SOr(A,SNot(C))))
+
+
+    assert(SAnd(SOr(SNot(A), B, C), SOr(A, SNot(B), C), X).conversion9()
+             == SAnd(SOr(SNot(A),B,C),SOr(A,SNot(B),C),X))
+
   }
-  test("and conversionA1"){
+  test("and conversionD1"){
     // SAnd(SMember(42,43,44), A, B, C)
     //  ==> SMember(42,44)
-    assert(SAnd(SMember(1, 2, 3, "hello", "world"), SInt).conversionA1()
+    assert(SAnd(SMember(1, 2, 3, "hello", "world"), SInt).conversionD1()
            == SMember(1,2,3))
+
+    // SOr(SNot(SMember(42,43,44,"a","b")), String)
+    //  ==> SNot(SMember(42,43,44))
+    assert(SOr(SNot(SMember(1, 2, 3, "hello", "world")), SAtomic(classOf[String])).conversionD1()
+             == SNot(SMember(1,2,3)))
   }
 
-  test("and conversionA3") {
+  test("combo conversionD3") {
     // discover a disjoint pair
-    assert(SAnd(SMember(1, 2, 3), SMember(4, 5, 6)).conversionA3()
+    assert(SAnd(SMember(1, 2, 3), SMember(4, 5, 6)).conversionD3()
              == SEmpty)
-    assert(SAnd(SMember(1, 2, 3), SMember(3, 4, 5), SMember(4, 5, 6)).conversionA3()
+    assert(SAnd(SMember(1, 2, 3), SMember(3, 4, 5), SMember(4, 5, 6)).conversionD3()
              == SEmpty)
     // else return the default
-    assert(SAnd(SMember(1, 2, 3), SMember(3, 4, 5)).conversionA3()
+    assert(SAnd(SMember(1, 2, 3), SMember(3, 4, 5)).conversionD3()
              != SEmpty)
+
+
+    assert(SOr(SNot(SMember(1, 2, 3)), SNot(SMember(4, 5, 6))).conversionD3()
+             == STop)
+    assert(SOr(SNot(SMember(1, 2, 3)), SNot(SMember(3, 4, 5)), SNot(SMember(4, 5, 6))).conversionD3()
+             == STop)
+    // else return the default
+    assert(SOr(SNot(SMember(1, 2, 3)), SNot(SMember(3, 4, 5))).conversionD3()
+             != STop)
+
   }
   test("and conversion9"){
     trait TraitA

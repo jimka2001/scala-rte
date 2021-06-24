@@ -95,10 +95,34 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
       super.subtypepDown(t)
   }
 
+  def conversionD1():SimpleTypeD = {
+    // dual of SAnd:conversionD1
+
+    // SOr(SNot(SMember(42,43,44,"a","b")), String)
+    //  ==> SNot(SMember(42,43,44))
+    tds.collectFirst{case SNot(m:SMemberImpl) => m} match {
+      case Some(m:SMemberImpl) =>
+        SNot(createMember(m.xs.filterNot(typep)))
+      case _ => this
+    }
+  }
+
+  def conversionD3():SimpleTypeD = {
+    // discover a disjoint pair embedded in SNot
+    // I.e., find SNot(x), SNot(y) where x and y are disjoint
+    //   if found, return STop
+    val nots = tds.collect{case SNot(td) => td}
+
+    if (nots.tails.exists(ts => ts.nonEmpty && nots.tail.exists(b => b.disjoint(ts.head).contains(true))))
+      STop
+    else
+      this
+  }
+
   // SOr(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(tag="SOr",this,verbose=false,List[(String,() => SimpleTypeD)](
-      "super" -> (() => { super.canonicalizeOnce(nf)})
+      ("super",   () => { super.canonicalizeOnce(nf)})
       ))
   }
 

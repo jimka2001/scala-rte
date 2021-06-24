@@ -126,7 +126,8 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     } else
       super.subtypepDown(t)
   }
-  def conversionA1():SimpleTypeD = {
+  def conversionD1():SimpleTypeD = {
+    // dual of SOr:conversionD1
     // Note this isn't this consumed in conversionC16,
     //  conversionC16 converts SAnd(SMember(42,43,44,"a","b","c"),SInt)
     //       to SAnd(SMember(42,43,44),SInt)
@@ -144,18 +145,17 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     }
   }
 
-  def conversionA3():SimpleTypeD = {
+  def conversionD3():SimpleTypeD = {
     // discover a disjoint pair
     if (tds.tails.exists(ts => ts.nonEmpty && ts.tail.exists(b => b.disjoint(ts.head).contains(true))))
       SEmpty
     else
       this
   }
+
   // SAnd(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     findSimplifier(tag="SAnd",this,verbose=false,List[(String,() => SimpleTypeD)](
-      ("conversionA1" , () => { conversionA1() }),
-      ("conversionA3" , () => { conversionA3() }),
       ("super" , () => { super.canonicalizeOnce(nf)})
       ))
   }
@@ -191,7 +191,7 @@ object SAnd {
   def main(argv:Array[String]):Unit = {
     // SAnd(SMember(42,43,44), A, B, C)
     //  ==> SMember(42,44)
-    println(SAnd(SMember(42,43,44,"a","b","c"),SInt).conversionA1())
+    println(SAnd(SMember(42,43,44,"a","b","c"),SInt).conversionD1())
     println(SAnd(SMember(42,43,44,"a","b","c"),SInt).conversion16())
     println(SOr(SMember(42,43,44,"a","b","c"),SInt).conversion16())
   }
