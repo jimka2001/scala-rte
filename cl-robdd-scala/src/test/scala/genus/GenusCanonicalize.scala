@@ -374,7 +374,8 @@ class GenusCanonicalize extends AnyFunSuite {
            dnf = td.canonicalize(Some(Dnf))
            } {
         assert(td.typep(v) == cnf.typep(v),
-               "\n closedWorldView = " + SAtomic.closedWorldView.value +
+          s"\nv = $v" + " type=" + v.getClass() +
+               "\nclosedWorldView = " + SAtomic.closedWorldView.value +
                  s"\ntd=$td" +
                  s"\ncnf=$cnf" +
                  "\nlhs=" + td.typep(v) +
