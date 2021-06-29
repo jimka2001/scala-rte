@@ -333,26 +333,26 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
 
   // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
-    findSimplifier(tag="SCombo", this, verbose=false,List[(String,() => SimpleTypeD)](
-      "1" -> (() => { conversion1() }),
-      "2" -> (() => { conversion2() }),
-      "3" -> (() => { conversion3() }),
-      "4" -> (() => { conversion4() }),
-      "5" -> (() => { conversion5() }),
-      "6" -> (() => { conversion6() }),
+    findSimplifier(tag="SCombo", this, verbose=false, List[(String,() => SimpleTypeD)](
+      "1" -> conversion1,
+      "2" -> conversion2,
+      "3" -> conversion3,
+      "4" -> conversion4,
+      "5" -> conversion5,
+      "6" -> conversion6,
       "7" -> (() => { conversion7(nf) }),
-      "8" -> (() => { conversion8() }),
-      "9" -> (() => { conversion9() }),
-      "10" -> (() => { conversion10() }),
-      "11" -> (() => { conversion11() }),
-      "12" -> (() => { conversion12() }),
-      "13" -> (() => { conversion13() }),
-      "14" -> (() => { conversion14() }),
-      "15" -> (() => { conversion15() }),
-      "16" -> (() => { conversion16() }),
-      "conversionD1" -> (() => { conversionD1() }),
-      "conversionD3" -> (() => { conversionD3() }),
-      "98" -> (() => { conversion98() }),
+      "8" -> conversion8,
+      "9" -> conversion9,
+      "10" -> conversion10,
+      "11" -> conversion11,
+      "12" -> conversion12,
+      "13" -> conversion13,
+      "14" -> conversion14,
+      "15" -> conversion15,
+      "16" -> conversion16,
+      "D1" -> conversionD1,
+      "D3" -> conversionD3,
+      "98" -> conversion98,
       "99" -> (() => { conversion99(nf) })
       ))
   }
