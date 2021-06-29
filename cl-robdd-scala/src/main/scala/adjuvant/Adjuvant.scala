@@ -275,7 +275,7 @@ object Adjuvant {
       case seq:Seq[A] => recurS(seq,Seq())
     }
   }
-  def openGraphicalFile(fileName:String) = {
+  def openGraphicalFile(fileName:String):String = {
     import sys.process._
     val cmd = Seq("open", "-g", "-a", "Preview", fileName)
     if ("Mac OS X" == System.getProperty("os.name"))

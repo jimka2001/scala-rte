@@ -23,7 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
-import adjuvant.Adjuvant.{conj, findSimplifier, uniquify}
+import adjuvant.Adjuvant.{findSimplifier, uniquify}
 
 /** An intersection type, which is the intersection of zero or more types.
  *

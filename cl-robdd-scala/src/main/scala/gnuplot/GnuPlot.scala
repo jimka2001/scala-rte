@@ -59,7 +59,7 @@ object GnuPlot {
     // print 1 line per uniq x in order, even if some of the y values are missing
     uniqXs.foreach { x =>
       csv.write(s"$x")
-      dataMaps.foreach { case (_text, mapXtoY) =>
+      dataMaps.foreach { case (_, mapXtoY) =>
         mapXtoY.get(x) match {
           case None => csv.write(",")
           case Some(y) => csv.write(s",$y")

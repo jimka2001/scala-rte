@@ -23,7 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
-import adjuvant.Adjuvant.{conj, findSimplifier, uniquify}
+import adjuvant.Adjuvant.{findSimplifier, uniquify}
 
 /** A union type, which is the union of zero or more types.
  *

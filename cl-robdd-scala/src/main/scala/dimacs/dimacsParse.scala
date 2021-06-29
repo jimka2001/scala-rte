@@ -243,7 +243,7 @@ object dimacsParse {
     val vec = new QmVec
 
     def logDiagnostic(comment:String):Unit = {
-      logDiagnosticInt(false,comment)
+      logDiagnosticInt(verbose=false,comment)
     }
     logDiagnostic(s"parsing $inFileName")
     def logDiagnosticInt(verbose:Boolean, comment: String): Unit = {
