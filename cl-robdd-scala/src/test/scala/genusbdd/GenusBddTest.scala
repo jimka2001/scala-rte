@@ -125,7 +125,6 @@ class GenusBddTest extends MyFunSuite {
 
   test("typep") {
     import scala.collection.mutable
-    import GraphViz._
     def pos(x: Any): Boolean = {
       x match {
         case x: Double => x > 0.0
