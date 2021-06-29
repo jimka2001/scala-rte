@@ -89,8 +89,7 @@ class GenusBddTest extends MyFunSuite {
   }
 
   test("randomizer") {
-
-    for {depth <- 2 to 7} {
+    for {depth <- 2 to 5} {
       val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
       Bdd.withNewBddHash {
         for {_ <- 0 to 750 - 100 * depth
