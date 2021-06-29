@@ -83,7 +83,11 @@ object RandomType {
     )
   val interestingValues:Vector[Any] = Vector(
     -1, -1, 0, 1, 2, 3, 4, 5, 6,
+    1L, 0L, -1L, 1000L, 1000000L,
     3.14,2.17,-math.sqrt(2),
+    3.14d, 2.17d,
+    3.14f, 2.17f,
+    'a', 'b', 'c',
     true,false,
     "a", "b", "c", "d", "",
     new Class1X,
