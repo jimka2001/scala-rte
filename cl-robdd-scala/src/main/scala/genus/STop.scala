@@ -23,7 +23,7 @@
 package genus
 
 /** The super type, super type of all types. */
-object STop extends SimpleTypeD {
+object STop extends SimpleTypeD with TerminalType {
   override def toString = "STop"
 
   override def typep(a: Any): Boolean = true

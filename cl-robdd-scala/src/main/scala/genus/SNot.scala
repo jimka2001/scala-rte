@@ -89,7 +89,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
       case SNot(s1) => s1.canonicalizeOnce(nf=nf)
       case STop => SEmpty
       case SEmpty => STop
-      case s2: SimpleTypeD => SNot(s2.canonicalizeOnce(nf=nf)).maybeDnf(nf).maybeCnf(nf)
+      case s2: SimpleTypeD => SNot(s2.canonicalizeOnce(nf=nf)).toNf(nf)
     }
   }
 

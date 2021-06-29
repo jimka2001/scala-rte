@@ -150,18 +150,12 @@ abstract class SimpleTypeD { // SimpleTypeD
 
   def computeCnf(): SimpleTypeD = this
 
-  def maybeDnf(nf: Option[NormalForm] = None): SimpleTypeD = {
-    if (nf.contains(Dnf))
-      toDnf
-    else
-      this
-  }
-
-  def maybeCnf(nf: Option[NormalForm] = None): SimpleTypeD = {
-    if (nf.contains(Cnf))
-      toCnf
-    else
-      this
+  def toNf(nf: Option[NormalForm] = None): SimpleTypeD = {
+    nf match {
+      case Some(Dnf) => toDnf
+      case Some(Cnf) => toCnf
+      case None => this
+    }
   }
 
   def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = this

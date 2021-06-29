@@ -323,6 +323,45 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(cnf1 - dnf3 == SEmpty, "test 7")
     assert(dnf3 - cnf1 == SEmpty, "test 8")
   }
+  test("verify cnf dnf") {
+    import NormalForm._
+    def baseCase(td:SimpleTypeD):Boolean = {
+      td match {
+        case _:TerminalType => true
+        case SNot(_:TerminalType) => true
+        case _ => false
+      }
+    }
+    def isCnf(td:SimpleTypeD):Boolean = {
+      td match {
+        case td if baseCase(td) => true
+        case SOr(tds@ _*) => tds.forall(baseCase)
+        case SAnd(tds@ _*) =>
+          val ors = tds.collect{case td:SOr => td}
+          val others = tds diff ors
+          others.forall(td => baseCase(td)) && ors.forall{case SOr(tds@ _*) => tds.forall(baseCase)}
+        case _ => false
+      }
+    }
+    def isDnf(td:SimpleTypeD):Boolean = {
+      td match {
+        case td if baseCase(td) => true
+        case SAnd(tds@ _*) => tds.forall(baseCase)
+        case SOr(tds@ _*) =>
+          val ands = tds.collect{case td:SAnd => td}
+          val others = tds diff ands
+          others.forall(td => baseCase(td)) && ands.forall{case SAnd(tds@ _*) => tds.forall(baseCase)}
+        case _ => false
+      }
+    }
+    for {_ <- 0 to 1000
+         n <- 0 to 5
+         rt = randomType(n)
+         } {
+      assert(isDnf(rt.canonicalize(Some(Dnf))), s"\nrt=$rt\ndnf=${rt.canonicalize(Some(Dnf))}")
+      assert(isCnf(rt.canonicalize(Some(Cnf))), s"\nrt=$rt\ncnf=${rt.canonicalize(Some(Cnf))}")
+    }
+  }
 
   test("rand typep") {
     // make sure typep membership of particular values is the same before and after canonicalizing

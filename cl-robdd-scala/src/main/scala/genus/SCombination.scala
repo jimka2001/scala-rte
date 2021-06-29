@@ -112,9 +112,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   }
 
   def conversion7(nf: Option[NormalForm]): SimpleTypeD = {
-    create(tds.map((t: SimpleTypeD) => t.canonicalize(nf = nf))
-             .sortWith(cmpTypeDesignators))
-      .maybeDnf(nf).maybeCnf(nf)
+    toNf(nf)
   }
 
   def conversion8(): SimpleTypeD = {
@@ -325,6 +323,14 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
 
   def conversionD3():SimpleTypeD
 
+  def conversion98():SimpleTypeD = {
+    create(tds.sortWith(cmpTypeDesignators))
+  }
+
+  def conversion99(nf:Option[NormalForm]):SimpleTypeD = {
+    create(tds.map(_.canonicalize(nf)))
+  }
+
   // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     findSimplifier(tag="SCombo", this, verbose=false,List[(String,() => SimpleTypeD)](
@@ -345,7 +351,9 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       "15" -> (() => { conversion15() }),
       "16" -> (() => { conversion16() }),
       "conversionD1" -> (() => { conversionD1() }),
-      "conversionD3" -> (() => { conversionD3() })
+      "conversionD3" -> (() => { conversionD3() }),
+      "98" -> (() => { conversion98() }),
+      "99" -> (() => { conversion99(nf) })
       ))
   }
 
@@ -357,6 +365,30 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     else td match {
       case sc: SCombination => compareSequence(this.tds, sc.tds)
       case _ => super.cmpToSameClassObj(td) // throws an exception
+    }
+  }
+
+  def computeNf():SimpleTypeD = {
+    // it turns out SAnd.compute_dnf and SOr.compute_cnf contain
+    // the exact same code.  So I've factored that code here.
+    //
+    // convert SOr( x1, x2, SAnd(y1,y2,y3), x3, x4)
+    //    --> td = SAnd(y1,y2,y3)
+    // --> SAnd(SOr(x1,x2,  y1,  x3,x4),
+    //          SOr(x1,x2,  y2,  x3,x4),
+    //          SOr(x1,x2,  y3,  x3,x4),
+    //     )
+    // convert SAnd( x1, x2, SOr(y1,y2,y3), x3, x4)
+    //    --> td = SOr(y1,y2,y3)
+    // --> SOr(SAnd(x1,x2,  y1,  x3,x4),
+    //          SAnd(x1,x2,  y2,  x3,x4),
+    //          SAnd(x1,x2,  y3,  x3,x4),
+    //     )
+    tds.collectFirst{
+      case c:SCombination if dualCombination(c) => c
+    } match {
+      case None => this
+      case Some(td) => createDual(td.tds.map(y => create(tds.map(x => if (x == td) y else x))))
     }
   }
 }

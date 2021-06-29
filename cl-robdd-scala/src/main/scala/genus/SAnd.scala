@@ -164,17 +164,11 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     //    --> td = SOr(y1,y2,y3)
     //    --> orArgs = (y1,y2,y3)
     //    --> others = (x1, x2, x3, x4)
-    // --> SOr(SAnd(x1,x2,x3,x4,  y1),
-    //         SAnd(x1,x2,x3,x4,  y2),
-    //         SAnd(x1,x2,x3,x4,  y3),
+    // --> SOr(SAnd(x1,x2,y1,x3,x4),
+    //         SAnd(x1,x2,y2,x3,x4),
+    //         SAnd(x1,x2,y3,x3,x4),
     //     )
-    tds.find(orp) match {
-      case Some(td@SOr(orArgs@_*)) =>
-        val others = tds.filterNot(_ == td)
-        SOr.createOr(orArgs.map { x => SAnd.createAnd(conj(others, x)) })
-      case None => this
-      case x => throw new Error(s"this should not occur: " + x)
-    }
+    computeNf()
   }
 }
 

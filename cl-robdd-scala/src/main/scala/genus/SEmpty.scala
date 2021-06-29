@@ -23,7 +23,7 @@
 package genus
 
 /** The empty type, subtype of all types. */
-object SEmpty extends SimpleTypeD {
+object SEmpty extends SimpleTypeD with TerminalType {
   override def toString = "SEmpty"
 
   override def typep(a: Any): Boolean = false
