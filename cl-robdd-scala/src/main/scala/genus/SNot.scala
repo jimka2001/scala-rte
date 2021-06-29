@@ -68,7 +68,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     }
     lazy val hosted = (s,t) match {
       // SNot(Long).subtype(Double) ==> false
-      case (SAtomic(s2),SAtomic(t2)) if s2.disjoint(t2).contains(true) => Some(false)
+      case (SAtomic(_),SAtomic(_)) if s.disjoint(t).contains(true) => Some(false)
       case (_,_) => None
     }
     if (s.inhabited.contains(true)
