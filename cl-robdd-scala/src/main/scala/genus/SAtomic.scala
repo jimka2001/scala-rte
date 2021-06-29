@@ -169,10 +169,12 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
  * deal with EmptyType and TopType construction.
  */
 object SAtomic {
+  val knownSAtomics:scala.collection.mutable.Map[Class[_],SAtomic] = scala.collection.mutable.Map[Class[_],SAtomic]()
+
   def apply(ct: Class[_]): SimpleTypeD = {
     if (ct == classOf[Nothing]) SEmpty
     else if (ct == classOf[Any]) STop
-    else new SAtomic(ct)
+    else knownSAtomics.getOrElseUpdate(ct,new SAtomic(ct))
   }
 
   import scala.util.DynamicVariable
