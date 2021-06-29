@@ -23,6 +23,7 @@ package genus
 
 // genus
 import NormalForm._
+import scala.collection.mutable
 
 /** The atoms of our type system: a simple type built from a native Scala/Java type.
  *
@@ -169,12 +170,12 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
  * deal with EmptyType and TopType construction.
  */
 object SAtomic {
-  val knownSAtomics:scala.collection.mutable.Map[Class[_],SAtomic] = scala.collection.mutable.Map[Class[_],SAtomic]()
+  val knownSAtomics:mutable.Map[(Boolean,Class[_]),SAtomic] = mutable.Map[(Boolean,Class[_]),SAtomic]()
 
   def apply(ct: Class[_]): SimpleTypeD = {
     if (ct == classOf[Nothing]) SEmpty
     else if (ct == classOf[Any]) STop
-    else knownSAtomics.getOrElseUpdate(ct,new SAtomic(ct))
+    else knownSAtomics.getOrElseUpdate((getClosedWorldView(),ct),new SAtomic(ct))
   }
 
   import scala.util.DynamicVariable
@@ -187,6 +188,8 @@ object SAtomic {
   //   subclasses of two given classes, then we conclude the classes are
   //   disjoint.
   val closedWorldView: DynamicVariable[Boolean] = new DynamicVariable[Boolean](true)
+
+  def getClosedWorldView():Boolean = closedWorldView.value
 
   // evaluate a piece of code in a dynamic context where it is considers that classes
   //   may be loaded at run-time.  Thus, for example, it is NOT considered that

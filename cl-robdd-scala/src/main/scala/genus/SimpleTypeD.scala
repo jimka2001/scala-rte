@@ -23,6 +23,7 @@ package genus
 
 import NormalForm._
 import adjuvant.Adjuvant._
+import scala.collection.mutable
 
 /** A general type of our type system. */
 abstract class SimpleTypeD { // SimpleTypeD
@@ -46,6 +47,10 @@ abstract class SimpleTypeD { // SimpleTypeD
    */
   def typep(a: Any): Boolean
 
+
+  val knownDisjoint:mutable.Map[(Boolean,SimpleTypeD),Option[Boolean]] =
+    mutable.Map[(Boolean,SimpleTypeD),Option[Boolean]]()
+
   /** Returns whether a given type and this type are disjoint.
    * This might be undecidable. The disjointDown method is used to avoid
    * infinite loops.  Subclasses are expected to override disjointDown,
@@ -55,28 +60,34 @@ abstract class SimpleTypeD { // SimpleTypeD
    * @return an optional Boolean which is true if t and this type are disjoint
    */
   def disjoint(td: SimpleTypeD): Option[Boolean] = {
-    val d1 = disjointDown(td)
-    lazy val d2 = td.disjointDown(this)
-    lazy val c1 = this.canonicalize()
-    lazy val c2 = td.canonicalize()
-    lazy val dc12 = c1.disjointDown(c2)
-    lazy val dc21 = c2.disjointDown(c1)
+    knownDisjoint
+      .getOrElseUpdate((SAtomic.getClosedWorldView(),td), locally {
+        val d1 = disjointDown(td)
+        lazy val d2 = td.disjointDown(this)
+        lazy val c1 = this.canonicalize()
+        lazy val c2 = td.canonicalize()
+        lazy val dc12 = c1.disjointDown(c2)
+        lazy val dc21 = c2.disjointDown(c1)
 
-    if (this == td && inhabited.nonEmpty)
-      inhabited.map(!_)
-    else if (d1.nonEmpty)
-      d1
-    else if (d2.nonEmpty)
-      d2
-    else if (c1 == c2 && c1.inhabited.nonEmpty)
-      c1.inhabited.map(!_)
-    else if (dc12.nonEmpty)
-      dc12
-    else {
-      dc21
-      // TODO we can also check whether c1.subtypep(c2) and c1.inhabited
-      //    careful not to cause an infinite loop
-    }
+        if (this == td && inhabited.nonEmpty)
+          inhabited.map(!_)
+        else if (d1.nonEmpty)
+          d1
+        else if (d2.nonEmpty)
+          d2
+        else if (c1 == this && c2 == td)
+        // no need to continue searching if canonicalization failed to produce simpler forms
+          None
+        else if (c1 == c2 && c1.inhabited.nonEmpty)
+          c1.inhabited.map(!_)
+        else if (dc12.nonEmpty)
+          dc12
+        else {
+          dc21
+          // TODO we can also check whether c1.subtypep(c2) and c1.inhabited
+          //    careful not to cause an infinite loop
+        }
+      })
   }
 
   // inhabitedDown should not be called directly, except as super.inhabitedDown,
@@ -93,6 +104,9 @@ abstract class SimpleTypeD { // SimpleTypeD
       None
   }
 
+  val knownSubtypes:mutable.Map[(Boolean,SimpleTypeD),Option[Boolean]] =
+    mutable.Map[(Boolean,SimpleTypeD),Option[Boolean]]()
+
   /** Returns whether this type is a recognizable subtype of another given type.
    * It is a subset test. This might be undecidable.
    *
@@ -100,26 +114,31 @@ abstract class SimpleTypeD { // SimpleTypeD
    * @return an optional Boolean which is true if this type is a subtype of t
    */
   def subtypep(t: SimpleTypeD): Option[Boolean] = {
-    lazy val orResult = t match {
-      case SOr(args@_*) if args.exists(a => subtypep(a).contains(true)) => Some(true)
-      case _ => None
-    }
-    lazy val andResult = t match {
-      case SAnd(args@_*) if args.forall(a => subtypep(a).contains(true)) => Some(true)
-      case _ => None
-    }
-    if ((t.getClass eq this.getClass)
-      && (t == this))
-      Some(true)
-    else if (t.canonicalize() == STop)
-      Some(true)
-    else if (orResult.contains(true))
-      orResult
-    else if (andResult.contains(true))
-      andResult
-    else {
-      subtypepDown(t)
-    }
+    knownSubtypes
+      .getOrElseUpdate((SAtomic.getClosedWorldView(),t),
+                       locally {
+                         lazy val orResult = t match {
+                           case SOr(args@_*) if args.exists(a => subtypep(a).contains(true)) => Some(true)
+                           case _ => None
+                         }
+                         lazy val andResult = t match {
+                           case SAnd(args@_*) if args.forall(a => subtypep(a).contains(true)) => Some(true)
+                           case _ => None
+                         }
+                         if ((t.getClass eq this.getClass)
+                           && (t == this))
+                           Some(true)
+                         else if (t.canonicalize() == STop)
+                           Some(true)
+                         else if (orResult.contains(true))
+                           orResult
+                         else if (andResult.contains(true))
+                           andResult
+                         else {
+                           subtypepDown(t)
+                         }
+                       }
+                       )
   }
 
   protected def subtypepDown(t: SimpleTypeD): Option[Boolean] = {
