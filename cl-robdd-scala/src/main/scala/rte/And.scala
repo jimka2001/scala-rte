@@ -66,7 +66,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversion8():Rte = {
+  def conversionA8():Rte = {
     // if operands contains EmptyWord, then the intersection is either EmptyWord or EmptySet
     if (! operands.contains(EmptyWord))
       this
@@ -76,7 +76,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       EmptySet
   }
 
-  def conversion9():Rte = {
+  def conversionA9():Rte = {
     if (matchesOnlySingletons && operands.exists(Rte.isStar))
     // if x matches only singleton then And(x,y*) -> And(x,y)
       create(operands.map {
@@ -87,7 +87,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversion10():Rte = {
+  def conversionA10():Rte = {
     if (operands.exists(Rte.isOr))
     // And(A,B,Or(X,Y,Z),C,D)
     // --> Or(And(A,B,   X,   C, D)),
@@ -101,14 +101,16 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversion12():Rte = {
-    if (singletons.exists(td => td.inhabited.contains(false)))
-      EmptySet
-    else
-      this
+  def conversionA18():Rte = {
+    operands.collectFirst{
+      case Singleton(td) if td.inhabited.contains(false) => td
+    } match {
+      case None => this
+      case _ => EmptySet
+    }
   }
 
-  def conversion13():Rte = {
+  def conversionA13():Rte = {
     if (operands.contains(Sigma)
       && operands.exists(Rte.isSingleton)
       && singletons.exists(td => td.inhabited.contains(true)))
@@ -117,7 +119,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversionC16b():Rte = {
+  def conversionD16b():Rte = {
     val ss = operands.collect{
       case Singleton(td) => td
     }
@@ -128,7 +130,32 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
     }
     create(filtered)
   }
-  def conversion17a():Rte = {
+
+  def conversionA17():Rte = {
+    // if And(...) contains a Cat(...) with at least 2 non-nullable components,
+    //    this  Cat matches only sequences of length 2 or more.
+    // If And(...) contains a singleton, then it matches only sequences
+    //    of length 1, perhaps an empty set of such sequences if the singleton type
+    //    is empty.
+    // If both are true, then the And() matches EmptySet
+    lazy val tds = operands.collect{
+      case Singleton(td) => td
+    }
+    lazy val cats:Seq[Cat] = operands.collect{
+      case c:Cat => c
+    }
+
+    if ((operands.contains(Sigma) || tds.nonEmpty)
+      // do we have more than 1 non-nullable argument of some Cat(...)
+      && cats.collectFirst {
+      case Cat(tds) if tds.iterator.filter(!_.nullable).take(2).size > 1 => true
+    }.nonEmpty)
+      EmptySet
+    else
+      this
+  }
+
+  def conversionA17a():Rte = {
     // if And(...) has more than one Cat(...) which has no nullable operand,
     //    then the number of non-nullables must be the same, else EmptySet.
     //    We also replace the several Cat(...) (having no nullables)
@@ -158,7 +185,8 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
     } else
       EmptySet
   }
-  def conversion17b():Rte = {
+
+  def conversionA17b():Rte = {
     // after 17a we know that if there are multiple Cats(...) without a nullable,
     //   then all such Cats(...) without a nullable have same number of operands.
     //   So assure that all other Cats have no more non-nullable operands.
@@ -178,30 +206,8 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       case _ => EmptySet
     }
   }
-  def conversion17():Rte = {
-    // if And(...) contains a Cat(...) with at least 2 non-nullable components,
-    //    this the Cat matches only sequences of length 2 or more.
-    // If And(...) contains a singleton, then it matches only sequences
-    //    of length 1, perhaps an empty set of such sequences if the singleton type
-    //    is empty.
-    // If both are true, then the And() matches EmptySet
-    lazy val tds = operands.collect{
-      case Singleton(td) => td
-    }
-    lazy val cats:Seq[Cat] = operands.collect{
-      case c:Cat => c
-    }
 
-    if ((operands.contains(Sigma) || tds.nonEmpty)
-      // do we have more than 1 non-nullable argument of some Cat(...)
-      && cats.collectFirst {
-      case Cat(tds) if tds.iterator.filter(!_.nullable).take(2).size > 1 => true
-    }.nonEmpty)
-      EmptySet
-    else
-      this
-  }
-  def conversion17c():Rte = {
+  def conversionA17c():Rte = {
     // if And(...) contains a Cat with no nullables, (or explicit Sigma or Singleton)
     //  then remove the nullables from ever other Cat with that many non-nullables,
 
@@ -222,15 +228,8 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
         })
     }
   }
-  def conversion18():Rte = {
-    operands.collectFirst{
-      case Singleton(td) if td.inhabited.contains(false) => td
-    } match {
-      case None => this
-      case _ => EmptySet
-    }
-  }
-  def conversion19():Rte = {
+
+  def conversionA19():Rte = {
     val canonicalizedSingletons: SimpleTypeD = SAnd.createAnd(singletons).canonicalize()
 
     if (canonicalizedSingletons == SEmpty)
@@ -251,33 +250,33 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
     //println("canonicalizing And: " + operands)
 
     findSimplifier(tag="and", this, verbose=false,List[(String,() => Rte)](
-     "1" -> (() => { conversion1() }),
-     "3" -> (() => { conversion3() }),
-     "4" -> (() => { conversion4() }),
-     "6" -> ( () => { conversion6() }),
-     "7" -> (() => { conversion7() }),
-     "C7" -> (() => { conversionC7() }),
-     "8" -> (() => { conversion8() }),
-     "9" -> (() => { conversion9() }),
-     "10" -> (() => { conversion10() }),
-     "C11" -> (() => { conversionC11() }),
-     "12" -> ( () => { conversion12() }),
-     "C12" -> ( () => { conversionC12() }),
-     "13" -> (() => { conversion13() }),
-     "21" -> ( () => { conversion21() }),
-     "C15" -> ( () => { conversionC15() }),
-     "C16" -> ( () => { conversionC16() }),
-     "C16b" -> (() => { conversionC16b() }),
-     "17" -> (() => { conversion17() }),
-     "17a" -> (() => { conversion17a() }),
-     "17b" -> (() => { conversion17b() }),
-     "17c" -> (() => { conversion17c() }),
-     "18" -> (() => { conversion18() }),
-     "19" -> (() => { conversion19() }),
-     "C17" -> (() => { conversionC17() }),
-     "99" -> (() => { conversion99() }),
-     "5" -> (() => { conversion5() }),
-     "super" -> (() => { super.canonicalizeOnce})
+      "1" -> (() => { conversionC1() }),
+      "3" -> (() => { conversionC3() }),
+      "4" -> (() => { conversionC4() }),
+      "6" -> ( () => { conversionC6() }),
+      "7" -> (() => { conversion7() }),
+      "C7" -> (() => { conversionC7() }),
+      "8" -> (() => { conversionA8() }),
+      "9" -> (() => { conversionA9() }),
+      "10" -> (() => { conversionA10() }),
+      "C11" -> (() => { conversionC11() }),
+      "C14" -> (() => { conversionC14() }),
+      "18" -> ( () => { conversionA18() }),
+      "C12" -> ( () => { conversionC12() }),
+      "13" -> (() => { conversionA13() }),
+      "21" -> ( () => { conversionC21() }),
+      "C15" -> ( () => { conversionC15() }),
+      "C16" -> ( () => { conversionC16() }),
+      "C16b" -> (() => { conversionD16b() }),
+      "17" -> (() => { conversionA17() }),
+      "17a" -> (() => { conversionA17a() }),
+      "17b" -> (() => { conversionA17b() }),
+      "17c" -> (() => { conversionA17c() }),
+      "A19" -> (() => { conversionA19() }),
+      "C17" -> (() => { conversionC17() }),
+      "99" -> (() => { conversionC99() }),
+      "5" -> (() => { conversionC5() }),
+      "super" -> (() => { super.canonicalizeOnce})
       ))
   }
 }

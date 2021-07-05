@@ -43,7 +43,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
       case Seq(r) => r.firstTypes
       case Seq(r, rs@_*) =>
         if (r.nullable)
-          r.firstTypes union Cat(rs).firstTypes
+          r.firstTypes union Cat.createCat(rs).firstTypes
         else
           r.firstTypes
     }

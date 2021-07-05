@@ -45,7 +45,7 @@ case class Star(operand:Rte) extends Rte {
       case Star(EmptyWord) => EmptyWord
       case Star(EmptySet) => EmptyWord
       // x** -> x*
-      case Star(Star(r)) => Star(r)
+      case Star(s@Star(r)) => s
       case _ => this
     }
   }

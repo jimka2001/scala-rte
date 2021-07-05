@@ -37,7 +37,7 @@ case class Not(operand:Rte) extends Rte {
       case EmptySet => Rte.sigmaStar
       case Singleton(SEmpty) => Rte.sigmaStar
 
-      // Not(Not(r)) -> Not(r)
+      // Not(Not(r)) -> r
       case Not(r) => r
       // Not(And(a,b)) -> Or(Not(a),Not(b))
       case And(Seq(rs@_*)) => Or.createOr(rs.map(Not))

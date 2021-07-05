@@ -61,7 +61,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
     _.nullable
   }
 
-  def conversion8(existsNullable : => Boolean):Rte = {
+  def conversionO8(existsNullable : => Boolean):Rte = {
     val maybePlus = operands.find(Rte.isPlus)
 
     // (:or A :epsilon B (:cat X (:* X)) C)
@@ -81,7 +81,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversion9(existsNullable: =>Boolean):Rte = {
+  def conversionO9(existsNullable: =>Boolean):Rte = {
     lazy val maybeCatxyz = operands.find(Rte.catxyzp) // (:cat X Y Z (:* (:cat X Y Z)))
 
     // (:or A :epsilon B (:cat X Y Z (:* (:cat X Y Z))) C)
@@ -97,7 +97,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversion10():Rte = {
+  def conversionO10():Rte = {
     // (:or A :epsilon B (:* X) C)
     //   --> (:or A B (:* X) C)
     if (operands.contains(EmptyWord) && operands.exists(r => r != EmptyWord && r.nullable))
@@ -106,7 +106,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversion11b():Rte = {
+  def conversionO11b():Rte = {
     // if Sigma is in the operands, then filter out all singletons
     // Or(Singleton(A),Sigma,...) -> Or(Sigma,...)
     if (operands.contains(Sigma))
@@ -118,33 +118,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
       this
   }
 
-  def conversion13():Rte = {
-    // Or(A,Not(A),X) -> SigmaStar
-    operands.collectFirst{
-      case Not(rt) if operands.contains(rt) => rt
-    } match {
-      case None => this
-      case Some(_) => Rte.sigmaStar
-    }
-  }
-
-  def conversion14():Rte = {
-    // Or(A,Not(B),X) -> Sigma if B is subtype of A
-
-    val subs = operands.collect{
-      case Not(Singleton(sub)) => sub
-    }
-    lazy val sups = operands.collect{
-      case Singleton(sup) => sup
-    }
-
-    subs.find{sub => sups.exists(sup => sub.subtypep(sup).contains(true))} match {
-      case None => this
-      case Some(_) => Rte.sigmaStar
-    }
-  }
-
-  def conversion15():Rte = {
+  def conversionO15():Rte = {
     // Or(Not(A),B*,C) = Or(Not(A),C) if A and B  disjoint,
     //   i.e. remove all B* where b is disjoint from A
 
@@ -162,7 +136,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
     }
   }
 
-  def conversionC16b():Rte = {
+  def conversionD16b():Rte = {
     val nn = operands.collect{
       case Not(Singleton(td)) => td
     }
@@ -177,27 +151,26 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
   override def canonicalizeOnce: Rte = {
     lazy val existsNullable = operands.exists(_.nullable)
     findSimplifier(tag="or",target=this,verbose=false,List[(String,() => Rte)](
-      "1" -> (() => { conversion1() }),
-      "3" -> (() => { conversion3() }),
-      "4" -> (() => { conversion4() }),
-      "6" -> (() => { conversion6() }),
+      "1" -> (() => { conversionC1() }),
+      "3" -> (() => { conversionC3() }),
+      "4" -> (() => { conversionC4() }),
+      "6" -> (() => { conversionC6() }),
       "7" -> (() => { conversionC7() }),
-      "8" -> (() => { conversion8(existsNullable)}),
-      "9" -> (() => { conversion9(existsNullable)}),
-      "10" -> (() => { conversion10()}),
+      "8" -> (() => { conversionO8(existsNullable)}),
+      "9" -> (() => { conversionO9(existsNullable)}),
+      "10" -> (() => { conversionO10()}),
       "C11" -> (() => { conversionC11()}),
-      "11b" -> (() => { conversion11b()}),
+      "C14" -> (() => { conversionC14()}),
+      "11b" -> (() => { conversionO11b()}),
       "C16" -> (() => { conversionC16()}),
-      "C16b" -> (() => { conversionC16b()}),
+      "C16b" -> (() => { conversionD16b()}),
       "C12" -> (() => { conversionC12()}),
-      "13" -> (() => { conversion13()}),
-      "14" -> (() => { conversion14()}),
-      "15" -> (() => { conversion15()}),
-      "21" -> (() => { conversion21()}),
+      "15" -> (() => { conversionO15()}),
+      "21" -> (() => { conversionC21()}),
       "C15" -> (() => { conversionC15()}),
       "C17" -> (() => { conversionC17()}),
-      "99" -> (() => { conversion99() }),
-      "5" -> (() => { conversion5() }),
+      "99" -> (() => { conversionC99() }),
+      "5" -> (() => { conversionC5() }),
       "super" -> (() => { super.canonicalizeOnce })
       ))
   }

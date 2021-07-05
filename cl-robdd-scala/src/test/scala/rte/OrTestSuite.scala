@@ -251,14 +251,14 @@ class OrTestSuite extends AnyFunSuite {
     val ac = Singleton(SMember("a","c"))
 
 
-    assert(Or(ab,Not(a)).conversionC16b()
+    assert(Or(ab,Not(a)).conversionD16b()
            == Or(ab,Not(a)))
 
     // Or(b,Not(ac)) => Or(Not(ac))
-    assert(Or(b,Not(ac)).conversionC16b()
+    assert(Or(b,Not(ac)).conversionD16b()
            == Not(ac))
 
-    assert(Or(Singleton(SAtomic(classOf[Any])),Not(ab)).conversionC16b()
+    assert(Or(Singleton(SAtomic(classOf[Any])),Not(ab)).conversionD16b()
            == Or(Singleton(SAtomic(classOf[Any])),Not(ab)))
 
   }
@@ -385,35 +385,35 @@ class OrTestSuite extends AnyFunSuite {
 
   test("or conversion3"){
     // Or(... Sigma* ....) -> Sigma*
-    assert(Or(Or(),Star(Sigma),Or()).conversion3() == Star(Sigma))
-    assert(Or(Or(),Star(Sigma),Star(Sigma),Or()).conversion3() == Star(Sigma))
-    assert(Or(Or(),Or()).conversion3() != Star(Sigma))
+    assert(Or(Or(),Star(Sigma),Or()).conversionC3() == Star(Sigma))
+    assert(Or(Or(),Star(Sigma),Star(Sigma),Or()).conversionC3() == Star(Sigma))
+    assert(Or(Or(),Or()).conversionC3() != Star(Sigma))
   }
   test("or conversion4"){
     // uniquify
-    assert(Or(Or(),Star(Sigma),Or()).conversion4() == Or(Star(Sigma),Or()))
+    assert(Or(Or(),Star(Sigma),Or()).conversionC4() == Or(Star(Sigma), Or()))
 
     // order is maintained
-    assert(Or(Or(),And()).conversion4() == Or(Or(),And()))
+    assert(Or(Or(),And()).conversionC4() == Or(Or(), And()))
   }
   test("or conversion5"){
     val X = Singleton(SEql(1))
     val Y = Singleton(SEql(2))
-    assert(Or(Y,X).conversion5() == Or(X,Y))
-    assert(Or(X,Y).conversion5() == Or(X,Y))
+    assert(Or(Y,X).conversionC5() == Or(X, Y))
+    assert(Or(X,Y).conversionC5() == Or(X, Y))
   }
   test("or conversion6"){
     // remove EmptySet and flatten Or(Or(...)...)
     val X = Singleton(SEql(1))
     val Y = Singleton(SEql(2))
-    assert(Or(X).conversion6() == X)
-    assert(Or(Or(X)).conversion6() == X)
-    assert(Or(Or(Or(X))).conversion6() == Or(X))
-    assert(Or(Or(X),Or(X)).conversion6() == Or(X,X))
-    assert(Or(X,Y,EmptySet).conversion6() == Or(X,Y))
-    assert(Or(EmptySet,X,EmptySet,Y,EmptySet).conversion6() == Or(X,Y))
-    assert(Or(X,Y).conversion6() == Or(X,Y))
-    assert(Or(Y,X,Y).conversion6() == Or(Y,X,Y))
+    assert(Or(X).conversionC6() == X)
+    assert(Or(Or(X)).conversionC6() == X)
+    assert(Or(Or(Or(X))).conversionC6() == Or(X))
+    assert(Or(Or(X),Or(X)).conversionC6() == Or(X, X))
+    assert(Or(X,Y,EmptySet).conversionC6() == Or(X, Y))
+    assert(Or(EmptySet,X,EmptySet,Y,EmptySet).conversionC6() == Or(X, Y))
+    assert(Or(X,Y).conversionC6() == Or(X, Y))
+    assert(Or(Y,X,Y).conversionC6() == Or(Y, X, Y))
   }
   test("or conversion7"){
     // (:or A B (:* B) C)
@@ -436,22 +436,22 @@ class OrTestSuite extends AnyFunSuite {
 
     // (:or A :epsilon B (:cat X (:* X)) C)
     //   --> (:or A :epsilon B (:* X) C )
-    assert(Or(A,EmptyWord,B,Cat(X,Star(X)),C).conversion8(true)
+    assert(Or(A,EmptyWord,B,Cat(X,Star(X)),C).conversionO8(true)
            == Or(A,EmptyWord,B,Star(X),C))
 
     // (:or :epsilon (:cat X (:* X)))
     //   --> (:or :epsilon (:* X))
-    assert(Or(EmptyWord,Cat(X,Star(X))).conversion8(true)
+    assert(Or(EmptyWord,Cat(X,Star(X))).conversionO8(true)
            == Or(EmptyWord,Star(X)))
 
     // (:or (:* C) (:cat X (:* X)))
     //   --> (:or (:* C) (:* X))
-    assert(Or(Star(C),Cat(X,Star(X))).conversion8(true)
+    assert(Or(Star(C),Cat(X,Star(X))).conversionO8(true)
              == Or(Star(C),Star(X)))
 
     // (:or (:* C) (:cat X (:* A)))
     //   --> no change
-    assert(Or(Star(C),Cat(X,Star(A))).conversion8(true)
+    assert(Or(Star(C),Cat(X,Star(A))).conversionO8(true)
              == Or(Star(C),Cat(X,Star(A))))
   }
   test("or conversion9"){
@@ -464,12 +464,12 @@ class OrTestSuite extends AnyFunSuite {
 
     // (:or A :epsilon B (:cat X Y Z (:* (:cat X Y Z))) C)
     //   --> (:or A :epsilon B (:* (:cat X Y Z)) C )
-    assert(Or(A,EmptyWord,B,Cat(X,Y,Z,Star(Cat(X,Y,Z))), C).conversion9(true)
+    assert(Or(A,EmptyWord,B,Cat(X,Y,Z,Star(Cat(X,Y,Z))), C).conversionO9(true)
              == Or(A,EmptyWord,B,Star(Cat(X,Y,Z)),C))
 
     // (:or B* (:cat X Y Z (:* (:cat X Y Z))))
     //   --> (:or B* (:* (:cat X Y Z)))
-    assert(Or(Star(B),Cat(X,Y,Z,Star(Cat(X,Y,Z)))).conversion9(true)
+    assert(Or(Star(B),Cat(X,Y,Z,Star(Cat(X,Y,Z)))).conversionO9(true)
              == Or(Star(B),Star(Cat(X,Y,Z))))
   }
   test("or conversion10"){
@@ -479,9 +479,9 @@ class OrTestSuite extends AnyFunSuite {
     val B = Singleton(SEql("B"))
     val C = Singleton(SEql("C"))
     val X = Singleton(SEql("X"))
-    assert(Or(A,EmptyWord,B,Star(X),C).conversion10()
+    assert(Or(A,EmptyWord,B,Star(X),C).conversionO10()
              == Or(A,B,Star(X),C))
-    assert(Or(A,EmptyWord,B,C).conversion10()
+    assert(Or(A,EmptyWord,B,C).conversionO10()
              == Or(A,EmptyWord,B,C))
   }
   test("or conversion11b"){
@@ -491,9 +491,9 @@ class OrTestSuite extends AnyFunSuite {
     val AB = Singleton(SMember("A","B"))
     val C = Singleton(SEql("C"))
     val X = Star(A)
-    assert(Or(A,AB,Sigma,C,X).conversion11b()
+    assert(Or(A,AB,Sigma,C,X).conversionO11b()
              == Or(Sigma,X))
-    assert(Or(A,AB,C,X).conversion11b()
+    assert(Or(A,AB,C,X).conversionO11b()
              == Or(A,AB,C,X))
   }
   test("or conversionC16 b"){
@@ -537,27 +537,40 @@ class OrTestSuite extends AnyFunSuite {
     assert(And(A,Cat(Sigma,Sigma,Star(Sigma)),B,Not(X)).conversionC12()
            == And(A,Cat(Sigma,Sigma,Star(Sigma)),B).conversionC12())
   }
-  test("or conversion13"){
+  test("combo conversion13"){
     // Or(A,Not(A),X) -> SigmaStar
     val A = Singleton(SEql("A"))
     val B = Singleton(SEql("B"))
     val X = Singleton(SEql("X"))
-    assert(Or(A,B,Not(A),X).conversion13()
+    assert(Or(A,B,Not(A),X).conversionC11()
            == Star(Sigma))
-    assert(Or(A,B,X).conversion13()
+    assert(Or(A,B,X).conversionC11()
              == Or(A,B,X))
-    assert(Or(A,Not(B),X).conversion13()
+    assert(Or(A,Not(B),X).conversionC11()
              == Or(A,Not(B),X))
+
+    assert(And(A,B,Not(A),X).conversionC11()
+             == EmptySet)
+    assert(And(A,B,X).conversionC11()
+             == And(A,B,X))
+    assert(And(A,Not(B),X).conversionC11()
+             == And(A,Not(B),X))
   }
-  test("or conversion14"){
+  test("combo conversionC14"){
     // Or(A,Not(B),X) -> Sigma* if B is subtype of A
     val A = Singleton(SMember("A","B"))
     val B = Singleton(SEql("B"))
     val X = Singleton(SEql("X"))
-    assert(Or(A,Not(B),X).conversion14()
+    assert(Or(A,Not(B),X).conversionC14()
              == Star(Sigma))
-    assert(Or(Not(A),B,X).conversion14()
+    assert(Or(Not(A),B,X).conversionC14()
              != Star(Sigma))
+    // And(A,Not(B),X) -> EmptySet if A is subtype of B
+    assert(And(B,Not(A),X).conversionC14()
+             == EmptySet)
+    assert(And(Not(B),A,X).conversionC14()
+             != EmptySet)
+
   }
   test("or conversion15"){
     // Or(Not(A),B*) = Not(A) if A and B  disjoint
@@ -566,13 +579,13 @@ class OrTestSuite extends AnyFunSuite {
     val B = Singleton(SEql("B"))
     val C = Singleton(SEql("C"))
     val D = Singleton(SEql("D"))
-    assert(Or(Not(A),Star(C)).conversion15()
+    assert(Or(Not(A),Star(C)).conversionO15()
              == Not(A))
-    assert(Or(Not(A),Star(B)).conversion15()
+    assert(Or(Not(A),Star(B)).conversionO15()
              == Or(Not(A),Star(B)))
-    assert(Or(Not(A),Star(C),B).conversion15()
+    assert(Or(Not(A),Star(C),B).conversionO15()
              == Or(Not(A),B))
-    assert(Or(Not(A),Star(C),B,Star(D),Star(A)).conversion15()
+    assert(Or(Not(A),Star(C),B,Star(D),Star(A)).conversionO15()
              == Or(Not(A),B,Star(A)))
   }
 
@@ -671,7 +684,7 @@ class OrTestSuite extends AnyFunSuite {
     // canonicalizing sub nodes
     val A = Singleton(SMember("A","B"))
     val B = Singleton(SEql("B"))
-    assert(Or(Or(A,A),Or(B,B)).conversion99()
+    assert(Or(Or(A,A),Or(B,B)).conversionC99()
            == Or(A,B))
   }
 }

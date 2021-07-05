@@ -39,7 +39,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
   def setOperation(a:Seq[Any],b:Seq[Any]):Seq[Any]
   def setDualOperation(a:Seq[Any],b:Seq[Any]):Seq[Any]
 
-  def conversion3():Rte = {
+  def conversionC3():Rte = {
     // Or(... Sigma* ....) -> Sigma*
     // And(... EmptySet ....) -> EmptySet
     if (operands.contains(zero))
@@ -48,15 +48,15 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
       this
   }
 
-  def conversion4():Rte = {
+  def conversionC4():Rte = {
     create(uniquify(operands))
   }
 
-  def conversion5():Rte = {
+  def conversionC5():Rte = {
     create(Rte.sortAlphabetically(operands))
   }
 
-  def conversion6():Rte = {
+  def conversionC6():Rte = {
     // remove Sigma* and flatten And(And(...)...)
     // remove EmptySet and flatten Or(Or(...)...)
     create(operands.flatMap{
@@ -85,12 +85,30 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
   }
 
   def conversionC11():Rte = {
-    // And(...,x,Not(x)...)
+    // And(...,x,Not(x)...) -> EmptySet
+    // Or(...,x,Not(x),...) -> Sigma *
     if (operands.exists(r1 => operands.contains(Not(r1))))
       zero
     else
       this
   }
+
+  def conversionC14():Rte = {
+    // Or(A,Not(B),X) -> Sigma* if B is subtype of A
+    // And(A,Not(B),X) -> EmptySet if A is subtype of B
+    val nots = operands.collect{
+      case Not(Singleton(sub)) => sub
+    }
+    lazy val singletons = operands.collect{
+      case Singleton(sup) => sup
+    }
+
+    nots.find{sub => singletons.exists(sup => annihilator(sup,sub).contains(true))} match {
+      case None => this
+      case Some(_) => zero
+    }
+  }
+
 
   def conversionC12():Rte = {
     lazy val cats: Seq[Cat] = operands.collect{
@@ -156,6 +174,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
       }))
     }
   }
+
   def conversionC16():Rte = {
     // WARNING, this function assumes there are no repeated elements
     //     according to ==
@@ -195,8 +214,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     create(filtered)
   }
 
-  def conversionC16b():Rte
-
+  def conversionD16b():Rte
 
   def conversionC17():Rte = {
     // And({1,2,3},Singleton(X),Not(Singleton(Y)))
@@ -227,7 +245,11 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
         }
     }
   }
-  def conversion21():Rte = { // TODO I think this is already in Combination
+
+  def conversionC21():Rte = {
+    // if A and B are disjoint then
+    //  And(A,B,X) --> EmptySet
+    //  Or(Not(A),Not(B),X) --> sigma*
     val singletons = this match {
       case _:And => operands.collect{case Singleton(td) => td}.toList
       case _:Or => operands.collect{case Not(Singleton(td)) => td}.toList
@@ -240,11 +262,12 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     else
       this
   }
-  def conversion99():Rte = {
+
+  def conversionC99():Rte = {
     create(operands.map(_.canonicalizeOnce))
   }
 
-  def conversion1():Rte = create(operands)
+  def conversionC1():Rte = create(operands)
 
   override def canonicalizeOnce: Rte = {
     findSimplifier(tag="combination",target=this,verbose=false,List[(String,() => Rte)](

@@ -130,8 +130,8 @@ class AndTestSuite extends AnyFunSuite {
 
     val Z = Singleton(SAtomic(classOf[TraitX]))
 
-    assert(And(A, Or(X, Y)).conversion10() == Or(And(A, X), And(A, Y)))
-    assert(And(A, Or(X, Y), B).conversion10() == Or(And(A, X, B), And(A, Y, B)))
+    assert(And(A, Or(X, Y)).conversionA10() == Or(And(A, X), And(A, Y)))
+    assert(And(A, Or(X, Y), B).conversionA10() == Or(And(A, X, B), And(A, Y, B)))
   }
   test("canonicalize and") {
     assert(And(EmptySet, EmptySet).canonicalize == EmptySet)
@@ -436,17 +436,17 @@ class AndTestSuite extends AnyFunSuite {
     assert( r1 ~= r2)
   }
   test("and conversion3"){
-    assert(And(And(),EmptySet,And()).conversion3() == EmptySet)
+    assert(And(And(),EmptySet,And()).conversionC3() == EmptySet)
   }
 
   test("and conversion4"){
-    assert(And(Or(),And(),And(),Or()).conversion4() == And(And(),Or()))
+    assert(And(Or(),And(),And(),Or()).conversionC4() == And(And(), Or()))
   }
 
   test("and conversion5"){
-    assert(And(Singleton(SEql(2)),Singleton(SEql(1))).conversion5()
+    assert(And(Singleton(SEql(2)),Singleton(SEql(1))).conversionC5()
              == And(Singleton(SEql(1)),Singleton(SEql(2))))
-    assert(And(Singleton(SEql(1)),Singleton(SEql(2))).conversion5()
+    assert(And(Singleton(SEql(1)),Singleton(SEql(2))).conversionC5()
              == And(Singleton(SEql(1)),Singleton(SEql(2))))
   }
 
@@ -455,7 +455,7 @@ class AndTestSuite extends AnyFunSuite {
     assert(And(Star(Sigma),
                And(Singleton(SEql(1)),Singleton(SEql(2))),
                And(Singleton(SEql(3)),Singleton(SEql(4))),
-               Star(Sigma)).conversion6()
+               Star(Sigma)).conversionC6()
       == And(Singleton(SEql(1)),Singleton(SEql(2)),
              Singleton(SEql(3)),Singleton(SEql(4))))
   }
@@ -467,22 +467,22 @@ class AndTestSuite extends AnyFunSuite {
   
   test("and conversion8"){
     // if operands contains EmptyWord, then the intersection is either EmptyWord or EmptySet
-    assert(And(EmptyWord,Star(Singleton(SEql(1)))).conversion8()
+    assert(And(EmptyWord,Star(Singleton(SEql(1)))).conversionA8()
              == EmptyWord)
-    assert(And(EmptyWord,Singleton(SEql(1))).conversion8()
+    assert(And(EmptyWord,Singleton(SEql(1))).conversionA8()
              == EmptySet)
   }
   test("and conversion9"){
     val x = Singleton(SEql(1))
     val y = Singleton(SEql(1))
     // if x matches only singleton then And(x,y*) -> And(x,y)
-    assert(And(x,Star(y)).conversion9()
+    assert(And(x,Star(y)).conversionA9()
              == And(x,y))
-    assert(And(Star(x),y).conversion9()
+    assert(And(Star(x),y).conversionA9()
              == And(x,y))
-    assert(And(Star(x),Star(y)).conversion9()
+    assert(And(Star(x),Star(y)).conversionA9()
              == And(Star(x),Star(y)))
-    assert(And(x,y).conversion9()
+    assert(And(x,y).conversionA9()
              == And(x,y))
   }
   test("and conversion10"){
@@ -497,7 +497,7 @@ class AndTestSuite extends AnyFunSuite {
     val x = Singleton(SEql("x"))
     val y = Singleton(SEql("y"))
     val z = Singleton(SEql("z"))
-    assert(And(a,b,Or(x,y,z),c,d).conversion10()
+    assert(And(a,b,Or(x,y,z),c,d).conversionA10()
            == Or(And(a,b,x,c,d),
                  And(a,b,y,c,d),
                  And(a,b,z,c,d)))
@@ -511,18 +511,18 @@ class AndTestSuite extends AnyFunSuite {
     assert(And(a,Not(b),Not(Not(b))).conversionC11()
              == EmptySet)
   }
-  test("and conversionC12"){
+  test("and conversionA18"){
     val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))
-    assert(And(Singleton(SEmpty),a,b).conversion12()
+    assert(And(Singleton(SEmpty),a,b).conversionA18()
              == EmptySet)
   }
   test("and conversion13"){
     val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))
-    assert(And(Sigma,Singleton(SEmpty),a,b).conversion13()
+    assert(And(Sigma,Singleton(SEmpty),a,b).conversionA13()
              == And(Singleton(SEmpty),a,b))
-    assert(And(Sigma,Singleton(SEmpty),Singleton(SEmpty)).conversion13()
+    assert(And(Sigma,Singleton(SEmpty),Singleton(SEmpty)).conversionA13()
              == And(Sigma,Singleton(SEmpty),Singleton(SEmpty)))
   }
   test("and conversion21"){
@@ -530,15 +530,15 @@ class AndTestSuite extends AnyFunSuite {
     val b = Singleton(SEql("b"))
     val ab = Singleton(SMember("a","b"))
     // detect intersection of disjoint
-    assert(And(a,b).conversion21()
+    assert(And(a,b).conversionC21()
            == EmptySet)
-    assert(And(a,ab).conversion21()
+    assert(And(a,ab).conversionC21()
            == And(a,ab))
-    assert(Or(a,b).conversion21()
+    assert(Or(a,b).conversionC21()
            == Or(a,b))
-    assert(Or(Not(a),Not(b)).conversion21()
+    assert(Or(Not(a),Not(b)).conversionC21()
            == Star(Sigma))
-    assert(Or(a,ab).conversion21()
+    assert(Or(a,ab).conversionC21()
            == Or(a,ab))
 
   }
@@ -574,27 +574,27 @@ class AndTestSuite extends AnyFunSuite {
 
 
     // And(b,Not(ac)) => And(b)
-    assert(And(b,Not(ac)).conversionC16b()
+    assert(And(b,Not(ac)).conversionD16b()
            == b)
 
-    assert(And(Singleton(SAtomic(classOf[Any])),Not(ab)).conversionC16b()
+    assert(And(Singleton(SAtomic(classOf[Any])),Not(ab)).conversionD16b()
            == And(Singleton(SAtomic(classOf[Any])),Not(ab)))
   }
   test("and conversion17"){
     val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))
-    assert(And(Sigma,Cat(a,b)).conversion17()
+    assert(And(Sigma,Cat(a,b)).conversionA17()
              == EmptySet)
-    assert(And(Sigma,Cat(Star(a),b)).conversion17()
+    assert(And(Sigma,Cat(Star(a),b)).conversionA17()
              == And(Sigma,Cat(Star(a),b)))
-    assert(And(Sigma,Cat(a,Star(a),b)).conversion17()
+    assert(And(Sigma,Cat(a,Star(a),b)).conversionA17()
              == EmptySet)
 
-    assert(And(a,Cat(a,b)).conversion17()
+    assert(And(a,Cat(a,b)).conversionA17()
              == EmptySet)
-    assert(And(a,Cat(Star(a),b)).conversion17()
+    assert(And(a,Cat(Star(a),b)).conversionA17()
              == And(a,Cat(Star(a),b)))
-    assert(And(a,Cat(a,Star(a),b)).conversion17()
+    assert(And(a,Cat(a,Star(a),b)).conversionA17()
              == EmptySet)
   }
   test("and conversion17a"){
@@ -602,24 +602,24 @@ class AndTestSuite extends AnyFunSuite {
     val b = Singleton(SEql("b"))
     // considering only the Cat's with no nullables,
     //    they must all have the same number of operands
-    assert(And(Cat(a,a),Cat(a,a,a)).conversion17a()
+    assert(And(Cat(a,a),Cat(a,a,a)).conversionA17a()
              == EmptySet)
-    assert(And(Cat(a,a,a),Cat(a,a,a)).conversion17a()
+    assert(And(Cat(a,a,a),Cat(a,a,a)).conversionA17a()
              != EmptySet)
-    assert(And(Cat(a,a),Cat(a,a),Cat(a,a),Cat(a,a,a)).conversion17a()
+    assert(And(Cat(a,a),Cat(a,a),Cat(a,a),Cat(a,a,a)).conversionA17a()
              == EmptySet)
 
-    assert(And(Cat(a,a),Cat(a,a,Star(a))).conversion17a()
+    assert(And(Cat(a,a),Cat(a,a,Star(a))).conversionA17a()
              != EmptySet)
     assert(And(Cat(a,b),
                Cat(b,a),
-               Star(b)).conversion17a()
+               Star(b)).conversionA17a()
              == And(Cat(And(a,b),And(b,a)),
                     Star(b)))
 
     assert(And(Cat(a,b,b,a),
                Cat(b,a,b,b),
-               Star(b)).conversion17a()
+               Star(b)).conversionA17a()
              == And(Cat(And(a,b),
                         And(b,a),
                         And(b,b),
@@ -634,12 +634,12 @@ class AndTestSuite extends AnyFunSuite {
     val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))
 
-    assert(And(Cat(a,a),Cat(a,a,a,Star(a))).conversion17b()
+    assert(And(Cat(a,a),Cat(a,a,a,Star(a))).conversionA17b()
              == EmptySet)
 
-    assert(And(Cat(a,a),Cat(a,a,Star(a))).conversion17b()
+    assert(And(Cat(a,a),Cat(a,a,Star(a))).conversionA17b()
              != EmptySet)
-    assert(And(Cat(a,a),Cat(a,Star(b),a,Star(a))).conversion17b()
+    assert(And(Cat(a,a),Cat(a,Star(b),a,Star(a))).conversionA17b()
              != EmptySet)
   }
   test("and conversion17c"){
@@ -649,10 +649,10 @@ class AndTestSuite extends AnyFunSuite {
     val b = Singleton(SEql("b"))
     val c = Singleton(SEql("c"))
     assert(And(Cat(a,b,Sigma),
-               Cat(Star(c),a,Star(c),b,Star(Sigma),c)).conversion17c()
+               Cat(Star(c),a,Star(c),b,Star(Sigma),c)).conversionA17c()
              == And(Cat(a,b,Sigma),Cat(a,b,c)))
     assert(And(Cat(a,b,Star(Sigma)),
-               Cat(Star(c),a,Star(c),b,Star(Sigma),c)).conversion17c()
+               Cat(Star(c),a,Star(c),b,Star(Sigma),c)).conversionA17c()
              == And(Cat(a,b,Star(Sigma)),
                     Cat(Star(c),a,Star(c),b,Star(Sigma),c)))
 
@@ -660,7 +660,7 @@ class AndTestSuite extends AnyFunSuite {
                Cat(a,Star(b)),
                Cat(a,b,Star(c)),
                Cat(Star(c),a,Star(c),b,Star(Sigma),c),
-               Cat(a,a,a,a,Star(b))).conversion17c()
+               Cat(a,a,a,a,Star(b))).conversionA17c()
              == And(Cat(a,b,c),
                     Cat(a,Star(b)),
                     Cat(a,b,Star(c)),
@@ -669,21 +669,21 @@ class AndTestSuite extends AnyFunSuite {
 
     // e.g. And( Cat(Sigma,Star(Sigma)), Sigma,...) --> And(Sigma,...)
     val ab = Singleton(SMember("a","b"))
-    assert(And(Cat(Sigma,Star(Sigma)),Sigma).conversion17c()
+    assert(And(Cat(Sigma,Star(Sigma)),Sigma).conversionA17c()
              == And(Sigma,Sigma))
-    assert(And(ab,Cat(Sigma,Star(Sigma)),Sigma).conversion17c()
+    assert(And(ab,Cat(Sigma,Star(Sigma)),Sigma).conversionA17c()
              == And(ab,Sigma,Sigma))
   }
   test("and conversion18"){
     // if And(...) contains a singleton which is non inhabited
-    assert(And(Singleton(SAnd(SEql(1),SEql(2)))).conversion18()
+    assert(And(Singleton(SAnd(SEql(1),SEql(2)))).conversionA18()
            == EmptySet)
   }
-  test("and conversion19"){
+  test("and conversionA19"){
     val ab = Singleton(SMember("a","b"))
     val ac = Singleton(SMember("a","c"))
     val bc = Singleton(SMember("b","c"))
-    assert(And(ab,ac,bc).conversion19()
+    assert(And(ab,ac,bc).conversionA19()
            == EmptySet)
   }
 
