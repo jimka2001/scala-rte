@@ -120,7 +120,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
 
   def conversionO15():Rte = {
     // Or(Not(A),B*,C) = Or(Not(A),C) if A and B  disjoint,
-    //   i.e. remove all B* where b is disjoint from A
+    //   i.e. remove all B* where B is disjoint from A
 
     val as = operands.collect{
       case Not(Singleton(td)) => td
