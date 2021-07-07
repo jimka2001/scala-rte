@@ -66,7 +66,18 @@ class AdjuvantTestSuite extends AnyFunSuite {
              == Seq(1,3))
     assert(searchReplace(Seq(1,2,3),2,Seq(20,21,22))
     == Seq(1,20,21,22,3))
-}
+  }
+  test("traceGraph"){
+    def edges(i:Int):Seq[(String,Int)] = {
+      if(i == 0)
+        Seq(("a",1),("b",2))
+      else if (i == 1)
+        Seq(("a",2))
+      else
+        Seq(("b",2),("a",0))
+    }
+    println(traceGraph(0,edges))
+  }
 }
 
 
