@@ -72,7 +72,10 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
       case (_,_) => None
     }
     if (s.inhabited.contains(true)
-      && s.subtypep(t).contains(true)) {
+      && s.subtypep(t).contains(true)
+      && SNot(t).inhabited.contains(true)) {
+      // TODO to test this take random tds td1, td2, and assert that (or (not td1) (not td2))
+      //   is a subtype of (not (and td1 td2)) especially in the case that td1 and td2 are disjoint
       Some(false)
     } else if (hosted.nonEmpty) {
       hosted
