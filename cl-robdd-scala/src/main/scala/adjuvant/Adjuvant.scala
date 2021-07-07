@@ -70,8 +70,7 @@ object Adjuvant {
     //    because that means no new vertices have been encountered, thus
     //    all vertices have been visited.
     @tailrec
-    def recur(v: V,
-              currentStateId:Int,
+    def recur(currentStateId:Int,
               nextAvailableState: Int,
               es: List[(L, V)],
               intToV: Vector[V],
@@ -82,10 +81,10 @@ object Adjuvant {
         case (_, v1) :: _ if !vToInt.contains(v1) =>
           // if we are seeing v1 for the first time, then register it
           //   in intToV and in vToInt.
-          recur(v, currentStateId, nextAvailableState + 1, es,
+          recur(currentStateId, nextAvailableState + 1, es,
                 intToV.appended(v1), vToInt + (v1 -> nextAvailableState), m)
         case (label, v1) :: lvs =>
-          recur(v, currentStateId, nextAvailableState, lvs, intToV, vToInt,
+          recur(currentStateId, nextAvailableState, lvs, intToV, vToInt,
                 m.updated(currentStateId, conj(m(currentStateId), label -> vToInt(v1))))
         case Nil =>
           val next = currentStateId+1
@@ -94,14 +93,14 @@ object Adjuvant {
           //   yet been treated.
           if (next < nextAvailableState) {
             val v2 = intToV(next)
-            recur(v2, next, nextAvailableState, edges(v2).toList, intToV, vToInt, m.appended(s0))
+            recur(next, nextAvailableState, edges(v2).toList, intToV, vToInt, m.appended(s0))
           }
           else
             (intToV, m)
       }
     }
 
-    recur(v0, 0, 1, edges(v0).toList, Vector(v0), Map(v0 -> 0), Vector(s0))
+    recur(0, 1, edges(v0).toList, Vector(v0), Map(v0 -> 0), Vector(s0))
   }
 
   // find and replace all occurrences of `search` in the given sequence,
