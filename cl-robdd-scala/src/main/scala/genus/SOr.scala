@@ -85,7 +85,7 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
     val s = memoize((s: SimpleTypeD) => s.subtypep(t))
     if (tds.isEmpty) {
       SEmpty.subtypep(t)
-    } else if (t.canonicalize() == STop)
+    } else if (t.canonicalize() == STop) // TODO, isn't this check done elsewhere?
       Some(true)
     else if (tds.forall(s(_).contains(true)))
       Some(true)
