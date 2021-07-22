@@ -77,6 +77,40 @@ case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
   def labelToString(label:Int):String = {
     intToTd(label).toString
   }
+
+  def satisfyingTypeDesignators(delta:Bdd):LazyList[SimpleTypeD] = {
+    def satisfying(node:Bdd,lineage:SimpleTypeD):LazyList[SimpleTypeD] = {
+      if (SEmpty == lineage) {
+        // if the lineage is the empty type, then we can prune the recursion
+        LazyList()
+      } else
+        node match {
+          case BddFalse => LazyList()
+          case BddTrue => LazyList(lineage)
+          case node:BddNode =>
+            val td = intToTd(node.label)
+            val left = satisfying(node.positive,SAnd(td,lineage).canonicalize(Some(Dnf)))
+            val right = satisfying(node.negative,SAnd(SNot(td),lineage).canonicalize(Some(Dnf)))
+            left ++ right
+        }
+    }
+    satisfying(delta,STop)
+  }
+
+  def subtypep(that:GenusBdd):Option[Boolean] = {
+    assert(tdToInt eq that.tdToInt)
+    AndNot(bdd,that.bdd) match {
+      case BddFalse => Some(true)
+      case delta:Bdd =>
+        val allEmpty = satisfyingTypeDesignators(delta).forall{
+          td => SEmpty == td.canonicalize()
+        }
+        if (allEmpty)
+          Some(true)
+        else
+          None
+    }
+  }
 }
 
 object GenusBdd {
