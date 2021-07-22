@@ -69,16 +69,33 @@ object Types {
   }
 
   def mdtd(tds:Set[SimpleTypeD]):Seq[SimpleTypeD] = {
-    // this is a very simplistic implementation of mdtd.
-    // it just iterates over all possible combinations of the given sets,
-    // filtering away those which can be proven to be empty
-    val partitions =     typePartitions(tds + STop ).toSeq
-    val distinctPartitions = partitions.distinct
-    if (partitions.size != distinctPartitions.size) {
-      println(s"computed ${partitions.size} partitions")
-      println(s"   reduced = " + distinctPartitions.size)
+    def recur(decomposition: Seq[SimpleTypeD], tds: Set[SimpleTypeD]): Seq[SimpleTypeD] = {
+      if (tds.isEmpty)
+        decomposition
+      else {
+        val td = tds.head
+        val n = SNot(td).canonicalize(Some(NormalForm.Dnf))
+
+        def f(td1: SimpleTypeD): Seq[SimpleTypeD] = {
+          lazy val a = SAnd(td, td1).canonicalize(Some(NormalForm.Dnf))
+          lazy val b = SAnd(n, td1).canonicalize(Some(NormalForm.Dnf))
+          if (td.disjoint(td1).contains(true))
+            Seq(td1)
+          else if (n.disjoint(td1).contains(true))
+            Seq(td1)
+          else if (a.inhabited.contains(false))
+            Seq(td1)
+          else if (b.inhabited.contains(false))
+            Seq(td1)
+          else
+            Seq(a, b)
+        }
+
+        recur(decomposition.flatMap(f), tds - td)
+      }
     }
-    distinctPartitions
+
+    recur(Seq(STop), tds - STop)
   }
 
   def compareSequence(tds1:Seq[SimpleTypeD], tds2:Seq[SimpleTypeD]):Boolean = {
