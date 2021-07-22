@@ -82,19 +82,11 @@ case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
 object GenusBdd {
 
   def prettyAnd(terms: List[SimpleTypeD]): SimpleTypeD = {
-    terms match {
-      case Nil => STop
-      case h :: Nil => h
-      case _ => SAnd(terms: _*)
-    }
+    SAnd.createAnd(terms)
   }
 
   def prettyOr(terms: List[SimpleTypeD]): SimpleTypeD = {
-    terms match {
-      case Nil => SEmpty
-      case h :: Nil => h
-      case _ => SOr(terms: _*)
-    }
+    SOr.createOr(terms)
   }
 
   // returns an OR of ANDs representing the type expressed by the given Bdd.
