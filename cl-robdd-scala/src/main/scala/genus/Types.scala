@@ -25,50 +25,53 @@ import java.lang
 import scala.annotation.tailrec
 
 object Types {
+
   import scala.runtime.BoxedUnit
   import scala.language.implicitConversions
 
   // allow implicit conversions from c:Class[_] to AtomicType(c)
   //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)
   //    classOf[A] && classOf[B]
-  implicit def class2type(c:Class[_]): SimpleTypeD = SAtomic(c)
-  def createMember(xs:Seq[Any]):SimpleTypeD = xs match {
+  implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
+
+  def createMember(xs: Seq[Any]): SimpleTypeD = xs match {
     case Seq() => SEmpty
     case Seq(a) => SEql(a)
-    case _ => SMember(xs :_*)
+    case _ => SMember(xs: _*)
   }
-  val atomicp: SimpleTypeD=>Boolean = {
+
+  val atomicp: SimpleTypeD => Boolean = {
     case SAtomic(_) => true
     case _ => false
   }
-  val eqlp: SimpleTypeD=>Boolean = {
+  val eqlp: SimpleTypeD => Boolean = {
     case SEql(_) => true
     case _ => false
   }
-  val memberp: SimpleTypeD=>Boolean = {
+  val memberp: SimpleTypeD => Boolean = {
     case SMember(_*) => true
     case SEql(_) => true
     case _ => false
   }
-  val andp: SimpleTypeD=>Boolean = {
+  val andp: SimpleTypeD => Boolean = {
     case SAnd(_*) => true
     case _ => false
   }
-  val orp: SimpleTypeD=>Boolean = {
+  val orp: SimpleTypeD => Boolean = {
     case SOr(_*) => true
     case _ => false
   }
-  val combop: SimpleTypeD=>Boolean = {
+  val combop: SimpleTypeD => Boolean = {
     case SOr(_*) => true
     case SAnd(_*) => true
     case _ => false
   }
-  val notp: SimpleTypeD=>Boolean = {
+  val notp: SimpleTypeD => Boolean = {
     case SNot(_) => true
     case _ => false
   }
 
-  def mdtd(tds:Set[SimpleTypeD]):Seq[SimpleTypeD] = {
+  def mdtd(tds: Set[SimpleTypeD]): Seq[SimpleTypeD] = {
     def recur(decomposition: Seq[SimpleTypeD], tds: Set[SimpleTypeD]): Seq[SimpleTypeD] = {
       if (tds.isEmpty)
         decomposition
@@ -98,20 +101,21 @@ object Types {
     recur(Seq(STop), tds - STop)
   }
 
-  def compareSequence(tds1:Seq[SimpleTypeD], tds2:Seq[SimpleTypeD]):Boolean = {
+  def compareSequence(tds1: Seq[SimpleTypeD], tds2: Seq[SimpleTypeD]): Boolean = {
     @tailrec
-    def comp(as:List[SimpleTypeD], bs:List[SimpleTypeD]):Boolean = {
-      (as,bs) match {
-        case (Nil,Nil) => throw new Exception(s"not expecting equal sequences $tds1, $tds2")
-        case (Nil,_) => true
-        case (_,Nil) => false
-        case (a::as,b::bs) =>
+    def comp(as: List[SimpleTypeD], bs: List[SimpleTypeD]): Boolean = {
+      (as, bs) match {
+        case (Nil, Nil) => throw new Exception(s"not expecting equal sequences $tds1, $tds2")
+        case (Nil, _) => true
+        case (_, Nil) => false
+        case (a :: as, b :: bs) =>
           if (a == b)
-            comp(as,bs)
+            comp(as, bs)
           else
-            cmpTypeDesignators(a,b)
+            cmpTypeDesignators(a, b)
       }
     }
+
     comp(tds1.toList, tds2.toList)
   }
 
@@ -119,8 +123,8 @@ object Types {
   This function implements a strictly-less-than, thus it
   returns false on equal elements.
   */
-  def cmpTypeDesignators(a:SimpleTypeD, b:SimpleTypeD):Boolean = {
-    if( a == b )
+  def cmpTypeDesignators(a: SimpleTypeD, b: SimpleTypeD): Boolean = {
+    if (a == b)
       false
     else if (a.getClass eq b.getClass) {
       a.cmpToSameClassObj(b)
@@ -145,23 +149,23 @@ object Types {
   val AnyVal: Class[AnyVal] = classOf[AnyVal]
   val Numeric: Class[Number] = classOf[lang.Number]
 
-  val anyType:SimpleTypeD = SAtomic(Any)
-  val nothingType:SimpleTypeD = SAtomic(Nothing)
+  val anyType: SimpleTypeD = SAtomic(Any)
+  val nothingType: SimpleTypeD = SAtomic(Nothing)
 
-  val intType:SimpleTypeD = SAtomic(Int)
-  val intJavaType:SimpleTypeD = SAtomic(Integer)
-  val doubleJavaType:SimpleTypeD = SAtomic(Double)
-  val stringType:SimpleTypeD = SAtomic(String)
-  val listAnyType:SimpleTypeD = SAtomic(ListAny)
-  val booleanJavaType:SimpleTypeD = SAtomic(Boolean)
-  val unitRuntimeType:SimpleTypeD = SAtomic(Unit)
-  val charJavaType:SimpleTypeD = SAtomic(Char)
-  val anyRefType:SimpleTypeD = SAtomic(AnyRef)
-  val numericType:SimpleTypeD = SAtomic(Numeric)
+  val intType: SimpleTypeD = SAtomic(Int)
+  val intJavaType: SimpleTypeD = SAtomic(Integer)
+  val doubleJavaType: SimpleTypeD = SAtomic(Double)
+  val stringType: SimpleTypeD = SAtomic(String)
+  val listAnyType: SimpleTypeD = SAtomic(ListAny)
+  val booleanJavaType: SimpleTypeD = SAtomic(Boolean)
+  val unitRuntimeType: SimpleTypeD = SAtomic(Unit)
+  val charJavaType: SimpleTypeD = SAtomic(Char)
+  val anyRefType: SimpleTypeD = SAtomic(AnyRef)
+  val numericType: SimpleTypeD = SAtomic(Numeric)
 
   val atomicTypesSeq: Seq[SimpleTypeD] =
     Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanJavaType, unitRuntimeType,
-      charJavaType, anyRefType, numericType)
+        charJavaType, anyRefType, numericType)
 
   def isEven(x: Any): Boolean = {
     x match {
@@ -169,7 +173,8 @@ object Types {
       case _ => false
     }
   }
-  val evenType:SSatisfies = SSatisfies(isEven, "even")
+
+  val evenType: SSatisfies = SSatisfies(isEven, "even")
 
   def isOdd(x: Any): Boolean = {
     x match {
@@ -177,7 +182,8 @@ object Types {
       case _ => false
     }
   }
-  val oddType:SSatisfies = SSatisfies(isOdd, "odd")
+
+  val oddType: SSatisfies = SSatisfies(isOdd, "odd")
 
   def isPrime(x: Any): Boolean = {
     @scala.annotation.tailrec
@@ -186,11 +192,12 @@ object Types {
       else if (y % k == 0) false
       else go(k + 1, y)
     }
+
     x match {
       case y: Int => go(2, y)
       case _ => false
     }
   }
-  val primeType:SSatisfies = SSatisfies(isPrime)
 
+  val primeType: SSatisfies = SSatisfies(isPrime)
 }
