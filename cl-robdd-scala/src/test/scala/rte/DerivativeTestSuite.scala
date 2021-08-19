@@ -159,8 +159,8 @@ class DerivativeTestSuite extends AnyFunSuite {
       val c = rt.canonicalize
       val dc = d.canonicalize
       assert(dc ~= c,
-             s": deriv of $rt wrt EmptyWord/None returned ${d}" +
-               s"\n   expecting $rt which reduces to ${c}")
+             s": deriv of $rt wrt EmptyWord/None returned $d" +
+               s"\n   expecting $rt which reduces to $c")
     }
   }
 

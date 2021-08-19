@@ -89,7 +89,7 @@ object Types {
       if (tds.isEmpty)
         decomposition
       else {
-        val td = tds.head
+        val td = tds.head // take any element from the given type set, does not matter which
         val n = SNot(td)
         val nc = n.canonicalize(Some(NormalForm.Dnf))
 
@@ -100,13 +100,14 @@ object Types {
           if (td.disjoint(td1).contains(true))
             Seq((td1,n::factors,td::disjoints))
           else if (n.disjoint(td1).contains(true))
-            Seq((td1,td::factors,n::disjoints))
+            Seq((td1, td::factors, n::disjoints))
           else if (a.inhabited.contains(false))
-            Seq((td1,n::factors,td::disjoints))
+            Seq((td1, n::factors, td::disjoints))
           else if (b.inhabited.contains(false))
-            Seq((td1,td::factors,n::disjoints))
+            Seq((td1, td::factors, n::disjoints))
           else
-            Seq((a,td::factors,n::disjoints), (b,n::factors,td::disjoints))
+            Seq((a, td::factors, n::disjoints),
+                (b, n::factors, td::disjoints))
         }
 
         recur(decomposition.flatMap(f), tds - td)
