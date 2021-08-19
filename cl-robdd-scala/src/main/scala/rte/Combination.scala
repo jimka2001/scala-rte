@@ -226,7 +226,6 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     operands.collectFirst {
       case s@Singleton(_: SMemberImpl) => s
     } match {
-      case None => this
       case Some(s@Singleton(m: SMemberImpl)) =>
         val singletonRtes = searchReplace(operands, s, Seq()).collect {
           case s:Singleton => s
@@ -243,6 +242,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
             val rte = Singleton(Types.createMember(m.xs.filter(a => orInvert(td.typep(a)))))
             create(searchReplace(operands, s, rte))
         }
+      case _ => this
     }
   }
 
@@ -275,7 +275,24 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
       ))
   }
 
-  def derivativeDown(wrt:SimpleTypeD):Rte = create(operands.map(rt => rt.derivative(Some(wrt))))
+  def derivativeDown(wrt:SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte = {
+    //   This optimization may avoid having to compute a costly derivative
+    //   and then throw away the result.  Once we discover that rt.derivative() returns zero
+    //   then we don't have to take any more derivatives.
+    val derivs = operands.foldLeft(List(this.one)) {
+      case (acc, rt) =>
+        if (acc == List(this.zero))
+          acc // if previous iteration found zero, just keep returning it
+        else {
+          val d = rt.derivative(Some(wrt), factors, disjoints)
+          if (d == this.zero)
+            List(this.zero)
+          else
+            d :: acc
+        }
+    }
+    create(derivs)
+  }
 }
 
 

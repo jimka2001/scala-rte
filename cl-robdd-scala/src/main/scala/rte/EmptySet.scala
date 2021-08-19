@@ -36,7 +36,7 @@ object EmptySet extends Rte {
 
   override def canonicalizeOnce:Rte = this
 
-  override def derivative(wrt: Option[SimpleTypeD]): Rte = EmptySet
+  override def derivative(wrt: Option[SimpleTypeD], factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]): Rte = EmptySet
 
-  def derivativeDown(wrt: SimpleTypeD): Rte = EmptySet
+  def derivativeDown(wrt: SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]): Rte = EmptySet
 }

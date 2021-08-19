@@ -129,7 +129,11 @@ sealed abstract class Bdd {
     ret
   }
 
-  def size():Int = {
+  def size(unused:Int=0):Int = {
+    // I am including an unused var in the lambda list of size, so that at
+    //   call sites we can use size().  Otherwise we get an annoying
+    //   compiler warning.
+    //   See https://users.scala-lang.org/t/auto-application-is-deprecated/7728
     var visited: Set[Bdd] = Set()
 
     def recur(bdd: Bdd, n: Int): Int = {

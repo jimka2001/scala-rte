@@ -173,7 +173,7 @@ abstract class SimpleTypeD { // SimpleTypeD
     nf match {
       case Some(Dnf) => toDnf
       case Some(Cnf) => toCnf
-      case None => this
+      case _ => this
     }
   }
 

@@ -93,6 +93,6 @@ case class Star(operand:Rte) extends Rte {
       ))
   }
 
-  def derivativeDown(wrt: SimpleTypeD): Rte = Cat(operand.canonicalize.derivative(Some(wrt)),
-                                                  this)
+  def derivativeDown(wrt: SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]): Rte =
+    Cat(operand.derivative(Some(wrt), factors, disjoints), this)
 }
