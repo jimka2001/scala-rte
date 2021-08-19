@@ -23,12 +23,17 @@ package rte
 import genus._
 
 case class Singleton(td:SimpleTypeD) extends Rte {
-  override def toLaTeX:String = td.toString
-  override def toString:String = "<" + td.toString + ">"
-  def nullable:Boolean = false
-  def firstTypes:Set[SimpleTypeD] = Set(td)
-  def inhabited:Option[Boolean] = td.inhabited
-  override def canonicalizeOnce:Rte = {
+  override def toLaTeX: String = td.toString
+
+  override def toString: String = "<" + td.toString + ">"
+
+  def nullable: Boolean = false
+
+  def firstTypes: Set[SimpleTypeD] = Set(td)
+
+  def inhabited: Option[Boolean] = td.inhabited
+
+  override def canonicalizeOnce: Rte = {
     td.canonicalize() match {
       case STop => Sigma
       case SEmpty => EmptySet
@@ -36,8 +41,8 @@ case class Singleton(td:SimpleTypeD) extends Rte {
       // case td if td.inhabited.contains(false) => EmptySet
       case SAnd(operands@_*) => And.createAnd(operands.map(Singleton))
       case SOr(operands@_*) => Or.createOr(operands.map(Singleton))
-      case SNot(operand) => And( Not(Singleton(operand)),
-                                 Sigma)
+      case SNot(operand) => And(Not(Singleton(operand)),
+                                Sigma)
       case td2 => Singleton(td2)
     }
   }

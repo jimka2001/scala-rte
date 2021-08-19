@@ -28,7 +28,8 @@ import scala.annotation.tailrec
 
 final case class Cat(operands:Seq[Rte]) extends Rte {
   override def toLaTeX: String = "(" ++ operands.map(_.toLaTeX).mkString("\\cdot ") ++ ")"
-  def create(operands:Seq[Rte]): Rte = Cat.createCat(operands)
+
+  def create(operands: Seq[Rte]): Rte = Cat.createCat(operands)
 
   override def toString: String = operands.map(_.toString).mkString("Cat(", ",", ")")
 
@@ -48,51 +49,56 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
     }
   }
 
-  def conversion3():Rte = {
+  def conversion3(): Rte = {
     if (operands.contains(EmptySet))
       EmptySet
     else
       this
   }
-  def conversion4():Rte = {
+
+  def conversion4(): Rte = {
     // remove EmptyWord and flatten Cat(Cat(...)...)
-    create(operands.flatMap{
+    create(operands.flatMap {
       case EmptyWord => Seq()
-      case Cat(Seq(rs @ _*)) => rs
+      case Cat(Seq(rs@_*)) => rs
       case r => Seq(r)
     })
   }
-  def conversion5():Rte = {
+
+  def conversion5(): Rte = {
     //  Cat(..., x*, x, x* ...) --> Cat(..., x*, x, ...)
     //  and Cat(..., x*, x* ...) --> Cat(..., x*, ...)
     create(
-      operands.toList.tails.flatMap{
-        case Star(r1)::r2::Star(r3)::_ if r1 == r2 && r2 == r3 => Nil
-        case Star(r1)::Star(r2)::_ if r1 == r2 => Nil
+      operands.toList.tails.flatMap {
+        case Star(r1) :: r2 :: Star(r3) :: _ if r1 == r2 && r2 == r3 => Nil
+        case Star(r1) :: Star(r2) :: _ if r1 == r2 => Nil
         case Nil => Nil
-        case rt::_ => List(rt)
+        case rt :: _ => List(rt)
       }.toSeq)
   }
-  def conversion6():Rte = {
+
+  def conversion6(): Rte = {
     // Cat(A,B,X*,X,C,D) --> Cat(A,B,X,X*,C,D)
     @tailrec
-    def recur(rts:List[Rte], acc:List[Rte]):List[Rte] = {
+    def recur(rts: List[Rte], acc: List[Rte]): List[Rte] = {
       rts match {
         case Nil => acc.reverse
-        case Star(rt1)::rt2::rs if rt1 == rt2 => recur(rt2::Star(rt1)::rs,acc)
-        case rt::rs => recur(rs,rt::acc)
+        case Star(rt1) :: rt2 :: rs if rt1 == rt2 => recur(rt2 :: Star(rt1) :: rs, acc)
+        case rt :: rs => recur(rs, rt :: acc)
       }
     }
-    create(recur(operands.toList,Nil))
+
+    create(recur(operands.toList, Nil))
   }
 
-  def conversion99():Rte = {
+  def conversion99(): Rte = {
     create(operands.map(_.canonicalizeOnce))
   }
-  def conversion1():Rte = create(operands)
+
+  def conversion1(): Rte = create(operands)
 
   override def canonicalizeOnce: Rte = {
-    findSimplifier(tag="cat",this,verbose=false,List[(String,() => Rte)](
+    findSimplifier(tag = "cat", this, verbose = false, List[(String, () => Rte)](
       "1" -> conversion1,
       "3" -> conversion3,
       "4" -> conversion4,
