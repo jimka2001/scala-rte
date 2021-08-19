@@ -276,7 +276,22 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
   }
 
   def derivativeDown(wrt:SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte = {
-    create(operands.map(rt => rt.derivative(Some(wrt), factors, disjoints)))
+    //   This optimization may avoid having to compute a costly derivative
+    //   and then throw away the result.  Once we discover that rt.derivative() returns zero
+    //   then we don't have to take any more derivatives.
+    val derivs = operands.foldLeft(List(this.one)) {
+      case (acc, rt) =>
+        if (acc == List(this.zero))
+          acc // if previous iteration found zero, just keep returning it
+        else {
+          val d = rt.derivative(Some(wrt), factors, disjoints)
+          if (d == this.zero)
+            List(this.zero)
+          else
+            d :: acc
+        }
+    }
+    create(derivs)
   }
 }
 
