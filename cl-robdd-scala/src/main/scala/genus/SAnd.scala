@@ -67,8 +67,10 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
       // if we have all atomic types (e.g. traits and abstract)
       //  and none are disjoint with another, then we assume
       //  the intersection is inhabited.
-      //  however, if some pair is disjoint, the the intersection is
-      //  empty, thus not inhabited
+      //  we already know that no pair is disjoint, so every
+      //  pair is either non-disjoint or dont-know.
+      //  So we check here whether all are non-disjoint.
+      //  if the check succeeds we assume inhabited.
       Some(tds.toSet.subsets(2).map(_.toList).forall {
         case List(t1: SimpleTypeD, t2: SimpleTypeD) =>
           t1.disjoint(t2).contains(false)
@@ -100,8 +102,6 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
 
     // (disjoint? (and B C) A)
     // (disjoint? (and String (not (member a b c 1 2 3))) java.lang.Comparable)
-      // TODO, why is this inside the SAnd code?   this is a condition that holds for
-      //  all types.
     else if (inhabited_t2
              && inhabited_this
              && tds.exists(t1 =>
