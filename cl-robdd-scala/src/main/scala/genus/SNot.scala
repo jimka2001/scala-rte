@@ -57,6 +57,8 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
     //    t<s => not(s) // t
     if (t.subtypep(s).contains(true))
       Some(true)
+    else if (s.disjoint(t).contains(true) && t.inhabited.contains(true))
+      Some(false)
     else super.disjointDown(t)
   }
 
