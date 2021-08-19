@@ -59,10 +59,32 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     lazy val cnf = canonicalize(nf = Some(Cnf))
     lazy val inhabitedDnf = dnf.inhabited
     lazy val inhabitedCnf = cnf.inhabited
-
+    lazy val numNonInterface = tds.count{
+      case SAtomic(ct) if SAtomic.isInterface(ct) => false
+      case SAtomic(_ct) => true
+      case _ => false
+    }
     if (tds.exists(_.inhabited.contains(false))) {
       // if one of an intersection is empty, then the intersection is empty
       Some(false)
+    } else if (tds.toSet.subsets(2).map(_.toList).exists{
+      case List(t1,t2) => t1.disjoint(t2).contains(true)
+    }) {
+      Some(false)
+    } else if (tds.size > 1 && tds.forall{
+      case SNot(SAtomic(_)) => true
+      case SNot(_:SMemberImpl) => true
+      case SAtomic(_ct) => true
+      case _ => false
+    } && numNonInterface <= 1 ) {
+      // SAnd(SNot(SAtomic(x)), SNot(SAtomic(y)), SNot(SMember(...)))
+      // (and (not Float) (not Double) (not (member 1 2 3))) --> inhabited=true
+      // (and (not Float) java.lang.Comparable) -> inhabited=true
+      // (and (not Float) (not (member 1 2 3)) java.lang.Comparable) -> inhabited=true
+      //       at most one abstract class, e.g., java.lang.Number
+      // (and (not Float) (not (member 1 2 3)) java.lang.Comparable java.lang.Number) -> inhabited=true
+      // (and  (not java.lang.CharSequence) java.math.BigDecimal) -> inhabited=true
+      Some(true)
     } else if (tds.forall(atomicp)) {
       // if we have all atomic types (e.g. traits and abstract)
       //  and none are disjoint with another, then we assume
