@@ -26,6 +26,40 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class GenusDisjoint extends AnyFunSuite {
 
+  test("discovered case 135") {
+    SAtomic.withOpenWorldView {
+      // SAnd(SNot(SAtomic(x)), SNot(SAtomic(y)), SNot(SMember(...)))
+      // (and (not Float) (not Double) (not (member 1 2 3))) --> inhabited=true
+      // (and (not Float) java.lang.Comparable) -> inhabited=true
+      // (and (not Float) (not (member 1 2 3)) java.lang.Comparable) -> inhabited=true
+      assert(SAtomic.isInterface(classOf[java.lang.Comparable[_]]))
+      assert(SNot(SAtomic(classOf[Number])).inhabited.contains(true))
+      assert(SNot(SMember(1, 2, 3)).inhabited.contains(true))
+      assert(SAtomic(classOf[java.lang.Comparable[_]]).inhabited.contains(true))
+      assert(SAnd(SNot(SAtomic(classOf[Number])),
+                  SNot(SMember(1, 2, 3)),
+                  SAtomic(classOf[java.lang.Comparable[_]]))
+               .inhabited
+               .contains(true))
+      assert(SAnd(SNot(SAtomic(classOf[Number])), SNot(SMember(1, 2, 3)), SAtomic(classOf[java.lang.Comparable[_]]))
+               .disjoint(SAtomic(classOf[java.lang.Comparable[_]]))
+               .contains(false))
+      assert(SAnd(SNot(SAtomic(classOf[java.lang.Comparable[_]])),
+                  SNot(SAtomic(classOf[java.lang.CharSequence])),
+                  SAtomic(classOf[java.math.BigDecimal]))
+               .inhabited
+               .contains(false))
+      assert(SAnd(SNot(SAtomic(classOf[java.lang.CharSequence])),
+                  SAtomic(classOf[java.math.BigDecimal]))
+               .inhabited
+               .contains(true))
+      assert(SAtomic(classOf[java.math.BigDecimal]).inhabited.contains(true))
+      assert(SAnd(SNot(SAtomic(classOf[java.lang.CharSequence])),
+                  SAtomic(classOf[java.math.BigDecimal]))
+               .disjoint(SAtomic(classOf[java.math.BigDecimal]))
+               .contains(false))
+    }
+  }
   test("disjoint EmptyType") {
     assert(atomicTypesSeq.forall(_.disjoint(SEmpty).contains(true)))
     assert(atomicTypesSeq.forall(SEmpty.disjoint(_).contains(true)))
