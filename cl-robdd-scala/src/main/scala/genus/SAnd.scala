@@ -91,7 +91,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     lazy val inhabited_this = this.inhabited.contains(true)
 
     // (disjoint? (and A B C) D)   where B disjoint with D
-    if (tds.exists(_.disjoint(t2).getOrElse(false)))
+    if (tds.exists(_.disjoint(t2).contains(true)))
       Some(true)
 
     // (disjoint? (and A B C) B)
