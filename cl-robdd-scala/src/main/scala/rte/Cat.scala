@@ -109,16 +109,18 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
       ))
   }
 
-  def derivativeDown(wrt: SimpleTypeD): Rte = operands.toList match {
-    case Nil => EmptyWord.derivative(Some(wrt))
-    case rt :: Nil => rt.derivative(Some(wrt))
-    case head :: tail =>
-      lazy val term1: Rte = Cat(head.derivative(Some(wrt)) :: tail)
-      lazy val term2: Rte = Cat(tail).derivative(Some(wrt))
-      if (head.nullable)
-        Or(Seq(term1, term2))
-      else
-        term1
+  def derivativeDown(wrt: SimpleTypeD, factors: List[SimpleTypeD], disjoints: List[SimpleTypeD]): Rte = {
+    operands.toList match {
+      case Nil => EmptyWord.derivative(Some(wrt), factors, disjoints)
+      case rt :: Nil => rt.derivative(Some(wrt), factors, disjoints)
+      case head :: tail =>
+        lazy val term1: Rte = Cat(head.derivative(Some(wrt), factors, disjoints) :: tail)
+        lazy val term2: Rte = Cat(tail).derivative(Some(wrt), factors, disjoints)
+        if (head.nullable)
+          Or(Seq(term1, term2))
+        else
+          term1
+    }
   }
 }
 

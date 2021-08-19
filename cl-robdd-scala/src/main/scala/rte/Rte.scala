@@ -98,20 +98,23 @@ abstract class Rte {
                           })
   }
   def canonicalizeDebug(n:Int):Rte = {
-    canonicalizeDebug(n,(r1:Rte,r2:Rte)=>())
+    canonicalizeDebug(n,(_:Rte,_:Rte)=>())
   }
 
   def canonicalizeOnce:Rte = this
 
-  def derivative(wrt:Option[SimpleTypeD]):Rte = {
+  def derivative1(wrt:Option[SimpleTypeD]):Rte =
+    derivative(wrt,List[SimpleTypeD](),List[SimpleTypeD]())
+
+  def derivative(wrt:Option[SimpleTypeD], factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte = {
     val raw = wrt match {
       case None => this
       case Some(td) if td.inhabited.contains(false) => EmptySet
-      case Some(td) => derivativeDown(td)
+      case Some(td) => derivativeDown(td, factors, disjoints)
     }
     raw
   }
-  def derivativeDown(wrt:SimpleTypeD):Rte
+  def derivativeDown(wrt:SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte
 
   // Computes a pair of Vectors: (Vector[Rte], Vector[Seq[(SimpleTypeD,Int)]])
   //   Vector[Rte] is a mapping from Int to Rte designating the states
@@ -125,12 +128,18 @@ abstract class Rte {
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       val fts = rt.firstTypes
       val wrts = Types.mdtd(fts)
-      wrts.map(td => (td,
-        try rt.derivative(Some(td)).canonicalize
+      wrts.map{case (td,factors,disjoints) => (td,
+        // Here we call rt.derivative, but we pass along the correct-by-construction
+        //   factors and disjoint types.  The Singleton:disjointDown method takes
+        //   advantage of these trusted lists to easily determine whether the type
+        //   in question is a subtype or a disjoint type of the type in question.
+        try rt.derivative(Some(td),factors,disjoints).canonicalize
         catch {
           case e: CannotComputeDerivative =>
-            throw new CannotComputeDerivatives(msg=Seq(s"when generating derivatives from $this",
-                                                       "when computing edges of " + rt,
+            throw new CannotComputeDerivatives(msg=Seq("when generating derivatives of",
+                                                       s"  this=$this",
+                                                       "when computing edges of ",
+                                                       s"  rt=$rt\n",
                                                        s"  which canonicalizes to " + this.canonicalize,
                                                        s"  computing derivative of ${e.rte}",
                                                        s"  wrt=${e.wrt}",
@@ -139,7 +148,7 @@ abstract class Rte {
                                                firstTypes = rt.firstTypes,
                                                mdtd = Types.mdtd(rt.firstTypes)
                                                )
-        }))
+        })}
     }
 
     traceGraph(this,edges)
@@ -153,9 +162,10 @@ abstract class Rte {
     }
     catch {
       case e: CannotComputeDerivatives =>
-        throw new CannotComputeDfa(msg=Seq(s"While trying to compute Dfa of $this ",
+        throw new CannotComputeDfa(msg=Seq("While computing Dfa of",
+                                           s"   this = $this",
                                            s"   firstTypes = " + e.firstTypes,
-                                           s"   mdtd = "+ e.mdtd,
+                                           s"   mdtd = " + e.mdtd,
                                            "  toDfa reported:",
                                            e.msg).mkString("\n"),
                                    rte=this)
@@ -229,7 +239,7 @@ object Rte {
 
   // predicate to match form like this Cat(X, Y, Z, Star( Cat(X, Y, Z)))
   def catxyzp(rt:Rte):Boolean = rt match {
-    case Cat(Seq(rs1@_*)) =>{
+    case Cat(Seq(rs1@_*)) =>
       // at least length 2
       if (rs1.sizeIs >= 2) {
         val rightmost = rs1.last
@@ -241,7 +251,6 @@ object Rte {
       }
       else
         false
-    }
     case _ => false
   }
 
@@ -254,7 +263,7 @@ object Rte {
     @tailrec
     def excludePrevious(remaining:List[(Rte,E)], previous:List[Rte], acc:List[(Rte,E)]):Seq[(Rte,E)] = {
       remaining match {
-        case Nil => acc.toSeq
+        case Nil => acc
         case (rte,e)::pairs =>
           val excluded = And(rte,Not(Or.createOr(previous)))
           excludePrevious(pairs,
@@ -362,6 +371,6 @@ class CannotComputeDerivative(val msg:String, val rte:Rte, val wrt:SimpleTypeD) 
 class CannotComputeDerivatives(val msg:String,
                                val rte:Rte,
                                val firstTypes:Set[SimpleTypeD],
-                               val mdtd:Seq[SimpleTypeD]) extends Exception(msg) {}
+                               val mdtd:Seq[(SimpleTypeD,List[SimpleTypeD],List[SimpleTypeD])]) extends Exception(msg) {}
 
 class CannotComputeDfa(val msg:String, val rte:Rte ) extends Exception(msg){}

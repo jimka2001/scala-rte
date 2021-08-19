@@ -46,5 +46,6 @@ case class Not(operand:Rte) extends Rte {
       case _ => Not(operand.canonicalizeOnce)
     }
   }
-  def derivativeDown(wrt:SimpleTypeD):Rte = Not(operand.canonicalize.derivative(Some(wrt)))
+  def derivativeDown(wrt:SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte =
+    Not(operand.derivative(Some(wrt), factors, disjoints))
 }

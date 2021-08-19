@@ -29,5 +29,5 @@ object EmptyWord extends Rte {
   def firstTypes:Set[SimpleTypeD] = Set.empty
   def inhabited:Option[Boolean] = Some(true)
   override def canonicalizeOnce:Rte = this
-  def derivativeDown(wrt:SimpleTypeD):Rte = EmptySet
+  def derivativeDown(wrt:SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte = EmptySet
 }

@@ -89,7 +89,7 @@ class OrTestSuite extends AnyFunSuite {
 
     Cat(Star(Sigma),
         number,
-        Singleton(SEql(-1))).derivative(Some(number))
+        Singleton(SEql(-1))).derivative1(Some(number))
 
   }
   test("avoid infinite loop b"){

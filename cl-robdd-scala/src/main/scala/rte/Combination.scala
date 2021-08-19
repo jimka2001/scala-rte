@@ -226,7 +226,6 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     operands.collectFirst {
       case s@Singleton(_: SMemberImpl) => s
     } match {
-      case None => this
       case Some(s@Singleton(m: SMemberImpl)) =>
         val singletonRtes = searchReplace(operands, s, Seq()).collect {
           case s:Singleton => s
@@ -243,6 +242,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
             val rte = Singleton(Types.createMember(m.xs.filter(a => orInvert(td.typep(a)))))
             create(searchReplace(operands, s, rte))
         }
+      case _ => this
     }
   }
 
@@ -275,7 +275,9 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
       ))
   }
 
-  def derivativeDown(wrt:SimpleTypeD):Rte = create(operands.map(rt => rt.derivative(Some(wrt))))
+  def derivativeDown(wrt:SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte = {
+    create(operands.map(rt => rt.derivative(Some(wrt), factors, disjoints)))
+  }
 }
 
 

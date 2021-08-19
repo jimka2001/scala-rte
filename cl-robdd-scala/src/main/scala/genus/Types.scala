@@ -71,34 +71,43 @@ object Types {
     case _ => false
   }
 
-  def mdtd(tds: Set[SimpleTypeD]): Seq[SimpleTypeD] = {
-    def recur(decomposition: Seq[SimpleTypeD], tds: Set[SimpleTypeD]): Seq[SimpleTypeD] = {
+  // Given a set of type designators, return a newly computed Seq pairs (SimpleTypeD,List[SimpleTypeD])
+  // indicating type
+  // designators which implement the Maximal Disjoint Type Decomposition.
+  // I.e., the computed list designates a set all of whose elements are mutually disjoint.
+  // Every set, x, in the return value has the property that if y is in
+  // the given type-set, then either x and y are disjoint, or x is a subset of y."
+  def mdtd(tds: Set[SimpleTypeD]): Seq[(SimpleTypeD,List[SimpleTypeD],List[SimpleTypeD])] = {
+    type S = SimpleTypeD
+    def recur(decomposition: Seq[(S,List[S],List[S])], tds: Set[S]): Seq[(S,List[S],List[S])] = {
       if (tds.isEmpty)
         decomposition
       else {
         val td = tds.head
-        val n = SNot(td).canonicalize(Some(NormalForm.Dnf))
+        val n = SNot(td)
+        val nc = n.canonicalize(Some(NormalForm.Dnf))
 
-        def f(td1: SimpleTypeD): Seq[SimpleTypeD] = {
+        def f(pair: (S,List[S],List[S])): Seq[(S,List[S],List[S])] = {
+          val (td1,factors,disjoints) = pair
           lazy val a = SAnd(td, td1).canonicalize(Some(NormalForm.Dnf))
-          lazy val b = SAnd(n, td1).canonicalize(Some(NormalForm.Dnf))
+          lazy val b = SAnd(nc, td1).canonicalize(Some(NormalForm.Dnf))
           if (td.disjoint(td1).contains(true))
-            Seq(td1)
+            Seq((td1,n::factors,td::disjoints))
           else if (n.disjoint(td1).contains(true))
-            Seq(td1)
+            Seq((td1,td::factors,n::disjoints))
           else if (a.inhabited.contains(false))
-            Seq(td1)
+            Seq((td1,n::factors,td::disjoints))
           else if (b.inhabited.contains(false))
-            Seq(td1)
+            Seq((td1,td::factors,n::disjoints))
           else
-            Seq(a, b)
+            Seq((a,td::factors,n::disjoints), (b,n::factors,td::disjoints))
         }
 
         recur(decomposition.flatMap(f), tds - td)
       }
     }
 
-    recur(Seq(STop), tds - STop)
+    recur(Seq((STop,List(),List())), tds - STop)
   }
 
   def compareSequence(tds1: Seq[SimpleTypeD], tds2: Seq[SimpleTypeD]): Boolean = {
