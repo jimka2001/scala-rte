@@ -71,14 +71,20 @@ object Types {
     case _ => false
   }
 
-  // Given a set of type designators, return a newly computed Seq pairs (SimpleTypeD,List[SimpleTypeD])
-  // indicating type
-  // designators which implement the Maximal Disjoint Type Decomposition.
-  // I.e., the computed list designates a set all of whose elements are mutually disjoint.
-  // Every set, x, in the return value has the property that if y is in
-  // the given type-set, then either x and y are disjoint, or x is a subset of y."
+  // Given a set of type designators, return a newly computed Seq of triples:
+  //    (td:SimpleTypeD,factors:List[SimpleTypeD],disjoints:List[SimpleTypeD])
+  // indicating type designators which implement the Maximal Disjoint Type Decomposition.
+  // I.e., the computed list (the list of all the td components) designates a set all of whose
+  // elements are mutually disjoint.
+  // Two values of td, i.e., x and y, have the property that if x and y
+  // are disjoint, and if z in in the given set, tds, of type designators
+  // then either x is disjoint from z or x is a subclass of z, but never does
+  // x partially overlap z.  Consequently, if some of the given type designators
+  // in tds are partially overlapping, then some td in the return value is a subtype
+  // of multiple type designators from tds.
   def mdtd(tds: Set[SimpleTypeD]): Seq[(SimpleTypeD,List[SimpleTypeD],List[SimpleTypeD])] = {
-    type S = SimpleTypeD
+    type S = SimpleTypeD // local type def just to simplify the following type declarations
+    @tailrec
     def recur(decomposition: Seq[(S,List[S],List[S])], tds: Set[S]): Seq[(S,List[S],List[S])] = {
       if (tds.isEmpty)
         decomposition
@@ -87,8 +93,8 @@ object Types {
         val n = SNot(td)
         val nc = n.canonicalize(Some(NormalForm.Dnf))
 
-        def f(pair: (S,List[S],List[S])): Seq[(S,List[S],List[S])] = {
-          val (td1,factors,disjoints) = pair
+        def f(triple: (S,List[S],List[S])): Seq[(S,List[S],List[S])] = {
+          val (td1,factors,disjoints) = triple
           lazy val a = SAnd(td, td1).canonicalize(Some(NormalForm.Dnf))
           lazy val b = SAnd(nc, td1).canonicalize(Some(NormalForm.Dnf))
           if (td.disjoint(td1).contains(true))
