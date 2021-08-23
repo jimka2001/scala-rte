@@ -24,7 +24,6 @@
 package xymbolyco
 
 import org.scalatest.funsuite.AnyFunSuite
-import xymbolyco.GraphViz.dfaView
 import xymbolyco.Minimize.trim
 
 class DfaTestSuite extends AnyFunSuite {
