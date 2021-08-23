@@ -26,10 +26,10 @@ import rte._
 import genus._
 
 object Extract {
-  def dfaToRte[E](dfa:Dfa[Any,SimpleTypeD,E]):Map[E,Rte] = {
+  def dfaToRte[E](dfa:Dfa[Any,SimpleTypeD,E],default:E):Map[E,Rte] = {
     val rt_map = extractRte(dfa)
     if (rt_map.isEmpty)
-      Map(true -> EmptySet)
+      Map(default -> EmptySet)
     else
       rt_map
   }
@@ -53,13 +53,14 @@ object Extract {
     val old_transition_triples = for{ q <- dfa.Q
                                       tr <- q.transitions
                                       } yield (tr.source.id, Singleton(tr.label), tr.destination.id)
+
     // step 3
     val new_initial_transitions = Seq((-1, EmptyWord, 0))
     val nindexToState = (for{(q,id) <- dfa.F.zipWithIndex} yield  -2 - id -> q).toMap
     val stateToNindex = for{(id,q) <- nindexToState} yield (q,id)
     // step 4
     val new_final_transitions = for{ (q,id) <- stateToNindex
-                                     } yield (id, EmptyWord, q.id)
+                                     } yield (q.id, EmptyWord, id)
     def combine_parallel_labels(operands:Seq[Rte]):Rte =
       Or.createOr(operands).canonicalize
     def extract_labels(triples:Seq[Triple]):Seq[Rte] =
@@ -97,13 +98,14 @@ object Extract {
       // return from eliminate_state
       others.reverse ++ new_triples
     }
+    val starting_triples = new_initial_transitions ++ old_transition_triples ++ new_final_transitions
     // step 5 and step 9
-    val new_transition_triples = (0 to dfa.Q.size).foldLeft(
-      new_initial_transitions ++ old_transition_triples ++ new_final_transitions
-    )(eliminate_state)
+    val new_transition_triples = dfa.Q.foldLeft(starting_triples){
+      case (acc,q) => eliminate_state(acc,q.id)
+    }
     val grouped = new_transition_triples.groupBy{case (i,_,f) =>
       assert(f < 0)
-      assert(i == -1)
+      assert(i == -1, s"i=$i  f=$f, new_transition_triples=$new_transition_triples")
       // compute exit_value of the final state whose negative-index is f
       dfa.fMap(nindexToState(f).id)
     }
