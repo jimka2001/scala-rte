@@ -129,7 +129,7 @@ sealed abstract class Bdd {
     ret
   }
 
-  def size(unused:Int=0):Int = {
+  def size():Int = {
     // I am including an unused var in the lambda list of size, so that at
     //   call sites we can use size().  Otherwise we get an annoying
     //   compiler warning.

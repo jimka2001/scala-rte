@@ -26,7 +26,7 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class BinaryOperationTestSuite  extends AnyFunSuite {
 
-  def genSamples() = {
+  def genSamples(): Set[Bdd] = {
     val bdd1 = Bdd(3, BddTrue, BddFalse)
     val bdd2 = Bdd(2, BddFalse, BddTrue)
     val bdd3 = Bdd(1, bdd1, bdd2)
@@ -131,12 +131,12 @@ class BinaryOperationTestSuite  extends AnyFunSuite {
 
   test("varargs") {
     withNewBddHash {
-      for {v1 <- (1 to 4)
+      for {v1 <- 1 to 4
            _ = assert(And(v1) == Bdd(v1))
            _ = assert(Or(v1) == Bdd(v1))
-           v2 <- (-2 to 4)
+           v2 <- -2 to 4
            if v2 != 0
-           v3 <- (1 to 4)
+           v3 <- 1 to 4
            if v3 != 0
            } {
         assert(And(v1, v2, v3) eq And(v1, And(v2, v3)))
@@ -171,7 +171,7 @@ class BinaryOperationTestSuite  extends AnyFunSuite {
       }
     }
   }
-  test("d'morgan") {
+  test("de morgan") {
     withNewBddHash {
       val samples = genSamples()
       for (b1 <- samples) {
