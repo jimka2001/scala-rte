@@ -131,3 +131,26 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     } yield exitValue(d)
   }
 }
+
+object TestMe {
+  import rte.{Or, Cat, Singleton, Not, And, Sigma, Star, EmptyWord, EmptySet}
+  import genus.{SAtomic, SEql}
+  class TestAc
+
+  def main(argv:Array[String]):Unit = {
+    val Test2 = classOf[TestAc]
+    val Σ = Sigma
+    val ε = EmptyWord
+    val ∅ = EmptySet
+    val e = SEql(1)
+    val rt1 = Cat(Star(Σ), Star(Singleton(e)))
+    val rt2 = Cat(Not(∅), Star(Singleton(e)))
+    val empty= Or(And(rt1,Not(rt2)),And(Not(rt1),rt2))
+
+    GraphViz.dfaView(rt1.toDfa(),abbrev=true,title="rt1")
+
+    GraphViz.dfaView(rt2.toDfa(),abbrev=false,title="rt2")
+    GraphViz.dfaView(empty.toDfa(),abbrev=true,title="empty")
+
+  }
+}
