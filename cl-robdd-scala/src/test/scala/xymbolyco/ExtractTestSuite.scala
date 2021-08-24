@@ -42,15 +42,14 @@ class ExtractTestSuite  extends AnyFunSuite {
     }
   }
   def check_extraction_cycle(rt: Rte): Unit = {
-    val rt1 = rt // .canonicalize()
+    val rt1 = rt.canonicalize
     val extracted = dfaToRte[Boolean](rt1.toDfa(exitValue=true),true)
-
+    //println(s"extracted=$extracted")
     if (extracted.contains(true)) {
       val rt2 = extracted(true)
-
+      //println(s"  rt2=$rt2")
       // compute xor, should be emptyset    if rt1 is equivalent to rt2
-      val empty1 = Or(And(rt2, Not(rt1)),
-                      And(Not(rt2), rt1))
+      val empty1 = Xor(rt1,rt2).canonicalize
       val empty_dfa = empty1.toDfa(true)
 
       val label_path = empty_dfa.vacuous() match {
@@ -72,9 +71,11 @@ class ExtractTestSuite  extends AnyFunSuite {
   }
 
   test("test_extract_rte") {
-    for {depth <- 3 to 4
-         r <- 0 to num_random_tests
-         rt = Rte.randomRte(depth)
-         } check_extraction_cycle(rt)
+    SAtomic.withClosedWorldView {
+      for {depth <- 1 to 3
+           r <- 0 to num_random_tests
+           rt = Rte.randomRte(depth)
+           } check_extraction_cycle(rt)
+    }
   }
 }
