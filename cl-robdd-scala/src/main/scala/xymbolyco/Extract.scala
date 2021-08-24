@@ -24,6 +24,7 @@ package xymbolyco
 
 import rte._
 import genus._
+import adjuvant.Adjuvant.fixedPoint
 
 object Extract {
   def dfaToRte[E](dfa:Dfa[Any,SimpleTypeD,E],default:E):Map[E,Rte] = {
@@ -97,28 +98,71 @@ object Extract {
       // step 8
       val new_triples = for {(src, pre_label, _) <- combine_parallel(x_to_q)
                              (_, post_label, dst) <- combine_parallel(q_to_x)
-                             } yield (src,Cat(pre_label,Star(self_loop_label),post_label),dst)
+                             } yield Tuple3(src,
+                                            Cat(pre_label, Star(self_loop_label), post_label).canonicalize,
+                                            dst)
 
       // return from eliminate_state
       others.reverse ++ new_triples
     }
 
     val starting_triples = new_initial_transitions ++ old_transition_triples ++ new_final_transitions
-    // step 5 and step 9
-    val new_transition_triples = dfa.Q.foldLeft(starting_triples){
-      case (acc,q) => eliminate_state(acc,q.id)
-    }
-    val grouped = new_transition_triples.groupBy{case (i,_,f) =>
-      assert(f < 0)
-      assert(i == -1, s"i=$i  f=$f, new_transition_triples=$new_transition_triples")
-      // compute exit_value of the final state whose negative-index is f
-      dfa.fMap(nindexToState(f).id)
-    }
-    // return value of extractRte
-    for{(exit_value,triples) <- grouped
-        pretty = combine_parallel_labels(extract_labels(triples))
+
+    def find_best_q(triples: Seq[Triple]): Option[Int] = {
+      // which state minimizes (but not 0) num inputs times num outputs
+      def in_times_out(idx: Int): Int = {
+        val (x, y) = triples.foldLeft((0, 0)) {
+          case ((x, y), (src, _, dst)) if src != dst && src == idx => (x + 1, y)
+          case ((x, y), (src, _, dst)) if src != dst && dst == idx => (x, y + 1)
+          case ((x, y), _) => (x, y)
         }
-    // step 10
-    yield (exit_value, pretty)
+        x * y
+      }
+
+      val none: Option[Int] = None
+      val (_, best_id) = dfa.Q.foldLeft((0, none)) {
+        (acc, q) =>
+          val product = in_times_out(q.id)
+          (acc, q) match {
+            case _ if product == 0 => acc
+            case ((_, None), _) => (product, Some(q.id))
+            case ((p, Some(_)), q) if p < product => (p, Some(q.id))
+            case _ => acc
+          }
+      }
+      best_id
+    }
+
+    def eliminate_best_state(triples: Seq[Triple]): Seq[Triple] = {
+      find_best_q(triples) match {
+        case None => triples
+        case Some(idx) =>
+          eliminate_state(triples, idx)
+      }
+    }
+
+    if (new_final_transitions.isEmpty)
+      Map()
+    else {
+      // step 5 and step 9
+      // We eliminate states in what we hope is a good order.
+      //   I.e., we find the state which minimizes num-inputs * num-outputs of that state.
+      val new_transition_triples = fixedPoint(starting_triples,
+                                              eliminate_best_state,
+                                              (a: Seq[Triple], b: Seq[Triple]) => a == b)
+
+      val grouped = new_transition_triples.groupBy { case (i, _, f) =>
+        assert(f < 0, s"f=$f, new_transition_triples=$new_transition_triples")
+        assert(i == -1, s"i=$i  f=$f, new_transition_triples=$new_transition_triples")
+        // compute exit_value of the final state whose negative-index is f
+        dfa.fMap(nindexToState(f).id)
+      }
+      // return value of extractRte
+      for {(exit_value, triples) <- grouped
+           pretty = combine_parallel_labels(extract_labels(triples))
+           }
+      // step 10
+      yield (exit_value, pretty)
+    }
   }
 }
