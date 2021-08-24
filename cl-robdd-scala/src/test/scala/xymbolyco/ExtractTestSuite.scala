@@ -38,7 +38,8 @@ class ExtractTestSuite  extends AnyFunSuite {
   test("extraction 35") {
     SAtomic.withClosedWorldView {
       check_extraction_cycle(Star(Cat(Cat(Or(Cat(Σ, Σ, Star(Σ)), ε),
-                                          Cat(t2x, Singleton(genus.SInt))), Cat(etrue, Singleton(STop)))))
+                                          Cat(t2x, Singleton(genus.SInt))),
+                                      Cat(etrue, Singleton(STop)))))
     }
   }
   def check_extraction_cycle(rt: Rte): Unit = {

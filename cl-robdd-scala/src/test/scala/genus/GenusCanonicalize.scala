@@ -363,32 +363,50 @@ class GenusCanonicalize extends AnyFunSuite {
     }
   }
 
+  def check_type(td:SimpleTypeD):Unit= {
+    for {v <- interestingValues
+         cnf = td.canonicalize(Some(Cnf))
+         dnf = td.canonicalize(Some(Dnf))
+         } {
+      assert(td.typep(v) == cnf.typep(v),
+             s"\nv = $v" + " type=" + v.getClass() +
+               "\nclosedWorldView = " + SAtomic.closedWorldView.value +
+               s"\ntd=$td" +
+               s"\ncnf=$cnf" +
+               "\nlhs = td.typep(v)  = " + td.typep(v) +
+               "\nrhs = cnf.typep(v) = " + cnf.typep(v)
+             )
+      assert(td.typep(v) == dnf.typep(v),
+             "\n closedWorldView = " + SAtomic.closedWorldView.value +
+               s"\ntd=$td" +
+               s"\ndnf=$dnf" +
+               "\nlhs=" + td.typep(v) +
+               "\nrhs=" + dnf.typep(v)
+             )
+    }
+  }
+  test("discovered 388"){
+    val one:Long = 1
+    assert(classOf[Long].isInstance(one))
+    assert(classOf[Integer].isInstance(one))
+    assert(SAtomic(Integer).typep(one))
+    check_type(SOr(SAtomic(Integer),SEql(one)))
+
+    assert(SAtomic(Integer).typep(1))
+    check_type(SOr(SAtomic(Integer),SEql(1)))
+  }
+  test("discovered 389"){
+    for{ one <- Seq(1:Long, 1:Integer, 1:Int, 1L, 1)} {
+      assert(classOf[Integer].isInstance(one))
+      assert(SAtomic(Integer).typep(one))
+    }
+  }
   test("rand typep") {
     // make sure typep membership of particular values is the same before and after canonicalizing
     def testit() = {
       for {depth <- 0 to 5
            _ <- 0 to 2000
-           td = randomType(depth)
-           v <- interestingValues
-           cnf = td.canonicalize(Some(Cnf))
-           dnf = td.canonicalize(Some(Dnf))
-           } {
-        assert(td.typep(v) == cnf.typep(v),
-          s"\nv = $v" + " type=" + v.getClass() +
-               "\nclosedWorldView = " + SAtomic.closedWorldView.value +
-                 s"\ntd=$td" +
-                 s"\ncnf=$cnf" +
-                 "\nlhs=" + td.typep(v) +
-                 "\nrhs=" + cnf.typep(v)
-               )
-        assert(td.typep(v) == dnf.typep(v),
-               "\n closedWorldView = " + SAtomic.closedWorldView.value +
-               s"\ntd=$td" +
-                 s"\ndnf=$dnf" +
-                 "\nlhs=" + td.typep(v) +
-                 "\nrhs=" + dnf.typep(v)
-               )
-      }
+           } check_type(randomType(depth))
     }
     SAtomic.withOpenWorldView(testit())
     SAtomic.withClosedWorldView(testit())
