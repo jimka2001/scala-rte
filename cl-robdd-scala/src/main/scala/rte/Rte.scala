@@ -128,6 +128,7 @@ abstract class Rte {
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       val fts = rt.firstTypes
       val wrts = Types.mdtd(fts)
+
       wrts.map{case (td,factors,disjoints) => (td,
         // Here we call rt.derivative, but we pass along the correct-by-construction
         //   factors and disjoint types.  The Singleton:disjointDown method takes
@@ -157,6 +158,7 @@ abstract class Rte {
   import xymbolyco.Dfa
 
   def toDfa[E](exitValue:E=true):Dfa[Any,SimpleTypeD,E] = {
+    //println(s"toDfa: $this")
     val (rtes,edges) = try {
       derivatives()
     }

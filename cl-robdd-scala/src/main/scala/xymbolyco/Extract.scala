@@ -35,7 +35,7 @@ object Extract {
   }
   def extractRte[E](dfa_given:Dfa[Any,SimpleTypeD,E]):Map[E,Rte] = {
     import Minimize._
-    type Triple = (Int,Rte,Int)
+    type Triple = (Int, Rte, Int)
     //    1. minimize and trim the given dfa
     //    2. generate a list of transition triples [from label to]
     //    3. add transitions from extra-state-I to all initial states with :epsilon transition
@@ -50,54 +50,59 @@ object Extract {
     // step 1
     val dfa = trim(minimize(dfa_given))
     // step 2
-    val old_transition_triples = for{ q <- dfa.Q
+    val old_transition_triples = for {q <- dfa.Q
                                       tr <- q.transitions
                                       } yield (tr.source.id, Singleton(tr.label), tr.destination.id)
 
     // step 3
     val new_initial_transitions = Seq((-1, EmptyWord, 0))
-    val nindexToState = (for{(q,id) <- dfa.F.zipWithIndex} yield  -2 - id -> q).toMap
-    val stateToNindex = for{(id,q) <- nindexToState} yield (q,id)
+    val nindexToState = (for {(q, id) <- dfa.F.zipWithIndex} yield -2 - id -> q).toMap
     // step 4
-    val new_final_transitions = for{ (q,id) <- stateToNindex
+    val new_final_transitions = for {(id, q) <- nindexToState
                                      } yield (q.id, EmptyWord, id)
-    def combine_parallel_labels(operands:Seq[Rte]):Rte =
+
+    def combine_parallel_labels(operands: Seq[Rte]): Rte =
       Or.createOr(operands).canonicalize
-    def extract_labels(triples:Seq[Triple]):Seq[Rte] =
-      for{ (_,rt,_) <- triples} yield rt
-    def combine_parallel(triples:Seq[(Int,Rte,Int)]):Seq[(Int,Rte,Int)] = {
+
+    def extract_labels(triples: Seq[Triple]): Seq[Rte] =
+      for {(_, rt, _) <- triples} yield rt
+
+    def combine_parallel(triples: Seq[(Int, Rte, Int)]): Seq[(Int, Rte, Int)] = {
       (for {((from, to), triples) <- triples.groupBy(triple => (triple._1, triple._3))
-           label = combine_parallel_labels(extract_labels(triples))
-           } yield (from,label,to)).toSeq
+            label = combine_parallel_labels(extract_labels(triples))
+            } yield (from, label, to)).toSeq
     }
 
-    def eliminate_state(transition_triples:Seq[(Int,Rte,Int)], qid:Int) = {
-      type LLLL = (List[Triple],List[Triple],List[Triple],List[Triple])
-      def f(acc:LLLL,triple:Triple):LLLL = {
+    def eliminate_state(transition_triples: Seq[(Int, Rte, Int)], qid: Int) = {
+      type LLLL = (List[Triple], List[Triple], List[Triple], List[Triple])
+
+      def f(acc: LLLL, triple: Triple): LLLL = {
         val (x_to_q, q_to_q, q_to_x, others) = acc
         val (src, _, dst) = triple
         if ((src == qid) && (dst == qid))
-          (x_to_q, triple::q_to_q, q_to_x, others)
-        else if ( src == qid)
-          (x_to_q, q_to_q, triple::q_to_x, others)
-        else if ( dst == qid)
-          (triple::x_to_q, q_to_q, q_to_x, others)
+          (x_to_q, triple :: q_to_q, q_to_x, others)
+        else if (src == qid)
+          (x_to_q, q_to_q, triple :: q_to_x, others)
+        else if (dst == qid)
+          (triple :: x_to_q, q_to_q, q_to_x, others)
         else
-          (x_to_q, q_to_q, q_to_x, triple::others)
+          (x_to_q, q_to_q, q_to_x, triple :: others)
       }
+
       val z = List[Triple]()
       // step 6
-      val (x_to_q, q_to_q, q_to_x, others) = transition_triples.foldLeft((z,z,z,z))(f)
+      val (x_to_q, q_to_q, q_to_x, others) = transition_triples.foldLeft((z, z, z, z))(f)
       // step 7
       val self_loop_label = combine_parallel_labels(extract_labels(q_to_q))
       // step 8
-      val new_triples = for{ (src, pre_label, _) <- combine_parallel(x_to_q)
+      val new_triples = for {(src, pre_label, _) <- combine_parallel(x_to_q)
                              (_, post_label, dst) <- combine_parallel(q_to_x)
                              } yield (src,Cat(pre_label,Star(self_loop_label),post_label),dst)
 
       // return from eliminate_state
       others.reverse ++ new_triples
     }
+
     val starting_triples = new_initial_transitions ++ old_transition_triples ++ new_final_transitions
     // step 5 and step 9
     val new_transition_triples = dfa.Q.foldLeft(starting_triples){
