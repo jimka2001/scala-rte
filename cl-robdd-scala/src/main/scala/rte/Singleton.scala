@@ -37,8 +37,6 @@ case class Singleton(td:SimpleTypeD) extends Rte {
     td.canonicalize() match {
       case STop => Sigma
       case SEmpty => EmptySet
-      // TODO I think this can be removed because if td is not inhabited it has already been reduced to SEmpty
-      // case td if td.inhabited.contains(false) => EmptySet
       case SAnd(operands@_*) => And.createAnd(operands.map(Singleton))
       case SOr(operands@_*) => Or.createOr(operands.map(Singleton))
       case SNot(operand) => And(Not(Singleton(operand)),
