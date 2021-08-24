@@ -27,10 +27,19 @@ import Extract._
 import GraphViz._
 
 class ExtractTestSuite  extends AnyFunSuite {
-
+  val Σ = Sigma
+  val ε = EmptyWord
+  val t2x = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
+  val etrue = Singleton(SEql(true))
   val num_random_tests = 1000
   test("extraction 31"){
     check_extraction_cycle(Cat(Singleton(SEql(1)),Singleton(SEql(2))))
+  }
+  test("extraction 35") {
+    SAtomic.withClosedWorldView {
+      check_extraction_cycle(Star(Cat(Cat(Or(Cat(Σ, Σ, Star(Σ)), ε),
+                                          Cat(t2x, Singleton(genus.SInt))), Cat(etrue, Singleton(STop)))))
+    }
   }
   def check_extraction_cycle(rt: Rte): Unit = {
     val rt1 = rt // .canonicalize()
