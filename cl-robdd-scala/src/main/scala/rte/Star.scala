@@ -96,3 +96,16 @@ case class Star(operand:Rte) extends Rte {
   def derivativeDown(wrt: SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]): Rte =
     Cat(operand.derivative(Some(wrt), factors, disjoints), this)
 }
+
+object Star{
+  val sigmaStar = Star(Sigma)
+  def createStar(operand:Rte):Rte = {
+    operand match {
+      case Sigma => sigmaStar
+      case Star(_) => operand
+      case EmptyWord => operand
+      case EmptySet => EmptyWord
+      case _ => Star(operand)
+    }
+  }
+}
