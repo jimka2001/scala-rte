@@ -385,21 +385,31 @@ class GenusCanonicalize extends AnyFunSuite {
              )
     }
   }
+
   test("discovered 388"){
-    val one:Integer = 1
+    val oneInteger:Integer = 1
+    val oneAny:Any = 1
+    val oneLong:Long = 1L
+
+    assert(classOf[Integer].isInstance(oneInteger))
+    assert(SAtomic(classOf[Integer]).typep(oneInteger))
     //assert(classOf[Long].isInstance(one))
     //assert(classOf[Integer].isInstance(one))
-    assert(SAtomic(classOf[Integer]).typep(one))
-    assert(SAtomic(Integer).typep(one))
+    assert(SAtomic(classOf[Integer]).typep(oneInteger))
+    assert(SAtomic(Integer).typep(oneInteger))
     check_type(SAtomic(Integer))
-    check_type(SOr(SAtomic(classOf[Integer]),SEql(one)))
-    check_type(SOr(SAtomic(Integer),SEql(one)))
+
+    assert(SAtomic(classOf[Long]).typep(1L))
+    assert(SEql(oneInteger).typep(1L) == false)
+    check_type(SOr(SAtomic(classOf[Integer]),SEql(oneInteger)))
+    check_type(SOr(SAtomic(Integer),SEql(oneInteger)))
 
     assert(SAtomic(classOf[Integer]).typep(1))
     check_type(SOr(Integer,SEql(1)))
     check_type(SOr(SAtomic(Integer),SEql(1)))
   }
   test("discovered 389"){
+
     assert(SAtomic(classOf[Long]).typep(1L))
     assert(SAtomic(classOf[scala.Long]).typep(1L))
     assert(SAtomic(classOf[java.lang.Long]).typep(1L))
@@ -408,11 +418,12 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SAtomic(classOf[scala.Int]).typep(1))
     assert(SAtomic(classOf[java.lang.Integer]).typep(1))
     assert(SAtomic(classOf[Int]).typep(1))
-    assert(SAtomic(classOf[Int]).typep(1L))
+    assert(! SAtomic(classOf[Int]).typep(1L))
 
     assert(SAtomic(classOf[Short]).typep(1:Short))
     assert(SAtomic(classOf[java.lang.Short]).typep(1:Short))
     assert(SAtomic(classOf[scala.Short]).typep(1:Short))
+    assert(!SAtomic(classOf[Short]).typep(1:Long))
   }
   test("rand typep") {
     // make sure typep membership of particular values is the same before and after canonicalizing

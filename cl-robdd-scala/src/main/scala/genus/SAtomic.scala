@@ -190,6 +190,7 @@ object SAtomic {
   def apply(ct: Class[_]): SimpleTypeD = {
     if (ct == classOf[Nothing]) SEmpty
     else if (ct == classOf[Any]) STop
+    else if (ct == classOf[Int]) SAtomic(classOf[Integer])
     else knownSAtomics.getOrElseUpdate((getClosedWorldView(),ct),new SAtomic(ct))
   }
 
