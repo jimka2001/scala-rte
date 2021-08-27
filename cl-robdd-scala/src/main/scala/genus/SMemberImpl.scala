@@ -24,13 +24,15 @@ package genus
 
 import Types._
 import NormalForm._
+import adjuvant.Adjuvant.eql
+
 import scala.annotation.tailrec
 
 abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD {
 
   override def toString:String = xs.map(_.toString).mkString("{", ",", "}")
 
-  override def typep(a: Any): Boolean = xs.contains(a)
+  override def typep(a: Any): Boolean = xs.exists(x => eql(x,a))
 
   override protected def inhabitedDown: Option[Boolean] = Some(xs.nonEmpty) // SMember() is empty
 

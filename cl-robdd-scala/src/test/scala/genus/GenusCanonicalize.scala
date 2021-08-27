@@ -927,4 +927,11 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SAnd(B,SNot(A)).conversion8()
              == SEmpty)
   }
+  test("canonicalize member with primitive"){
+    println(SEql(1).subtypep(SAtomic(Integer)))
+    println(SAtomic(Integer).typep(1))
+
+    assert(SOr(SAtomic(Integer),SEql(1)).canonicalize() == SAtomic(Integer))
+    assert(SOr(SAtomic(Integer),SEql(1L)).canonicalize() == SOr(SAtomic(Integer),SEql(1L)))
+  }
 }

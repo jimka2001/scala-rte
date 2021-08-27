@@ -283,4 +283,27 @@ object Adjuvant {
       sys.error(s"cannot open $fileName because OS = ${System.getProperty("os.name")}")
     fileName
   }
+
+  def eql(x:Any, y:Any):Boolean = {
+    if (x.getClass != y.getClass)
+      false
+    else
+      (x,y) match {
+        case (a:Seq[Any], b:Seq[Any]) => a.size == b.size && a.zip(b).forall{case (a,b) => eql(a,b)}
+        case (a,b) => a == b
+      }
+  }
+  def diff(xs:Seq[Any],ys:Seq[Any]):Seq[Any] = {
+    // take elements in xs which are not in ys
+    xs.filter{x => ! ys.exists(y => eql(x,y))}
+  }
+
+  def intersect(xs:Seq[Any],ys:Seq[Any]):Seq[Any] = {
+    xs.filter{x => ys.exists(y => eql(x,y))}
+  }
+
+  def member(x:Any, ys:Seq[Any]):Boolean = {
+    ys.exists{y => eql(x,y)}
+  }
+
 }
