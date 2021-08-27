@@ -23,10 +23,14 @@
 package genus
 
 import Types._
+import genus.RandomType.interestingValues
 import org.scalatest.funsuite.AnyFunSuite
 
 class GenusTypep extends AnyFunSuite {
-
+  test("SAtomic types"){
+    for{ v <- interestingValues }
+      assert(SAtomic(v.getClass).typep(v))
+  }
   test("AtomicType any and nothing") {
     val newEmpty = SAtomic(classOf[Nothing])
     val newSuper = SAtomic(classOf[Any])
