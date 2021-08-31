@@ -32,7 +32,7 @@ import scala.collection.mutable
 case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   //if (ct != classOf[Nothing] && ! SAtomic.existsInstantiatableSubclass(ct))
   //  println(s"WARNING: SAtomic($ct) is equivalent to SEmpty")
-  override def toString:String = {
+  def shortTypeName():String = {
     val fullName = if (ct.getName.startsWith("java.lang."))
       ct.getName.drop(10)
     else
@@ -40,10 +40,13 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
     val shortName = fullName.dropWhile(_ != '$')
 
-    "SAtomic:" + (if (shortName == "")
+    if (shortName == "")
       fullName
     else
-      shortName.drop(1))
+      shortName.drop(1)
+  }
+  override def toString:String = {
+    "SAtomic:" + shortTypeName()
   }
 
   override def typep(a: Any): Boolean = {
@@ -122,7 +125,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
             }
           }
 
-        case SMember(_@_*) =>
+        case SMember(_) =>
           Some(false) // no member type exhausts all the values of an Atomic Type
 
         case SEql(_) =>

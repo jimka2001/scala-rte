@@ -22,9 +22,15 @@
 
 package genus
 
+import genus.Types.createMember
+
 /** The member type is an exhaustive type, all object composing it are
  * given at construction time.
  *
  * @param xs var-arg, the members of the type
  */
-case class SMember(override val xs: Any*) extends SMemberImpl(xs :_*) with TerminalType
+case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SMemberImpl(xs) with TerminalType
+
+object SMember {
+  def apply(xs:Any*):SimpleTypeD = createMember(xs)
+}

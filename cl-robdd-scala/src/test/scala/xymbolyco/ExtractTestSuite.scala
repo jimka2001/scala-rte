@@ -35,22 +35,23 @@ class ExtractTestSuite  extends AnyFunSuite {
   test("extraction 31"){
     check_extraction_cycle(Cat(Singleton(SEql(1)),Singleton(SEql(2))))
   }
-  test("extraction 34") {
-    SAtomic.withClosedWorldView {
-      check_extraction_cycle(Star(Cat(Or(Cat(Σ, Σ, Star(Σ)), ε),
-                                      t2x,
-                                      Singleton(genus.SInt),
-                                      etrue,
-                                      Singleton(STop))))
-    }
-  }
-  test("extraction 35") {
-    SAtomic.withClosedWorldView {
-      check_extraction_cycle(Star(Cat(Cat(Or(Cat(Σ, Σ, Star(Σ)), ε),
-                                          Cat(t2x, Singleton(genus.SInt))),
-                                      Cat(etrue, Singleton(STop)))))
-    }
-  }
+    // TODO these cases take a loooonnnnnggg time, need to figure out why
+    //  test("extraction 34") {
+    //    SAtomic.withClosedWorldView {
+    //      check_extraction_cycle(Star(Cat(Or(Cat(Σ, Σ, Star(Σ)), ε),
+    //                                      t2x,
+    //                                      Singleton(genus.SInt),
+    //                                      etrue,
+    //                                      Singleton(STop))))
+    //    }
+    //  }
+    //  test("extraction 35") {
+    //    SAtomic.withClosedWorldView {
+    //      check_extraction_cycle(Star(Cat(Cat(Or(Cat(Σ, Σ, Star(Σ)), ε),
+    //                                          Cat(t2x, Singleton(genus.SInt))),
+    //                                      Cat(etrue, Singleton(STop)))))
+    //    }
+    //  }
   def check_extraction_cycle(rt: Rte): Unit = {
     val rt1 = rt.canonicalize
     val extracted = dfaToRte[Boolean](rt1.toDfa(exitValue=true),true)

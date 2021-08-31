@@ -28,16 +28,19 @@ import adjuvant.Adjuvant.eql
 
 import scala.annotation.tailrec
 
-abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD {
+abstract class SMemberImpl(val xs:Vector[(SimpleTypeD,Any)]) extends SimpleTypeD {
 
-  override def toString:String = xs.map(_.toString).mkString("{", ",", "}")
+  override def toString:String = xs.map{
+    case (td:SAtomic,a:Any) => a.toString + ":" + td.shortTypeName()
+    case (_,a:Any) => a.toString + ":???"
+  }.mkString("{", ",", "}")
 
-  override def typep(a: Any): Boolean = xs.exists(x => eql(x,a))
+  override def typep(a: Any): Boolean = xs.exists{case (td,b) => td.typep(a) && a == b}
 
   override protected def inhabitedDown: Option[Boolean] = Some(xs.nonEmpty) // SMember() is empty
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
-    if (xs.exists(t.typep)) Some(false)
+    if (xs.exists{case (_,b) => t.typep(b)}) Some(false)
     else Some(true)
   }
 
@@ -45,26 +48,7 @@ abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD {
     if (xs.isEmpty)
       SEmpty.subtypep(t)
     else
-      Some(xs.forall(t.typep))
-  }
-
-  // SMember(xs: Any*)
-  override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
-    def cmp(a:Any,b:Any):Boolean = {
-      if (a == b)
-        false
-      else if (a.getClass != b.getClass)
-        a.getClass.toString < b.getClass.toString
-      else if (a.toString != b.toString)
-        a.toString < b.toString
-      else
-        throw new Exception(s"cannot canonicalize $this because it contains two different elements which print the same ${a.toString}")
-    }
-    xs match {
-      case Seq() => SEmpty
-      case Seq(x) => SEql(x)
-      case xs => createMember(xs.distinct.sortWith(cmp))
-    }
+      Some(xs.forall{case (_,b) => t.typep(b)})
   }
 
   // SMember(xs: Any*)
@@ -72,7 +56,7 @@ abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD {
     if (this == t)
       false
     else t match {
-      case SMember(ys @ _*) =>
+      case SMember(ys) =>
         @tailrec
         def comp(as:List[Any], bs:List[Any]):Boolean = {
           (as,bs) match {

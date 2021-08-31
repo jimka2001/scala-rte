@@ -28,6 +28,61 @@ import adjuvant.Adjuvant.eql
 
 class TypesTest extends AnyFunSuite {
 
+  test("SEql"){
+    val z:SimpleTypeD = SEql(0)
+    z match {
+      case SEql((td,v)) => {
+        assert(td == SAtomic(0.getClass()))
+        assert(v == 0)
+      }
+      case _ => fail()
+    }
+    assert(z == SEql(0))
+    assert(SEql(0) != SEql(0.0))
+    assert(SEql(0) != SEql(0L))
+
+    assert(SNot(SEql(0)) != SNot(SEql(0.0)))
+    assert(SNot(SEql(0)) == SNot(SEql(0)))
+    assert(SOr(SEql(0),SEql(0.0)) == SOr(SEql(0),SEql(0.0)))
+    assert(SOr(SEql(0),SEql(0.0)) != SOr(SEql(0L),SEql(0.0)))
+
+    assert(SEql(0).typep(0))
+    assert(! SEql(0).typep(0.0))
+    assert(! SEql(0).typep(0L))
+
+    assert(SEql(0).disjoint(SEql(0.0)).contains(true))
+    assert(SEql(0).inhabited.contains(true))
+    assert(SEql(0).disjoint(SEql(0)).contains(false))
+
+    assert(SEql(0).subtypep(SEql(0)).contains(true))
+    assert(SEql(0).subtypep(SEql(0.0)).contains(false))
+    assert(SEql(0).subtypep(SMember(0,0.0)).contains(true))
+  }
+  test("SMember"){
+    val z:SimpleTypeD = SMember(0,0L,0.0)
+    assert(z == SMember(0L,0.0,0))
+    assert(z == SMember(0L,0,0.0))
+    assert(z == SMember(0,0L,0.0))
+    assert(z == SMember(0,0.0,0L))
+    assert(z == SMember(0.0,0L,0))
+    assert(z == SMember(0.0,0,0L))
+    assert(z == SMember(0.0,0,0L,0L,0,0.0))
+    assert(z != SMember(0.0,0))
+    assert(SMember(0) == SEql(0))
+    assert(SMember(0.0) != SEql(0))
+
+    assert(!SMember(0,0L).typep(0.0))
+    assert(SMember(0,0L).typep(0L))
+    assert(SMember(0,0L).typep(0))
+    assert(SMember(0,0L).inhabited.contains(true))
+    assert(SMember().inhabited.contains(false))
+    assert(SMember(0).inhabited.contains(true))
+    assert(SMember(0,0L).disjoint(SMember(0.0,0)).contains(false))
+    assert(SMember(0,0L).disjoint(SMember(0.0,1.0)).contains(true))
+    assert(SMember(0,0L,0.0).subtypep(SMember(0,0L,0.0,1,1L,1.0)).contains(true))
+    assert(SMember(0,0L,0.0).subtypep(SMember(0,0L,1,1L,1.0)).contains(false))
+  }
+
   test("reflect.getSubTypesOf"){
     val reflect = new org.reflections.Reflections()
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))

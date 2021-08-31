@@ -22,43 +22,55 @@
 package genus
 
 import adjuvant.Adjuvant.eql
+import genus.Types.cmpTypeDesignators
 
 /** The equal type, a type which is equal to a given object.
  *
  * @param a the object defining the type
  */
-case class SEql(a: Any) extends SMemberImpl(a) with TerminalType {
-  override def toString = s"[= $a]"
+case class SEql(a: (SimpleTypeD,Any)) extends SMemberImpl(Vector(a)) with TerminalType {
+  override def toString:String = {
+    s"[ ${a._2}:" +
+      (a._1 match {
+      case td@SAtomic(_) => td.shortTypeName()
+      case _ => "???"
+    }) +
+    "]"
+  }
 
   override def typep(b: Any): Boolean = {
-    eql(a, b)
+     a._2 == b && a._1.typep(b)
   }
 
   override protected def inhabitedDown: Option[Boolean] = Some(true)
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
-    if (t.typep(a)) Some(false)
+    if (t.typep(a._2)) Some(false)
     else Some(true)
   }
 
   override def subtypep(t: SimpleTypeD): Option[Boolean] = {
-    Some(t.typep(a))
+    Some(t.typep(a._2))
   }
 
-  // SEql(a: Any)
+  // SEql((SAtomic,Any))
   override def cmpToSameClassObj(t:SimpleTypeD):Boolean = {
     if (this == t)
       false
     else t match {
-      case SEql(b: Any) =>
-        if( ! (a.getClass eq b.getClass))
-          // TODO shouldn't this bee a.getClass.className  to avoid creating a new string
-          a.getClass.toString < b.getClass.toString
-        else if (a.toString != b.toString)
-          a.toString < b.toString
-        else
-          throw new Exception(s"cannot compare $this vs $t because they are different yet print the same")
+      case SEql(tdb) =>
+        tdb match {
+          case (td:SimpleTypeD,b:Any) =>
+            if (a._1 != td)
+              cmpTypeDesignators(a._1,td)
+            else
+              a._2.toString < b.toString
+        }
       case _ => super.cmpToSameClassObj(t)  // throws an exception
     }
   }
+}
+
+object SEql {
+  def apply(a:Any):SimpleTypeD = new SEql((SAtomic(a.getClass),a))
 }
