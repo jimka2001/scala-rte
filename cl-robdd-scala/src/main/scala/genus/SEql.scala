@@ -22,12 +22,13 @@
 package genus
 
 import adjuvant.Adjuvant.eql
+import genus.Types.cmpTypeDesignators
 
 /** The equal type, a type which is equal to a given object.
  *
  * @param a the object defining the type
  */
-case class SEql(a: Any) extends SMemberImpl(a) with TerminalType {
+case class SEql(a: (SimpleTypeD,Any)) extends SMemberImpl(Vector(a)) with TerminalType {
   override def toString = s"[= $a]"
 
   override def typep(b: Any): Boolean = {
@@ -45,20 +46,24 @@ case class SEql(a: Any) extends SMemberImpl(a) with TerminalType {
     Some(t.typep(a))
   }
 
-  // SEql(a: Any)
+  // SEql((SAtomic,Any))
   override def cmpToSameClassObj(t:SimpleTypeD):Boolean = {
     if (this == t)
       false
     else t match {
-      case SEql(b: Any) =>
-        if( ! (a.getClass eq b.getClass))
-          // TODO shouldn't this bee a.getClass.className  to avoid creating a new string
-          a.getClass.toString < b.getClass.toString
-        else if (a.toString != b.toString)
-          a.toString < b.toString
-        else
-          throw new Exception(s"cannot compare $this vs $t because they are different yet print the same")
+      case SEql(tdb) =>
+        tdb match {
+          case (td:SimpleTypeD,b:Any) =>
+            if (a._1 != td)
+              cmpTypeDesignators(a._1,td)
+            else
+              a.toString < b.toString
+        }
       case _ => super.cmpToSameClassObj(t)  // throws an exception
     }
   }
+}
+
+object SEql {
+  def apply(a:Any):SimpleTypeD = new SEql((SAtomic(a.getClass),a))
 }

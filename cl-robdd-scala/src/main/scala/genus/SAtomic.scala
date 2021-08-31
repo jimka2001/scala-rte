@@ -122,7 +122,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
             }
           }
 
-        case SMember(_@_*) =>
+        case SMember(_) =>
           Some(false) // no member type exhausts all the values of an Atomic Type
 
         case SEql(_) =>

@@ -28,9 +28,9 @@ import adjuvant.Adjuvant.eql
 
 import scala.annotation.tailrec
 
-abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD {
+abstract class SMemberImpl(val xs:Vector[(SimpleTypeD,Any)]) extends SimpleTypeD {
 
-  override def toString:String = xs.map(_.toString).mkString("{", ",", "}")
+  override def toString:String = xs.map(x => x._1.toString).mkString("{", ",", "}")
 
   override def typep(a: Any): Boolean = xs.exists(x => eql(x,a))
 
@@ -49,30 +49,11 @@ abstract class SMemberImpl(val xs:Any*) extends SimpleTypeD {
   }
 
   // SMember(xs: Any*)
-  override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
-    def cmp(a:Any,b:Any):Boolean = {
-      if (a == b)
-        false
-      else if (a.getClass != b.getClass)
-        a.getClass.toString < b.getClass.toString
-      else if (a.toString != b.toString)
-        a.toString < b.toString
-      else
-        throw new Exception(s"cannot canonicalize $this because it contains two different elements which print the same ${a.toString}")
-    }
-    xs match {
-      case Seq() => SEmpty
-      case Seq(x) => SEql(x)
-      case xs => createMember(xs.distinct.sortWith(cmp))
-    }
-  }
-
-  // SMember(xs: Any*)
   override def cmpToSameClassObj(t:SimpleTypeD):Boolean = {
     if (this == t)
       false
     else t match {
-      case SMember(ys @ _*) =>
+      case SMember(ys) =>
         @tailrec
         def comp(as:List[Any], bs:List[Any]):Boolean = {
           (as,bs) match {

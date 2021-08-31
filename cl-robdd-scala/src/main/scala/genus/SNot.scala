@@ -44,7 +44,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
       case SAtomic(`nothing`) => Some(true)
       case SAtomic(`any`) => Some(false)
       case SAtomic(_) => Some(true)
-      case SMember(_ @ _*) => Some(true)
+      case SMember(_) => Some(true)
       case SEql(_) => Some(true)
       case SNot(x) => x.inhabited
       case _ => None
