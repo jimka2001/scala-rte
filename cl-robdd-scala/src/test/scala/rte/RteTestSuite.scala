@@ -99,7 +99,15 @@ class RteTestSuite extends MyFunSuite {
     assert(Sigma.canonicalize == Sigma)
     assert(EmptyWord.canonicalize == EmptyWord)
   }
-
+  test("discovered 102"){
+    val t1 = SEql(0)
+    val t2 = SEql(0L)
+    assert(Singleton(SAnd(t1, t2)).canonicalize == And(Singleton(t1), Singleton(t2)).canonicalize)
+    assert(Singleton(SOr(t1, t2)).canonicalize == Singleton(SMember(0,0L)))
+    println(Or(Singleton(t1), Singleton(t2)).canonicalize)
+    assert(Singleton(SOr(t1, t2)).canonicalize == Or(Singleton(t1), Singleton(t2)).canonicalize)
+    assert(Singleton(SNot(t1)).canonicalize == And(Not(t1), Sigma).canonicalize)
+  }
   test("canonicalize Singleton") {
     for {
       _ <- 1 to 1000

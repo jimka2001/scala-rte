@@ -34,12 +34,29 @@ object Types {
   //    classOf[A] && classOf[B]
   implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
 
-  def createMember(xs: Seq[Any]): SimpleTypeD = xs match {
-    case Seq() => SEmpty
-    case Seq(a) => SEql(a)
-    case _ => SMember(xs: _*)
+  def createMemberFromPairs(xs:Seq[(SimpleTypeD,Any)]):SimpleTypeD = {
+    createMember(xs.map(_._2))
   }
 
+  def createMember(xs: Seq[Any]): SimpleTypeD = {
+    xs.toList match {
+      case (_,_)::_ => throw new Exception(s"warning createMember called with pairs: $xs")
+      case _ => ()
+    }
+    def cmp(a:(SimpleTypeD,Any),b:(SimpleTypeD,Any)):Boolean = {
+      if (a == b)
+        false
+      else if (a._1 != b._1)
+        cmpTypeDesignators(a._1,b._1)
+      else
+      a._2.toString < b._2.toString
+    }
+    xs.map(x => (SAtomic(x.getClass),x)).distinct.sortWith(cmp) match {
+      case Seq() => SEmpty
+      case Seq(a) => SEql(a)
+      case vec => new SMember(vec.toVector)
+    }
+  }
   val atomicp: SimpleTypeD => Boolean = {
     case SAtomic(_) => true
     case _ => false
@@ -49,7 +66,7 @@ object Types {
     case _ => false
   }
   val memberp: SimpleTypeD => Boolean = {
-    case SMember(_*) => true
+    case SMember(_) => true
     case SEql(_) => true
     case _ => false
   }
@@ -147,7 +164,7 @@ object Types {
     }
     else {
       // just compare the class printed values alphabetically
-      a.getClass.toString < b.getClass.toString
+      a.getClass.getName < b.getClass.getName
     }
   }
 

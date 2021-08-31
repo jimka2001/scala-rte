@@ -21,6 +21,7 @@
 
 package rte
 
+import adjuvant.Adjuvant.eql
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import rte.RteImplicits._
@@ -400,6 +401,12 @@ class AndTestSuite extends AnyFunSuite {
     assert(And(r1, r2, Not(r1)).canonicalize == EmptySet,
            s"r1=$r1  r2=$r2 ")
   }
+  test("discovered case 403"){
+    val r1 = SAnd(SMember(1L, 2, 3L, 4),
+                  SMember(1,2,3,4))
+    assert(eql(SNot(r1).canonicalize(),SNot(SMember(2,4))))
+    assert(eql(SAnd(r1,SNot(r1)).canonicalize(), SEmpty))
+  }
 
   test("canonicalize and 325") {
 
@@ -416,7 +423,7 @@ class AndTestSuite extends AnyFunSuite {
          } {
 
       assert(And(r1, Not(r1)).canonicalize ~= EmptySet,
-             s"\n  r1=$r1")
+             s"\n  r1=$r1\n empty=${And(r1, Not(r1)).canonicalize}")
       assert(And(r1, r2, Not(r1)).canonicalize ~= EmptySet,
              s"And(r1, r2, Not(r1))" +
              s"\n  r1=$r1\n  r2=$r2 ")

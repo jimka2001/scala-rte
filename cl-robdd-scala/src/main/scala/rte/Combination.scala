@@ -156,13 +156,13 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
         .collect{case Singleton(mi:SMemberImpl) => mi.xs }
         .reduceOption(setOperation) match {
         case None => one
-        case Some(memberOperands) => Singleton(Types.createMember(memberOperands))
+        case Some(memberOperands:Seq[(SimpleTypeD,Any)]) => Singleton(Types.createMemberFromPairs(memberOperands))
       }
       val newNotMember:Rte = notMembers
         .collect{case Not(Singleton(mi:SMemberImpl)) => mi.xs }
         .reduceOption(setDualOperation) match {
         case None => one
-        case Some(notMemberOperands) => Not(Singleton(Types.createMember(notMemberOperands)))
+        case Some(notMemberOperands:Seq[(SimpleTypeD,Any)]) => Not(Singleton(Types.createMemberFromPairs(notMemberOperands)))
       }
       // careful to put the SMember back in the place of the first
       //   this is accomplished by replacing every SMember/SEql with the one we derive here
@@ -185,11 +185,9 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
 
     // Must be careful, e.g. if Or(A,B) with A a subset of B and B a subset of A
     //    but A != B, then don't remove both.
-
     val ss = operands.collect{
       case Singleton(td) => td
     }
-
     val redundant = ss.toList.tails.flatMap { tail =>
       if (tail.size < 2)
         List()
@@ -239,7 +237,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
           case Seq() => this
           case tds =>
             val td = createTypeD(tds)
-            val rte = Singleton(Types.createMember(m.xs.filter(a => orInvert(td.typep(a)))))
+            val rte = Singleton(Types.createMemberFromPairs(m.xs.filter{case (_:SimpleTypeD,a:Any) => orInvert(td.typep(a))}))
             create(searchReplace(operands, s, rte))
         }
       case _ => this

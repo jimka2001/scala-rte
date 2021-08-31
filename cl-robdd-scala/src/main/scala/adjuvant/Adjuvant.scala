@@ -305,5 +305,4 @@ object Adjuvant {
   def member(x:Any, ys:Seq[Any]):Boolean = {
     ys.exists{y => eql(x,y)}
   }
-
 }
