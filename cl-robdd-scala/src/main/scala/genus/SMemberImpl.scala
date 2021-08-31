@@ -30,7 +30,10 @@ import scala.annotation.tailrec
 
 abstract class SMemberImpl(val xs:Vector[(SimpleTypeD,Any)]) extends SimpleTypeD {
 
-  override def toString:String = xs.map(x => x._1.toString).mkString("{", ",", "}")
+  override def toString:String = xs.map{
+    case (td:SAtomic,a:Any) => a.toString + ":" + td.shortTypeName()
+    case (_,a:Any) => a.toString + ":???"
+  }.mkString("{", ",", "}")
 
   override def typep(a: Any): Boolean = xs.exists{case (td,b) => td.typep(a) && a == b}
 
