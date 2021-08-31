@@ -78,6 +78,28 @@ class AdjuvantTestSuite extends AnyFunSuite {
     }
     println(traceGraph(0,edges))
   }
+
+  test("eql"){
+    import adjuvant.Adjuvant.eql
+    assert(eql(1,1))
+    assert(! eql(1, 1.0))
+    assert(! eql(1:Short, 1:Long))
+  }
+
+  test("diff"){
+    import adjuvant.Adjuvant.{diff,eql}
+    assert(diff(Seq(1,2,3),Seq(1L, 2L, 3L)) == Seq(1,2,3))
+    assert(eql(diff(Seq(1,2,3),Seq(1L, 2L, 3L)), Seq(1,2,3)))
+    assert(! eql(diff(Seq(1,2,3),Seq(1L, 2L, 3L)), Seq[Any](1.0,2,3)))
+  }
+
+//  test("xyzzy"){
+//    val one:Long = 1
+//    one match {
+//      case _:Int => true
+//      case _ => false
+//    }
+//  }
 }
 
 

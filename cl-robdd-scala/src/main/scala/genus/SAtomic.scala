@@ -47,7 +47,22 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   }
 
   override def typep(a: Any): Boolean = {
-    ct.isInstance(a)
+    // according to Sébastien Doeraene https://gitter.im/scala/center?at=6124feac63dca8189120a1c9
+    // if ct is a primitive (ct.isPrimitive() returns True) then isInstance always returns false
+
+    (a.getClass == ct) || ct.isInstance(a) || locally{
+      //println(s"typep testing $ct vs ${a.getClass}")
+      if (ct == classOf[scala.Long])
+        // SAtomic(classOf[java.lang.Long]).typep(a)
+        a.getClass == classOf[java.lang.Long]
+      else if (ct == classOf[scala.Int])
+        // SAtomic(classOf[Integer]).typep(a)
+        a.getClass == classOf[Integer]
+      else if (ct == classOf[scala.Short])
+        a.getClass == classOf[java.lang.Short]
+      else
+        false
+    }
   }
 
   override protected def inhabitedDown: Some[Boolean] = {
@@ -175,6 +190,7 @@ object SAtomic {
   def apply(ct: Class[_]): SimpleTypeD = {
     if (ct == classOf[Nothing]) SEmpty
     else if (ct == classOf[Any]) STop
+    else if (ct == classOf[Int]) SAtomic(classOf[Integer])
     else knownSAtomics.getOrElseUpdate((getClosedWorldView(),ct),new SAtomic(ct))
   }
 

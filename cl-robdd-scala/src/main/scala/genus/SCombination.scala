@@ -23,7 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
-import adjuvant.Adjuvant.{findSimplifier, uniquify}
+import adjuvant.Adjuvant.{findSimplifier, uniquify, diff, eql}
 
 // The purpose of this class, SCombination, is to serve as a superclass
 // of both SAnd and SOr, as there is quite a bit of common code between
@@ -281,18 +281,18 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         //    SAnd({1,2,3,a},SNot({1,2,3,b})
         // --> SAnd({a}                    )
         create(tds.flatMap {
-          case SNot(n2: SMemberImpl) if n2 == n => Seq()
+          case SNot(n2: SMemberImpl) if eql(n2.xs, n.xs) => Seq()
           case m2:SMemberImpl if m2 == m=>
-            Seq(createMember(m.xs.diff(n.xs)))
+            Seq(createMember(diff(m.xs,n.xs)))
           case td => Seq(td)
         })
       case (_:SOr,Some(m),Some(n)) =>
         //    SOr({1,2,3,a},SNot({1,2,3,b})
         // --> SOr(        ,SNot({b})
         create(tds.flatMap {
-          case m2: SMemberImpl if m2 == m => Seq()
+          case m2: SMemberImpl if eql(m2,m) => Seq()
           case SNot(n2: SMemberImpl) if n2 == n =>
-            Seq(SNot(createMember(n.xs.diff(m.xs))))
+            Seq(SNot(createMember(diff(n.xs,m.xs))))
           case td => Seq(td)
         })
       case (_,_,_) => this

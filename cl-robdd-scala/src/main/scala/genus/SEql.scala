@@ -21,6 +21,8 @@
 
 package genus
 
+import adjuvant.Adjuvant.eql
+
 /** The equal type, a type which is equal to a given object.
  *
  * @param a the object defining the type
@@ -29,7 +31,7 @@ case class SEql(a: Any) extends SMemberImpl(a) with TerminalType {
   override def toString = s"[= $a]"
 
   override def typep(b: Any): Boolean = {
-    a == b
+    eql(a, b)
   }
 
   override protected def inhabitedDown: Option[Boolean] = Some(true)
