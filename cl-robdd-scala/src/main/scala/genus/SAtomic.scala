@@ -159,7 +159,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     if (this == td)
       false
     else td match {
-      // this <= td ?
+      // this < td ?
       case SAtomic(cl) => s"$ct" < s"$cl"
       case _ => super.cmpToSameClassObj(td)  // throws an exception
     }
