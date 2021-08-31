@@ -32,18 +32,18 @@ case class SEql(a: (SimpleTypeD,Any)) extends SMemberImpl(Vector(a)) with Termin
   override def toString = s"[= $a]"
 
   override def typep(b: Any): Boolean = {
-    eql(a, b)
+     a._2 == b && a._1.typep(b)
   }
 
   override protected def inhabitedDown: Option[Boolean] = Some(true)
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
-    if (t.typep(a)) Some(false)
+    if (t.typep(a._2)) Some(false)
     else Some(true)
   }
 
   override def subtypep(t: SimpleTypeD): Option[Boolean] = {
-    Some(t.typep(a))
+    Some(t.typep(a._2))
   }
 
   // SEql((SAtomic,Any))

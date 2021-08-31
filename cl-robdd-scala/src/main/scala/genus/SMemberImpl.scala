@@ -32,12 +32,12 @@ abstract class SMemberImpl(val xs:Vector[(SimpleTypeD,Any)]) extends SimpleTypeD
 
   override def toString:String = xs.map(x => x._1.toString).mkString("{", ",", "}")
 
-  override def typep(a: Any): Boolean = xs.exists(x => eql(x,a))
+  override def typep(a: Any): Boolean = xs.exists{case (td,b) => td.typep(a) && a == b}
 
   override protected def inhabitedDown: Option[Boolean] = Some(xs.nonEmpty) // SMember() is empty
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
-    if (xs.exists(t.typep)) Some(false)
+    if (xs.exists{case (_,b) => t.typep(b)}) Some(false)
     else Some(true)
   }
 
@@ -45,7 +45,7 @@ abstract class SMemberImpl(val xs:Vector[(SimpleTypeD,Any)]) extends SimpleTypeD
     if (xs.isEmpty)
       SEmpty.subtypep(t)
     else
-      Some(xs.forall(t.typep))
+      Some(xs.forall{case (_,b) => t.typep(b)})
   }
 
   // SMember(xs: Any*)
