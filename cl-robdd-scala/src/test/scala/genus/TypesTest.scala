@@ -41,6 +41,11 @@ class TypesTest extends AnyFunSuite {
     assert(SEql(0) != SEql(0.0))
     assert(SEql(0) != SEql(0L))
 
+    assert(SNot(SEql(0)) != SNot(SEql(0.0)))
+    assert(SNot(SEql(0)) == SNot(SEql(0)))
+    assert(SOr(SEql(0),SEql(0.0)) == SOr(SEql(0),SEql(0.0)))
+    assert(SOr(SEql(0),SEql(0.0)) != SOr(SEql(0L),SEql(0.0)))
+
     assert(SEql(0).typep(0))
     assert(! SEql(0).typep(0.0))
     assert(! SEql(0).typep(0L))

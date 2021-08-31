@@ -29,7 +29,14 @@ import genus.Types.cmpTypeDesignators
  * @param a the object defining the type
  */
 case class SEql(a: (SimpleTypeD,Any)) extends SMemberImpl(Vector(a)) with TerminalType {
-  override def toString = s"[= $a]"
+  override def toString:String = {
+    s"[ ${a._2}:" +
+      (a._1 match {
+      case td@SAtomic(_) => td.shortTypeName()
+      case _ => "???"
+    }) +
+    "]"
+  }
 
   override def typep(b: Any): Boolean = {
      a._2 == b && a._1.typep(b)
@@ -57,7 +64,7 @@ case class SEql(a: (SimpleTypeD,Any)) extends SMemberImpl(Vector(a)) with Termin
             if (a._1 != td)
               cmpTypeDesignators(a._1,td)
             else
-              a.toString < b.toString
+              a._2.toString < b.toString
         }
       case _ => super.cmpToSameClassObj(t)  // throws an exception
     }
