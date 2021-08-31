@@ -239,7 +239,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
           case Seq() => this
           case tds =>
             val td = createTypeD(tds)
-            val rte = Singleton(Types.createMember(m.xs.filter(a => orInvert(td.typep(a)))))
+            val rte = Singleton(Types.createMemberFromPairs(m.xs.filter{case (_:SimpleTypeD,a:Any) => orInvert(td.typep(a))}))
             create(searchReplace(operands, s, rte))
         }
       case _ => this
