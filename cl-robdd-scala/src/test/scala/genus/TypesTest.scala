@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -24,6 +24,7 @@ package genus
 import genus.Types._
 import org.scalatest.funsuite.AnyFunSuite
 import RandomType.randomType
+import adjuvant.Adjuvant.eql
 
 class TypesTest extends AnyFunSuite {
 
@@ -65,18 +66,35 @@ class TypesTest extends AnyFunSuite {
   test("sort 2") {
     assert(List(SEmpty, STop).sortWith(cmpTypeDesignators)
            == List(STop, SEmpty).sortWith(cmpTypeDesignators))
+    assert(! eql(SEql(0),SEql(0L)))
+    locally {
+      for {data <- Seq(Seq(SEql(0), SEql(1), SEql(0L)),
+                       Seq(SEql(1), SEql(0L), SEql(0)),
+                       Seq(SNot(SEql(0)), SNot(SEql(1)), SNot(SEql(0L))),
+                       Seq(SNot(SEql(1)), SNot(SEql(0L)), SNot(SEql(0)))
+                       )} {
+
+        assert(data.sortWith(cmpTypeDesignators)
+                 == data.reverse.sortWith(cmpTypeDesignators))
+      }
+    }
     trait Trait1
     trait Trait2
-
-    for {n <- 1 to 100
-         d <- 1 to 3
+    assert(! eql(0,0.0))
+    for {d <- 1 to 3
+         n <- 1 to 100
          _ <- 1 to 80
          li = for {_ <- 1 to 10} yield randomType(d)
          m <- 1 to n
          prefix = li.take(m)
-         }
-      assert(prefix.sortWith(cmpTypeDesignators)
-             == prefix.reverse.sortWith(cmpTypeDesignators))
+         } {
+      val o1 = prefix.sortWith(cmpTypeDesignators)
+      val o2 = prefix.reverse.sortWith(cmpTypeDesignators)
+      assert(eql(o1,o2),
+             s"\nd=$d, n=$n cannot sort ${prefix.getClass} : $prefix\n" +
+             s"o1=$o1\n" +
+             s"o2=$o2")
+    }
   }
   def triangle_inequality(t1:SimpleTypeD,t2:SimpleTypeD,t3:SimpleTypeD):Unit = {
     if (cmpTypeDesignators(t1,t2) && cmpTypeDesignators(t2,t3))

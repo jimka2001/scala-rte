@@ -1,4 +1,4 @@
-// Copyright (c) 2020 EPITA Research and Development Laboratory
+// Copyright (c) 2020,21 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -27,6 +27,7 @@ import genus.NormalForm._
 import org.scalatest.Assertion
 import org.scalatest.funsuite.AnyFunSuite
 import RandomType.{randomType,interestingValues}
+import adjuvant.Adjuvant.eql
 
 class GenusCanonicalize extends AnyFunSuite {
 
@@ -116,6 +117,7 @@ class GenusCanonicalize extends AnyFunSuite {
            == SEql("1"))
   }
   test("canonicalize member") {
+    assert(eql(Seq("hello","world"),Seq("hello","world")))
     assert(SMember().canonicalize()
            == SEmpty)
     assert(SMember("hello").canonicalize()
@@ -126,6 +128,7 @@ class GenusCanonicalize extends AnyFunSuite {
            == SMember("hello", "world"))
     assert(SMember("hello", "world", "world", "hello").canonicalize()
            == SMember("hello", "world"))
+    assert(SMember(1, 1.0, 1L, 1, 1.0, 1L, 2).canonicalize() == SMember(1, 1.0, 2, 1L))
   }
 
   test("canonicalize or") {
@@ -425,6 +428,21 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SAtomic(classOf[scala.Short]).typep(1:Short))
     assert(!SAtomic(classOf[Short]).typep(1:Long))
   }
+  test("subtype with eqv"){
+    assert(SEql(1).subtypep(SEql(1)).contains(true))
+    assert(SEql(1).subtypep(SEql(1L)).contains(false))
+    assert(SMember(1,2,3).subtypep(SMember(0,1,2,3,4)).contains(true))
+    assert(SMember(1L,2L).subtypep(SMember(1,2)).contains(false))
+
+    assert(SMember(1L, 2L, 2, 3).subtypep(SOr(SMember(1,2),SMember(2,3))).contains(false))
+    assert(SOr(SEql(1L),SEql(2)).subtypep(SOr(SEql(1),SEql(2L))).contains(false))
+    assert(SOr(SEql(1L),SEql(2)).subtypep(SOr(SEql(1),SEql(2))).contains(false))
+    assert(SOr(SEql(1L),SEql(2)).subtypep(SMember(1,2)).contains(false))
+    println(SOr(SMember(1L, 2L),SMember(2, 3)).canonicalize())
+    println(SOr(SMember(1,2),SMember(2,3)).canonicalize())
+    assert(!eql(SOr(SMember(1L, 2L),SMember(2, 3)), SOr(SMember(1,2),SMember(2,3))))
+    assert(SOr(SMember(1L, 2L),SMember(2, 3)).subtypep(SOr(SMember(1,2),SMember(2,3))).contains(false))
+  }
   test("rand typep") {
     // make sure typep membership of particular values is the same before and after canonicalizing
     def testit() = {
@@ -549,7 +567,7 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SOr(SMember(1, 2, 3), SMember(2, 3, 4, 5), S).conversion14()
              == SOr(SMember(1,2,3,4,5),S))
     assert(SOr(SMember(1, 2, 3, "hello"), SMember(2, 3, 4, 5, "world"), S).conversion14()
-             == SOr(SMember(1,"hello",2,3,4,5,"world"),S))
+             == SOr(SMember(1,2,3,"hello",4,5,"world"),S))
     assert(SOr(SAtomic(A),
                SMember(1, 2, 3),
                SMember(3, 4, 5)).conversion14()

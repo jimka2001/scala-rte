@@ -35,6 +35,15 @@ class ExtractTestSuite  extends AnyFunSuite {
   test("extraction 31"){
     check_extraction_cycle(Cat(Singleton(SEql(1)),Singleton(SEql(2))))
   }
+  test("extraction 34") {
+    SAtomic.withClosedWorldView {
+      check_extraction_cycle(Star(Cat(Or(Cat(Σ, Σ, Star(Σ)), ε),
+                                      t2x,
+                                      Singleton(genus.SInt),
+                                      etrue,
+                                      Singleton(STop))))
+    }
+  }
   test("extraction 35") {
     SAtomic.withClosedWorldView {
       check_extraction_cycle(Star(Cat(Cat(Or(Cat(Σ, Σ, Star(Σ)), ε),
@@ -51,8 +60,9 @@ class ExtractTestSuite  extends AnyFunSuite {
       //println(s"  rt2=$rt2")
       // compute xor, should be emptyset    if rt1 is equivalent to rt2
       val empty1 = Xor(rt1,rt2).canonicalize
+      println("finished canonicalize")
       val empty_dfa = empty1.toDfa(true)
-
+      println("finished empty1 dfa")
       val label_path = empty_dfa.vacuous() match {
         case None => empty_dfa.findTrace(None)
         case Some(false) => empty_dfa.findTrace(Some(true))
