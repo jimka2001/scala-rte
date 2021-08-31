@@ -91,6 +91,11 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
     create(recur(operands.toList, Nil))
   }
 
+  // TODO we could convert Cat(A,Or(X,Y),B) --> Or(Cat(A,X,B),Cat(A,Y,B))
+  //    but first we must assure that Or(X,Y) is completely canonicalized, not just canonicalized once.
+  //    Similar for Cat(A,And(X,Y),B) --> And(Cat(A,X,B),Cat(A,Y,B))
+  //    Warning this will case an infinite loop with another conversion
+
   def conversion99(): Rte = {
     create(operands.map(_.canonicalizeOnce))
   }
