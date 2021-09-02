@@ -96,6 +96,16 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
   //    but first we must assure that Or(X,Y) is completely canonicalized, not just canonicalized once.
   //    Similar for Cat(A,And(X,Y),B) --> And(Cat(A,X,B),Cat(A,Y,B))
   //    Warning this will case an infinite loop with another conversion
+  def conversion7(): Rte = {
+    operands.collectFirst{case combo:Combination => combo} match {
+      case None => this
+      case Some(combo) =>
+        combo.create(combo.operands.map{td => Cat.createCat(operands.map{
+          case c:Combination if combo eq c => td
+          case x => x
+        })})
+    }
+  }
 
   def conversion99(): Rte = {
     create(operands.map(_.canonicalizeOnce))
@@ -110,6 +120,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
       "4" -> conversion4,
       "5" -> conversion5,
       "6" -> conversion6,
+      // "7" -> conversion7, // currently commented out because it causes an infinite loop
       "99" -> conversion99,
       "super" -> (() => { super.canonicalizeOnce })
       ))
