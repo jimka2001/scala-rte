@@ -160,7 +160,20 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
   def conversionA17a():Rte = {
     // if And(...) has more than one Cat(...) which has no nullable operand,
     //    then the number of non-nullables must be the same, else EmptySet.
-    //    We also replace the several Cat(...) (having no nullables)
+
+    val cats: Seq[Seq[Rte]] = operands.collect{
+      case Cat(tds) if tds.forall(td => !td.nullable) => tds
+    }
+    if (cats.isEmpty)
+      this
+    else if (cats.tail.forall{tds => tds.size == cats.head.size}) {
+      this
+    } else
+      EmptySet
+  }
+
+  def conversionA17a2():Rte = {
+    //    We  replace the several Cat(...) (having no nullables)
     //    with a single Cat(...) with intersections of operands.
     //    And(Cat(a,b,c),Cat(x,y,z) ...)
     //    --> And(Cat(And(a,x),And(b,y),And(c,z),...)
@@ -185,7 +198,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
         case rte => rte
       }))
     } else
-      EmptySet
+      this
   }
 
   def conversionA17b():Rte = {
@@ -272,6 +285,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       "C16b" -> (() => { conversionD16b() }),
       "17" -> (() => { conversionA17() }),
       "17a" -> (() => { conversionA17a() }),
+      "17a2" -> (() => { conversionA17a2() }),
       "17b" -> (() => { conversionA17b() }),
       "17c" -> (() => { conversionA17c() }),
       "A19" -> (() => { conversionA19() }),

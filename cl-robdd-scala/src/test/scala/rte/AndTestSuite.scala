@@ -618,15 +618,22 @@ class AndTestSuite extends AnyFunSuite {
 
     assert(And(Cat(a,a),Cat(a,a,Star(a))).conversionA17a()
              != EmptySet)
+  }
+  test("and conversion17a2"){
+    val a = Singleton(SEql("a"))
+    val b = Singleton(SEql("b"))
+    // considering only the Cat's with no nullables,
+    //    they must all have the same number of operands
+
     assert(And(Cat(a,b),
                Cat(b,a),
-               Star(b)).conversionA17a()
+               Star(b)).conversionA17a2()
              == And(Cat(And(a,b),And(b,a)),
                     Star(b)))
 
     assert(And(Cat(a,b,b,a),
                Cat(b,a,b,b),
-               Star(b)).conversionA17a()
+               Star(b)).conversionA17a2()
              == And(Cat(And(a,b),
                         And(b,a),
                         And(b,b),
