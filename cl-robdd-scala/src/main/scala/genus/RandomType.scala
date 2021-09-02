@@ -59,8 +59,8 @@ object RandomType {
     SEql(-1),
     SEql(true),
     SEql(false),
-    SInt,
-    SDouble,
+    //SInt, // removing these from the list because they trigger very long computation times
+    //SDouble,
     SSatisfies(oddp,"oddp"),
     SMember(false,true),
     SMember("a", "b", "c"),
