@@ -48,6 +48,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   override def toString:String = {
     "SAtomic:" + shortTypeName()
   }
+  override def toMachineReadable:String = toString
 
   override def typep(a: Any): Boolean = {
     // according to Sébastien Doeraene https://gitter.im/scala/center?at=6124feac63dca8189120a1c9

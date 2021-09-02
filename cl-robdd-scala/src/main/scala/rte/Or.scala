@@ -25,6 +25,8 @@ import adjuvant.Adjuvant.findSimplifier
 import genus._
 
 case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
+  override def toMachineReadable: String = operands.map(_.toMachineReadable).mkString("Or(", ",", ")")
+
   val zero:Rte = Rte.sigmaStar
   val one:Rte = EmptySet
   def sameCombination(c:Combination):Boolean = {

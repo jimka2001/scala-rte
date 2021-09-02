@@ -27,6 +27,7 @@ import scala.collection.mutable
 
 /** A general type of our type system. */
 abstract class SimpleTypeD { // SimpleTypeD
+  def toMachineReadable():String = toString
 
   def ||(t: SimpleTypeD): SimpleTypeD = SOr(this, t).canonicalize(nf = Some(Dnf))
 

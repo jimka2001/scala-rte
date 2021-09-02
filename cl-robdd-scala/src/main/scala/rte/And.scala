@@ -27,6 +27,8 @@ import scala.annotation.tailrec
 import genus._
 
 case class And(override val operands:Seq[Rte]) extends Combination(operands) {
+  override def toMachineReadable: String = operands.map(_.toMachineReadable).mkString("Or(", ",", ")")
+
   val zero:Rte = EmptySet
   val one:Rte = Rte.sigmaStar
   def sameCombination(c:Combination):Boolean = {

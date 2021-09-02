@@ -32,6 +32,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
   def create(operands: Seq[Rte]): Rte = Cat.createCat(operands)
 
   override def toString: String = operands.map(_.toString).mkString("Cat(", ",", ")")
+  override def toMachineReadable: String = operands.map(_.toMachineReadable).mkString("Cat(", ",", ")")
 
   def nullable: Boolean = operands.forall(_.nullable)
 

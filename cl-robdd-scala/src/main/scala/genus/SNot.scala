@@ -30,6 +30,7 @@ import NormalForm._
  */
 case class SNot(s: SimpleTypeD) extends SimpleTypeD {
   override def toString:String = "!" + s.toString
+  override def toMachineReadable():String = "SNot("+ s.toMachineReadable() + ")"
 
   override def typep(a: Any): Boolean = {
     !s.typep(a)

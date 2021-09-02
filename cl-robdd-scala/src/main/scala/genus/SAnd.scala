@@ -30,7 +30,8 @@ import adjuvant.Adjuvant.{findSimplifier, uniquify}
  * @param tds var-arg, zero or more types
  */
 case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  SNot
-  override def toString: String = tds.map(_.toString).mkString("[SAnd ", ",", "]")
+  override def toString: String = tds.map(_.toString).mkString("SAnd(", ",", ")")
+  override def toMachineReadable():String = tds.map(_.toMachineReadable).mkString("SAnd(", ",", ")")
 
   override def create(tds:Seq[SimpleTypeD]):SimpleTypeD = SAnd.createAnd(tds)
   override def createDual(tds:Seq[SimpleTypeD]):SimpleTypeD = SOr.createOr(tds)

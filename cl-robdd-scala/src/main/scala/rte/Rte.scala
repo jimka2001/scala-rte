@@ -27,6 +27,7 @@ import adjuvant.Adjuvant._
 import scala.annotation.tailrec
 
 abstract class Rte {
+  def toMachineReadable():String = toString
   def |(r: Rte): Rte = Or(this, r)
   def &(r: Rte): Rte = And(this, r)
   def ++(r: Rte): Rte = Cat(this,r)
