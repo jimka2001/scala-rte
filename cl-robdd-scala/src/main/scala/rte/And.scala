@@ -61,7 +61,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
   override def toString:String = operands.map(_.toString).mkString("And(", ",", ")")
   def nullable:Boolean = operands.forall{_.nullable} // TODO should be lazy
 
-  def conversion7():Rte = {
+  def conversionA7():Rte = {
     if (operands.contains(EmptyWord) && matchesOnlySingletons)
       EmptySet
     else
@@ -269,7 +269,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       "3" -> (() => { conversionC3() }),
       "4" -> (() => { conversionC4() }),
       "6" -> ( () => { conversionC6() }),
-      "7" -> (() => { conversion7() }),
+      "7" -> (() => { conversionA7() }),
       "C7" -> (() => { conversionC7() }),
       "8" -> (() => { conversionA8() }),
       "9" -> (() => { conversionA9() }),

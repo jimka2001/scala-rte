@@ -467,8 +467,8 @@ class AndTestSuite extends AnyFunSuite {
              Singleton(SEql(3)),Singleton(SEql(4))))
   }
 
-  test("and conversion7"){
-    assert(And(EmptyWord,Singleton(SEql(1))).conversion7()
+  test("and conversionA7"){
+    assert(And(EmptyWord,Singleton(SEql(1))).conversionA7()
            == EmptySet)
   }
   
