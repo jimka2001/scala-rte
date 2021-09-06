@@ -51,6 +51,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
   }
 
   def conversion3(): Rte = {
+    // Cat(A,B,EmptySet,D,E) ==> EmptySet
     if (operands.contains(EmptySet))
       EmptySet
     else
@@ -115,6 +116,11 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
 
   override def canonicalizeOnce: Rte = {
     findSimplifier(tag = "cat", this, verbose = false, List[(String, () => Rte)](
+      // the following is a series of pairs (String, ()=>Rte)
+      //   the String is used only for debugging, to aid in detecting which
+      //   of the function fails to convert something it is intended to convert.
+      //   To enable the debugging, change verbose=false to verbose=true
+      //   in the call to findSimplifier.
       "1" -> conversion1,
       "3" -> conversion3,
       "4" -> conversion4,

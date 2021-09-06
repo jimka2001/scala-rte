@@ -265,6 +265,11 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
     //println("canonicalizing And: " + operands)
 
     findSimplifier(tag="and", this, verbose=false,List[(String,() => Rte)](
+      // the following is a series of pairs (String, ()=>Rte)
+      //   the String is used only for debugging, to aid in detecting which
+      //   of the function fails to convert something it is intended to convert.
+      //   To enable the debugging, change verbose=false to verbose=true
+      //   in the call to findSimplifier.
       "1" -> (() => { conversionC1() }),
       "3" -> (() => { conversionC3() }),
       "4" -> (() => { conversionC4() }),
