@@ -26,6 +26,21 @@ import NormalForm._
 object Statistics {
   import RandomType.randomType
   def measureSubtypeComputability(n:Int,depth:Int,inh:Boolean):Map[String,Double] = {
+    // This function returns a Map which associates Strings with percentages
+    //  "inhabited" => what percentage of n randomly selected type designators are inhabited
+    //                   ignoring those for which inhabited returns None
+    //  "inhabited DNF" => what percentage are certainly inhabited if converted to DNF
+    //  "equal" => how often two randomly selected DNF forms are equivalent
+    //  "subtype True" -> % when subtype returns Some(true)
+    //  "subtype False" -> % when subtype returns Some(false)
+    //  "subtype Some" -> % when subtype returns Some(true) or Some(false)
+    //  "subtype None" -> % when subtype returns None (don't know)
+    //  "subtype DNF True" -> % when subtype returns Some(true) after converting to DNF
+    //  "subtype DNF False" -> % when subtype returns Some(false) after converting to DNF
+    //  "subtype DNF Some" -> % when subtype returns Some(true) or Some(false) after converting to DNF
+    //  "subtype DNF None" -> % when subtype returns None after converting to DNF
+    //  "gained" -> how many % were not computed a original but became computable after DNF
+    //  "lost" -> how many % lost computability after DNF
     assert(n > 0, s"measureSubtypeComputability does not support n=$n")
     val m = (0 until n).foldLeft(Map[String, Int]()) { case (m, _) =>
       val rt1 = if (inh)
