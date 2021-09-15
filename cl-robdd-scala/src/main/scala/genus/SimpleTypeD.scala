@@ -214,21 +214,13 @@ abstract class SimpleTypeD { // SimpleTypeD
     lazy val can1 = canonicalize()
     lazy val can2 = t.canonicalize()
 
-    lazy val sp1 = subtypep(t) match {
-      case Some(v) => Some(v)
-      case None => can1.subtypep(t) match {
-        case Some(v) => Some(v)
-        case None => can1.subtypep(can2)
-      }
-    }
-    lazy val sp2 = t.subtypep(this) match {
-      case Some(v) => Some(v)
-      case None => can2.subtypep(this) match {
-        case Some(v) => Some(v)
-        case None => can2.subtypep(can1)
-        case v => v
-      }
-    }
+    lazy val sp1 = subtypep(t)
+      .orElse(can1.subtypep(t))
+      .orElse(can1.subtypep(can2))
+    lazy val sp2 = t.subtypep(this)
+      .orElse(can2.subtypep(this))
+      .orElse(can2.subtypep(can1))
+
     if (sp1.contains(false) || sp2.contains(false))
       Some(false)
     else if ((sp1.contains(true) && sp2.contains(true)))
