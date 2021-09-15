@@ -223,7 +223,7 @@ abstract class SimpleTypeD { // SimpleTypeD
 
     if (sp1.contains(false) || sp2.contains(false))
       Some(false)
-    else if ((sp1.contains(true) && sp2.contains(true)))
+    else if (sp1.contains(true) && sp2.contains(true))
       Some(true)
     else
       None
