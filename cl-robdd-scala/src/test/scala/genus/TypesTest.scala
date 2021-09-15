@@ -181,5 +181,44 @@ class TypesTest extends AnyFunSuite {
              SEql(-1),
              SEql(1)))
   }
+  test("typeEquivalent random") {
+    for {_ <- 0 to 1000
+         d <- 0 to 4
+         t1 = randomType(d)
+         t2 = randomType(d)
+         } {
+      assert(t1.typeEquivalent(t1) == Some(true))
+      assert(t1.typeEquivalent(SNot(t1)) != Some(true))
+      assert(! SNot(SAnd(t1,t2)).typeEquivalent(SOr(SNot(t1),SNot(t2))).contains(false))
+    }
+  }
+  test("typeEquivalent fixed"){
+    def f(a:Any):Boolean = {
+      true
+    }
+    def g(a:Any):Boolean = {
+      true
+    }
+    val t1 = SSatisfies(f,"f")
+    val t2 = SSatisfies(g,"g")
+    assert(t1.typeEquivalent(t1).contains(true))
+    // 1. A < B = None   B < A = None
+    assert(t2.typeEquivalent(t1) == None)
+    // 2. A < B = None   B < A = False
+    assert(STop.typeEquivalent(t1) == None)
+    // 3. A < B = True   B < A = None
+    assert(SEmpty.typeEquivalent(t1) == None)
+    // 4. A < B = True  B < A = None
+    assert(t1.typeEquivalent(STop) == None)
+    // 5. A < B = False B < A = None
+    assert(t2.typeEquivalent(SEmpty) == None)
+    // 6. A < B = False   B < A = False
+    assert(SMember(1,2).typeEquivalent(SMember(1,2,3)) == Some(false))
+    // 7. A < B = True    B < A = False
+    assert(SMember(1,2,3).typeEquivalent(SMember(1,2)) == Some(false))
+    // 8. A < B = False   B < A = True
+    assert(SMember(1,2,3).typeEquivalent(SOr(SMember(1,2),SMember(3))) == Some(true))
+    // 9. A < B = True    B < A = True
+  }
 }
 
