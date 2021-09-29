@@ -48,8 +48,8 @@ class AndTestSuite extends AnyFunSuite {
   test("canonicalize and 29a") {
     val I = Singleton(SInt)
     val S = Singleton(SAtomic(classOf[String]))
-    val X = Singleton(SEql(-1))
-    val Y = Singleton(SEql(1))
+    //val X = Singleton(SEql(-1))
+    //val Y = Singleton(SEql(1))
     val ε = EmptyWord
 
     val rte4 = Or(And(Or(Cat(Star(S), I), ε),
@@ -129,7 +129,7 @@ class AndTestSuite extends AnyFunSuite {
     val X = Singleton(SAtomic(classOf[TraitX]))
     val Y = Singleton(SAtomic(classOf[TraitY]))
 
-    val Z = Singleton(SAtomic(classOf[TraitX]))
+    //val Z = Singleton(SAtomic(classOf[TraitX]))
 
     assert(And(A, Or(X, Y)).conversionA10() == Or(And(A, X), And(A, Y)))
     assert(And(A, Or(X, Y), B).conversionA10() == Or(And(A, X, B), And(A, Y, B)))
@@ -187,7 +187,7 @@ class AndTestSuite extends AnyFunSuite {
     val rte0 = And(r1, Or(r2, r3), r4)
     val rte1 = rte0.canonicalizeOnce
     val rte2 = rte1.canonicalizeOnce
-    val rte3 = rte2.canonicalizeOnce
+    //val rte3 = rte2.canonicalizeOnce
 
   }
   test("canonicalize and 88") {
@@ -336,7 +336,7 @@ class AndTestSuite extends AnyFunSuite {
       val r12 = r11.canonicalizeOnce
       val r13 = r12.canonicalizeOnce
       val r14= r13.canonicalizeOnce
-      val r15= r14.canonicalizeOnce
+      // val r15= r14.canonicalizeOnce
 
       assert(And(r1,Or(r2,r3).canonicalize,r4).canonicalize
                ~= And(r1,Or(r2,r3),r4).canonicalize,
@@ -574,7 +574,7 @@ class AndTestSuite extends AnyFunSuite {
     // test And(<STop>,Not(<{4,5,6}>)) does not reduce to Not(<{4,5,6}>)
     // detect supertype
 
-    val a = Singleton(SEql("a"))
+    // val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))
     val ab = Singleton(SMember("a","b"))
     val ac = Singleton(SMember("a","c"))
@@ -606,7 +606,7 @@ class AndTestSuite extends AnyFunSuite {
   }
   test("and conversion17a"){
     val a = Singleton(SEql("a"))
-    val b = Singleton(SEql("b"))
+    // val b = Singleton(SEql("b"))
     // considering only the Cat's with no nullables,
     //    they must all have the same number of operands
     assert(And(Cat(a,a),Cat(a,a,a)).conversionA17a()

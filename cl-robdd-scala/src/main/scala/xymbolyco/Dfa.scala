@@ -41,13 +41,13 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
 
   // returns a map of src -> Set(dst)
   def successors():Map[Int,Set[Int]] = {
-    for{ (src,triples) <- protoDelta.groupBy{case (src,_,dst) => src}
+    for{ (src,triples) <- protoDelta.groupBy{case (src,_,_) => src}
          } yield src -> triples.map(_._3)
   }
 
   // returns a map of dst -> Set(src)
   def predecessors():Map[Int,Set[Int]] = {
-    for{ (dst,triples) <- protoDelta.groupBy{case (src,_,dst) => dst}
+    for{ (dst,triples) <- protoDelta.groupBy{case (_,_,dst) => dst}
          } yield dst -> triples.map(_._1)
   }
 
@@ -121,7 +121,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   def findSpanningPath(satisfiable:Option[Boolean]=Some(true)):Option[Seq[State[Σ,L,E]]] = {
     def augment(paths: Seq[List[State[Σ, L, E]]]): Seq[List[State[Σ, L, E]]] = {
       paths.flatMap {
-        case s :: ss => for {Transition(src, label, dst) <- s.transitions
+        case s :: ss => for {Transition(_, label, dst) <- s.transitions
                              if s != dst && !ss.contains(dst)
                              if keeper(label,satisfiable)
                              } yield dst :: s :: ss
@@ -165,14 +165,14 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
 }
 
 object TestMe {
-  import rte.{Or, Cat, Singleton, Not, And, Sigma, Star, EmptyWord, EmptySet}
-  import genus.{SAtomic, SEql}
+  import rte.{Or, Cat, Singleton, Not, And, Sigma, Star, EmptySet}
+  import genus.SEql
   class TestAc
 
   def main(argv:Array[String]):Unit = {
-    val Test2 = classOf[TestAc]
+    // val Test2 = classOf[TestAc]
     val Σ = Sigma
-    val ε = EmptyWord
+    // val ε = EmptyWord
     val ∅ = EmptySet
     val e = SEql(1)
     val rt1 = Cat(Star(Σ), Star(Singleton(e)))
