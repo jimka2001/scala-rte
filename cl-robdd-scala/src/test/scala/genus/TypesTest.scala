@@ -192,6 +192,7 @@ class TypesTest extends AnyFunSuite {
       assert(! SNot(SAnd(t1,t2)).typeEquivalent(SOr(SNot(t1),SNot(t2))).contains(false))
     }
   }
+
   test("typeEquivalent fixed"){
     def f(a:Any):Boolean = {
       true
@@ -201,24 +202,41 @@ class TypesTest extends AnyFunSuite {
     }
     val t1 = SSatisfies(f,"f")
     val t2 = SSatisfies(g,"g")
-    assert(t1.typeEquivalent(t1).contains(true))
-    // 1. A < B = None   B < A = None
-    assert(t2.typeEquivalent(t1) == None)
-    // 2. A < B = None   B < A = False
-    assert(STop.typeEquivalent(t1) == None)
-    // 3. A < B = True   B < A = None
-    assert(SEmpty.typeEquivalent(t1) == None)
-    // 4. A < B = True  B < A = None
-    assert(t1.typeEquivalent(STop) == None)
-    // 5. A < B = False B < A = None
-    assert(t2.typeEquivalent(SEmpty) == None)
-    // 6. A < B = False   B < A = False
-    assert(SMember(1,2).typeEquivalent(SMember(1,2,3)) == Some(false))
-    // 7. A < B = True    B < A = False
-    assert(SMember(1,2,3).typeEquivalent(SMember(1,2)) == Some(false))
-    // 8. A < B = False   B < A = True
-    assert(SMember(1,2,3).typeEquivalent(SOr(SMember(1,2),SMember(3))) == Some(true))
-    // 9. A < B = True    B < A = True
+    def oddp(a:Any):Boolean = {
+      a match {
+        case a:Int => a % 2 == 1
+        case _ => false
+      }
+    }
+    val sodd = SSatisfies(oddp , "odd")
+    for {(a: SimpleTypeD, b: SimpleTypeD, lt: Option[Boolean], gt: Option[Boolean], eq: Option[Boolean]) <-
+           Seq((t1, t1, Some(true), Some(true), Some(true)),
+               // A < B = None    B < A = None
+               (t1, t2, None, None, None),
+               //  A < B = None   B < A = False
+               (sodd, SEql(2), None, Some(false), Some(false)),
+               // A < B = None   B < A = True
+               (t1, SEmpty, None, Some(true), None),
+
+               // A < B = True   B < A = None
+               (SEmpty, t1, Some(true), None, None),
+               // A < B = True   B < A = False
+               (SMember(1, 2), SMember(1, 2, 3), Some(true), Some(false), Some(false)),
+               // A < B = True   B < A = True
+               (SMember(1, 2, 3), SMember(2, 1, 3), Some(true), Some(true), Some(true)),
+
+               // A < B = False  B < A = None
+               (SMember(2,4), sodd, Some(false), None, Some(false)),
+               // A < B = False  B < A = False
+               (SMember(1, 2, 3), SMember(2, 3, 4), Some(false), Some(false), Some(false)),
+               // A < B = False  B < A = True
+               (SMember(1, 2, 3), SMember(2, 3), Some(false), Some(true), Some(false))
+               )
+         } {
+      assert(a.subtypep(b) == lt, s"\na=$a\nb=$b\nexpecting a < b = $lt, got ${a.subtypep(b)}")
+      assert(b.subtypep(a) == gt, s"\na=$a\nb=$b\nexpecting a > b = $gt, got ${b.subtypep(a)}")
+      assert(a.typeEquivalent(b) == eq, s"\na=$a\nb=$b\nexpecting a = b = $eq, got ${a.typeEquivalent(b)}")
+    }
   }
 }
 
