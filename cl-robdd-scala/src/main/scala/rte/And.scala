@@ -156,13 +156,16 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
     else
       this
   }
-
+  def filterNullables(tds:Seq[Rte]):Boolean = {
+    tds.forall(td => td.search(Rte.isCat).isEmpty) &&
+      tds.forall(td => !td.nullable)
+  }
   def conversionA17a():Rte = {
     // if And(...) has more than one Cat(...) which has no nullable operand,
     //    then the number of non-nullables must be the same, else EmptySet.
 
     val cats: Seq[Seq[Rte]] = operands.collect{
-      case Cat(tds) if tds.forall(td => !td.nullable) => tds
+      case Cat(tds) if filterNullables(tds) => tds
     }
     if (cats.isEmpty)
       this
@@ -179,7 +182,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
     //    --> And(Cat(And(a,x),And(b,y),And(c,z),...)
 
     val cats: Seq[Seq[Rte]] = operands.collect{
-      case Cat(tds) if tds.forall(td => !td.nullable) => tds
+      case Cat(tds) if filterNullables(tds) => tds
     }
     if (cats.isEmpty)
       this
@@ -210,7 +213,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
     }
     val numNonNullable = cats.collectFirst {
       //case c:Cat if c.operands.forall(td => !td.nullable) => c.operands.size
-      case Cat(tds) if tds.forall(td => !td.nullable) => tds.size
+      case Cat(tds) if filterNullables(tds) => tds.size
     }
     val nums = cats.iterator.collect {
       case Cat(tds) => tds.count(!_.nullable)
@@ -229,7 +232,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
     // find a Cat(...) with no nullables, there should be at most one because
     //    conversion17a as run.
     operands.collectFirst {
-      case Cat(tds) if tds.forall(!_.nullable) => tds.size
+      case Cat(tds) if filterNullables(tds) => tds.size
       case Singleton(_) => 1
       case Sigma => 1
     } match {
@@ -237,6 +240,8 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       case Some(m) =>
         // find Cat(...) with at least m non-nullables, and remove nullables
         create(operands.map {
+          // skip a Cat which contains another Cat within it.
+          case rte@Cat(tds) if tds.exists(rt => rt.search(Rte.isCat).nonEmpty) => rte
           case Cat(tds) if tds.count(!_.nullable) >= m =>
             Cat.createCat(tds.filterNot(_.nullable))
           case rte => rte

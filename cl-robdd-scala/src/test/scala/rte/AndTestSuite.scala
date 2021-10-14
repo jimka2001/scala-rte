@@ -21,10 +21,11 @@
 
 package rte
 
-import adjuvant.Adjuvant.eql
+import adjuvant.Adjuvant.{eql,fixedPoint}
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import rte.RteImplicits._
+
 
 class AndTestSuite extends AnyFunSuite {
   test("implicits") {
@@ -618,6 +619,10 @@ class AndTestSuite extends AnyFunSuite {
 
     assert(And(Cat(a,a),Cat(a,a,Star(a))).conversionA17a()
              != EmptySet)
+    assert(And(Cat(Sigma, Sigma, Star(Sigma)),
+               Cat(Cat(Sigma, Star(Sigma)))).conversionA17a() != EmptySet)
+    assert(And(Cat(Sigma, Sigma, Sigma),
+               Cat(Cat(Sigma, Star(Sigma)))).conversionA17a() != EmptySet)
   }
   test("and conversion17a2"){
     val a = Singleton(SEql("a"))
@@ -639,7 +644,9 @@ class AndTestSuite extends AnyFunSuite {
                         And(b,b),
                         And(a,b)),
                     Star(b)))
-
+    assert(And(Cat(Sigma, Cat(Sigma, Sigma)),
+               Cat(Cat(Sigma,Sigma),Sigma)
+               ).conversionA17a2() != EmptySet)
   }
   test("and conversion17b"){
     // if there is a Cat having no nullables,
@@ -655,6 +662,10 @@ class AndTestSuite extends AnyFunSuite {
              != EmptySet)
     assert(And(Cat(a,a),Cat(a,Star(b),a,Star(a))).conversionA17b()
              != EmptySet)
+    assert(And(Cat(Sigma, Sigma, Star(Sigma)),
+               Cat(Cat(Sigma, Star(Sigma)))).conversionA17b() != EmptySet)
+    assert(And(Cat(Sigma, Sigma, Sigma),
+               Cat(Cat(Sigma, Star(Sigma)))).conversionA17b() != EmptySet)
   }
   test("and conversion17c"){
     // if And(...) contains a Cat with no nullables,
@@ -687,6 +698,11 @@ class AndTestSuite extends AnyFunSuite {
              == And(Sigma,Sigma))
     assert(And(ab,Cat(Sigma,Star(Sigma)),Sigma).conversionA17c()
              == And(ab,Sigma,Sigma))
+
+    val problematic = And(Cat(Sigma, Sigma, Sigma),
+                          Cat(Sigma, Sigma, Star(Sigma),
+                              Cat(Sigma, Star(Sigma))))
+    assert(problematic.conversionA17c() == problematic)
   }
   test("and conversion18"){
     // if And(...) contains a singleton which is non inhabited
@@ -754,5 +770,43 @@ class AndTestSuite extends AnyFunSuite {
              == And(Singleton(SMember(1,2,3,"a","b","c")),
                     Cat(Singleton(SEql("a")),
                         s2)))
+  }
+  test("test_discovered_785") {
+    val problematic:Rte = And(Cat(Sigma, Sigma, Star(Sigma)),
+                                 Cat(Cat(Sigma, Star(Sigma))))
+
+    def good_enough(a: Rte, b: Rte): Boolean = {
+      a.getClass == b.getClass && a == b
+    }
+
+    def try_example(rt: Rte, seq: Seq[Int]): Boolean = {
+      val expecting = problematic.simulate(true, seq)
+      val got = rt.simulate(true, seq)
+      if (got != expecting) {
+        print(s" seq= ${seq}")
+        print(s"  rt=${rt}")
+        print(s" expecting = ${expecting}")
+        print(s"       got = ${got}")
+      }
+      got == expecting
+    }
+
+    def invariant(rt:Rte):Boolean = {
+      val sequences:Seq[Seq[Int]] = Seq(Seq(),
+                                        Seq(1),
+                                        Seq(1,1),
+                                        Seq(1,1,1))
+      sequences.forall(seq => try_example(rt,seq))
+    }
+    def f(r:Rte):Rte = {
+      print(s"r=   $r\n")
+      print(s"  -> ${r.canonicalizeOnce}\n")
+      r.canonicalizeOnce
+    }
+
+    fixedPoint[Rte](problematic,
+                    f,
+                    good_enough,
+                    invariant(_))
   }
 }
