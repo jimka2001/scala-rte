@@ -134,9 +134,15 @@ object Adjuvant {
     }.toSeq
 
   def fixedPoint[V](seed: V, f: V => V, cmp: (V, V) => Boolean): V = {
+    fixedPoint(seed,f,cmp,(r:V) => true)
+  }
+
+  def fixedPoint[V](seed: V, f: V => V, cmp: (V, V) => Boolean, invariant: V=>Boolean): V = {
+    assert(invariant(seed),s"invariant failed on initial value seed=$seed")
     @tailrec
     def recur(value: V,history:Seq[V],h2:Set[V]): V = {
       val newValue = f(value)
+      assert(invariant(newValue), s"invariant failed on computed value=$newValue")
       if (cmp(value, newValue))
         value
       else if( h2.contains(newValue)) {
