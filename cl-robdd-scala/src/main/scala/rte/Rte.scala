@@ -185,6 +185,10 @@ abstract class Rte {
             labeler = xymbolyco.GenusLabeler(),
             fMap = fmap)
   }
+  def simulate[E](exitValue:E, seq:Seq[Any]):Option[E] = {
+    toDfa(exitValue).simulate(seq)
+  }
+
   // walk this Rte and find a node which satisfies the given predicate,
   //  returning Some(x) if x satisfies the predicate, and returning None otherwise.
   def search(test:Rte=>Boolean):Option[Rte] = {
@@ -358,7 +362,6 @@ object Rte {
       g()
     }
   }
-
 }
 
 object sanityTest2 {
