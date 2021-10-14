@@ -292,11 +292,11 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     create(derivs)
   }
   override def search(test: Rte => Boolean): Option[Rte] = {
-    operands.foldLeft(None: Option[Rte])((acc: Option[Rte], rt: Rte) =>
-                                           if (acc.nonEmpty)
-                                             acc
-                                           else
-                                             rt.search(test)) orElse super.search(test)
+    operands
+      .iterator
+      .map(_.search(test))
+      .collectFirst{case Some(x) => x}
+      .orElse(super.search(test))
   }
 }
 
