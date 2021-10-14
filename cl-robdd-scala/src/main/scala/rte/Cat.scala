@@ -26,12 +26,13 @@ import genus._
 
 import scala.annotation.tailrec
 
-final case class Cat(operands:Seq[Rte]) extends Rte {
+final case class Cat(operands: Seq[Rte]) extends Rte {
   override def toLaTeX: String = "(" ++ operands.map(_.toLaTeX).mkString("\\cdot ") ++ ")"
 
   def create(operands: Seq[Rte]): Rte = Cat.createCat(operands)
 
   override def toString: String = operands.map(_.toString).mkString("Cat(", ",", ")")
+
   override def toMachineReadable(): String = operands.map(_.toMachineReadable()).mkString("Cat(", ",", ")")
 
   def nullable: Boolean = operands.forall(_.nullable)
@@ -98,7 +99,7 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
   //    Similar for Cat(A,And(X,Y),B) --> And(Cat(A,X,B),Cat(A,Y,B))
   //    Warning this will case an infinite loop with another conversion
   def conversion7(): Rte = {
-    operands.collectFirst{case combo:Combination => combo} match {
+    operands.collectFirst { case combo: Combination => combo } match {
       case None => this
       case Some(combo) =>
         combo.create(combo.operands.map{td => Cat.createCat(operands.map{
@@ -149,13 +150,12 @@ final case class Cat(operands:Seq[Rte]) extends Rte {
 
 object Cat {
   def apply(operands: Rte*)(implicit ev: DummyImplicit) = new Cat(operands)
-  def createCat(operands: Seq[Rte]):Rte = {
+
+  def createCat(operands: Seq[Rte]): Rte = {
     operands match {
       case Seq() => EmptyWord
       case Seq(rt) => rt
       case _ => Cat(operands)
     }
   }
-
-
 }
