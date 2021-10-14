@@ -148,6 +148,11 @@ final case class Cat(operands: Seq[Rte]) extends Rte {
   }
 
   override def search(test: Rte => Boolean): Option[Rte] = {
+    // this magic incantation of std lib calls does the following
+    //   calls the search(test) method on each element of operands
+    //   until such a call returns Some(something), then
+    //   halts the iteration, returning the option returned by search(test).
+    //   If search fails to return Some(something), None is returned.
     operands
       .iterator
       .map(_.search(test))
