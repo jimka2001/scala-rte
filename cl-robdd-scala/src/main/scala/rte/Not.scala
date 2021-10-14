@@ -49,4 +49,8 @@ case class Not(operand:Rte) extends Rte {
   }
   def derivativeDown(wrt:SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte =
     Not(operand.derivative(Some(wrt), factors, disjoints))
+
+  override def search(test:Rte=>Boolean):Option[Rte] = {
+    this.operand.search(test) orElse super.search(test)
+  }
 }

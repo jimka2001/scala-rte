@@ -146,6 +146,14 @@ final case class Cat(operands: Seq[Rte]) extends Rte {
           term1
     }
   }
+
+  override def search(test: Rte => Boolean): Option[Rte] = {
+    operands.foldLeft(None: Option[Rte])((acc: Option[Rte], rt: Rte) =>
+                                           if (acc.nonEmpty)
+                                             acc
+                                           else
+                                             rt.search(test)) orElse super.search(test)
+  }
 }
 
 object Cat {

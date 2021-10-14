@@ -185,6 +185,15 @@ abstract class Rte {
             labeler = xymbolyco.GenusLabeler(),
             fMap = fmap)
   }
+  // walk this Rte and find a node which satisfies the given predicate,
+  //  returning Some(x) if x satisfies the predicate, and returning None otherwise.
+  def search(test:Rte=>Boolean):Option[Rte] = {
+
+    if(test(this))
+      Some(this)
+    else
+      None
+  }
 }
 
 object Rte {

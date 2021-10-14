@@ -96,6 +96,10 @@ case class Star(operand:Rte) extends Rte {
 
   def derivativeDown(wrt: SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]): Rte =
     Cat(operand.derivative(Some(wrt), factors, disjoints), this)
+
+  override def search(test:Rte=>Boolean):Option[Rte] = {
+    this.operand.search(test) orElse super.search(test)
+  }
 }
 
 object Star{

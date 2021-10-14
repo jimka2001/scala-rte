@@ -271,4 +271,13 @@ class RteTestSuite extends MyFunSuite {
     assert(dfa.simulate(List("hello", "world", 12)).contains(5))
     assert(dfa.simulate(List("hello", "world", 12.0)).isEmpty)
   }
+  test("search"){
+    val rte:Rte = Star(And(Cat(Or(Not(Singleton(SEql(1))),
+                                  Singleton(SEql(2)))),
+                           Or(Singleton(SEql(3)),Singleton(SEql(3)))))
+    rte.search(Rte.isSingleton) match {
+      case Some(Singleton(SEql((_,x)))) => assert(x == 1)
+      case _ => fail()
+    }
+  }
 }
