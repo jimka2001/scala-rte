@@ -86,7 +86,10 @@ class StarTestSuite extends AnyFunSuite {
                      x,y,z,
                      Star(Cat(x,y,z)))).conversion3()
            == Star(Cat(x,y,z)))
+
+    assert(Star(Cat()).conversion3()
+           == Star(Cat()))
+    assert(Star(Cat(x)).conversion3()
+           == Star(Cat(x)))
   }
-
-
 }
