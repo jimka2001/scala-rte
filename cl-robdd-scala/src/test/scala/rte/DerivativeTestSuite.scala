@@ -120,7 +120,6 @@ class DerivativeTestSuite extends AnyFunSuite {
     for {depth <- 0 to 5
          _ <- 1 to 1000
          td = randomType(depth)
-         rt = Singleton(td)
          } {
       assert(EmptySet.derivative1(Some(td)) == EmptySet)
       assert(EmptyWord.derivative1(Some(td)) == EmptySet)
@@ -186,16 +185,17 @@ class DerivativeTestSuite extends AnyFunSuite {
                     EmptyWord),
                  Star(Star(Or(Or(z,f),Star(s)))))
     val ft= rt.firstTypes
-    println(s"rt=$rt")
-    println(s"first types = $ft")
+    //println(s"rt=$rt")
+    //println(s"first types = $ft")
     Types.mdtd(ft).map {
       case (td,factors,disjoints) =>
-        println(s"td=$td")
-        println(s"  factors   = $factors")
-        println(s"  disjoints = $disjoints")
+        //println(s"td=$td")
+        //println(s"  factors   = $factors")
+        //println(s"  disjoints = $disjoints")
         val deriv = rt.derivative(Some(td),factors,disjoints)
-        println("  rt.derivative(Some(td)) = " + deriv)
-        println("  --> " + deriv.canonicalize)
+        //println("  rt.derivative(Some(td)) = " + deriv)
+        //println("  --> " + deriv.canonicalize)
+        deriv
     }
 
 //    val (v1,v2) = rt.derivatives()
@@ -211,7 +211,7 @@ class DerivativeTestSuite extends AnyFunSuite {
     for {depth <- 0 to 6
          _ <- 1 to 2000
          rt = Rte.randomRte(depth)
-         (intToV,m) = rt.derivatives()
+         (intToV,_) = rt.derivatives()
          } {
       assert(intToV.nonEmpty)
     }

@@ -51,11 +51,11 @@ class RteTestSuite extends MyFunSuite {
   test("LaTeX") {
     Or(And(SAtomic(classOf[Integer]),
            Not(SAtomic(classOf[Long]))),
-       Not(SEql(43))).toLaTeX
+       Not(SEql(43))).toLaTeX()
 
     Or(And(classOf[Integer],
            Not(SAtomic(classOf[Long]))),
-       Not(SEql(44))).toLaTeX
+       Not(SEql(44))).toLaTeX()
   }
 
 

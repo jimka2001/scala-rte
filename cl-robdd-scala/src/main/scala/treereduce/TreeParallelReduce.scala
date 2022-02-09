@@ -21,7 +21,6 @@
 //
 
 package treereduce
-import scala.language.higherKinds // prevents IntelliJ from warning about [M[_]]
 import scala.collection.parallel.immutable.ParSeq
 import scala.collection.parallel.mutable.ParArray
 

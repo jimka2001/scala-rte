@@ -125,7 +125,6 @@ class BinaryOperationsTestSuite extends AnyFunSuite {
       assert(And(b, LBddTrue) eq b)
       assert(Or(b, LBddTrue) eq LBddTrue)
       assert(AndNot(b, LBddTrue) eq LBddFalse)
-//      assert(AndNot(LBddTrue, b).toString == Not(b).toString)
 
       assert(And(b, LBddFalse) eq LBddFalse)
       assert(Or(b, LBddFalse) eq b)

@@ -134,7 +134,7 @@ object Adjuvant {
     }.toSeq
 
   def fixedPoint[V](seed: V, f: V => V, cmp: (V, V) => Boolean): V = {
-    fixedPoint(seed,f,cmp,(r:V) => true)
+    fixedPoint(seed,f,cmp,(_:V) => true)
   }
 
   def fixedPoint[V](seed: V, f: V => V, cmp: (V, V) => Boolean, invariant: V=>Boolean): V = {
@@ -179,12 +179,12 @@ object Adjuvant {
   def findSimplifierDebug[T](tag: String, target: T, simplifiers: List[(String, () => T)]): T = {
     // DEBUG version of findSimplifier,
     //   diagnostics will be printed logging the progression of simplifications
-    println(s"$tag starting with $target")
+    println(s"$tag: starting with $target")
     val s = findSimplifier(tag, target, verbose = true, simplifiers)
     if (s == target)
-      println(s"$tag remained $s")
+      println(s"$tag: remained $s")
     else {
-      println(s"$tag")
+      println(s"$tag:")
       println(s"  changed $target")
       println(s"       to $s")
     }
@@ -218,9 +218,9 @@ object Adjuvant {
           findSimplifier(tag = tag, target, verbose=verbose, ss)
         } else {
           if (verbose) {
-            println(s"$tag starting with  $target")
-            println(s"    $tag $comment")
-            println(s"    $tag ----> $t2")
+            println(s"$tag: starting with  $target")
+            println(s"    $tag: $comment")
+            println(s"    $tag: ----> $t2")
             simplifierUsed.updateWith(tag -> comment) {
               case None => Some(1)
               case Some(a) => Some(a + 1)

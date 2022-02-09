@@ -49,7 +49,7 @@ class SingletonTestSuite extends AnyFunSuite {
                   SNot(SOr(SEql(4),
                            SAtomic(classOf[String]))))
     var rte: Rte = Singleton(td.canonicalize())
-    for {r <- 0 to 10} {
+    for {_ <- 0 to 10} {
       rte = rte.canonicalizeOnce
     }
     rte.canonicalize

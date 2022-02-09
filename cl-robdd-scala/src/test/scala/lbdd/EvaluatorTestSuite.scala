@@ -51,8 +51,8 @@ class EvaluatorTestSuite extends AnyFunSuite {
 
     for (l <- allValues) {
       if (Evaluator(b1, l) != Evaluator(b2, l)) {
-        b1.bddView(true, "b1")
-        b2.bddView(true, "b2")
+        b1.bddView(drawFalseLeaf = true, "b1")
+        b2.bddView(drawFalseLeaf = true, "b2")
         println(l)
       }
       assert(Evaluator(b1, l) == Evaluator(b2, l))
@@ -92,7 +92,7 @@ class EvaluatorTestSuite extends AnyFunSuite {
 //        or1.bddView(true, "Or(Not(1), Not(2))")
 //        or2.bddView(true, "Or(Not(1), Not(3))")
 //        b3.bddView(true, "And(Or(Not(1), Not(2)), Or(Not(1), Not(3)))")
-        b2.bddView(true, "And(Not(And(1, 2)), Not(And(1, 3)))")
+        b2.bddView(drawFalseLeaf = true, "And(Not(And(1, 2)), Not(And(1, 3)))")
       }
       assert(Evaluator(b1, l) == Evaluator(b2, l))
       assert(Evaluator(b2, l) == Evaluator(b3, l))

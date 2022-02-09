@@ -72,10 +72,10 @@ class TreeParallelReduceSuite extends AnyFunSuite {
     import spire.implicits._
     import spire.math._
     import treereduce.TreeParallelReduce._
-    def time[R](name: String, block: => R): R = {
-      val t0 = System.nanoTime()
+    def time[R](_name: String, block: => R): R = {
+      //val t0 = System.nanoTime()
       val result = block // call-by-name
-      val t1 = System.nanoTime()
+      //val t1 = System.nanoTime()
       //println(s"$name: Elapsed time: ${(t1 - t0) / 1.0e6} ms")
       result
     }

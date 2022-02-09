@@ -24,7 +24,7 @@ package rte
 import genus._
 
 object EmptySet extends Rte {
-  override def toLaTeX: String = "\\emptyset "
+  override def toLaTeX(): String = "\\emptyset "
 
   override def toString: String = "∅"
 

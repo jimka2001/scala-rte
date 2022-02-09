@@ -29,7 +29,7 @@ package gnuplot
 
 object GnuPlot {
 
-  var gnuPlotPath: String = List("/opt/local/bin/gnuplot", "/usr/local/bin/gnuplot").find { fName =>
+  val gnuPlotPath: String = List("/opt/local/bin/gnuplot", "/usr/local/bin/gnuplot").find { fName =>
     import java.nio.file.{Paths, Files}
 
     Files.exists(Paths.get(fName))

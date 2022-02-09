@@ -23,6 +23,8 @@ package genus
 
 // genus
 import NormalForm._
+
+import scala.annotation.tailrec
 import scala.collection.mutable
 
 /** The atoms of our type system: a simple type built from a native Scala/Java type.
@@ -48,7 +50,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   override def toString:String = {
     "SAtomic:" + shortTypeName()
   }
-  override def toMachineReadable:String = toString
+  override def toMachineReadable():String = toString
 
   override def typep(a: Any): Boolean = {
     // according to Sébastien Doeraene https://gitter.im/scala/center?at=6124feac63dca8189120a1c9
@@ -191,6 +193,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 object SAtomic {
   val knownSAtomics:mutable.Map[(Boolean,Class[_]),SAtomic] = mutable.Map[(Boolean,Class[_]),SAtomic]()
 
+  @tailrec
   def apply(ct: Class[_]): SimpleTypeD = {
     if (ct == classOf[Nothing]) SEmpty
     else if (ct == classOf[Any]) STop
@@ -209,6 +212,7 @@ object SAtomic {
   //   disjoint.
   val closedWorldView: DynamicVariable[Boolean] = new DynamicVariable[Boolean](true)
 
+  //noinspection AccessorLikeMethodIsEmptyParen
   def getClosedWorldView():Boolean = closedWorldView.value
 
   // evaluate a piece of code in a dynamic context where it is considers that classes
@@ -286,7 +290,7 @@ object SAtomic {
 
   import org.reflections.Reflections
 
-  val reflections = new Reflections("")
+  val reflections = new Reflections()
 }
 
 object sanityCheck {

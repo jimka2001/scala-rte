@@ -46,10 +46,10 @@ class TreeReduceSuite extends AnyFunSuite {
       import treereduce.TreeReduce._
 
       // by type class val byTypeClass =
-      // IntelliJ markes the following as error, but it works fine.  This must be an IntelliJ bug.
+      // IntelliJ marks the following as error, but it works fine.  This must be an IntelliJ bug.
       assert(byFold == loremWords.treeMapReduce(0)(_.length, _ + _))
       assert(byFold == loremWords.toList.treeMapReduce(0)(_.length, _ + _))
-      assert(byFold == loremWords.toArray.treeMapReduce(0)(_.length, _ + _))
+      assert(byFold == loremWords.treeMapReduce(0)(_.length, _ + _))
     }
   }
   test("sets") {
@@ -61,8 +61,8 @@ class TreeReduceSuite extends AnyFunSuite {
     def id(i: Int): Int = i
 
     for {
-      max <- (1 to 100)
-      nums = (1 to max)
+      max <- 1 to 100
+      nums = 1 to max
       sum = nums.sum
     } {
       assert(sum == nums.fold(0) {
@@ -103,8 +103,8 @@ class TreeReduceSuite extends AnyFunSuite {
     }
 
     for {
-      upper <- (1 to 500)
-      intervals = ((0 to upper).map(i => (i, i + 1)))
+      upper <- 1 to 500
+      intervals = (0 to upper).map(i => (i, i + 1))
     } {
       val byFold = intervals.foldLeft((0, 0))(mergeIntervals)
       locally {
@@ -117,10 +117,10 @@ class TreeReduceSuite extends AnyFunSuite {
     }
   }
 
-  def time[R](name: String, block: => R): R = {
-    val t0 = System.nanoTime()
+  def time[R](_name: String, block: => R): R = {
+    //val t0 = System.nanoTime()
     val result = block // call-by-name
-    val t1 = System.nanoTime()
+    //val t1 = System.nanoTime()
     //    println(s"$name: Elapsed time: ${(t1 - t0) / 1.0e6} ms")
     result
   }
@@ -189,8 +189,8 @@ class TreeReduceSuite extends AnyFunSuite {
     }
 
     for {
-      upper <- (1 to 1000)
-      intervals = ((0 to upper).map(i => (i, i + 1))) //.toList
+      upper <- 1 to 1000
+      intervals = (0 to upper).map(i => (i, i + 1)) //.toList
     } {
       assert(intervals.foldLeft((0, 0))(mergeIntervals) == intervals.treeMapReduce((0, 0))(id, mergeIntervals))
     }

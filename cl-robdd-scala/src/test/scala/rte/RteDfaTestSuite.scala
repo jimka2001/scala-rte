@@ -24,6 +24,7 @@ package rte
 
 import org.scalatest.funsuite.AnyFunSuite
 
+//noinspection RedundantDefaultArgument
 class RteDfaTestSuite extends AnyFunSuite {
 
   test("dfa discovered case 29"){

@@ -372,7 +372,7 @@ class GenusCanonicalize extends AnyFunSuite {
          dnf = td.canonicalize(Some(Dnf))
          } {
       assert(td.typep(v) == cnf.typep(v),
-             s"\nv = $v" + " type=" + v.getClass() +
+             s"\nv = $v" + " type=" + v.getClass +
                "\nclosedWorldView = " + SAtomic.closedWorldView.value +
                s"\ntd=$td" +
                s"\ncnf=$cnf" +
@@ -391,8 +391,7 @@ class GenusCanonicalize extends AnyFunSuite {
 
   test("discovered 388"){
     val oneInteger:Integer = 1
-    val oneAny:Any = 1
-    val oneLong:Long = 1L
+
 
     assert(classOf[Integer].isInstance(oneInteger))
     assert(SAtomic(classOf[Integer]).typep(oneInteger))
@@ -438,14 +437,14 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SOr(SEql(1L),SEql(2)).subtypep(SOr(SEql(1),SEql(2L))).contains(false))
     assert(SOr(SEql(1L),SEql(2)).subtypep(SOr(SEql(1),SEql(2))).contains(false))
     assert(SOr(SEql(1L),SEql(2)).subtypep(SMember(1,2)).contains(false))
-    println(SOr(SMember(1L, 2L),SMember(2, 3)).canonicalize())
-    println(SOr(SMember(1,2),SMember(2,3)).canonicalize())
+    SOr(SMember(1L, 2L),SMember(2, 3)).canonicalize()
+    SOr(SMember(1,2),SMember(2,3)).canonicalize()
     assert(!eql(SOr(SMember(1L, 2L),SMember(2, 3)), SOr(SMember(1,2),SMember(2,3))))
     assert(SOr(SMember(1L, 2L),SMember(2, 3)).subtypep(SOr(SMember(1,2),SMember(2,3))).contains(false))
   }
   test("rand typep") {
     // make sure typep membership of particular values is the same before and after canonicalizing
-    def testit() = {
+    def testit():Unit = {
       for {depth <- 0 to 5
            _ <- 0 to 2000
            } check_type(randomType(depth))
@@ -957,8 +956,8 @@ class GenusCanonicalize extends AnyFunSuite {
              == SEmpty)
   }
   test("canonicalize member with primitive"){
-    println(SEql(1).subtypep(SAtomic(Integer)))
-    println(SAtomic(Integer).typep(1))
+    SEql(1).subtypep(SAtomic(Integer))
+    SAtomic(Integer).typep(1)
 
     assert(SOr(SAtomic(Integer),SEql(1)).canonicalize() == SAtomic(Integer))
     assert(SOr(SAtomic(Integer),SEql(1L)).canonicalize() == SOr(SAtomic(Integer),SEql(1L)))

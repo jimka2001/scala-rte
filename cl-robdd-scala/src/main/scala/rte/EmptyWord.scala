@@ -23,7 +23,7 @@ package rte
 import genus._
 
 object EmptyWord extends Rte {
-  override def toLaTeX:String = "\\varepsilon "
+  override def toLaTeX():String = "\\varepsilon "
   override def toString:String = "ε"
   def nullable:Boolean = true
   def firstTypes:Set[SimpleTypeD] = Set.empty

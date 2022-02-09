@@ -116,6 +116,6 @@ object RationalFoldTest {
   }
 
   def main(argv:Array[String]):Unit = {
-    rationalFoldTest(5000,true)
+    rationalFoldTest(5000, verbose = true)
   }
 }

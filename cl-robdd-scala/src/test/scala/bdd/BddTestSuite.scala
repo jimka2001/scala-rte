@@ -29,7 +29,7 @@ class BddTestSuite extends AnyFunSuite {
 
   test("printing") {
     withNewBddHash {
-      BddTrue.toString 
+      BddTrue.toString
       BddFalse.toString
       val bdd1 = Bdd(3, BddTrue, BddFalse)
       val bdd2 = Bdd(2, BddFalse, BddTrue)

@@ -25,8 +25,8 @@ import adjuvant.Adjuvant.findSimplifier
 import genus._
 
 case class Star(operand:Rte) extends Rte {
-  override def toLaTeX: String = "(" ++ operand.toLaTeX ++ ")^{*}"
-  override def toMachineReadable:String = "Star(" + operand.toMachineReadable() + ")"
+  override def toLaTeX(): String = "(" ++ operand.toLaTeX() ++ ")^{*}"
+  override def toMachineReadable():String = "Star(" + operand.toMachineReadable() + ")"
 
   override def toString: String = "(" + operand.toString + ")*"
 
@@ -45,7 +45,7 @@ case class Star(operand:Rte) extends Rte {
       case Star(EmptyWord) => EmptyWord
       case Star(EmptySet) => EmptyWord
       // x** -> x*
-      case Star(s@Star(r)) => s
+      case Star(s@Star(_)) => s
       case _ => this
     }
   }
@@ -103,7 +103,7 @@ case class Star(operand:Rte) extends Rte {
 }
 
 object Star{
-  val sigmaStar = Star(Sigma)
+  val sigmaStar: Star = Star(Sigma)
   def createStar(operand:Rte):Rte = {
     operand match {
       case Sigma => sigmaStar

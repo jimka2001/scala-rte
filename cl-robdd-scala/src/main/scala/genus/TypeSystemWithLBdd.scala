@@ -32,7 +32,7 @@ object TypeSystemWithLBdd {
 
   type TYPE_HASH = scala.collection.mutable.Map[TerminalType, Int]
   val maybeHash = new DynamicVariable[Option[TYPE_HASH]](None)
-  var numAllocations = new DynamicVariable[Int](0)
+  val numAllocations = new DynamicVariable[Int](0)
 
   def newHash(): TYPE_HASH = {
     import org.jboss.util.collection._

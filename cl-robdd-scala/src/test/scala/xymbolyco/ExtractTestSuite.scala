@@ -26,12 +26,13 @@ import genus._
 import Extract._
 import GraphViz._
 
+//noinspection RedundantDefaultArgument
 class ExtractTestSuite  extends AnyFunSuite {
-  val Σ = Sigma
-  val ε = EmptyWord
-  val t2x = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
-  val etrue = Singleton(SEql(true))
-  val num_random_tests = 1000
+  val Σ: Sigma.type = Sigma
+  val ε: EmptyWord.type = EmptyWord
+  val t2x: Singleton = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
+  val etrue: Singleton = Singleton(SEql(true))
+  val num_random_tests: Int = 1000
   test("extraction 31"){
     check_extraction_cycle(Cat(Singleton(SEql(1)),Singleton(SEql(2))))
   }
@@ -82,7 +83,7 @@ class ExtractTestSuite  extends AnyFunSuite {
   test("test_extract_rte") {
     SAtomic.withClosedWorldView {
       for {depth <- 1 to 3
-           r <- 0 to num_random_tests
+           _ <- 0 to num_random_tests
            rt = Rte.randomRte(depth)
            } check_extraction_cycle(rt)
     }

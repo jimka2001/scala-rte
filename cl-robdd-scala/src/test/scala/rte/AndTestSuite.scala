@@ -27,6 +27,7 @@ import org.scalatest.funsuite.AnyFunSuite
 import rte.RteImplicits._
 
 
+//noinspection RedundantDefaultArgument
 class AndTestSuite extends AnyFunSuite {
   test("implicits") {
     assert(And(SEql(1)) == And(Singleton(SEql(1))))
@@ -187,7 +188,7 @@ class AndTestSuite extends AnyFunSuite {
 
     val rte0 = And(r1, Or(r2, r3), r4)
     val rte1 = rte0.canonicalizeOnce
-    val rte2 = rte1.canonicalizeOnce
+    rte1.canonicalizeOnce
     //val rte3 = rte2.canonicalizeOnce
 
   }
@@ -275,20 +276,7 @@ class AndTestSuite extends AnyFunSuite {
     val r5b = And(r1, Or(r2, r3), r4)
     // Or(Or(Cat(Σ,Σ,(Σ)*),ε),Not(<{a,b,c}>))
     assert(Or(r2, r3).canonicalize == Not(Singleton(SMember("a", "b", "c"))))
-    val r5bc = r5b.canonicalizeDebug(50,(r1,r2)=>{
-      val dfa1 = r1.toDfa(true)
-      val dfa2 = r2.toDfa(true)
-      for{ v <- List("a","b","c","d",0,-1)}
-        {
-          val lhs = dfa1.simulate(Seq(v))
-          val rhs = dfa2.simulate(Seq(v))
-          assert(lhs == rhs,
-                 s"\ntesting with v=$v, lhs=$lhs, rhs=$rhs" +
-                   s"\nr1=$r1" +
-                   s"\nr2=$r2"
-                 )
-        }
-    })
+    val r5bc = r5b.canonicalize
     //val dfa5a = r5a.toDfa(true)
     //val dfa5ac = r5a.canonicalize.toDfa(true)
     val dfa5b = r5b.toDfa(true)
@@ -336,7 +324,7 @@ class AndTestSuite extends AnyFunSuite {
       val r11 = r10.canonicalizeOnce
       val r12 = r11.canonicalizeOnce
       val r13 = r12.canonicalizeOnce
-      val r14= r13.canonicalizeOnce
+      r13.canonicalizeOnce
       // val r15= r14.canonicalizeOnce
 
       assert(And(r1,Or(r2,r3).canonicalize,r4).canonicalize
@@ -783,10 +771,10 @@ class AndTestSuite extends AnyFunSuite {
       val expecting = problematic.simulate(true, seq)
       val got = rt.simulate(true, seq)
       if (got != expecting) {
-        print(s" seq= ${seq}")
-        print(s"  rt=${rt}")
-        print(s" expecting = ${expecting}")
-        print(s"       got = ${got}")
+        print(s" seq= $seq")
+        print(s"  rt=$rt")
+        print(s" expecting = $expecting")
+        print(s"       got = $got")
       }
       got == expecting
     }
@@ -799,14 +787,12 @@ class AndTestSuite extends AnyFunSuite {
       sequences.forall(seq => try_example(rt,seq))
     }
     def f(r:Rte):Rte = {
-      print(s"r=   $r\n")
-      print(s"  -> ${r.canonicalizeOnce}\n")
       r.canonicalizeOnce
     }
 
     fixedPoint[Rte](problematic,
                     f,
                     good_enough,
-                    invariant(_))
+                    invariant _)
   }
 }

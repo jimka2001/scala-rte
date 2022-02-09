@@ -111,7 +111,7 @@ object GraphViz {
       }
     }
 
-    for {(bdd, n) <- names} yield {
+    for {(bdd, _) <- names} yield {
       bdd match {
         case bdd: LBddNode =>
           drawConnection(bdd, bdd.positive, style = """"solid"""", color = """"green"""", arrowHead = scala.None, arrowTail = scala.None, dir = scala.None)
@@ -155,13 +155,12 @@ object GraphViz {
 
   def main(argv: Array[String]): Unit = {
     val drawFalse = true
-    val bdd3 = LBdd(3)
-    val bdd2 = LBdd(2)
+
     LBdd(1).bddToDot(System.out, drawFalseLeaf=drawFalse,"")
     //LBdd(1, bdd2, bdd3).bddView(drawFalseLeaf=drawFalse,"")
     Or(1, 2, -3, And(-1, 4), And(2, Not(Or(1, 3)))).bddView(drawFalseLeaf=drawFalse,"")
-    Or(1, 2).bddView(true, "Or(1, 2)")
-    Or(1, 3).bddView(true, "Or(1, 3)")
+    Or(1, 2).bddView(drawFalseLeaf = true, "Or(1, 2)")
+    Or(1, 3).bddView(drawFalseLeaf = true, "Or(1, 3)")
 
     //Not(Or(Or(1, And(-2, -3)),
     //       AndNot(2, 3))).bddView(drawFalseLeaf=drawFalse,title="")

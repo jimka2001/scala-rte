@@ -54,7 +54,7 @@ object Evaluator {
     for (i <- 1 to n) print("  " + i + "   | ")
     println(" Bdd ")
     for (l <- mapPermutations(n)) {
-      for ((k, v) <- l) {
+      for ((_, v) <- l) {
         if (v) print("" + v + "  | ")
         else print("" + v + " | ")
       }
@@ -72,10 +72,10 @@ object main {
     val b1 = And(Not(1), Not(2), Not(3))
     val b2 = LBdd(2)
 
-    b1.bddView(true, "And(Not(1), Not(2), Not(3))")
-    b2.bddView(true, "x_2")
-    Or(b1, b2).bddView(true, "Or(b1, b2)")
-    Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2)).bddView(true, "Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2))")
+    b1.bddView(drawFalseLeaf = true, "And(Not(1), Not(2), Not(3))")
+    b2.bddView(drawFalseLeaf = true, "x_2")
+    Or(b1, b2).bddView(drawFalseLeaf = true, "Or(b1, b2)")
+    Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2)).bddView(drawFalseLeaf = true, "Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2))")
 
     Evaluator.truthTable(Or(b1, b2), 3)
     Evaluator.truthTable(Or(Or(AndNot(b1, b2), AndNot(b2, b1)), And(b1, b2)), 3)

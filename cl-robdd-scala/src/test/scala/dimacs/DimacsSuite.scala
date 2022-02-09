@@ -27,6 +27,8 @@ import dimacs.dimacsParse._
 import dimacs.dimacsSimplify._
 import org.scalatest.funsuite.AnyFunSuite
 
+import scala.collection.mutable
+
 
 class DimacsSuite extends AnyFunSuite {
   test("sample test") {
@@ -88,9 +90,11 @@ class DimacsSuite extends AnyFunSuite {
   }
 
   def getClauses(vec: QmVec, posCount: Int, length: Int): Set[List[Int]] = {
+    type RECTHASH = mutable.HashMap[ClauseAsList, Set[ClauseAsBitSet]]
+    type LENGTHHASH = mutable.HashMap[Int, RECTHASH]
     (for {
-      lengthHash <- vec.hash.get(posCount).toIterable
-      rectHash <- lengthHash.get(length).toIterable
+      lengthHash: LENGTHHASH <- vec.hash.get(posCount).toList // get() returns Option[...]
+      rectHash: RECTHASH <- lengthHash.get(length).toList   // get() returns Option[...]
       (rectified, clauses) <- rectHash
       clause <- clauses
     } yield bitSetToClause(rectified,clause)).toSet

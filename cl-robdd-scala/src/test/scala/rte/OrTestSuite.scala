@@ -319,7 +319,7 @@ class OrTestSuite extends AnyFunSuite {
     val s = Singleton(SEql(-1))
     val c = Cat(Sigma, Sigma, Star(Sigma))
     val r1 = Or(And(c, s), s)
-    r1.canonicalizeDebug(5)
+    r1.canonicalize
   }
 
   test("discovered case 286") {
@@ -335,13 +335,6 @@ class OrTestSuite extends AnyFunSuite {
                 Or(Or(Cat(Sigma, Sigma, Star(Sigma)), EmptyWord), EmptyWord))
     val r3 = Singleton(STop)
     val r4 = And(Star(Star(Singleton(SEql(false)))), EmptyWord)
-
-    // Or(<[= 1]>,And(Cat(And(<Trait3X>,<[= true]>),Not(<Integer>)),<STop>),And(Or(Or(Cat(Σ,Σ,(Σ)*),ε),ε),<STop>),ε)
-    val r5 = Or(r1,
-                And(ra, r3),
-                And(Or(Or(Cat(Sigma, Sigma, Star(Sigma)), EmptyWord), EmptyWord), r3),
-                EmptyWord)
-    //r5.canonicalizeDebug(10,List("a",1,0,true,false))
 
     ///And(r2,r3).canonicalizeDebug(10,List("a",1,0,true,false))
 

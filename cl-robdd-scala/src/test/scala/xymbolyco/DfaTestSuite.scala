@@ -237,10 +237,10 @@ class DfaTestSuite extends AnyFunSuite {
                                                        6 -> "clause-3",
                                                        7 -> "clause-3"))
     assert(sdfa.Q.size == 7)
-    xymbolyco.GraphViz.dfaToPng(sdfa, "test render", false)
+    xymbolyco.GraphViz.dfaToPng(sdfa, "test render", abbrev = false)
     //Render.dfaView(dfa,"test render")
     val minDfa = Minimize.minimize(sdfa)
-    xymbolyco.GraphViz.dfaToPng(minDfa, "test render minimized", false)
+    xymbolyco.GraphViz.dfaToPng(minDfa, "test render minimized", abbrev = false)
     //Render.dfaView(minDfa,"test render minimized")
   }
 

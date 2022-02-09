@@ -26,6 +26,7 @@ import adjuvant.Adjuvant._
 
 import scala.annotation.tailrec
 
+//noinspection RedundantDefaultArgument
 abstract class Rte {
   def toMachineReadable():String = toString
   def |(r: Rte): Rte = Or(this, r)
@@ -58,8 +59,7 @@ abstract class Rte {
           || dfa.findSpanningPath().isEmpty) // no path to a final state from q0
     }
   }
-  def toLaTeX:String
-  //override def toString:String = toLaTeX
+  def toLaTeX():String
   def nullable:Boolean
   def firstTypes:Set[SimpleTypeD]
   def canonicalize:Rte = {
@@ -192,11 +192,7 @@ abstract class Rte {
   // walk this Rte and find a node which satisfies the given predicate,
   //  returning Some(x) if x satisfies the predicate, and returning None otherwise.
   def search(test:Rte=>Boolean):Option[Rte] = {
-
-    if(test(this))
-      Some(this)
-    else
-      None
+    Some(this).filter(test)
   }
 }
 

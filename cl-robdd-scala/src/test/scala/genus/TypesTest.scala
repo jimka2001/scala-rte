@@ -31,10 +31,9 @@ class TypesTest extends AnyFunSuite {
   test("SEql"){
     val z:SimpleTypeD = SEql(0)
     z match {
-      case SEql((td,v)) => {
-        assert(td == SAtomic(0.getClass()))
+      case SEql((td,v)) =>
+        assert(td == SAtomic(0.getClass))
         assert(v == 0)
-      }
       case _ => fail()
     }
     assert(z == SEql(0))
@@ -187,17 +186,17 @@ class TypesTest extends AnyFunSuite {
          t1 = randomType(d)
          t2 = randomType(d)
          } {
-      assert(t1.typeEquivalent(t1) == Some(true))
-      assert(t1.typeEquivalent(SNot(t1)) != Some(true))
+      assert(t1.typeEquivalent(t1).contains(true))
+      assert(!t1.typeEquivalent(SNot(t1)).contains(true))
       assert(! SNot(SAnd(t1,t2)).typeEquivalent(SOr(SNot(t1),SNot(t2))).contains(false))
     }
   }
 
   test("typeEquivalent fixed"){
-    def f(a:Any):Boolean = {
+    def f(_a:Any):Boolean = {
       true
     }
-    def g(a:Any):Boolean = {
+    def g(_a:Any):Boolean = {
       true
     }
     val t1 = SSatisfies(f,"f")

@@ -59,6 +59,6 @@ object Targets {
 
   def main(args: Array[String]): Unit = {
     val bdd = bddSamples(500)
-    bdd.bddView(true, "test")
+    bdd.bddView(drawFalseLeaf = true, "test")
   }
 }

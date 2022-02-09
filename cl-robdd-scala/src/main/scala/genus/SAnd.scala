@@ -31,7 +31,7 @@ import adjuvant.Adjuvant.{findSimplifier, uniquify}
  */
 case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  SNot
   override def toString: String = tds.map(_.toString).mkString("SAnd(", ",", ")")
-  override def toMachineReadable():String = tds.map(_.toMachineReadable).mkString("SAnd(", ",", ")")
+  override def toMachineReadable():String = tds.map(_.toMachineReadable()).mkString("SAnd(", ",", ")")
 
   override def create(tds:Seq[SimpleTypeD]):SimpleTypeD = SAnd.createAnd(tds)
   override def createDual(tds:Seq[SimpleTypeD]):SimpleTypeD = SOr.createOr(tds)
@@ -62,7 +62,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     lazy val inhabitedCnf = cnf.inhabited
     lazy val numNonInterface = tds.count{
       case SAtomic(ct) if SAtomic.isInterface(ct) => false
-      case SAtomic(_ct) => true
+      case SAtomic(_) => true
       case _ => false
     }
     if (tds.exists(_.inhabited.contains(false))) {
@@ -75,7 +75,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     } else if (tds.size > 1 && tds.forall{
       case SNot(SAtomic(_)) => true
       case SNot(_:SMemberImpl) => true
-      case SAtomic(_ct) => true
+      case SAtomic(_) => true
       case _ => false
     } && numNonInterface <= 1 ) {
       // SAnd(SNot(SAtomic(x)), SNot(SAtomic(y)), SNot(SMember(...)))

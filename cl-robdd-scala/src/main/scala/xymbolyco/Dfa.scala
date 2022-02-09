@@ -169,6 +169,7 @@ object TestMe {
   import genus.SEql
   class TestAc
 
+  //noinspection RedundantDefaultArgument
   def main(argv:Array[String]):Unit = {
     // val Test2 = classOf[TestAc]
     val Σ = Sigma
