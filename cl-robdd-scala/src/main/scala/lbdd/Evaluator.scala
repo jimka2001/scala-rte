@@ -43,10 +43,16 @@ object Evaluator {
   }
 
   def truthEval(b1: LBdd, b2: LBdd, n: Int): Boolean = {
+    // I suspect this function is wrong
+    // My suspicion is that the original intent was that if there exists
+    // a permutation such that apply(b1, l) != apply(b2, l)
+    // then return false, else return true?
+    // TODO perhaps convert for to find ?
     for (l <- mapPermutations(n)) {
-      if (apply(b1, l) != apply(b2, l)) false
+      if (apply(b1, l) != apply(b2, l)) false // this false has no effect, perhaps this is a long standing bug
     }
     true
+      // it seems this function returns true in every case ???
   }
 
 

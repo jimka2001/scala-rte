@@ -138,6 +138,8 @@ object TypeSystemWithLBdd {
     * @return an optional Boolean which is true is b1 is a subtype of b2
     */
   def subtypep(b1: LBdd, b2: LBdd): Option[Boolean] = {
+    // TODO is this logic correct?  if b1 is a subtype of b2, then the intersection certainly
+    //     is b1, rather than b2.  right?
     if (And(b1, b2) == b2) Some(true)
     else if (And(b2, b1) == b2) Some(true)
     else if (disjoint(b1, b2).getOrElse(false)) Some(false)
