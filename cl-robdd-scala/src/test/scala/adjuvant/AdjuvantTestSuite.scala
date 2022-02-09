@@ -76,7 +76,7 @@ class AdjuvantTestSuite extends AnyFunSuite {
       else
         Seq(("b",2),("a",0))
     }
-    println(traceGraph(0,edges))
+    traceGraph(0,edges)
   }
 
   test("eql"){
