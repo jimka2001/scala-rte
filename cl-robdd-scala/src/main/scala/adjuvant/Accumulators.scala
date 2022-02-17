@@ -112,6 +112,15 @@ object Accumulators {
     str
   }
 
+  def makeCounter(incr:Int= 1):()=>Int = {
+    var c = 0
+    def count():Int = {
+      c = c + incr
+      c
+    }
+    count
+  }
+
   def main(argv: Array[String]): Unit = {
 
     import java.io.{ByteArrayOutputStream, PrintWriter}
