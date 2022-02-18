@@ -99,15 +99,21 @@ object Thompson {
   }
 
   def constructTransitionsNot(rte: Rte): TRANSITIONS = {
-    val (notIn, notOut, transitions) = constructTransitions(rte)
+    val (in1, out1, transitions) = constructTransitions(rte)
 
-    val (in,finals,clean) = removeEpsilonTransitions(notIn, notOut, transitions)
+    val (in2,outs2,clean) = removeEpsilonTransitions(in1, out1, transitions)
     val completed = complete(clean)
-    val determinized = determinize(in,finals,clean)
+    val (in3, outs3, determinized) = determinize(in2,outs2,completed)
+    val inverted = invert(outs3, determinized)
 
-    val inverted = invert(notIn, finals, completed)
-
-    ???
+    val allStates = findAllStates(determinized)
+    val ini = makeNewState(allStates)
+    val fin = makeNewState(allStates)
+    val wrapped:Seq[TRANSITION] = determinized.map{case (x,td,y) => makeTTransition(x,td,y)}
+    val prefix:Seq[TRANSITION] = makeETransition(ini,in3) +: inverted.map(f => makeETransition(f,fin))
+    (ini,
+      fin,
+      prefix ++  wrapped)
   }
 
   def complete(clean:Seq[(Int,SimpleTypeD,Int)]):Seq[(Int,SimpleTypeD,Int)] = {
