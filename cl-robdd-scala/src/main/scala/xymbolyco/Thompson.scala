@@ -13,7 +13,6 @@ import scala.annotation.tailrec
 
 object Thompson {
   private val count = makeCounter(1)
-  val epsilon = Left(EmptyWord)
   type TRANSITION = (Int, Either[EmptyWord.type, SimpleTypeD], Int)
   type TRANSITIONS = (Int, Int, Seq[TRANSITION])
 
@@ -33,7 +32,7 @@ object Thompson {
 
   // makeTransition is useful for debugging
   def makeETransition(in:Int, out:Int): TRANSITION = {
-    (in,epsilon,out)
+    (in,Left(EmptyWord),out)
   }
 
   def constructTransitions(rte: Rte): TRANSITIONS = {
@@ -41,20 +40,20 @@ object Thompson {
     lazy val out = count() // TODO this is wrong, need to assure new state
     rte match {
       case EmptyWord =>
-        (in, out, Seq((in, epsilon, out)))
+        (in, out, Seq(makeETransition(in,out)))
       case EmptySet =>
-        (in, out, Seq((in, Right(SEmpty), out)))
+        (in, out, Seq(makeTTransition(in, SEmpty, out)))
       case Sigma =>
-        (in, out, Seq((in, Right(STop), out)))
+        (in, out, Seq(makeTTransition(in,STop,out)))
       case Singleton(td) =>
-        (in, out, Seq((in, Right(td), out)))
+        (in, out, Seq(makeTTransition(in, td, out)))
       case Star(operand) =>
         val (inInner, outInner, transitions) = constructTransitions(operand)
         (in, out, transitions ++
-                  Seq((in, epsilon, inInner),
-                      (outInner, epsilon, out),
-                      (in, epsilon, out),
-                      (outInner, epsilon, inInner)))
+                  Seq(makeETransition(in, inInner),
+                      makeETransition(outInner, out),
+                      makeETransition(in, out),
+                      makeETransition(outInner, inInner)))
       case Or(operands) => constructTransitionsOr(operands)
       case Cat(operands) => constructTransitionsCat(operands)
       case Not(operand) => constructTransitionsNot(operand)
@@ -74,10 +73,10 @@ object Thompson {
         val (or2In, or2Out, transitions2) = constructTransitions(rte2)
         (in, out, transitions1 ++
                   transitions2 ++
-                  Seq((in, epsilon, or1In),
-                      (in, epsilon, or2In),
-                      (or1Out, epsilon, out),
-                      (or2Out, epsilon, out)))
+                  Seq(makeETransition(in, or1In),
+                      makeETransition(in, or2In),
+                      makeETransition(or1Out, out),
+                      makeETransition(or2Out, out)))
       case _ =>
         constructTransitionsOr(Seq(rtes.head,
                                    createOr(rtes.tail)))
@@ -94,7 +93,7 @@ object Thompson {
         val (cat2In, cat2Out, transitions2) = constructTransitions(rte2)
         (cat1In, cat2Out, transitions1 ++
                           transitions2 ++
-                          Seq((cat1Out, epsilon, cat2In)))
+                          Seq(makeETransition(cat1Out, cat2In)))
       case _ =>
         constructTransitionsCat(Seq(rtes.head,
                                     createCat(rtes.tail)))
