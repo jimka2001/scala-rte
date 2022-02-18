@@ -131,7 +131,7 @@ object Types {
       }
     }
 
-    recur(Seq((STop,List(),List())), tds - STop)
+    recur(Seq((STop,List(STop),List(SEmpty))), tds - STop)
   }
 
   def compareSequence(tds1: Seq[SimpleTypeD], tds2: Seq[SimpleTypeD]): Boolean = {

@@ -122,7 +122,9 @@ class ThompsonTestSuite  extends AnyFunSuite {
   test("complete 1"){
     val ts:SimpleTypeD = SAtomic(classOf[String])
     val ti:SimpleTypeD = SAtomic(classOf[Int])
-    val completed = complete(Seq((0,ti,1),
+    val completed = complete(0,
+                             Seq(2),
+                             Seq((0,ti,1),
                                  (0,ts,2)))
     assert(completed.toSet == Set((0,ti,1),
                                   (0,ts,2),
@@ -182,7 +184,13 @@ class ThompsonTestSuite  extends AnyFunSuite {
     assert(outs.nonEmpty)
     assert(determinized.nonEmpty)
   }
-
+  test("determinize 5"){
+    determinize(1,
+                List(2),
+                Seq((1,STop,2),
+                    (2,STop,3),
+                    (3,STop,3)))
+  }
   test("Epsilon"){
     val dfa = constructThompsonDfa(EmptyWord, 42)
     assert(dfa.simulate(Seq()) == Some(42))

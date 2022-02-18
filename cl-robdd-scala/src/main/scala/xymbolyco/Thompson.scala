@@ -11,7 +11,7 @@ import rte.Or.createOr
 import scala.annotation.tailrec
 
 object Thompson {
-  val count = makeCounter(1)
+  private val count = makeCounter(1)
   val epsilon = Left(EmptyWord)
   type TRANSITION = (Int, Either[EmptyWord.type, SimpleTypeD], Int)
   type TRANSITIONS = (Int, Int, Seq[TRANSITION])
@@ -61,6 +61,7 @@ object Thompson {
     }
   }
 
+  @tailrec
   def constructTransitionsOr(rtes: Seq[Rte]): TRANSITIONS = {
     rtes match {
       case Seq() => constructTransitions(EmptySet)
@@ -82,6 +83,7 @@ object Thompson {
     }
   }
 
+  @tailrec
   def constructTransitionsCat(rtes: Seq[Rte]): TRANSITIONS = {
     rtes match {
       case Seq() => constructTransitions(EmptyWord)
@@ -102,7 +104,7 @@ object Thompson {
     val (in1, out1, transitions) = constructTransitions(rte)
 
     val (in2,outs2,clean) = removeEpsilonTransitions(in1, out1, transitions)
-    val completed = complete(clean)
+    val completed = complete(in2,outs2,clean)
     val (in3, outs3, determinized) = determinize(in2,outs2,completed)
     val inverted = invert(outs3, determinized)
 
@@ -116,7 +118,7 @@ object Thompson {
       prefix ++  wrapped)
   }
 
-  def complete(clean:Seq[(Int,SimpleTypeD,Int)]):Seq[(Int,SimpleTypeD,Int)] = {
+  def complete(in:Int, outs:Seq[Int], clean:Seq[(Int,SimpleTypeD,Int)]):Seq[(Int,SimpleTypeD,Int)] = {
     val allStates = findAllStates(clean)
     lazy val sink = makeNewState(allStates)
     val grouped = clean.groupBy(_._1)
@@ -137,7 +139,10 @@ object Thompson {
             Some(q,remaining,sink)
       }
     }
-    if (completingTransitions.isEmpty)
+    if (clean.isEmpty)
+      Seq((in,STop,sink),
+          (sink,STop,sink))
+    else if (completingTransitions.isEmpty)
       clean
     else
       clean ++ completingTransitions ++ Seq((sink,STop,sink))
@@ -156,7 +161,6 @@ object Thompson {
                   transitions: Seq[(Int,SimpleTypeD,Int)]
                  ): (Int, Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
     val grouped: Map[Int, Seq[(Int, SimpleTypeD, Int)]] = transitions.groupBy(_._1)
-    println(s"grouped = $grouped")
 
     def expandOneState(qs: Set[Int]): Seq[(Set[Int],SimpleTypeD,Set[Int])] = {
       val tds:Set[SimpleTypeD] = withSetCollector(collect =>
@@ -169,16 +173,17 @@ object Thompson {
                                q <- qs
                                trs <- grouped.get(q)
                                (_, td1, y ) <- trs
-                               if factors.contains(td1)
+                               if factors.contains(td1) // || td1 == STop
                                } collect(td,y))
       for {(td, pairs) <- tr2.groupBy(_._1).toSeq
            nextStates = pairs.map(_._2)
            } yield (qs,td,nextStates)
     }
 
-    def expandStates(toDoList:List[Set[Int]],
-               done:Set[Set[Int]],
-               transitions:Seq[(Set[Int],SimpleTypeD,Set[Int])]
+    @tailrec
+    def expandStates(toDoList   :List[Set[Int]],
+                     done       :Set[Set[Int]],
+                     transitions:Seq[(Set[Int],SimpleTypeD,Set[Int])]
               ):Seq[(Set[Int],SimpleTypeD,Set[Int])] = {
       toDoList match {
         case List() => transitions
@@ -192,8 +197,9 @@ object Thompson {
       }
     }
 
-    def renumberStates(tr1:List[(Set[Int],SimpleTypeD,Set[Int])],
-                       tr2:List[(Int,SimpleTypeD,Int)],
+    @tailrec
+    def renumberStates(tr1    :List[(Set[Int],SimpleTypeD,Set[Int])],
+                       tr2    :List[(Int,SimpleTypeD,Int)],
                        mapping:Map[Set[Int],Int]):(Int, Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
       lazy val allStates = findAllStates(transitions)
       tr1 match {
@@ -253,23 +259,27 @@ object Thompson {
                             if x == c
                             if x != q
                             } yield (q, label, y)
+    // some states no longer exist after removing epsilon transitions
+    val updatedTransitions = normalTransitions ++ transitions2
+    val remainingStates = findAllStates(updatedTransitions)
     val finals = for {(q, closure) <- allStates.zip(epsilonClosure)
+                      if remainingStates.contains(q) || q == in
                       if closure.contains(out)
                       } yield q
-    (in, finals, normalTransitions ++ transitions2)
+    (in, finals, updatedTransitions)
   }
 
   def constructThompsonDfa[E](rte:Rte, exitValue:E):Dfa[Any,SimpleTypeD,E] = {
     val (in1,out1,transitions1) = constructTransitions(rte)
     val (in2,outs2,transitions2) = removeEpsilonTransitions(in1,out1,transitions1)
-    val transitions3 = complete(transitions2)
+    val transitions3 = complete(in2,outs2,transitions2)
     val (in3, outs3, determinized) = determinize(in2,outs2,transitions3)
-
     val fmap = outs3.map{i => i -> exitValue}.toMap
+
     new Dfa(Qids = findAllStates(determinized),
             q0id = in3,
             Fids = outs3.toSet,
-            protoDelta = transitions3.toSet,
+            protoDelta = determinized.toSet,
             labeler = xymbolyco.GenusLabeler(),
             fMap = fmap)
   }
