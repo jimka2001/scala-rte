@@ -8,11 +8,21 @@ import rte.Cat.createCat
 import rte.{And, Cat, EmptySet, EmptyWord, Not, Or, Rte, Sigma, Singleton, Star}
 import rte.Or.createOr
 
-class Thompson {
+object Thompson {
   val count = makeCounter(1)
   val epsilon = Left(EmptyWord)
   type TRANSITION = (Int, Either[EmptyWord.type, SimpleTypeD], Int)
   type TRANSITIONS = (Int, Int, Seq[TRANSITION])
+
+  // makeTransition is useful for debugging
+  def makeTransition(in:Int, td:SimpleTypeD, out:Int):TRANSITION = {
+    (in,Right(td),out)
+  }
+  
+  // makeTransition is useful for debugging
+  def makeTransition(in:Int, epsilon:EmptyWord.type, out:Int): TRANSITION = {
+    (in,Left(epsilon),out)
+  }
 
   def constructTransitions(rte: Rte): TRANSITIONS = {
     lazy val in = count()
@@ -81,7 +91,7 @@ class Thompson {
     val (notIn, notOut, transitions) = constructTransitions(rte)
     val sink = count()
 
-    val (finals,clean) = removeEpsilonTransitions(notIn, notOut, transitions)
+    val (in,finals,clean) = removeEpsilonTransitions(notIn, notOut, transitions)
     val determinized = determinize(notIn,finals,clean)
     val completed = complete(notIn, notOut, clean)
     val inverted = invert(notIn, notOut, completed)
@@ -161,15 +171,15 @@ class Thompson {
         Map()))
   }
 
+  // type TRANSITION = (Int, Either[EmptyWord.type, SimpleTypeD], Int)
   def removeEpsilonTransitions(in: Int,
                                out: Int,
                                transitions: Seq[TRANSITION]
-                              ): (Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
+                              ): (Int, Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
     val epsilonTransitions = transitions.collect { case (x, Left(EmptyWord), y) => (x, y) }.toSet
     val normalTransitions = transitions.collect { case (x, Right(tr), y) => (x,tr,y) }
     val allStates: Seq[Int] = (for {(x, _, y) <- transitions
                                     z <- Seq(x, y)} yield z).distinct
-
     def reachableFrom(q: Int): Set[Int] = {
       for {(x, y) <- epsilonTransitions
            if x == q} yield y
@@ -177,24 +187,21 @@ class Thompson {
 
     def extendClosure(m: Seq[Set[Int]]): Seq[Set[Int]] = {
       for {qs <- m
-           } yield qs.flatMap(reachableFrom)
+           } yield qs.flatMap(reachableFrom).union(qs)
     }
 
     val epsilonClosure = fixedPoint(allStates.map(q => Set(q)),
                                     extendClosure,
                                     (a: Seq[Set[Int]], b: Seq[Set[Int]]) => a == b)
-
     val transitions2 = for {(q, closure) <- allStates.zip(epsilonClosure)
-                            (x, label, y) <- normalTransitions
-                            if y == q
                             c <- closure
-                            if c != q
-                            } yield (x, label, c)
-
+                            (x, label, y) <- normalTransitions
+                            if x == c
+                            if x != q
+                            } yield (q, label, y)
     val finals = for {(q, closure) <- allStates.zip(epsilonClosure)
                       if closure.contains(out)
                       } yield q
-
-    (finals, normalTransitions ++ transitions2)
+    (in, finals, normalTransitions ++ transitions2)
   }
 }
