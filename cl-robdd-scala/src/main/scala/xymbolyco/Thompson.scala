@@ -1,9 +1,10 @@
 package xymbolyco
 
-import adjuvant.Accumulators.{makeCounter, withSetCollector}
+import adjuvant.Accumulators.{makeCounter, withSetCollector, withCollector}
 import adjuvant.Adjuvant.fixedPoint
 import genus.Types.mdtd
-import genus.{SEmpty, SNot, SOr, STop, SimpleTypeD}
+import genus.{SAnd, SEmpty, SNot, SOr, STop, SimpleTypeD}
+import rte.And.createAnd
 import rte.Cat.createCat
 import rte.{And, Cat, EmptySet, EmptyWord, Not, Or, Rte, Sigma, Singleton, Star}
 import rte.Or.createOr
@@ -152,8 +153,105 @@ object Thompson {
     findAllStates(completed).filter(x => ! outs.contains(x)).toSeq
   }
 
-  def constructTransitionsAnd(operands: Seq[Rte]): TRANSITIONS = {
-    ???
+  def constructTransitionsAnd(rtes: Seq[Rte]): TRANSITIONS = {
+    rtes match {
+      case Seq() => constructTransitions(Star(Sigma))
+      case Seq(rte) => constructTransitions(rte)
+      case Seq(rte1, rte2) =>
+        val (and1eIn, and1eOut, transitions1e) = constructTransitions(rte1)
+        val (and1In,and1outs,transitions1) = removeEpsilonTransitions(and1eIn,and1eOut,transitions1e)
+        val (and2eIn, and2eOut, transitions2e) = constructTransitions(rte2)
+        val (and2In,and2outs,transitions2) =removeEpsilonTransitions(and2eIn,and2eOut,transitions2e)
+        val grouped1 = transitions1.groupBy(_._1)
+        val grouped2 = transitions2.groupBy(_._1)
+        @tailrec
+        def sxp(toDo:List[(Int,Int)],
+                done:Set[(Int,Int)],
+                transitions:Seq[((Int,Int),SimpleTypeD,(Int,Int))]
+               ):List[((Int,Int),SimpleTypeD,(Int,Int))] = {
+          import adjuvant.Accumulators.withCollector
+          // TODO what should we do if we can't reach the final state?
+          toDo match {
+            case List() => transitions.toList
+            case qq::remaining if done.contains(qq) => sxp(remaining,done,transitions)
+            case (q1,q2)::remaining =>
+              val newTransitions = withCollector[((Int,Int),SimpleTypeD,(Int,Int))](
+                collect => for{trs1 <- grouped1.get(q1)
+                               trs2 <- grouped2.get(q2)
+                               (_,td1,y1) <- trs1
+                               (_,td2,y2) <- trs2
+                               td = SAnd(td1,td2)
+                               if !td.inhabited.contains(false)
+                               } collect( ((q1,q2),td.canonicalize(),(y1,y2))))
+              val newStates = newTransitions.map(_._3)
+              sxp(newStates ++ remaining,
+                  done + Tuple2(q1,q2),
+                  newTransitions ++ transitions)
+          }
+        }
+        def renumber(in:(Int,Int),
+                     oldOuts:List[(Int,Int)],
+                     newOuts:List[Int],
+                     oldTransitions:List[((Int,Int),SimpleTypeD,(Int,Int))],
+                     newTransitions:List[TRANSITION],
+                     mapping:Map[(Int,Int),Int]
+                    ):(Int,Seq[Int],Seq[TRANSITION]) = {
+          if (! mapping.contains(in))
+            renumber(in,
+                     oldOuts,
+                     newOuts,
+                     oldTransitions,
+                     newTransitions,
+                     mapping + (in -> count()))
+          else {
+            (oldOuts,oldTransitions) match {
+              case (List(),List()) =>
+                (mapping(in),
+                  newOuts,
+                  newTransitions)
+              case (qq::remaining,_) =>
+                val q = count()
+                renumber(in,
+                         remaining,
+                         q :: newOuts,
+                         oldTransitions,
+                         newTransitions,
+                         mapping + (qq -> q))
+              case (List(),(xx,td,yy)::remaining) =>
+                val x = mapping.getOrElse(xx,count())
+                val y = mapping.getOrElse(yy,count())
+                renumber(in,
+                         oldOuts,
+                         newOuts,
+                         remaining,
+                         (x,Right(td),y) :: newTransitions,
+                         mapping ++ Seq(xx -> x,
+                                        yy -> y))
+            }
+
+          }
+        }
+        val sxpTransitions = sxp(List((and1In,and2In)),
+                                 Set(),
+                                 Seq())
+        val (sxpIn,sxpOuts,renumberedTransitions) = renumber((and1In,and2In),
+                                                             withCollector(collect =>
+                                                                             for{f1 <- and1outs
+                                                                                 f2 <- and2outs} collect((f1,f2))), // and1Out,and2Out
+                                                             List(),
+                                                             sxpTransitions,
+                                                             List(),
+                                                             Map())
+        val andIn = count()
+        val andOut = count()
+        val andTransitions = renumberedTransitions ++
+                             Seq(makeETransition(andIn,sxpIn)) ++
+                             sxpOuts.map(q => makeETransition(q,andOut))
+        (andIn, andOut, andTransitions)
+      case _ =>
+        constructTransitionsAnd(Seq(rtes.head,
+                                    createAnd(rtes.tail)))
+    }
   }
 
   def determinize(in:Int,
