@@ -137,9 +137,8 @@ object Thompson {
       clean ++ completingTransitions ++ Seq((sink,STop,sink))
   }
 
-  def invert(in:Int, outs:Seq[Int], completed:Seq[(Int,SimpleTypeD,Int)]):Unit = {
-    val allStates = findAllStates(completed)
-    (in,allStates.filter(x => ! outs.contains(x)), completed)
+  def invert(outs:Seq[Int], completed:Seq[(Int,SimpleTypeD,Int)]):Seq[Int] = {
+    findAllStates(completed).filter(x => ! outs.contains(x)).toSeq
   }
 
   def constructTransitionsAnd(operands: Seq[Rte]): TRANSITIONS = {
