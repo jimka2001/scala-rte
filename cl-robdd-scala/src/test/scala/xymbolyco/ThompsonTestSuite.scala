@@ -30,17 +30,17 @@ class ThompsonTestSuite  extends AnyFunSuite {
   test("remove epsilon transitions 1"){
     val t1:SimpleTypeD = SAtomic(classOf[String])
     assert(removeEpsilonTransitions(0, 1,
-                                    Seq(makeTransition(0,EmptyWord,1),
-                                        makeTransition(0,t1,1)))
+                                    Seq(makeETransition(0,1),
+                                        makeTTransition(0,t1,1)))
            == (0,Seq(0,1),Seq((0,t1,1))))
   }
   test("remove epsilon transitions 2"){
     val a:SimpleTypeD = SAtomic(classOf[String])
     val b:SimpleTypeD = SAtomic(classOf[Int])
     val (in,out,transitions) = removeEpsilonTransitions(0, 2,
-                                                        Seq(makeTransition(1,EmptyWord,2),
-                                                            makeTransition(0,a,1),
-                                                            makeTransition(1,b,2)))
+                                                        Seq(makeETransition(1,2),
+                                                            makeTTransition(0,a,1),
+                                                            makeTTransition(1,b,2)))
     assert((in, out.toSet, transitions.toSet) ==
            (0,Set(1,2),Set((0,a,1),
                            (1,b,2)
@@ -50,9 +50,9 @@ class ThompsonTestSuite  extends AnyFunSuite {
     val a:SimpleTypeD = SAtomic(classOf[String])
     val b:SimpleTypeD = SAtomic(classOf[Int])
     val (in,out,transitions) = removeEpsilonTransitions(0, 2,
-                                                        Seq(makeTransition(0,EmptyWord,1),
-                                                            makeTransition(0,a,1),
-                                                            makeTransition(1,b,2)))
+                                                        Seq(makeETransition(0,1),
+                                                            makeTTransition(0,a,1),
+                                                            makeTTransition(1,b,2)))
     assert((in, out.toSet, transitions.toSet) ==
            (0,Set(2),Set((0,b,2),
                          (0,a,1),
@@ -62,10 +62,10 @@ class ThompsonTestSuite  extends AnyFunSuite {
     val ts:SimpleTypeD = SAtomic(classOf[String])
     val ti:SimpleTypeD = SAtomic(classOf[Int])
     val (in,out,transitions) = removeEpsilonTransitions(0, 2,
-                                                        Seq(makeTransition(0,EmptyWord,1),
-                                                            makeTransition(0,ts,1),
-                                                            makeTransition(1,ti,2),
-                                                            makeTransition(1,ti,1)))
+                                                        Seq(makeETransition(0,1),
+                                                            makeTTransition(0,ts,1),
+                                                            makeTTransition(1,ti,2),
+                                                            makeTTransition(1,ti,1)))
     assert((in, out.toSet, transitions.toSet) ==
            (0,Set(2),Set((0,ts,1),
                          (0,ti,1),
@@ -77,10 +77,10 @@ class ThompsonTestSuite  extends AnyFunSuite {
     val ts:SimpleTypeD = SAtomic(classOf[String])
     val ti:SimpleTypeD = SAtomic(classOf[Int])
     val (in,out,transitions) = removeEpsilonTransitions(0, 2,
-                                                        Seq(makeTransition(0,EmptyWord,1),
-                                                            makeTransition(0,ts,1),
-                                                            makeTransition(1,ti,2),
-                                                            makeTransition(1,ts,1)))
+                                                        Seq(makeETransition(0,1),
+                                                            makeTTransition(0,ts,1),
+                                                            makeTTransition(1,ti,2),
+                                                            makeTTransition(1,ts,1)))
     assert((in, out.toSet, transitions.toSet) ==
            (0,Set(2),Set((0,ts,1),
                          (0,ti,2),
@@ -91,10 +91,10 @@ class ThompsonTestSuite  extends AnyFunSuite {
     val ts:SimpleTypeD = SAtomic(classOf[String])
     val ti:SimpleTypeD = SAtomic(classOf[Int])
     val (in,out,transitions) = removeEpsilonTransitions(0, 2,
-                                                        Seq(makeTransition(1,EmptyWord,2),
-                                                            makeTransition(0,ts,1),
-                                                            makeTransition(1,ti,2),
-                                                            makeTransition(1,ti,1)))
+                                                        Seq(makeETransition(1,2),
+                                                            makeTTransition(0,ts,1),
+                                                            makeTTransition(1,ti,2),
+                                                            makeTTransition(1,ti,1)))
     assert((in, out.toSet, transitions.toSet) ==
            (0,Set(1,2),Set((0,ts,1),
                            (1,ti,1),
@@ -105,10 +105,10 @@ class ThompsonTestSuite  extends AnyFunSuite {
     val ts:SimpleTypeD = SAtomic(classOf[String])
     val ti:SimpleTypeD = SAtomic(classOf[Int])
     val (in,out,transitions) = removeEpsilonTransitions(0, 2,
-                                                        Seq(makeTransition(1,EmptyWord,2),
-                                                            makeTransition(0,ts,1),
-                                                            makeTransition(1,ti,2),
-                                                            makeTransition(1,ts,1)))
+                                                        Seq(makeETransition(1,2),
+                                                            makeTTransition(0,ts,1),
+                                                            makeTTransition(1,ti,2),
+                                                            makeTTransition(1,ts,1)))
     assert((in, out.toSet, transitions.toSet) ==
            (0,Set(1,2),Set((0,ts,1),
                            (1,ts,1),
@@ -129,4 +129,54 @@ class ThompsonTestSuite  extends AnyFunSuite {
                                   (3,STop,3)))
   }
 
+  test("determinize 1"){
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+    val (in,outs,determinized) = determinize(0,
+                                             Seq(1),
+                                             Seq((0,ti,1),
+                                                 (0,ti,2)))
+    // TODO not sure how to test this
+    assert(outs.nonEmpty)
+    assert(determinized.nonEmpty)
+  }
+  test("determinize 2"){
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+    val ts:SimpleTypeD = SAtomic(classOf[String])
+    val (in, outs, determinized) = determinize(0,
+                                               Seq(1,3),
+                                               Seq((0,ti,1),
+                                                   (0,SOr(ti,ts),2),
+                                                   (2,ts,3)))
+    // TODO not sure how to test this
+    assert(outs.nonEmpty)
+    assert(determinized.nonEmpty)
+  }
+  test("determinize 3"){
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+    val ts:SimpleTypeD = SAtomic(classOf[String])
+    val (in, outs, determinized) = determinize(0,
+                                               Seq(1,3),
+                                               Seq((0,ti,1),
+                                                   (0,SOr(ti,ts),2),
+                                                   (2,ts,3),
+                                                   (2,ti,5),
+                                                   (1,SOr(ti,ts),4)))
+    // TODO not sure how to test this
+    assert(outs.nonEmpty)
+    assert(determinized.nonEmpty)
+  }
+  test("determinize 4"){
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+    val ts:SimpleTypeD = SAtomic(classOf[String])
+    val (in, outs, determinized) = determinize(0,
+                                               Seq(1,3,4),
+                                               Seq((0,ti,1),
+                                                   (0,SOr(ti,ts),2),
+                                                   (2,ts,3),
+                                                   (2,ti,5),
+                                                   (1,SOr(ti,ts),4)))
+    // TODO not sure how to test this
+    assert(outs.nonEmpty)
+    assert(determinized.nonEmpty)
+  }
 }

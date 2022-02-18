@@ -17,7 +17,7 @@ object Thompson {
   type TRANSITIONS = (Int, Int, Seq[TRANSITION])
 
   @tailrec
-  def makeNewState(allStates:Seq[Int]):Int = {
+  def makeNewState(allStates:Set[Int]):Int = {
     val q = count()
     if (allStates.contains(q))
       makeNewState(allStates)
@@ -26,13 +26,13 @@ object Thompson {
   }
 
   // makeTransition is useful for debugging
-  def makeTransition(in:Int, td:SimpleTypeD, out:Int):TRANSITION = {
+  def makeTTransition(in:Int, td:SimpleTypeD, out:Int):TRANSITION = {
     (in,Right(td),out)
   }
 
   // makeTransition is useful for debugging
-  def makeTransition(in:Int, epsilon:EmptyWord.type, out:Int): TRANSITION = {
-    (in,Left(epsilon),out)
+  def makeETransition(in:Int, out:Int): TRANSITION = {
+    (in,epsilon,out)
   }
 
   def constructTransitions(rte: Rte): TRANSITIONS = {
@@ -148,10 +148,11 @@ object Thompson {
   def determinize(in:Int,
                   finals:Seq[Int],
                   transitions: Seq[(Int,SimpleTypeD,Int)]
-                 ): (Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
+                 ): (Int, Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
     val grouped: Map[Int, Seq[(Int, SimpleTypeD, Int)]] = transitions.groupBy(_._1)
+    println(s"grouped = $grouped")
 
-    def f(qs: Set[Int]): Seq[(Set[Int],SimpleTypeD,Set[Int])] = {
+    def expandOneState(qs: Set[Int]): Seq[(Set[Int],SimpleTypeD,Set[Int])] = {
       val tds:Set[SimpleTypeD] = withSetCollector(collect =>
                                                     for {q: Int <- qs
                                                          trs <- grouped.get(q)
@@ -169,17 +170,17 @@ object Thompson {
            } yield (qs,td,nextStates)
     }
 
-    def expand(toDoList:List[Set[Int]],
+    def expandStates(toDoList:List[Set[Int]],
                done:Set[Set[Int]],
                transitions:Seq[(Set[Int],SimpleTypeD,Set[Int])]
               ):Seq[(Set[Int],SimpleTypeD,Set[Int])] = {
       toDoList match {
         case List() => transitions
         case qs::toDo if done.contains(qs) =>
-          expand(toDo,done,transitions)
+          expandStates(toDo,done,transitions)
         case qs::toDo =>
-          val newTransitions = f(qs)
-          expand(toDo,
+          val newTransitions = expandOneState(qs)
+          expandStates(newTransitions.map(_._3).toList ++ toDo,
                  done + qs,
                  transitions ++ newTransitions)
       }
@@ -187,28 +188,36 @@ object Thompson {
 
     def renumberStates(tr1:List[(Set[Int],SimpleTypeD,Set[Int])],
                        tr2:List[(Int,SimpleTypeD,Int)],
-                       mapping:Map[Set[Int],Int]):Seq[(Int,SimpleTypeD,Int)] = {
+                       mapping:Map[Set[Int],Int]):(Int, Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
+      lazy val allStates = findAllStates(transitions)
       tr1 match {
-        case List() => tr2
+        case List() =>
+          val newFinals = for{(qs,q) <- mapping
+                              if finals.exists(f => qs.contains(f))
+                              } yield q
+          val newInitial = mapping(Set(in))
+          (newInitial, newFinals.toSeq, tr2)
         case (qs1, td, qs2) :: trs =>
-          val x = mapping.getOrElse(qs1, count())
-          val y = if (qs1 == qs2) x else mapping.getOrElse(qs2, count())
+          val x = mapping.getOrElse(qs1, makeNewState(allStates))
+          val y = if (qs1 == qs2) x else mapping.getOrElse(qs2, makeNewState(allStates))
           renumberStates(trs,
                          (x, td, y) :: tr2,
                          mapping ++ Map(qs1 -> x,
                                         qs2 -> y))
       }
     }
-    (Seq[Int](),
-      renumberStates(
-        expand(List(Set(in)), Set(), Seq()).toList,
-        List(),
-        Map()))
+
+    val expanded = expandStates(List(Set(in)), Set(), Seq()).toList
+
+    renumberStates(
+      expanded,
+      List(),
+      Map())
   }
 
-  def findAllStates[T](transitions:Seq[(Int,T,Int)]):Seq[Int]={
+  def findAllStates[T](transitions:Seq[(Int,T,Int)]):Set[Int]={
     (for {(x, _, y) <- transitions
-          z <- Seq(x, y)} yield z).distinct
+          z <- Seq(x, y)} yield z).toSet
   }
 
   // type TRANSITION = (Int, Either[EmptyWord.type, SimpleTypeD], Int)
@@ -218,7 +227,7 @@ object Thompson {
                               ): (Int, Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
     val epsilonTransitions = transitions.collect { case (x, Left(EmptyWord), y) => (x, y) }.toSet
     val normalTransitions = transitions.collect { case (x, Right(tr), y) => (x,tr,y) }
-    val allStates: Seq[Int] = findAllStates(transitions)
+    val allStates: Seq[Int] = findAllStates(transitions).toSeq
     def reachableFrom(q: Int): Set[Int] = {
       for {(x, y) <- epsilonTransitions
            if x == q} yield y
