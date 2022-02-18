@@ -1,12 +1,14 @@
 package xymbolyco
 
-import adjuvant.Accumulators.{makeCounter,withSetCollector}
+import adjuvant.Accumulators.{makeCounter, withSetCollector}
 import adjuvant.Adjuvant.fixedPoint
 import genus.Types.mdtd
-import genus.{SEmpty, STop, SimpleTypeD}
+import genus.{SEmpty, SNot, SOr, STop, SimpleTypeD}
 import rte.Cat.createCat
 import rte.{And, Cat, EmptySet, EmptyWord, Not, Or, Rte, Sigma, Singleton, Star}
 import rte.Or.createOr
+
+import scala.annotation.tailrec
 
 object Thompson {
   val count = makeCounter(1)
@@ -14,19 +16,28 @@ object Thompson {
   type TRANSITION = (Int, Either[EmptyWord.type, SimpleTypeD], Int)
   type TRANSITIONS = (Int, Int, Seq[TRANSITION])
 
+  @tailrec
+  def makeNewState(allStates:Seq[Int]):Int = {
+    val q = count()
+    if (allStates.contains(q))
+      makeNewState(allStates)
+    else
+      q
+  }
+
   // makeTransition is useful for debugging
   def makeTransition(in:Int, td:SimpleTypeD, out:Int):TRANSITION = {
     (in,Right(td),out)
   }
-  
+
   // makeTransition is useful for debugging
   def makeTransition(in:Int, epsilon:EmptyWord.type, out:Int): TRANSITION = {
     (in,Left(epsilon),out)
   }
 
   def constructTransitions(rte: Rte): TRANSITIONS = {
-    lazy val in = count()
-    lazy val out = count()
+    lazy val in = count() // TODO this is wrong, need to assure new state
+    lazy val out = count() // TODO this is wrong, need to assure new state
     rte match {
       case EmptyWord =>
         (in, out, Seq((in, epsilon, out)))
@@ -89,21 +100,46 @@ object Thompson {
 
   def constructTransitionsNot(rte: Rte): TRANSITIONS = {
     val (notIn, notOut, transitions) = constructTransitions(rte)
-    val sink = count()
 
     val (in,finals,clean) = removeEpsilonTransitions(notIn, notOut, transitions)
-    val determinized = determinize(notIn,finals,clean)
-    val completed = complete(notIn, notOut, clean)
-    val inverted = invert(notIn, notOut, completed)
+    val completed = complete(clean)
+    val determinized = determinize(in,finals,clean)
+
+    val inverted = invert(notIn, finals, completed)
 
     ???
   }
 
-  def complete(in:Int, out:Int, clean:Seq[(Int,SimpleTypeD,Int)]):Unit = {
-    ???
+  def complete(clean:Seq[(Int,SimpleTypeD,Int)]):Seq[(Int,SimpleTypeD,Int)] = {
+    val allStates = findAllStates(clean)
+    lazy val sink = makeNewState(allStates)
+    val grouped = clean.groupBy(_._1)
+
+    val completingTransitions = allStates.flatMap{ q =>
+      grouped.get(q) match {
+        // for states with no exiting transitions
+        case None => Some((q,STop,sink))
+        // for states withs ome exiting transitions, find the complement of their union
+        case Some(transitions) =>
+          val tds = transitions.map(_._2)
+          val remaining = SNot(SOr.createOr(tds))
+          // if either satisfiable is Some(True) or dont-know None,
+          // then we have to create a transition to the sink state
+          if (remaining.inhabited.contains(false))
+            None
+          else
+            Some(q,remaining,sink)
+      }
+    }
+    if (completingTransitions.isEmpty)
+      clean
+    else
+      clean ++ completingTransitions ++ Seq((sink,STop,sink))
   }
-  def invert(in:Int, out:Int, completed:Unit):Unit = {
-    ???
+
+  def invert(in:Int, outs:Seq[Int], completed:Seq[(Int,SimpleTypeD,Int)]):Unit = {
+    val allStates = findAllStates(completed)
+    (in,allStates.filter(x => ! outs.contains(x)), completed)
   }
 
   def constructTransitionsAnd(operands: Seq[Rte]): TRANSITIONS = {
@@ -171,6 +207,11 @@ object Thompson {
         Map()))
   }
 
+  def findAllStates[T](transitions:Seq[(Int,T,Int)]):Seq[Int]={
+    (for {(x, _, y) <- transitions
+          z <- Seq(x, y)} yield z).distinct
+  }
+
   // type TRANSITION = (Int, Either[EmptyWord.type, SimpleTypeD], Int)
   def removeEpsilonTransitions(in: Int,
                                out: Int,
@@ -178,8 +219,7 @@ object Thompson {
                               ): (Int, Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
     val epsilonTransitions = transitions.collect { case (x, Left(EmptyWord), y) => (x, y) }.toSet
     val normalTransitions = transitions.collect { case (x, Right(tr), y) => (x,tr,y) }
-    val allStates: Seq[Int] = (for {(x, _, y) <- transitions
-                                    z <- Seq(x, y)} yield z).distinct
+    val allStates: Seq[Int] = findAllStates(transitions)
     def reachableFrom(q: Int): Set[Int] = {
       for {(x, y) <- epsilonTransitions
            if x == q} yield y

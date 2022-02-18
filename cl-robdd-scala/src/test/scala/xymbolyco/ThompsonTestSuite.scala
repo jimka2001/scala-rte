@@ -116,4 +116,17 @@ class ThompsonTestSuite  extends AnyFunSuite {
                            )))
   }
 
+  test("complete 1"){
+    val ts:SimpleTypeD = SAtomic(classOf[String])
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+    val completed = complete(Seq((0,ti,1),
+                                 (0,ts,2)))
+    assert(completed.toSet == Set((0,ti,1),
+                                  (0,ts,2),
+                                  (0,SNot(SOr(ti,ts)),3),
+                                  (1,STop,3),
+                                  (2,STop,3),
+                                  (3,STop,3)))
+  }
+
 }
