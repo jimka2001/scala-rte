@@ -289,15 +289,40 @@ class ThompsonTestSuite  extends AnyFunSuite {
     assert(dfa.simulate(Seq(2.2, 2.2, "hello", "hello"))== None)
     assert(dfa.simulate(Seq()) == None)
   }
+  test("discovered cases"){
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+    val ts:SimpleTypeD = SAtomic(classOf[String])
+    val tb:SimpleTypeD = SAtomic(classOf[Boolean])
+    val tn:SimpleTypeD = SAtomic(classOf[Number])
+    val t2x:SimpleTypeD = SAtomic(classOf[genus.RandomType.Trait2X])
+    val t2:SimpleTypeD = SAtomic(classOf[genus.RandomType.Trait2])
+    val tc2x:SimpleTypeD = SAtomic(classOf[genus.RandomType.Class2X])
+    val t1x:SimpleTypeD = SAtomic(classOf[genus.RandomType.Trait1X])
+    val tt1:SimpleTypeD = SAtomic(classOf[genus.RandomType.Trait1])
+    val pattern1 = Cat(And(Singleton(ts),Singleton(tt1)),Star(Singleton(t1x)))
+    val pattern2 = Cat(And(Singleton(tc2x),Singleton(t2)),Not(Singleton(tn)))
+    val pattern3 = Cat(And(Singleton(tc2x),Singleton(ti)),Singleton(tb))
+    constructThompsonDfa (pattern1, 42)
+    constructThompsonDfa (pattern2, 42)
+    constructThompsonDfa (pattern3, 42)
+  }
   test("randomCreate"){
     import rte.Rte.dfaEquivalent
-    for {depth <- 0 until 4
-         r <- 0 until num_random_tests
+    for {depth <- 0 until 3
+         r <- 0 until num_random_tests*10
          pattern = Rte.randomRte(depth)
-         dfa_thompson = constructThompsonDfa(pattern, 42)
+         dfa_thompson = try {
+           constructThompsonDfa (pattern, 42)
+         } catch {
+           case e =>
+             println(s"could not construct thompson dfa")
+             println(s"   problem with depth=$depth: pattern=$pattern")
+             throw(e)
+         }
          dfa_brzozowski = pattern.toDfa(42)
          }
       // equivalent might return None or Some(true), but need to fail if returns Some(false)
-      assert(dfaEquivalent(dfa_brzozowski,dfa_thompson) != Some(false))
+      assert(dfaEquivalent(dfa_brzozowski,dfa_thompson) != Some(false),
+             s"disagreement on pattern=$pattern")
   }
 }

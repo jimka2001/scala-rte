@@ -160,7 +160,7 @@ object Thompson {
         val (and1eIn, and1eOut, transitions1e) = constructTransitions(rte1)
         val (and1In,and1outs,transitions1) = removeEpsilonTransitions(and1eIn,and1eOut,transitions1e)
         val (and2eIn, and2eOut, transitions2e) = constructTransitions(rte2)
-        val (and2In,and2outs,transitions2) =removeEpsilonTransitions(and2eIn,and2eOut,transitions2e)
+        val (and2In,and2outs,transitions2) = removeEpsilonTransitions(and2eIn,and2eOut,transitions2e)
         val grouped1 = transitions1.groupBy(_._1)
         val grouped2 = transitions2.groupBy(_._1)
         @tailrec
@@ -233,14 +233,17 @@ object Thompson {
         val sxpTransitions = sxp(List((and1In,and2In)),
                                  Set(),
                                  Seq())
-        val (sxpIn,sxpOuts,renumberedTransitions) = renumber((and1In,and2In),
-                                                             withCollector(collect =>
-                                                                             for{f1 <- and1outs
-                                                                                 f2 <- and2outs} collect((f1,f2))), // and1Out,and2Out
-                                                             List(),
-                                                             sxpTransitions,
-                                                             List(),
-                                                             Map())
+        val (sxpIn,sxpOuts,renumberedTransitions
+          ) = renumber((and1In,and2In),
+                       withCollector(collect =>
+                                       for{f1 <- and1outs
+                                           f2 <- and2outs
+                                           if sxpTransitions.exists{case (_,_,ff) => ff ==(f1,f2)}
+                                           } collect((f1,f2))), // and1Out,and2Out
+                       List(),
+                       sxpTransitions,
+                       List(),
+                       Map())
         val andIn = count()
         val andOut = count()
         val andTransitions = renumberedTransitions ++
@@ -304,7 +307,7 @@ object Thompson {
           val newFinals = for{(qs,q) <- mapping
                               if finals.exists(f => qs.contains(f))
                               } yield q
-          val newInitial = mapping(Set(in))
+          val newInitial = mapping.getOrElse(Set(in),makeNewState(allStates))
           (newInitial, newFinals.toSeq, tr2)
         case (qs1, td, qs2) :: trs =>
           val x = mapping.getOrElse(qs1, makeNewState(allStates))
@@ -317,7 +320,6 @@ object Thompson {
     }
 
     val expanded = expandStates(List(Set(in)), Set(), Seq()).toList
-
     renumberStates(
       expanded,
       List(),
@@ -370,10 +372,12 @@ object Thompson {
     val (in1,out1,transitions1) = constructTransitions(rte)
     val (in2,outs2,transitions2) = removeEpsilonTransitions(in1,out1,transitions1)
     val transitions3 = complete(in2,outs2,transitions2)
+
+
     val (in3, outs3, determinized) = determinize(in2,outs2,transitions3)
     val fmap = outs3.map{i => i -> exitValue}.toMap
 
-    new Dfa(Qids = findAllStates(determinized),
+    new Dfa(Qids = findAllStates(determinized)+in3,
             q0id = in3,
             Fids = outs3.toSet,
             protoDelta = determinized.toSet,
