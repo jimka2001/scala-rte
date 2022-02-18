@@ -252,4 +252,19 @@ object Thompson {
                       } yield q
     (in, finals, normalTransitions ++ transitions2)
   }
+
+  def constructThompsonDfa[E](rte:Rte, exitValue:E):Dfa[Any,SimpleTypeD,E] = {
+    val (in1,out1,transitions1) = constructTransitions(rte)
+    val (in2,outs2,transitions2) = removeEpsilonTransitions(in1,out1,transitions1)
+    val transitions3 = complete(transitions2)
+    val (in3, outs3, determinized) = determinize(in2,outs2,transitions3)
+
+    val fmap = outs3.map{i => i -> exitValue}.toMap
+    new Dfa(Qids = findAllStates(determinized),
+            q0id = in3,
+            Fids = outs3.toSet,
+            protoDelta = transitions3.toSet,
+            labeler = xymbolyco.GenusLabeler(),
+            fMap = fmap)
+  }
 }

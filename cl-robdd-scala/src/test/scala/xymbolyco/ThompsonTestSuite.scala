@@ -26,7 +26,10 @@ import org.scalatest.funsuite.AnyFunSuite
 import rte._
 import xymbolyco.Thompson._
 
+
 class ThompsonTestSuite  extends AnyFunSuite {
+  val num_random_tests:Int = 1000
+
   test("remove epsilon transitions 1"){
     val t1:SimpleTypeD = SAtomic(classOf[String])
     assert(removeEpsilonTransitions(0, 1,
@@ -178,5 +181,115 @@ class ThompsonTestSuite  extends AnyFunSuite {
     // TODO not sure how to test this
     assert(outs.nonEmpty)
     assert(determinized.nonEmpty)
+  }
+
+  test("Epsilon"){
+    val dfa = constructThompsonDfa(EmptyWord, 42)
+    assert(dfa.simulate(Seq()) == Some(42))
+    assert(dfa.simulate(Seq(1, 2, 3)) == None)
+  }
+  test("Sigma"){
+    val dfa = constructThompsonDfa(Sigma, 42)
+    assert(dfa.simulate(Seq(1)).contains(42))
+    assert(dfa.simulate(Seq("hello")).contains(42))
+    assert(dfa.simulate(Seq(1, 2, 3)) == None)
+  }
+  test("SigmaStar"){
+    val dfa = constructThompsonDfa(Star(Sigma), 42)
+
+    assert(dfa.simulate(Seq(1)) == Some(42))
+    assert(dfa.simulate(Seq("hello")) == Some(42))
+    assert(dfa.simulate(Seq(1, 2, 3)) == Some(42))
+  }
+  test("EmptySet"){
+    val dfa = constructThompsonDfa(EmptySet, 42)
+
+    assert(dfa.vacuous() == Some(true))
+  }
+  test("EmptySetStar"){
+    val dfa = constructThompsonDfa(Star(EmptySet), 42)
+
+    assert(dfa.simulate(Seq()) == Some(42))
+    assert(dfa.simulate(Seq(1, 2, 3)) == None)
+  }
+  test("Singleton"){
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+    val ts:SimpleTypeD = SAtomic(classOf[String])
+    val dfa = constructThompsonDfa(Singleton(ti), 42)
+
+    assert( dfa.simulate(Seq(1)) == Some(42))
+    assert(dfa.simulate(Seq(1, 2, 3)) == None)
+  }
+  test("Star"){
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+
+    val dfa = constructThompsonDfa(Star(Singleton(ti)), 42)
+
+    assert( dfa.simulate(Seq(1)) == Some(42))
+    assert( dfa.simulate(Seq(1, 2, 3)) == Some(42))
+    assert(dfa.simulate(Seq(1, 2.0, 3)) == None)
+  }
+  test("Cat") {
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+    val ts:SimpleTypeD = SAtomic(classOf[String])
+    val dfa = constructThompsonDfa(Cat(Singleton(ti),
+                                       Singleton(ts)),
+                               42)
+
+    assert(dfa.simulate(Seq(1, "hello")) == Some(42))
+    assert(dfa.simulate(Seq()) == None)
+    assert(dfa.simulate(Seq(1, "hello", "hello")) == None)
+    assert(dfa.simulate(Seq(1, 2.0, 3)) == None)
+  }
+  test("Or"){
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+    val ts:SimpleTypeD = SAtomic(classOf[String])
+    val dfa = constructThompsonDfa(Or(Singleton(ti),
+                                      Singleton(ts)),
+                                   42)
+
+    assert(dfa.simulate(Seq(1)) == Some(42))
+    assert(dfa.simulate(Seq("hello")) == Some(42))
+    assert(dfa.simulate(Seq()) == None)
+    assert(dfa.simulate(Seq(1, "hello", "hello")) == None)
+    assert(dfa.simulate(Seq(1, 2.0, 3)) == None)
+  }
+  test("Not"){
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+    val ts:SimpleTypeD = SAtomic(classOf[String])
+    val dfa = constructThompsonDfa(Not(Or(Singleton(ti),
+                                          Singleton(ts))),
+                               42)
+
+    assert(dfa.simulate(Seq(1)) == None)
+    assert(dfa.simulate(Seq("hello")) == None)
+    assert(dfa.simulate(Seq()) == Some(42))
+    assert(dfa.simulate(Seq(1, "hello", "hello")) == Some(42))
+    assert(dfa.simulate(Seq(1, 2.0, 3)) == Some(42))
+  }
+  test("And"){
+    val ti:SimpleTypeD = SAtomic(classOf[Int])
+    val ts:SimpleTypeD = SAtomic(classOf[String])
+    // begins with int and ends with str
+    val dfa = constructThompsonDfa(And(Cat(Singleton(ti), Star(Sigma)),
+                                       Cat(Star(Sigma), Singleton(ts))),
+                                   42)
+
+    assert(dfa.simulate(Seq(1, "hello", "hello")) == Some(42))
+    assert(dfa.simulate(Seq(1, 2.2, 2.2, "hello", "hello")) == Some(42))
+    assert(dfa.simulate(Seq(1, 2.2, 2.2)) == None)
+    assert(dfa.simulate(Seq(2.2, 2.2, "hello", "hello"))== None)
+    assert(dfa.simulate(Seq()) == None)
+  }
+  test("randomCreate"){
+    import rte.Rte.dfaEquivalent
+    for {depth <- 0 until 4
+         r <- 0 until num_random_tests
+         pattern = Rte.randomRte(depth)
+         dfa_thompson = constructThompsonDfa(pattern, 42)
+         dfa_brzozowski = pattern.toDfa(42)
+         }
+      // equivalent might return None or Some(true), but need to fail if returns Some(false)
+      assert(dfaEquivalent(dfa_brzozowski,dfa_thompson) != Some(false))
   }
 }
