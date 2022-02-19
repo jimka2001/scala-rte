@@ -189,46 +189,18 @@ object Thompson {
           }
         }
         def renumber(in:(Int,Int),
-                     oldOuts:List[(Int,Int)],
-                     newOuts:List[Int],
-                     oldTransitions:List[((Int,Int),SimpleTypeD,(Int,Int))],
-                     newTransitions:List[TRANSITION],
-                     mapping:Map[(Int,Int),Int]
+                     outs:List[(Int,Int)],
+                     transitions:List[((Int,Int),SimpleTypeD,(Int,Int))],
                     ):(Int,Seq[Int],Seq[TRANSITION]) = {
-          if (! mapping.contains(in))
-            renumber(in,
-                     oldOuts,
-                     newOuts,
-                     oldTransitions,
-                     newTransitions,
-                     mapping + (in -> count()))
-          else {
-            (oldOuts,oldTransitions) match {
-              case (List(),List()) =>
-                (mapping(in),
-                  newOuts,
-                  newTransitions)
-              case (qq::remaining,_) =>
-                val q = count()
-                renumber(in,
-                         remaining,
-                         q :: newOuts,
-                         oldTransitions,
-                         newTransitions,
-                         mapping + (qq -> q))
-              case (List(),(xx,td,yy)::remaining) =>
-                val x = mapping.getOrElse(xx,count())
-                val y = mapping.getOrElse(yy,count())
-                renumber(in,
-                         oldOuts,
-                         newOuts,
-                         remaining,
-                         (x,Right(td),y) :: newTransitions,
-                         mapping ++ Seq(xx -> x,
-                                        yy -> y))
-            }
+          val mapping:Map[(Int,Int),Int] = (
+            in :: (outs ::: transitions.flatMap{ case (xx,_,yy) => List(xx,yy)}))
+            .distinct
+            .map(qq => qq -> count())
+            .toMap
 
-          }
+          (mapping(in),
+            outs.map(mapping),
+            transitions.map{case (xx,td,yy) => makeTTransition(mapping(xx),td,mapping(yy))})
         }
         val sxpTransitions = sxp(List((and1In,and2In)),
                                  Set(),
@@ -240,10 +212,7 @@ object Thompson {
                                            f2 <- and2outs
                                            if sxpTransitions.exists{case (_,_,ff) => ff ==(f1,f2)}
                                            } collect((f1,f2))), // and1Out,and2Out
-                       List(),
-                       sxpTransitions,
-                       List(),
-                       Map())
+                       sxpTransitions)
         val andIn = count()
         val andOut = count()
         val andTransitions = renumberedTransitions ++
