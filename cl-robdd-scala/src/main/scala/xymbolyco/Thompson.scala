@@ -91,6 +91,7 @@ object Thompson {
 
   @tailrec
   def constructTransitionsOr(rtes: Seq[Rte]): TRANSITIONS = {
+    // Or might have 0 or more rts, we need to handle 4 cases.
     rtes match {
       case Seq() => constructTransitions(EmptySet)
       case Seq(rte) => constructTransitions(rte)
@@ -106,6 +107,9 @@ object Thompson {
                       makeETransition(or1Out, out),
                       makeETransition(or2Out, out)))
       case _ =>
+        // If there are more than two arguments, we rewrite as follows
+        //  Or(a,b,c,d,e,f,...) -> Or(a,And(b,d,e,f,...))
+        //  Now Or has two arguments.
         constructTransitionsOr(Seq(rtes.head,
                                    createOr(rtes.tail)))
     }
@@ -113,6 +117,7 @@ object Thompson {
 
   @tailrec
   def constructTransitionsCat(rtes: Seq[Rte]): TRANSITIONS = {
+    // Cat might have 0 or more rts, we need to handle 4 cases.
     rtes match {
       case Seq() => constructTransitions(EmptyWord)
       case Seq(rte) => constructTransitions(rte)
@@ -123,6 +128,9 @@ object Thompson {
                           transitions2 ++
                           Seq(makeETransition(cat1Out, cat2In)))
       case _ =>
+        // If there are more than two arguments, we rewrite as follows
+        //  Cat(a,b,c,d,e,f,...) -> Cat(a,Cat(b,d,e,f,...))
+        //  Now Cat has two arguments.
         constructTransitionsCat(Seq(rtes.head,
                                     createCat(rtes.tail)))
     }
@@ -187,10 +195,14 @@ object Thompson {
 
   @tailrec
   def constructTransitionsAnd(rtes: Seq[Rte]): TRANSITIONS = {
+    // And might have 0 or more rts, we need to handle 4 cases.
     rtes match {
       case Seq() => constructTransitions(Star(Sigma))
       case Seq(rte) => constructTransitions(rte)
       case Seq(rte1, rte2) =>
+        // The Thompson construction does not have a case for AND.
+        // So what we do here is take the two arguments of AND
+        // and perform a synchronized cross product on the two results.
         val (and1in,and1outs,transitions1) = constructEpsilonFreeTransitions(rte1)
         val (and2in,and2outs,transitions2) = constructEpsilonFreeTransitions(rte2)
         val (sxpIn, sxpOuts, sxpTransitions) = sxp(and1in, and1outs, transitions1,
@@ -201,6 +213,9 @@ object Thompson {
                                                                          sxpTransitions)
         confluxify(renumIn, renumOuts, renumTransitions)
       case _ =>
+        // If there are more than two arguments, we rewrite as follows
+        //  And(a,b,c,d,e,f,...) -> And(a,And(b,d,e,f,...))
+        //  Now And has two arguments.
         constructTransitionsAnd(Seq(rtes.head,
                                     createAnd(rtes.tail)))
     }
@@ -264,6 +279,9 @@ object Thompson {
       traceTransitionGraph[Set[Int]](inX,
                                      expandOneState,
                                      qs => finals.exists(f => qs.contains(f)))
+    // we now have transitions which map Set[Int] to Set[Int]
+    //   where each state (Set[Int]) represents 1 state.  We must
+    //   now replace each Set[Int] with a corresponding Int.
     renumberTransitions(inX,expandedFinals,expandedTransitions)
   }
 
