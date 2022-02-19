@@ -3,7 +3,7 @@ package xymbolyco
 import adjuvant.Accumulators.{makeCounter, withSetCollector}
 import adjuvant.Adjuvant.{fixedPoint, traceGraph}
 import genus.Types.mdtd
-import genus.{SAnd, SEmpty, SNot, SOr, STop, SimpleTypeD}
+import genus.{SAnd, SNot, SOr, STop, SimpleTypeD}
 import rte.And.createAnd
 import rte.Cat.createCat
 import rte.{And, Cat, EmptySet, EmptyWord, Not, Or, Rte, Sigma, Singleton, Star}
@@ -75,27 +75,18 @@ object Thompson {
         (in, out, Seq(makeTTransition(in,STop,out)))
       case Singleton(td) =>
         (in, out, Seq(makeTTransition(in, td, out)))
-      case Star(operand) =>
-        val (inInner, outInner, transitions) = constructTransitions(operand)
+      case Star(rte) =>
+        val (inInner, outInner, transitions) = constructTransitions(rte)
         (in, out, transitions ++
                   Seq(makeETransition(in, inInner),
                       makeETransition(outInner, out),
                       makeETransition(in, out),
                       makeETransition(outInner, inInner)))
-      case Or(operands) => constructTransitionsOr(operands)
-      case Cat(operands) => constructTransitionsCat(operands)
-      case Not(operand) => constructTransitionsNot(operand)
-      case And(operands) => constructTransitionsAnd(operands)
-    }
-  }
-
-  @tailrec
-  def constructTransitionsOr(rtes: Seq[Rte]): TRANSITIONS = {
-    // Or might have 0 or more rts, we need to handle 4 cases.
-    rtes match {
-      case Seq() => constructTransitions(EmptySet)
-      case Seq(rte) => constructTransitions(rte)
-      case Seq(rte1, rte2) =>
+      // Handle Or(...)
+      // Or might have 0 or more rts, we need to handle 4 cases.
+      case Or(Seq()) => constructTransitions(EmptySet)
+      case Or(Seq(rte)) => constructTransitions(rte)
+      case Or(Seq(rte1,rte2)) =>
         val in = count()
         val out = count()
         val (or1In, or1Out, transitions1) = constructTransitions(rte1)
@@ -106,33 +97,42 @@ object Thompson {
                       makeETransition(in, or2In),
                       makeETransition(or1Out, out),
                       makeETransition(or2Out, out)))
-      case _ =>
+      case Or(rtes) =>
         // If there are more than two arguments, we rewrite as follows
-        //  Or(a,b,c,d,e,f,...) -> Or(a,And(b,d,e,f,...))
+        //  Or(a,b,c,d,e,f,...) -> Or(a,Or(b,d,e,f,...))
         //  Now Or has two arguments.
-        constructTransitionsOr(Seq(rtes.head,
-                                   createOr(rtes.tail)))
-    }
-  }
+        constructTransitions(Or(rtes.head,
+                                 createOr(rtes.tail)))
 
-  @tailrec
-  def constructTransitionsCat(rtes: Seq[Rte]): TRANSITIONS = {
-    // Cat might have 0 or more rts, we need to handle 4 cases.
-    rtes match {
-      case Seq() => constructTransitions(EmptyWord)
-      case Seq(rte) => constructTransitions(rte)
-      case Seq(rte1, rte2) =>
+      // Handle Cat(...)
+      // Cat might have 0 or more rts, we need to handle 4 cases.
+      case Cat(Seq()) => constructTransitions(EmptyWord)
+      case Cat(Seq(rte)) => constructTransitions(rte)
+      case Cat(Seq(rte1, rte2)) =>
         val (cat1In, cat1Out, transitions1) = constructTransitions(rte1)
         val (cat2In, cat2Out, transitions2) = constructTransitions(rte2)
         (cat1In, cat2Out, transitions1 ++
                           transitions2 ++
                           Seq(makeETransition(cat1Out, cat2In)))
-      case _ =>
+      case Cat(rtes) =>
         // If there are more than two arguments, we rewrite as follows
         //  Cat(a,b,c,d,e,f,...) -> Cat(a,Cat(b,d,e,f,...))
         //  Now Cat has two arguments.
-        constructTransitionsCat(Seq(rtes.head,
-                                    createCat(rtes.tail)))
+        constructTransitions(Cat(rtes.head,
+                                 createCat(rtes.tail)))
+      // Handle And(...)
+      // And might have 0 or more rts, we need to handle 4 cases.
+      case And(Seq()) => constructTransitions(Star(Sigma))
+      case And(Seq(rte)) => constructTransitions(rte)
+      case And(Seq(rte1,rte2)) => constructTransitionsAnd(rte1,rte2)
+      case And(rtes) =>
+        // If there are more than two arguments, we rewrite as follows
+        //  And(a,b,c,d,e,f,...) -> And(a,And(b,d,e,f,...))
+        //  Now And has two arguments.
+        constructTransitions(And(rtes.head,
+                                 createAnd(rtes.tail)))
+      // Handle Not(rte)
+      case Not(rte) => constructTransitionsNot(rte)
     }
   }
 
@@ -193,32 +193,19 @@ object Thompson {
     findAllStates(completed).filter(x => ! outs.contains(x)).toSeq
   }
 
-  @tailrec
-  def constructTransitionsAnd(rtes: Seq[Rte]): TRANSITIONS = {
-    // And might have 0 or more rts, we need to handle 4 cases.
-    rtes match {
-      case Seq() => constructTransitions(Star(Sigma))
-      case Seq(rte) => constructTransitions(rte)
-      case Seq(rte1, rte2) =>
-        // The Thompson construction does not have a case for AND.
-        // So what we do here is take the two arguments of AND
-        // and perform a synchronized cross product on the two results.
-        val (and1in,and1outs,transitions1) = constructEpsilonFreeTransitions(rte1)
-        val (and2in,and2outs,transitions2) = constructEpsilonFreeTransitions(rte2)
-        val (sxpIn, sxpOuts, sxpTransitions) = sxp(and1in, and1outs, transitions1,
-                                                   and2in, and2outs, transitions2,
-                                                   (a:Boolean,b:Boolean) => a && b)
-        val (renumIn, renumOuts, renumTransitions) = renumberTransitions(sxpIn,
-                                                                         sxpOuts,
-                                                                         sxpTransitions)
-        confluxify(renumIn, renumOuts, renumTransitions)
-      case _ =>
-        // If there are more than two arguments, we rewrite as follows
-        //  And(a,b,c,d,e,f,...) -> And(a,And(b,d,e,f,...))
-        //  Now And has two arguments.
-        constructTransitionsAnd(Seq(rtes.head,
-                                    createAnd(rtes.tail)))
-    }
+  def constructTransitionsAnd(rte1:Rte,rte2:Rte): TRANSITIONS = {
+    // The Thompson construction does not have a case for AND.
+    // So what we do here is take the two arguments of AND
+    // and perform a synchronized cross product on the two results.
+    val (and1in,and1outs,transitions1) = constructEpsilonFreeTransitions(rte1)
+    val (and2in,and2outs,transitions2) = constructEpsilonFreeTransitions(rte2)
+    val (sxpIn, sxpOuts, sxpTransitions) = sxp(and1in, and1outs, transitions1,
+                                               and2in, and2outs, transitions2,
+                                               (a:Boolean,b:Boolean) => a && b)
+    val (renumIn, renumOuts, renumTransitions) = renumberTransitions(sxpIn,
+                                                                     sxpOuts,
+                                                                     sxpTransitions)
+    confluxify(renumIn, renumOuts, renumTransitions)
   }
 
   def sxp(in1:Int, outs1:Seq[Int], transitions1:Seq[(Int,SimpleTypeD,Int)],
