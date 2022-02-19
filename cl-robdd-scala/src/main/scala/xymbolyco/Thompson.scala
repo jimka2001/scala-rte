@@ -354,6 +354,30 @@ object Thompson {
     accessible(in,finals,updatedTransitions)
   }
 
+  def simulate[E](sequence:Seq[Any],
+                  exitValue:E,
+                  in:Int,
+                  outs:Seq[Int],
+                  transitions:Seq[(Int,SimpleTypeD,Int)]
+                 ):Option[E] = {
+    //import cats._
+    import cats.syntax.all._
+    val computation = sequence.foldM(Set(in)){
+      (qs:Set[Int],v:Any) =>
+        if (qs.isEmpty)
+          Left(Set())
+        else
+          Right((for {(x, td, y) <- transitions
+                     if qs.contains(x)
+                     if td.typep(v)
+                     } yield y).toSet)
+    }
+    if (computation.exists(f => outs.contains(f)))
+      Some(exitValue)
+    else
+      None
+  }
+
   def constructThompsonDfa[E](rte:Rte, exitValue:E):Dfa[Any,SimpleTypeD,E] = {
     val (in3, outs3, determinized) = constructDeterminizedTransitions(rte)
     val fmap = outs3.map{i => i -> exitValue}.toMap

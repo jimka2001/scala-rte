@@ -43,3 +43,5 @@ parallelExecution in Test := false
 //    testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
 //    parallelExecution in Test := false
 // )
+
+libraryDependencies += "org.typelevel" %% "cats-core" % "2.7.0"
