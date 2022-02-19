@@ -12,7 +12,7 @@ import rte.Or.createOr
 import scala.annotation.tailrec
 
 object Thompson {
-  private val count = makeCounter(1)
+  private val count = makeCounter()
   type TRANSITION = (Int, Either[EmptyWord.type, SimpleTypeD], Int)
   type TRANSITIONS = (Int, Int, Seq[TRANSITION])
 
