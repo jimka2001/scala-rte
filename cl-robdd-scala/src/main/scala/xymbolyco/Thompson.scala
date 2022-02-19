@@ -35,6 +35,17 @@ object Thompson {
     (in,Left(EmptyWord),out)
   }
 
+  def constructEpsilonFreeTransitions(rte: Rte): (Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
+    val (in:Int, out:Int, transitions:Seq[TRANSITION]) = constructTransitions(rte)
+    removeEpsilonTransitions(in,out,transitions)
+  }
+
+  def constructDeterminizedTransitions(rte:Rte):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
+    val (in2,outs2,clean) = constructEpsilonFreeTransitions(rte)
+    val completed = complete(in2,outs2,clean)
+    determinize(in2,outs2,completed)
+  }
+
   def constructTransitions(rte: Rte): TRANSITIONS = {
     lazy val in = count() // TODO this is wrong, need to assure new state
     lazy val out = count() // TODO this is wrong, need to assure new state
@@ -100,22 +111,27 @@ object Thompson {
     }
   }
 
-  def constructTransitionsNot(rte: Rte): TRANSITIONS = {
-    val (in1, out1, transitions) = constructTransitions(rte)
-
-    val (in2,outs2,clean) = removeEpsilonTransitions(in1, out1, transitions)
-    val completed = complete(in2,outs2,clean)
-    val (in3, outs3, determinized) = determinize(in2,outs2,completed)
-    val inverted = invert(outs3, determinized)
-
-    val allStates = findAllStates(determinized)
+  // join the multiple outputs of a set of transitions (each labeled with a SimpleTypeD)
+  //   into a single output, having epsilon transitions from the previous outputs
+  //   to a single new output.   That output is the confluence (hence the name of the function)
+  //   of the old output.   All the old outputs flow via epsilon transition into the new output.
+  def confluxify(in:Int, outs:Seq[Int], transitions:Seq[(Int,SimpleTypeD,Int)]):TRANSITIONS = {
+    val allStates = findAllStates(transitions) ++ outs + in
     val ini = makeNewState(allStates)
     val fin = makeNewState(allStates)
-    val wrapped:Seq[TRANSITION] = determinized.map{case (x,td,y) => makeTTransition(x,td,y)}
-    val prefix:Seq[TRANSITION] = makeETransition(ini,in3) +: inverted.map(f => makeETransition(f,fin))
+
+    val wrapped:Seq[TRANSITION] = transitions.map{case (x,td,y) => makeTTransition(x,td,y)}
+    val prefix:Seq[TRANSITION] = makeETransition(ini,in) +: outs.map(f => makeETransition(f,fin))
     (ini,
       fin,
       prefix ++  wrapped)
+  }
+
+  def constructTransitionsNot(rte: Rte): TRANSITIONS = {
+    val (in3,outs3, determinized) = constructDeterminizedTransitions(rte)
+    val inverted = invert(outs3, determinized)
+
+    confluxify(in3,inverted,determinized)
   }
 
   def complete(in:Int, outs:Seq[Int], clean:Seq[(Int,SimpleTypeD,Int)]):Seq[(Int,SimpleTypeD,Int)] = {
@@ -157,10 +173,8 @@ object Thompson {
       case Seq() => constructTransitions(Star(Sigma))
       case Seq(rte) => constructTransitions(rte)
       case Seq(rte1, rte2) =>
-        val (and1eIn, and1eOut, transitions1e) = constructTransitions(rte1)
-        val (and1In,and1outs,transitions1) = removeEpsilonTransitions(and1eIn,and1eOut,transitions1e)
-        val (and2eIn, and2eOut, transitions2e) = constructTransitions(rte2)
-        val (and2In,and2outs,transitions2) = removeEpsilonTransitions(and2eIn,and2eOut,transitions2e)
+        val (and1In,and1outs,transitions1) = constructEpsilonFreeTransitions(rte1)
+        val (and2In,and2outs,transitions2) = constructEpsilonFreeTransitions(rte2)
         val grouped1 = transitions1.groupBy(_._1)
         val grouped2 = transitions2.groupBy(_._1)
         @tailrec
@@ -191,7 +205,7 @@ object Thompson {
         def renumber(in:(Int,Int),
                      outs:List[(Int,Int)],
                      transitions:List[((Int,Int),SimpleTypeD,(Int,Int))],
-                    ):(Int,Seq[Int],Seq[TRANSITION]) = {
+                    ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
           val mapping:Map[(Int,Int),Int] = (
             in :: (outs ::: transitions.flatMap{ case (xx,_,yy) => List(xx,yy)}))
             .distinct
@@ -200,7 +214,7 @@ object Thompson {
 
           (mapping(in),
             outs.map(mapping),
-            transitions.map{case (xx,td,yy) => makeTTransition(mapping(xx),td,mapping(yy))})
+            transitions.map{case (xx,td,yy) => (mapping(xx),td,mapping(yy))})
         }
         val sxpTransitions = sxp(List((and1In,and2In)),
                                  Set(),
@@ -213,12 +227,7 @@ object Thompson {
                                            if sxpTransitions.exists{case (_,_,ff) => ff ==(f1,f2)}
                                            } collect((f1,f2))), // and1Out,and2Out
                        sxpTransitions)
-        val andIn = count()
-        val andOut = count()
-        val andTransitions = renumberedTransitions ++
-                             Seq(makeETransition(andIn,sxpIn)) ++
-                             sxpOuts.map(q => makeETransition(q,andOut))
-        (andIn, andOut, andTransitions)
+        confluxify(sxpIn,sxpOuts,renumberedTransitions)
       case _ =>
         constructTransitionsAnd(Seq(rtes.head,
                                     createAnd(rtes.tail)))
