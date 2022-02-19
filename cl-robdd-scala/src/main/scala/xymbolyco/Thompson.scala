@@ -70,10 +70,7 @@ object Thompson {
       case EmptyWord =>
         (in, out, Seq(makeETransition(in,out)))
       case EmptySet =>
-        // TODO, perhaps it is better to not put a transition here,
-        //    just leave it open.   What happens if we return an empty
-        //    sequence of transitions?   Need to test.
-        (in, out, Seq(makeTTransition(in, SEmpty, out)))
+        (in, out, Seq())
       case Sigma =>
         (in, out, Seq(makeTTransition(in,STop,out)))
       case Singleton(td) =>
