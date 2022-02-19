@@ -250,6 +250,7 @@ object Thompson {
     (inX, finalsX, transitionsX)
   }
 
+  // remove non-accessible transitions, and non-accessible final states
   def accessible[V](in:V, outs:Seq[V], transitions:Seq[(V,SimpleTypeD,V)]):(V,Seq[V],Seq[(V,SimpleTypeD,V)]) = {
     val grouped = transitions.groupMap(_._1){case (_,y,z) => (y,z)}
     val (accessibleOuts,accessibleTransitions) = traceTransitionGraph[V](in,
@@ -265,11 +266,21 @@ object Thompson {
     val grouped: Map[Int, Seq[(Int, SimpleTypeD, Int)]] = transitions.groupBy(_._1)
 
     def expandOneState(qs: Set[Int]): Seq[(SimpleTypeD,Set[Int])] = {
+      // Given a set of states, find all the SimpleTypeD which are labels of
+      //   transitions leaving any of those states.
       val tds:Set[SimpleTypeD] = withSetCollector(collect =>
                                                     for {q: Int <- qs
                                                          trs <- grouped.get(q)
                                                          (_, td, _) <- trs
                                                          } collect(td))
+      // The set tds of SimpleTypeD might contain some non-disjoint types.
+      //   So we call compute the minimum disjoint type decomposition (mdtd)
+      //   and create one transition per type per type from this decomposition.
+      //   This is done in two steps.
+      //   step 1. compute tr2 which is the list of (type,next-state) pairs.
+      //   step 2. for { (td,pairs) ...} compute the seq of next states corresponding
+      //      to each type.
+      //      The pair returned from step 2 is exactly what is needed by traceGraph
       val tr2 = withSetCollector[(SimpleTypeD,Int)](collect =>
                          for { (td, factors, _) <- mdtd(tds)
                                q <- qs
