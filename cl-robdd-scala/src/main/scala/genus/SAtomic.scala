@@ -58,7 +58,9 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
     (a.getClass == ct) || ct.isInstance(a) || locally{
       //println(s"typep testing $ct vs ${a.getClass}")
-      if (ct == classOf[scala.Long])
+      if (ct == classOf[Boolean])
+        a.getClass == classOf[java.lang.Boolean]
+      else if (ct == classOf[scala.Long])
         // SAtomic(classOf[java.lang.Long]).typep(a)
         a.getClass == classOf[java.lang.Long]
       else if (ct == classOf[scala.Int])

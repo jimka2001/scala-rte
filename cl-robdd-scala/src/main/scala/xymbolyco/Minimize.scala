@@ -212,7 +212,8 @@ object Minimize {
     }
     val (vertices,edges) = traceGraph[(Int,Int),L]((dfa1.q0id,dfa2.q0id),
                                                    getEdges)
-    assert( vertices(0) == (0,0))
+    assert( vertices(0) == (dfa1.q0id,dfa2.q0id))
+    // assert( vertices(0) == (0,0))
     val fIds = vertices.indices.filter{q =>
       val (q1,q2) = vertices(q)
       arbitrateFinal(dfa1.Fids.contains(q1),

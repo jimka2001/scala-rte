@@ -83,7 +83,7 @@ class ExtractTestSuite  extends AnyFunSuite {
   test("test_extract_rte") {
     SAtomic.withClosedWorldView {
       for {depth <- 1 to 3
-           _ <- 0 to num_random_tests
+           _ <- 0 to num_random_tests / 10
            rt = Rte.randomRte(depth)
            } check_extraction_cycle(rt)
     }
