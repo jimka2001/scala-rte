@@ -25,12 +25,18 @@ object Thompson {
       q
   }
 
-  // makeTransition is useful for debugging
+  // makeTTransition makes a transition which can be part of the
+  // transitions Seq of an automaton with epsilon transitions.
+  // It is a non-epsilon transition, distinguished by the
+  // fact that its lable (middle element) is a Right[SimpleTypeD]
   def makeTTransition(in:Int, td:SimpleTypeD, out:Int):TRANSITION = {
     (in,Right(td),out)
   }
 
-  // makeTransition is useful for debugging
+  // makeETransition makes an epsilon transition.
+  // such transitions may be part of an automaton with epsilon
+  // transitions, but such are eliminated in a normal
+  // automaton.
   def makeETransition(in:Int, out:Int): TRANSITION = {
     (in,Left(EmptyWord),out)
   }
