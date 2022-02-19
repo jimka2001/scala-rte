@@ -1,7 +1,7 @@
 package xymbolyco
 
 import adjuvant.Accumulators.{makeCounter, withSetCollector}
-import adjuvant.Adjuvant.fixedPoint
+import adjuvant.Adjuvant.{fixedPoint, traceGraph}
 import genus.Types.mdtd
 import genus.{SAnd, SEmpty, SNot, SOr, STop, SimpleTypeD}
 import rte.And.createAnd
@@ -44,6 +44,21 @@ object Thompson {
     val (in2,outs2,clean) = constructEpsilonFreeTransitions(rte)
     val completed = complete(in2, clean)
     determinize(in2,outs2,completed)
+  }
+
+  // start with a given vertex of a graph (yet to be determined).
+  // We discover all the vertices by calling the edges function on each vertex
+  //   yet discovered, starting with the given initial vertex.
+  //   Once all the vertices have been discovered, filter them with the isAccepting predicate
+  //      to determine the final/accepting states.
+  //  Return a pair (sequence-of-final-states,
+  //                 sequence-of-transitions of the form (vertex,label,vertex)
+  def traceTransitionGraph[V](q0:V, edges: V=>Seq[(SimpleTypeD,V)], isFinal:V=>Boolean):(Seq[V],Seq[(V,SimpleTypeD,V)]) = {
+    val (qs,transitions) = traceGraph[V,SimpleTypeD](q0,edges)
+    (qs.filter(isFinal),
+      for{(x,pairs) <- qs.zip(transitions)
+          (label, y) <- pairs
+          } yield (x, label, qs(y)))
   }
 
   def constructTransitions(rte: Rte): TRANSITIONS = {
@@ -197,37 +212,25 @@ object Thompson {
     val grouped1 = transitions1.groupBy(_._1)
     val grouped2 = transitions2.groupBy(_._1)
 
-    @tailrec
-    def recur(toDo:List[(Int,Int)],
-              done:Set[(Int,Int)],
-              transitions:Seq[((Int,Int),SimpleTypeD,(Int,Int))]
-              ):((Int,Int), Seq[(Int,Int)], Seq[((Int,Int), SimpleTypeD, (Int,Int))]) = {
-      toDo match {
-        case List() =>
-          val finals = for{(xx,_,yy)<-transitions
-                           (x,y) <- Seq(xx,yy)
-                           if arbitrate(outs1.contains(x),outs2.contains(y))
-                           } yield (x,y)
-          ((in1,in2),
-            finals.distinct,
-            transitions)
-        case qq :: remaining if done.contains(qq) => recur(remaining, done, transitions)
-        case (q1, q2) :: remaining =>
-          val newTransitions = withCollector[((Int, Int), SimpleTypeD, (Int, Int))](
-            collect => for {trs1 <- grouped1.get(q1)
-                            trs2 <- grouped2.get(q2)
-                            (_, td1, y1) <- trs1
-                            (_, td2, y2) <- trs2
-                            td = SAnd(td1, td2)
-                            if !td.inhabited.contains(false)
-                            } collect(((q1, q2), td.canonicalize(), (y1, y2))))
-          val newStates = newTransitions.map(_._3)
-          recur(newStates ++ remaining,
-              done + Tuple2(q1, q2),
-              newTransitions ++ transitions)
-      }
+    def stateTransitions(qq:(Int,Int)):Seq[(SimpleTypeD,(Int,Int))] = {
+      val (q1,q2) = qq
+      withCollector[(SimpleTypeD, (Int, Int))](
+        collect => for {trs1 <- grouped1.get(q1)
+                        trs2 <- grouped2.get(q2)
+                        (_, td1, y1) <- trs1
+                        (_, td2, y2) <- trs2
+                        td = SAnd(td1, td2)
+                        if !td.inhabited.contains(false)
+                        } collect((td.canonicalize(), (y1, y2))))
     }
-    recur(List((in1,in2)), Set(), Seq())
+
+    val inX = (in1,in2)
+    val (finalsX,transitionsX) =
+      traceTransitionGraph[(Int,Int)](inX,
+                                      stateTransitions,
+      {case (x,y) => arbitrate(outs1.contains(x),outs2.contains(y))})
+
+    (inX, finalsX, transitionsX)
   }
 
   def determinize(in:Int,
@@ -236,7 +239,7 @@ object Thompson {
                  ): (Int, Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
     val grouped: Map[Int, Seq[(Int, SimpleTypeD, Int)]] = transitions.groupBy(_._1)
 
-    def expandOneState(qs: Set[Int]): Seq[(Set[Int],SimpleTypeD,Set[Int])] = {
+    def expandOneState(qs: Set[Int]): Seq[(SimpleTypeD,Set[Int])] = {
       val tds:Set[SimpleTypeD] = withSetCollector(collect =>
                                                     for {q: Int <- qs
                                                          trs <- grouped.get(q)
@@ -251,29 +254,15 @@ object Thompson {
                                } collect(td,y))
       for {(td, pairs) <- tr2.groupBy(_._1).toSeq
            nextStates = pairs.map(_._2)
-           } yield (qs,td,nextStates)
+           } yield (td,nextStates)
     }
 
-    @tailrec
-    def expandStates(toDoList   :List[Set[Int]],
-                     done       :Set[Set[Int]],
-                     transitions:Seq[(Set[Int],SimpleTypeD,Set[Int])]
-              ):(Seq[Set[Int]], Seq[(Set[Int],SimpleTypeD,Set[Int])]) = {
-      toDoList match {
-        case List() =>
-          (done.filter(qs => finals.exists(f => qs.contains(f))).toSeq,
-            transitions)
-        case qs::toDo if done.contains(qs) =>
-          expandStates(toDo,done,transitions)
-        case qs::toDo =>
-          val newTransitions = expandOneState(qs)
-          expandStates(newTransitions.map(_._3).toList ++ toDo,
-                 done + qs,
-                 transitions ++ newTransitions)
-      }
-    }
-    val (expandedFinals, expandedTransitions) = expandStates(List(Set(in)), Set(), Seq())
-    renumberTransitions(Set(in),expandedFinals,expandedTransitions)
+    val inX = Set(in)
+    val (expandedFinals,expandedTransitions) =
+      traceTransitionGraph[Set[Int]](inX,
+                                     expandOneState,
+                                     qs => finals.exists(f => qs.contains(f)))
+    renumberTransitions(inX,expandedFinals,expandedTransitions)
   }
 
   // We have transitions in some form other than (Int,SimpleTypeD,Int), and we
