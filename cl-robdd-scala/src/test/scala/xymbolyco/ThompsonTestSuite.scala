@@ -310,9 +310,9 @@ class ThompsonTestSuite  extends AnyFunSuite {
     val Σ = Sigma
     val ε = EmptyWord
 
-    for{pattern <- Seq(//EmptyWord,
-                       //Star(EmptySet),
-                       //Star(t2x),
+    for{pattern <- Seq(EmptyWord,
+                       Star(EmptySet),
+                       Star(t2x),
                        And(Star(t2x),
                            ε),
                        And(Star(t2x),
@@ -374,6 +374,11 @@ class ThompsonTestSuite  extends AnyFunSuite {
     val tb:Rte = Singleton(SAtomic(classOf[Boolean]))
     val rte = Or(Cat(ti,ts,Star(tb)),
                  Cat(ts,tb,Star(ti)))
+
+    assert(simulate(Seq(12, "hello", true, true, true),
+                    42,
+                    rte).contains(42))
+
     val (in, outs, transitions) = constructEpsilonFreeTransitions(rte)
 
     assert(simulate(Seq(12, "hello", true, true, true),

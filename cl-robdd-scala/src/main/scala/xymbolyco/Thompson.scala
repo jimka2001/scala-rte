@@ -352,6 +352,20 @@ object Thompson {
     accessible(in,finals,updatedTransitions)
   }
 
+  // Given a sequence and an Rte,
+  //    construct the Thompson automaton, remove epsilon-transitions,
+  //    but don't determinize.
+  //    return None, if the sequence does not match the expression
+  //    else return Some(exitValue)
+  def simulate[E](sequence:Seq[Any],
+                  exitValue:E,
+                  rte:Rte
+                 ):Option[E] = {
+    val (in, outs, transitions) = constructEpsilonFreeTransitions(rte)
+    simulate(sequence,exitValue,
+             in, outs, transitions)
+  }
+
   def simulate[E](sequence:Seq[Any],
                   exitValue:E,
                   in:Int,
