@@ -123,7 +123,6 @@ class ThompsonTestSuite  extends AnyFunSuite {
     val ts:SimpleTypeD = SAtomic(classOf[String])
     val ti:SimpleTypeD = SAtomic(classOf[Int])
     val completed = complete(0,
-                             Seq(2),
                              Seq((0,ti,1),
                                  (0,ts,2)))
     assert(completed.toSet == Set((0,ti,1),
@@ -305,6 +304,50 @@ class ThompsonTestSuite  extends AnyFunSuite {
     constructThompsonDfa (pattern1, 42)
     constructThompsonDfa (pattern2, 42)
     constructThompsonDfa (pattern3, 42)
+  }
+  test("disovered case 309"){
+    val t2x:Rte = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
+    val Σ = Sigma
+    val ε = EmptyWord
+
+    for{pattern <- Seq(//EmptyWord,
+                       //Star(EmptySet),
+                       //Star(t2x),
+                       And(Star(t2x),
+                           ε),
+                       And(Star(t2x),
+                           Or(Cat(Σ,Σ,Star(Σ)),
+                              ε)))
+        dfa = constructThompsonDfa (pattern, 42)
+        }
+    assert(dfa.simulate(Seq()) == Some(42), s"failed to match empty sequence: $pattern")
+  }
+  test("equivalence check"){
+    import rte.Rte.dfaEquivalent
+    val t2x:Rte = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
+    val Σ = Sigma
+    val ε = EmptyWord
+    for {pattern <- Seq[Rte](// And((<SAtomic:Trait2X>)*,Or(Cat(Σ,Σ,(Σ)*),ε))
+                             And(Star(t2x),
+                                 Or(Cat(Σ,Σ,Star(Σ)),
+                                    ε)))
+
+         dfa_thompson = try {
+           constructThompsonDfa (pattern, 42)
+         } catch {
+           case e =>
+             println(s"could not construct thompson dfa")
+             println(s"   problem with pattern=$pattern")
+             throw(e)
+         }
+         dfa_brzozowski = pattern.toDfa(42)
+         } {
+      //GraphViz.dfaView(dfa_brzozowski,title="brzozowski",abbrev=true)
+      //GraphViz.dfaView(dfa_thompson,title="thompson",abbrev=true)
+    // equivalent might return None or Some(true), but need to fail if returns Some(false)
+      assert(dfaEquivalent(dfa_brzozowski,dfa_thompson) != Some(false),
+             s"disagreement on pattern=$pattern")
+    }
   }
   test("randomCreate"){
     import rte.Rte.dfaEquivalent
