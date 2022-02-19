@@ -53,7 +53,9 @@ object Thompson {
   //      to determine the final/accepting states.
   //  Return a pair (sequence-of-final-states,
   //                 sequence-of-transitions of the form (vertex,label,vertex)
-  def traceTransitionGraph[V](q0:V, edges: V=>Seq[(SimpleTypeD,V)], isFinal:V=>Boolean):(Seq[V],Seq[(V,SimpleTypeD,V)]) = {
+  def traceTransitionGraph[V](q0:V,
+                              edges: V=>Seq[(SimpleTypeD,V)],
+                              isFinal:V=>Boolean):(Seq[V],Seq[(V,SimpleTypeD,V)]) = {
     val (qs,transitions) = traceGraph[V,SimpleTypeD](q0,edges)
     (qs.filter(isFinal),
       for{(x,pairs) <- qs.zip(transitions)
@@ -68,6 +70,9 @@ object Thompson {
       case EmptyWord =>
         (in, out, Seq(makeETransition(in,out)))
       case EmptySet =>
+        // TODO, perhaps it is better to not put a transition here,
+        //    just leave it open.   What happens if we return an empty
+        //    sequence of transitions?   Need to test.
         (in, out, Seq(makeTTransition(in, SEmpty, out)))
       case Sigma =>
         (in, out, Seq(makeTTransition(in,STop,out)))
@@ -327,10 +332,7 @@ object Thompson {
   }
 
   def constructThompsonDfa[E](rte:Rte, exitValue:E):Dfa[Any,SimpleTypeD,E] = {
-    val (in1,out1,transitions1) = constructTransitions(rte)
-    val (in2,outs2,transitions2) = removeEpsilonTransitions(in1,out1,transitions1)
-    val transitions3 = complete(in2, transitions2)
-    val (in3, outs3, determinized) = determinize(in2,outs2,transitions3)
+    val (in3, outs3, determinized) = constructDeterminizedTransitions(rte)
     val fmap = outs3.map{i => i -> exitValue}.toMap
 
     new Dfa(Qids = findAllStates(determinized)+in3,
