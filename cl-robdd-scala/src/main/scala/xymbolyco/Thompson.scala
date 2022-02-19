@@ -360,20 +360,24 @@ object Thompson {
                  ):Option[E] = {
     //import cats._
     import cats.syntax.all._
-    val computation = sequence.foldM(Set(in)){
+    val groups = transitions.groupBy(_._1)
+    sequence.foldM(Set(in)){
       (qs:Set[Int],v:Any) =>
         if (qs.isEmpty)
-          Left(Set())
+          Left(Set()) // no next state, but not finished with the sequence, just abort the foldM
         else
-          Right((for {(x, td, y) <- transitions
-                     if qs.contains(x)
+          Right(for {q <- qs
+                     (_, td, y) <- groups.getOrElse(q,Seq())
                      if td.typep(v)
-                     } yield y).toSet)
+                     } yield y)
+    } match {
+      case Left(_) => None
+      case Right(computation) =>
+        if (computation.exists(f => outs.contains(f)))
+          Some(exitValue)
+        else
+          None
     }
-    if (computation.exists(f => outs.contains(f)))
-      Some(exitValue)
-    else
-      None
   }
 
   def constructThompsonDfa[E](rte:Rte, exitValue:E):Dfa[Any,SimpleTypeD,E] = {

@@ -368,4 +368,28 @@ class ThompsonTestSuite  extends AnyFunSuite {
       assert(dfaEquivalent(dfa_brzozowski,dfa_thompson) != Some(false),
              s"disagreement on pattern=$pattern")
   }
+  test("simulate"){
+    val ti:Rte = Singleton(SAtomic(classOf[Int]))
+    val ts:Rte = Singleton(SAtomic(classOf[String]))
+    val tb:Rte = Singleton(SAtomic(classOf[Boolean]))
+    val rte = Or(Cat(ti,ts,Star(tb)),
+                 Cat(ts,tb,Star(ti)))
+    val (in, outs, transitions) = constructEpsilonFreeTransitions(rte)
+
+    assert(simulate(Seq(12, "hello", true, true, true),
+                    42, in, outs,
+                    transitions).contains(42))
+    assert(simulate(Seq(12, "hello"),
+                    42, in, outs,
+                    transitions).contains(42))
+    assert(simulate(Seq("hello", true, 1, 2, 3),
+                    42, in, outs,
+                    transitions).contains(42))
+    assert(simulate(Seq("hello", true),
+                    42, in, outs,
+                    transitions).contains(42))
+    assert(simulate(Seq(12, 13, 14),
+                    42, in, outs,
+                    transitions).isEmpty)
+  }
 }
