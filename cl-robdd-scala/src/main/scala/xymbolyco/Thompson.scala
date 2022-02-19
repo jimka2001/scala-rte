@@ -250,6 +250,14 @@ object Thompson {
     (inX, finalsX, transitionsX)
   }
 
+  def accessible[V](in:V, outs:Seq[V], transitions:Seq[(V,SimpleTypeD,V)]):(V,Seq[V],Seq[(V,SimpleTypeD,V)]) = {
+    val grouped = transitions.groupMap(_._1){case (_,y,z) => (y,z)}
+    val (accessibleOuts,accessibleTransitions) = traceTransitionGraph[V](in,
+                                                                         q => grouped.getOrElse(q,Seq()),
+                                                                         q => outs.contains(q))
+    (in,accessibleOuts, accessibleTransitions)
+  }
+
   def determinize(in:Int,
                   finals:Seq[Int],
                   transitions: Seq[(Int,SimpleTypeD,Int)]
@@ -268,7 +276,7 @@ object Thompson {
                                trs <- grouped.get(q)
                                (_, td1, y ) <- trs
                                if factors.contains(td1)
-                               } collect(td,y))
+                               } collect((td,y)))
       for {(td, pairs) <- tr2.groupBy(_._1).toSeq
            nextStates = pairs.map(_._2)
            } yield (td,nextStates)
@@ -343,7 +351,7 @@ object Thompson {
                       if remainingStates.contains(q) || q == in
                       if closure.contains(out)
                       } yield q
-    (in, finals, updatedTransitions)
+    accessible(in,finals,updatedTransitions)
   }
 
   def constructThompsonDfa[E](rte:Rte, exitValue:E):Dfa[Any,SimpleTypeD,E] = {
