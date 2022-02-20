@@ -51,6 +51,8 @@ object Thompson {
           } yield (x, label, qs(y)))
   }
 
+  // Construct a sequence of transitions specifying an epsilon-nondeterministic-finite-automaton.
+  // Also return the initial and final state.
   def constructTransitions(rte: Rte): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
     lazy val in = count()
     lazy val out = count()
@@ -139,6 +141,10 @@ object Thompson {
       prefix ++  wrapped)
   }
 
+  // Construct an epsilon-NFA representing the complement (NOT) of the given Rte.
+  // This is done by constructing the given Rte in its determinized form,
+  // swapping final with non-final states, and confluxifying the result,
+  // thus creating an epsilon-NFA with a single input and single output.
   def constructTransitionsNot(rte: Rte): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
     val (in3,outs3, determinized) = constructDeterminizedTransitions(rte)
     val inverted = invertFinals(outs3, determinized)
@@ -146,6 +152,12 @@ object Thompson {
     confluxify(in3,inverted,determinized)
   }
 
+  // Transform a sequence of transform (either deterministic or otherwise)
+  // into a set of completed transforms.  I.e., the union of the types labeling
+  // any arbitrary transition is STop.  In the case when it cannot be determined
+  // whether the transitions are already locally complete, an addition transition
+  // is added with is the complement of the existing transitions.  This may be
+  // empty but if it is empty, .inhabited returns None (dont-know).
   def complete(in:Int, clean:Seq[(Int,SimpleTypeD,Int)]):Seq[(Int,SimpleTypeD,Int)] = {
     val allStates = findAllStates(clean)
     lazy val sink = makeNewState(allStates)
@@ -176,6 +188,7 @@ object Thompson {
       clean ++ completingTransitions ++ Seq((sink,STop,sink))
   }
 
+  // Return the set of states which are not final states.
   def invertFinals(outs:Seq[Int], completed:Seq[(Int,SimpleTypeD,Int)]):Seq[Int] = {
     findAllStates(completed).filter(x => ! outs.contains(x)).toSeq
   }
@@ -195,6 +208,13 @@ object Thompson {
     confluxify(renumIn, renumOuts, renumTransitions)
   }
 
+  // Compute the synchronized cross product.
+  // Given two descriptions of finite automata (either deterministic or otherwise)
+  // use a graph-tracing algorithm to compute a new list of transitions
+  // with all the reachable states in the cartesian product.  In the case that
+  // a transition is provably unsatisfiable, the transition is omitted.
+  // However if the transition is provably satisfiable or dont-know, then
+  // the transition is included.
   def sxp(in1:Int, outs1:Seq[Int], transitions1:Seq[(Int,SimpleTypeD,Int)],
           in2:Int, outs2:Seq[Int], transitions2:Seq[(Int,SimpleTypeD,Int)],
           arbitrate:(Boolean,Boolean)=>Boolean
@@ -233,6 +253,9 @@ object Thompson {
     (in,accessibleOuts, accessibleTransitions)
   }
 
+  // Given a description of a non-deterministic FA, with epsilon transitions
+  // already removed, use a graph-tracing algorithm to compute the reachable
+  // states in the determinized automaton.
   def determinize(in:Int,
                   finals:Seq[Int],
                   transitions: Seq[(Int,SimpleTypeD,Int)]
@@ -297,11 +320,19 @@ object Thompson {
       transitions.map{case (xx,td,yy) => (mapping(xx),td,mapping(yy))})
   }
 
+  // Given a sequence of transitions, compute and return the set
+  // of states mentioned therein.
   def findAllStates[T](transitions:Seq[(Int,T,Int)]):Set[Int]={
     (for {(x, _, y) <- transitions
           z <- Seq(x, y)} yield z).toSet
   }
 
+  // compute and return the transitions of a non-deterministic finite automaton
+  // having its epsilon transitions removed.  This is done by computing the forward
+  // epsilon-closure of every state.  Then advancing transitions (x,td,y) forward
+  // according to (x,td,z) where z in in the epsilon-closure of z.
+  // Then removing all epsilon transitions.
+  // We also filter away transitions (x,td,y) where x is non-accessible.
   def removeEpsilonTransitions(in: Int,
                                out: Int,
                                transitions: Seq[(Int, Option[SimpleTypeD], Int)]
@@ -395,6 +426,9 @@ object Thompson {
     }
   }
 
+  // Construct a deterministic finite automaton, instance of Dfa[Any,SimpleTypeD,E]
+  // given an Rte, using the Thompson construction algorithm which has been
+  // extended to handle Not and And.
   def constructThompsonDfa[E](rte:Rte, exitValue:E):Dfa[Any,SimpleTypeD,E] = {
     val (in, outs, determinized) = constructDeterminizedTransitions(rte)
     val fmap = outs.map{i => i -> exitValue}.toMap
