@@ -415,12 +415,12 @@ object Thompson {
   }
 
   def constructThompsonDfa[E](rte:Rte, exitValue:E):Dfa[Any,SimpleTypeD,E] = {
-    val (in3, outs3, determinized) = constructDeterminizedTransitions(rte)
-    val fmap = outs3.map{i => i -> exitValue}.toMap
+    val (in, outs, determinized) = constructDeterminizedTransitions(rte)
+    val fmap = outs.map{i => i -> exitValue}.toMap
 
-    new Dfa(Qids = findAllStates(determinized)+in3,
-            q0id = in3,
-            Fids = outs3.toSet,
+    new Dfa(Qids = findAllStates(determinized)+in,
+            q0id = in,
+            Fids = outs.toSet,
             protoDelta = determinized.toSet,
             labeler = xymbolyco.GenusLabeler(),
             fMap = fmap)
