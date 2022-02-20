@@ -13,8 +13,6 @@ import scala.annotation.tailrec
 
 object Thompson {
   private val count = makeCounter()
-  type TRANSITION = (Int, Option[SimpleTypeD], Int)
-  type TRANSITIONS = (Int, Int, Seq[TRANSITION])
 
   @tailrec
   def makeNewState(allStates:Set[Int]):Int = {
@@ -26,11 +24,11 @@ object Thompson {
   }
 
   def constructEpsilonFreeTransitions(rte: Rte): (Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
-    val (in:Int, out:Int, transitions:Seq[TRANSITION]) = constructTransitions(rte)
+    val (in:Int, out:Int, transitions:Seq[(Int, Option[SimpleTypeD], Int)]) = constructTransitions(rte)
     removeEpsilonTransitions(in,out,transitions)
   }
 
-  def constructDeterminizedTransitions(rte:Rte):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
+  def constructDeterminizedTransitions(rte:Rte): (Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
     val (in2,outs2,clean) = constructEpsilonFreeTransitions(rte)
     val completed = complete(in2, clean)
     determinize(in2,outs2,completed)
@@ -53,7 +51,7 @@ object Thompson {
           } yield (x, label, qs(y)))
   }
 
-  def constructTransitions(rte: Rte): TRANSITIONS = {
+  def constructTransitions(rte: Rte): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
     lazy val in = count()
     lazy val out = count()
     rte match {
@@ -129,19 +127,19 @@ object Thompson {
   //   into a single output, having epsilon transitions from the previous outputs
   //   to a single new output.   That output is the confluence (hence the name of the function)
   //   of the old output.   All the old outputs flow via epsilon transition into the new output.
-  def confluxify(in:Int, outs:Seq[Int], transitions:Seq[(Int,SimpleTypeD,Int)]):TRANSITIONS = {
+  def confluxify(in:Int, outs:Seq[Int], transitions:Seq[(Int,SimpleTypeD,Int)]):(Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
     val allStates = findAllStates(transitions) ++ outs + in
     val ini = makeNewState(allStates)
     val fin = makeNewState(allStates)
 
-    val wrapped:Seq[TRANSITION] = transitions.map{case (x,td,y) => (x,Some(td),y)}
-    val prefix:Seq[TRANSITION] = (ini, None, in) +: outs.map(f => (f, None, fin))
+    val wrapped:Seq[(Int, Option[SimpleTypeD], Int)] = transitions.map{case (x,td,y) => (x,Some(td),y)}
+    val prefix:Seq[(Int, Option[SimpleTypeD], Int)] = (ini, None, in) +: outs.map(f => (f, None, fin))
     (ini,
       fin,
       prefix ++  wrapped)
   }
 
-  def constructTransitionsNot(rte: Rte): TRANSITIONS = {
+  def constructTransitionsNot(rte: Rte): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
     val (in3,outs3, determinized) = constructDeterminizedTransitions(rte)
     val inverted = invertFinals(outs3, determinized)
 
@@ -182,7 +180,7 @@ object Thompson {
     findAllStates(completed).filter(x => ! outs.contains(x)).toSeq
   }
 
-  def constructTransitionsAnd(rte1:Rte,rte2:Rte): TRANSITIONS = {
+  def constructTransitionsAnd(rte1:Rte,rte2:Rte): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
     // The Thompson construction does not have a case for AND.
     // So what we do here is take the two arguments of AND
     // and perform a synchronized cross product on the two results.
@@ -280,7 +278,7 @@ object Thompson {
     renumberTransitions(inX,expandedFinals,expandedTransitions)
   }
 
-  // We have transitions in some form other than (Int,SimpleTypeD,Int), and we
+  // We have transitions in some form other than DFA_TRANSITION, and we
   //  need to convert to that form.  So we assign a new Int value to each (x,_,y)
   //  in the transitions, and return a translated copy of transitions, as well
   //  as updated value of in and outs.
@@ -304,10 +302,9 @@ object Thompson {
           z <- Seq(x, y)} yield z).toSet
   }
 
-  // type TRANSITION = (Int, Either[EmptyWord.type, SimpleTypeD], Int)
   def removeEpsilonTransitions(in: Int,
                                out: Int,
-                               transitions: Seq[TRANSITION]
+                               transitions: Seq[(Int, Option[SimpleTypeD], Int)]
                               ): (Int, Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
     val epsilonTransitions = transitions.collect { case (x, None, y) => (x, y) }.toSet
     val normalTransitions = transitions.collect { case (x, Some(tr), y) => (x,tr,y) }
