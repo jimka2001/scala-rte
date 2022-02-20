@@ -384,14 +384,14 @@ object Thompson {
     import cats.syntax.all._
     val groups = transitions.groupBy(_._1)
     // To perform this computation, we use foldM to walk the variable, v, through
-    //  the input sequence.  At each iteration of the fold, we take a set, qs,
+    //  the input sequence.  At each iteration of the foldM, we take a set, qs,
     //  of states, Set[Int], and map each Int, q, to a set of next states
-    //  my examining groups(q).   One of two things happens with this `foldM`.
-    //  Either it 1: computes an empty set of next states, in which case it
-    //  aborts and returns None, or 2: it reaches the end of the sequence
-    //  and returns a (possibly empty) set of states, in which case it
-    //  returns Some(that-set).
-    sequence.foldM(Set(in)){
+    //  my examining groups(q) and calling td.typep(v).   One of two things
+    //  happens with this `foldM`.
+    //  Either 1: it computes an empty set of next states, mid-way through the
+    //  sequence, in which case foldM aborts and returns None, or 2: it reaches
+    //  the end of the sequence and returns a (possibly empty) set of states
+    //  reached, in which case it returns Some(that-set).
       (qs:Set[Int],v:Any) =>
         if (qs.isEmpty)
         // no next state, but not finished with the sequence, just abort the foldM
