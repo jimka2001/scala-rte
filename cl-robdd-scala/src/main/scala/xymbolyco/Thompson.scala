@@ -13,7 +13,7 @@ import scala.annotation.tailrec
 
 object Thompson {
   private val count = makeCounter()
-  type TRANSITION = (Int, Either[EmptyWord.type, SimpleTypeD], Int)
+  type TRANSITION = (Int, Option[SimpleTypeD], Int)
   type TRANSITIONS = (Int, Int, Seq[TRANSITION])
 
   @tailrec
@@ -23,22 +23,6 @@ object Thompson {
       makeNewState(allStates)
     else
       q
-  }
-
-  // makeTTransition makes a transition which can be part of the
-  // transitions Seq of an automaton with epsilon transitions.
-  // It is a non-epsilon transition, distinguished by the
-  // fact that its label (middle element) is a Right[SimpleTypeD]
-  def makeTTransition(in:Int, td:SimpleTypeD, out:Int):TRANSITION = {
-    (in,Right(td),out)
-  }
-
-  // makeETransition makes an epsilon transition.
-  // such transitions may be part of an automaton with epsilon
-  // transitions, but such are eliminated in a normal
-  // automaton.
-  def makeETransition(in:Int, out:Int): TRANSITION = {
-    (in,Left(EmptyWord),out)
   }
 
   def constructEpsilonFreeTransitions(rte: Rte): (Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
@@ -70,39 +54,38 @@ object Thompson {
   }
 
   def constructTransitions(rte: Rte): TRANSITIONS = {
-    lazy val in = count() // TODO this is wrong, need to assure new state
-    lazy val out = count() // TODO this is wrong, need to assure new state
+    lazy val in = count()
+    lazy val out = count()
     rte match {
       case EmptyWord =>
-        (in, out, Seq(makeETransition(in,out)))
+        (in, out, Seq((in,None,out)))
       case EmptySet =>
         (in, out, Seq())
       case Sigma =>
-        (in, out, Seq(makeTTransition(in,STop,out)))
+        (in, out, Seq((in,Some(STop),out)))
       case Singleton(td) =>
-        (in, out, Seq(makeTTransition(in, td, out)))
+        (in, out, Seq((in, Some(td), out)))
       case Star(rte) =>
         val (inInner, outInner, transitions) = constructTransitions(rte)
         (in, out, transitions ++
-                  Seq(makeETransition(in, inInner),
-                      makeETransition(outInner, out),
-                      makeETransition(in, out),
-                      makeETransition(outInner, inInner)))
+                  Seq((in, None, inInner),
+                      (outInner, None, out),
+                      (in, None, out),
+                      (outInner, None, inInner)))
       // Handle Or(...)
       // Or might have 0 or more rts, we need to handle 4 cases.
       case Or(Seq()) => constructTransitions(EmptySet)
       case Or(Seq(rte)) => constructTransitions(rte)
       case Or(Seq(rte1,rte2)) =>
-        val in = count()
-        val out = count()
+
         val (or1In, or1Out, transitions1) = constructTransitions(rte1)
         val (or2In, or2Out, transitions2) = constructTransitions(rte2)
         (in, out, transitions1 ++
                   transitions2 ++
-                  Seq(makeETransition(in, or1In),
-                      makeETransition(in, or2In),
-                      makeETransition(or1Out, out),
-                      makeETransition(or2Out, out)))
+                  Seq((in, None, or1In),
+                      (in, None, or2In),
+                      (or1Out, None, out),
+                      (or2Out, None, out)))
       case Or(rtes) =>
         // If there are more than two arguments, we rewrite as follows
         //  Or(a,b,c,d,e,f,...) -> Or(a,Or(b,d,e,f,...))
@@ -119,7 +102,7 @@ object Thompson {
         val (cat2In, cat2Out, transitions2) = constructTransitions(rte2)
         (cat1In, cat2Out, transitions1 ++
                           transitions2 ++
-                          Seq(makeETransition(cat1Out, cat2In)))
+                          Seq((cat1Out, None, cat2In)))
       case Cat(rtes) =>
         // If there are more than two arguments, we rewrite as follows
         //  Cat(a,b,c,d,e,f,...) -> Cat(a,Cat(b,d,e,f,...))
@@ -151,8 +134,8 @@ object Thompson {
     val ini = makeNewState(allStates)
     val fin = makeNewState(allStates)
 
-    val wrapped:Seq[TRANSITION] = transitions.map{case (x,td,y) => makeTTransition(x,td,y)}
-    val prefix:Seq[TRANSITION] = makeETransition(ini,in) +: outs.map(f => makeETransition(f,fin))
+    val wrapped:Seq[TRANSITION] = transitions.map{case (x,td,y) => (x,Some(td),y)}
+    val prefix:Seq[TRANSITION] = (ini, None, in) +: outs.map(f => (f, None, fin))
     (ini,
       fin,
       prefix ++  wrapped)
@@ -326,8 +309,8 @@ object Thompson {
                                out: Int,
                                transitions: Seq[TRANSITION]
                               ): (Int, Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
-    val epsilonTransitions = transitions.collect { case (x, Left(EmptyWord), y) => (x, y) }.toSet
-    val normalTransitions = transitions.collect { case (x, Right(tr), y) => (x,tr,y) }
+    val epsilonTransitions = transitions.collect { case (x, None, y) => (x, y) }.toSet
+    val normalTransitions = transitions.collect { case (x, Some(tr), y) => (x,tr,y) }
     val allStates: Seq[Int] = findAllStates(transitions).toSeq
     def reachableFrom(q: Int): Set[Int] = {
       for {(x, y) <- epsilonTransitions
