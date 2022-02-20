@@ -384,15 +384,15 @@ object Thompson {
     sequence.foldM(Set(in)){
       (qs:Set[Int],v:Any) =>
         if (qs.isEmpty)
-          Left(Set()) // no next state, but not finished with the sequence, just abort the foldM
+          None:Option[Set[Int]]  // the type decl is simply to satisfy IntelliJ
         else
-          Right(for {q <- qs
+          Some(for {q <- qs
                      (_, td, y) <- groups.getOrElse(q,Seq())
                      if td.typep(v)
                      } yield y)
     } match {
-      case Left(_) => None
-      case Right(computation) =>
+      case None => None
+      case Some(computation) =>
         if (computation.exists(f => outs.contains(f)))
           Some(exitValue)
         else
