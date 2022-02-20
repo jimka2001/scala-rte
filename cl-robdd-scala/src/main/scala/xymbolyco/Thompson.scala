@@ -392,10 +392,11 @@ object Thompson {
     //  sequence, in which case foldM aborts and returns None, or 2: it reaches
     //  the end of the sequence and returns a (possibly empty) set of states
     //  reached, in which case it returns Some(that-set).
+    sequence.foldM[Option,Set[Int]](Set(in)){
       (qs:Set[Int],v:Any) =>
         if (qs.isEmpty)
         // no next state, but not finished with the sequence, just abort the foldM
-          None:Option[Set[Int]]  // the type decl is simply to satisfy IntelliJ
+          None
         else
           Some(for {q <- qs
                      (_, td, y) <- groups.getOrElse(q,Seq())
