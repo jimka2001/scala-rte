@@ -28,7 +28,7 @@ object Thompson {
   // makeTTransition makes a transition which can be part of the
   // transitions Seq of an automaton with epsilon transitions.
   // It is a non-epsilon transition, distinguished by the
-  // fact that its lable (middle element) is a Right[SimpleTypeD]
+  // fact that its label (middle element) is a Right[SimpleTypeD]
   def makeTTransition(in:Int, td:SimpleTypeD, out:Int):TRANSITION = {
     (in,Right(td),out)
   }
@@ -372,6 +372,8 @@ object Thompson {
              in, outs, transitions)
   }
 
+  // trace a computation through a non-deterministic finite state machine
+  // given in terms of in, outs, and transitions.
   def simulate[E](sequence:Seq[Any],
                   exitValue:E,
                   in:Int,
@@ -381,9 +383,18 @@ object Thompson {
     //import cats._
     import cats.syntax.all._
     val groups = transitions.groupBy(_._1)
+    // To perform this computation, we use foldM to walk the variable, v, through
+    //  the input sequence.  At each iteration of the fold, we take a set, qs,
+    //  of states, Set[Int], and map each Int, q, to a set of next states
+    //  my examining groups(q).   One of two things happens with this `foldM`.
+    //  Either it 1: computes an empty set of next states, in which case it
+    //  aborts and returns None, or 2: it reaches the end of the sequence
+    //  and returns a (possibly empty) set of states, in which case it
+    //  returns Some(that-set).
     sequence.foldM(Set(in)){
       (qs:Set[Int],v:Any) =>
         if (qs.isEmpty)
+        // no next state, but not finished with the sequence, just abort the foldM
           None:Option[Set[Int]]  // the type decl is simply to satisfy IntelliJ
         else
           Some(for {q <- qs
@@ -391,6 +402,9 @@ object Thompson {
                      if td.typep(v)
                      } yield y)
     } match {
+      //  Finally, given this set of states reached, we examine them to
+      //  determine whether at least one of them is a final state.  If not,
+      //  we return None from simulate, else we return Some(exitValue).
       case None => None
       case Some(computation) =>
         if (computation.exists(f => outs.contains(f)))
