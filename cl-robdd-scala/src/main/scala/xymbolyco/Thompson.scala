@@ -245,7 +245,10 @@ object Thompson {
   }
 
   // remove non-accessible transitions, and non-accessible final states
-  def accessible(in:Int, outs:Seq[Int], transitions:Seq[(Int,SimpleTypeD,Int)]):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
+  def accessible(in:Int,
+                 outs:Seq[Int],
+                 transitions:Seq[(Int,SimpleTypeD,Int)]
+                ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
     val grouped = transitions.groupMap(_._1){case (_,y,z) => (y,z)}
     val (accessibleOuts,accessibleTransitions) = traceTransitionGraph[Int](in,
                                                                          q => grouped.getOrElse(q,Seq()),
@@ -254,7 +257,10 @@ object Thompson {
     (in,accessibleOuts,accessibleTransitions)
   }
 
-  def coaccessible(in:Int, outs:Seq[Int], transitions:Seq[(Int,SimpleTypeD,Int)]):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
+  def coaccessible(in:Int,
+                   outs:Seq[Int],
+                   transitions:Seq[(Int,SimpleTypeD,Int)]
+                  ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
     val allStates = findAllStates(transitions)
     val proxy = makeNewState(allStates)
     val augmentedTransitions = transitions ++ outs.map(q => (q,STop,proxy))
@@ -269,7 +275,12 @@ object Thompson {
     (in,outs,coaccessibleTransitions)
   }
 
-  def trim(in:Int, finals:Seq[Int], transitions:Seq[(Int,SimpleTypeD,Int)]):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
+  // remove transitions which are not accessible and are not coaccessible.
+  // This doesn't change the input state, but some final states may be lost.
+  def trim(in:Int,
+           finals:Seq[Int],
+           transitions:Seq[(Int,SimpleTypeD,Int)]
+          ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
     val (aIn, aFinals, aTransitions) = accessible(in,finals,transitions)
     coaccessible(aIn,aFinals,aTransitions)
   }
