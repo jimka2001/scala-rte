@@ -266,7 +266,6 @@ object Thompson {
     val (accessibleOuts,accessibleTransitions) = traceTransitionGraph[Int](in,
                                                                          q => grouped.getOrElse(q,Seq()),
                                                                          q => outs.contains(q))
-    // return preserving order in input sequences
     (in,accessibleOuts,accessibleTransitions)
   }
 
@@ -283,7 +282,6 @@ object Thompson {
                                                                          q => q == in)
     val coaccessibleTransitions = for{(y,td,x) <- reversedTransitions
                                       if y != proxy } yield (x,td,y)
-    // return preserving order in input sequences
     (in,outs,coaccessibleTransitions)
   }
 
