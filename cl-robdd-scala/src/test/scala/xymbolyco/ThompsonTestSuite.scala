@@ -123,6 +123,7 @@ class ThompsonTestSuite  extends AnyFunSuite {
     val ts:SimpleTypeD = SAtomic(classOf[String])
     val ti:SimpleTypeD = SAtomic(classOf[Int])
     val completed = complete(0,
+                             Seq(1,2),
                              Seq((0,ti,1),
                                  (0,ts,2)))
     // a new state (Int) has been added, but we don't which integer.

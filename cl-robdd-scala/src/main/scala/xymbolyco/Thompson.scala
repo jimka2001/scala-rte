@@ -14,13 +14,21 @@ import scala.annotation.tailrec
 object Thompson {
   private val count = makeCounter()
 
-  @tailrec
-  def makeNewState(allStates:Set[Int]):Int = {
-    val q = count()
-    if (allStates.contains(q))
-      makeNewState(allStates)
-    else
-      q
+  def makeNewState[V,L](in:V, outs:Seq[V], transitions:Seq[(V,L,V)], count:()=>V):V = {
+
+    @tailrec
+    def recur(): V = {
+      val q = count()
+      if (in == q)
+        recur()
+      else if (outs.contains(q))
+        recur()
+      else if (transitions.exists { case (x, _, y) => x == q || y == q })
+        recur()
+      else
+        q
+      }
+    recur()
   }
 
   def constructEpsilonFreeTransitions(rte: Rte): (Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
@@ -30,7 +38,7 @@ object Thompson {
 
   def constructDeterminizedTransitions(rte:Rte): (Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
     val (in2,outs2,clean) = constructEpsilonFreeTransitions(rte)
-    val completed = complete(in2, clean)
+    val completed = complete(in2, outs2, clean)
     determinize(in2,outs2,completed)
   }
 
@@ -129,10 +137,12 @@ object Thompson {
   //   into a single output, having epsilon transitions from the previous outputs
   //   to a single new output.   That output is the confluence (hence the name of the function)
   //   of the old output.   All the old outputs flow via epsilon transition into the new output.
-  def confluxify(in:Int, outs:Seq[Int], transitions:Seq[(Int,SimpleTypeD,Int)]):(Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
-    val allStates = findAllStates(transitions) ++ outs + in
-    val ini = makeNewState(allStates)
-    val fin = makeNewState(allStates)
+  def confluxify(in:Int,
+                 outs:Seq[Int],
+                 transitions:Seq[(Int,SimpleTypeD,Int)]
+                ):(Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
+    val ini = makeNewState(in,outs,transitions,count)
+    val fin = makeNewState(in,outs,transitions,count)
 
     val wrapped:Seq[(Int, Option[SimpleTypeD], Int)] = transitions.map{case (x,td,y) => (x,Some(td),y)}
     val prefix:Seq[(Int, Option[SimpleTypeD], Int)] = (ini, None, in) +: outs.map(f => (f, None, fin))
@@ -158,9 +168,12 @@ object Thompson {
   // whether the transitions are already locally complete, an addition transition
   // is added with is the complement of the existing transitions.  This may be
   // empty but if it is empty, .inhabited returns None (dont-know).
-  def complete(in:Int, clean:Seq[(Int,SimpleTypeD,Int)]):Seq[(Int,SimpleTypeD,Int)] = {
+  def complete(in:Int,
+               outs:Seq[Int],
+               clean:Seq[(Int,SimpleTypeD,Int)]
+              ):Seq[(Int,SimpleTypeD,Int)] = {
     val allStates = findAllStates(clean)
-    lazy val sink = makeNewState(allStates)
+    lazy val sink = makeNewState(in,outs,clean,count)
     val grouped = clean.groupBy(_._1)
 
     val completingTransitions = allStates.flatMap{ q =>
@@ -261,8 +274,7 @@ object Thompson {
                    outs:Seq[Int],
                    transitions:Seq[(Int,SimpleTypeD,Int)]
                   ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
-    val allStates = findAllStates(transitions)
-    val proxy = makeNewState(allStates)
+    val proxy = makeNewState(in, outs, transitions,count)
     val augmentedTransitions = transitions ++ outs.map(q => (q,STop,proxy))
     val grouped = augmentedTransitions.groupMap(_._3){case (x,y,_) => (y,x)}
     // we now compute the coaccessible transitions, but each transition is reversed (z,td,x)
