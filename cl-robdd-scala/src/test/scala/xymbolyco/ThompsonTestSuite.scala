@@ -125,12 +125,15 @@ class ThompsonTestSuite  extends AnyFunSuite {
     val completed = complete(0,
                              Seq((0,ti,1),
                                  (0,ts,2)))
+    // a new state (Int) has been added, but we don't which integer.
+    //   we have to figure out which one it is
+    val q = findAllStates(completed).diff(Set(0,1,2)).head
     assert(completed.toSet == Set((0,ti,1),
                                   (0,ts,2),
-                                  (0,SNot(SOr(ti,ts)),3),
-                                  (1,STop,3),
-                                  (2,STop,3),
-                                  (3,STop,3)))
+                                  (0,SNot(SOr(ti,ts)),q),
+                                  (1,STop,q),
+                                  (2,STop,q),
+                                  (q,STop,q)))
   }
 
   test("determinize 1"){
@@ -396,5 +399,31 @@ class ThompsonTestSuite  extends AnyFunSuite {
     assert(simulate(Seq(12, 13, 14),
                     42, in, outs,
                     transitions).isEmpty)
+  }
+  test("accessible"){
+    val (in,outs,transitions) = accessible(0,Seq(97,98,99),
+                                           Seq((0,STop,1),
+                                               (1,STop,97),
+                                               (1,STop,98),
+                                               (2,STop,99)))
+    assert(in == 0)
+    assert(outs.toSet == Set(97,98))
+    assert(transitions.toSet == Set((0,STop,1),
+                                    (1,STop,97),
+                                    (1,STop,98),
+                                    ))
+  }
+  test("coaccessible"){
+    val (in,outs,transitions) = coaccessible(0,Seq(97,98),
+                                           Seq((0,STop,1),
+                                               (1,STop,97),
+                                               (1,STop,98),
+                                               (1,STop,2)))
+    assert(in == 0)
+    assert(outs.toSet == Set(97,98))
+    assert(transitions.toSet == Set((0,STop,1),
+                                    (1,STop,97),
+                                    (1,STop,98),
+                                    ))
   }
 }

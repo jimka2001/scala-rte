@@ -245,12 +245,33 @@ object Thompson {
   }
 
   // remove non-accessible transitions, and non-accessible final states
-  def accessible[V](in:V, outs:Seq[V], transitions:Seq[(V,SimpleTypeD,V)]):(V,Seq[V],Seq[(V,SimpleTypeD,V)]) = {
+  def accessible(in:Int, outs:Seq[Int], transitions:Seq[(Int,SimpleTypeD,Int)]):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
     val grouped = transitions.groupMap(_._1){case (_,y,z) => (y,z)}
-    val (accessibleOuts,accessibleTransitions) = traceTransitionGraph[V](in,
+    val (accessibleOuts,accessibleTransitions) = traceTransitionGraph[Int](in,
                                                                          q => grouped.getOrElse(q,Seq()),
                                                                          q => outs.contains(q))
-    (in,accessibleOuts, accessibleTransitions)
+    // return preserving order in input sequences
+    (in,accessibleOuts,accessibleTransitions)
+  }
+
+  def coaccessible(in:Int, outs:Seq[Int], transitions:Seq[(Int,SimpleTypeD,Int)]):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
+    val allStates = findAllStates(transitions)
+    val proxy = makeNewState(allStates)
+    val augmentedTransitions = transitions ++ outs.map(q => (q,STop,proxy))
+    val grouped = augmentedTransitions.groupMap(_._3){case (x,y,_) => (y,x)}
+    // we now compute the coaccessible transitions, but each transition is reversed (z,td,x)
+    val (coaccessibleOuts,reversedTransitions) = traceTransitionGraph[Int](proxy,
+                                                                         q => grouped.getOrElse(q,Seq()),
+                                                                         q => q == in)
+    val coaccessibleTransitions = for{(y,td,x) <- reversedTransitions
+                                      if y != proxy } yield (x,td,y)
+    // return preserving order in input sequences
+    (in,outs,coaccessibleTransitions)
+  }
+
+  def trim(in:Int, finals:Seq[Int], transitions:Seq[(Int,SimpleTypeD,Int)]):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
+    val (aIn, aFinals, aTransitions) = accessible(in,finals,transitions)
+    coaccessible(aIn,aFinals,aTransitions)
   }
 
   // Given a description of a non-deterministic FA, with epsilon transitions
@@ -322,7 +343,7 @@ object Thompson {
 
   // Given a sequence of transitions, compute and return the set
   // of states mentioned therein.
-  def findAllStates[T](transitions:Seq[(Int,T,Int)]):Set[Int]={
+  def findAllStates[V,L](transitions:Seq[(V,L,V)]):Set[V]={
     (for {(x, _, y) <- transitions
           z <- Seq(x, y)} yield z).toSet
   }
@@ -332,7 +353,8 @@ object Thompson {
   // epsilon-closure of every state.  Then advancing transitions (x,td,y) forward
   // according to (x,td,z) where z in in the epsilon-closure of z.
   // Then removing all epsilon transitions.
-  // We also filter away transitions (x,td,y) where x is non-accessible.
+  // We also trim away transitions (x,td,y) such that all remaining transitions
+  // are both accessible and coaccessible.
   def removeEpsilonTransitions(in: Int,
                                out: Int,
                                transitions: Seq[(Int, Option[SimpleTypeD], Int)]
@@ -366,7 +388,7 @@ object Thompson {
                       if remainingStates.contains(q) || q == in
                       if closure.contains(out)
                       } yield q
-    accessible(in,finals,updatedTransitions)
+    trim(in,finals,updatedTransitions)
   }
 
   // Given a sequence and an Rte,
