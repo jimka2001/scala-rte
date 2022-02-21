@@ -152,8 +152,8 @@ object Thompson {
     confluxify(in3,inverted,determinized)
   }
 
-  // Transform a sequence of transform (either deterministic or otherwise)
-  // into a set of completed transforms.  I.e., the union of the types labeling
+  // Transform a sequence of transitions (either deterministic or otherwise)
+  // into a set of completed transitions.  I.e., the union of the types labeling
   // any arbitrary transition is STop.  In the case when it cannot be determined
   // whether the transitions are already locally complete, an addition transition
   // is added with is the complement of the existing transitions.  This may be
