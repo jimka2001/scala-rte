@@ -156,10 +156,10 @@ object Thompson {
   // swapping final with non-final states, and confluxifying the result,
   // thus creating an epsilon-NFA with a single input and single output.
   def constructTransitionsNot(rte: Rte): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
-    val (in3,outs3, determinized) = constructDeterminizedTransitions(rte)
-    val inverted = invertFinals(outs3, determinized)
+    val (in,outs, determinized) = constructDeterminizedTransitions(rte)
+    val inverted = invertFinals(outs, determinized)
 
-    confluxify(in3,inverted,determinized)
+    confluxify(in,inverted,determinized)
   }
 
   // Transform a sequence of transitions (either deterministic or otherwise)
