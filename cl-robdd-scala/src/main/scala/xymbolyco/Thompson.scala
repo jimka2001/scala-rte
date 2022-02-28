@@ -165,7 +165,7 @@ object Thompson {
   // Transform a sequence of transitions (either deterministic or otherwise)
   // into a set of completed transitions.  I.e., the union of the types labeling
   // any arbitrary transition is STop.  In the case when it cannot be determined
-  // whether the transitions are already locally complete, an addition transition
+  // whether the transitions are already locally complete, an additional transition
   // is added with is the complement of the existing transitions.  This may be
   // empty but if it is empty, .inhabited returns None (dont-know).
   def complete(in:Int,
