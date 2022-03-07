@@ -221,7 +221,8 @@ object Thompson {
                                                (a:Boolean,b:Boolean) => a && b)
     val (renumIn, renumOuts, renumTransitions) = renumberTransitions(sxpIn,
                                                                      sxpOuts,
-                                                                     sxpTransitions)
+                                                                     sxpTransitions,
+                                                                     count)
     confluxify(renumIn, renumOuts, renumTransitions)
   }
 
@@ -344,7 +345,7 @@ object Thompson {
     // we now have transitions which map Set[Int] to Set[Int]
     //   where each state (Set[Int]) represents 1 state.  We must
     //   now replace each Set[Int] with a corresponding Int.
-    renumberTransitions(inX,expandedFinals,expandedTransitions)
+    renumberTransitions(inX,expandedFinals,expandedTransitions,count)
   }
 
   // We have transitions in some form other than DFA_TRANSITION, and we
@@ -354,6 +355,7 @@ object Thompson {
   def renumberTransitions[T](in:T,
                              outs:Seq[T],
                              transitions:Seq[(T,SimpleTypeD,T)],
+                             count: ()=>Int,
                             ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
     val mapping:Map[T,Int] = (
       Seq(in) ++ outs ++ transitions.flatMap{ case (xx,_,yy) => List(xx,yy)})
@@ -477,7 +479,8 @@ object Thompson {
   // given an Rte, using the Thompson construction algorithm which has been
   // extended to handle Not and And.
   def constructThompsonDfa[E](rte:Rte, exitValue:E):Dfa[Any,SimpleTypeD,E] = {
-    val (in, outs, determinized) = constructDeterminizedTransitions(rte)
+    val (in0, outs0, determinized0) = constructDeterminizedTransitions(rte)
+    val (in, outs, determinized) = renumberTransitions(in0, outs0, determinized0, makeCounter(0,1))
     val fmap = outs.map{i => i -> exitValue}.toMap
 
     new Dfa(Qids = findAllStates(determinized)+in,
