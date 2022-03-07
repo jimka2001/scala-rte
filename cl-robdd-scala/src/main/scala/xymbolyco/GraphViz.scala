@@ -27,12 +27,14 @@ object GraphViz {
 
   import java.io.{File, OutputStream}
 
-  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbrev:Boolean=false): String = {
-    val png = dfaToPng(dfa, title, abbrev=abbrev)
+  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbrev:Boolean=false,
+                        label:Option[String]=None): String = {
+    val png = dfaToPng(dfa, title, abbrev=abbrev,label=label)
     openGraphicalFile(png)
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbrev:Boolean): String = {
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbrev:Boolean,
+                          label:Option[String]=None): String = {
     val prefix = if (title == "")
       "dfa"
     else
@@ -43,8 +45,11 @@ object GraphViz {
     val dotPath = dot.getAbsolutePath
     val alt = File.createTempFile(prefix+"-", ".plain")
     val altPath = alt.getAbsolutePath
-    dfaToPng(dfa, dotPath, title, abbrev=abbrev)
-
+    val longTitle:String = label match {
+      case None => title
+      case Some(lab) => s"$title\\l-- $lab"
+    }
+    dfaToPng(dfa, dotPath, longTitle, abbrev=abbrev)
     locally {
       import sys.process._
       Seq("dot", "-Tplain", dotPath, "-o", altPath).! // write file containing coordinates
