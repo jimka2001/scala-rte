@@ -98,6 +98,10 @@ object Thompson {
         // If there are more than two arguments, we rewrite as follows
         //  Or(a,b,c,d,e,f,...) -> Or(a,Or(b,d,e,f,...))
         //  Now Or has two arguments.
+        // TODO, here we are grouping 1 way.  This decision is arbitrary.
+        //    We could very well group different ways  E.g., Or(Or(a,b),Or(c,d),Or(e,f),g)
+        //    We need to investigate whether a smarter grouping has an effect on
+        //    the size (or other characteristics) of the automaton being constructed.
         constructTransitions(Or(rtes.head,
                                  createOr(rtes.tail)))
 
