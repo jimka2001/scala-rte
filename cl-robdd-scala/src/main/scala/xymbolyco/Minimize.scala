@@ -207,7 +207,7 @@ object Minimize {
 
       val edgeSeq = edges.toSeq
       assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
-             s"duplicate transitions found in $edgeSeq")
+             s"duplicate transitions found in " + edgeSeq.map(_.toString).mkString(": ","\n: ",""))
       edgeSeq.map{tr => (tr._1,tr._2)}
     }
     val (vertices,edges) = traceGraph[(Int,Int),L]((dfa1.q0id,dfa2.q0id),

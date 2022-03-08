@@ -24,6 +24,7 @@ package xymbolyco
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import rte._
+import xymbolyco.Minimize.minimize
 import xymbolyco.Thompson._
 
 
