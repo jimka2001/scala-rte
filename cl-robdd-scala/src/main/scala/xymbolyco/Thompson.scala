@@ -207,7 +207,7 @@ object Thompson {
 
   // Return the set of states which are not final states.
   def invertFinals(outs:Seq[Int], completed:Seq[(Int,SimpleTypeD,Int)]):Seq[Int] = {
-    findAllStates(completed).filter(x => ! outs.contains(x)).toSeq
+    findAllStates(completed).filter(q => ! outs.contains(q)).toSeq
   }
 
   def constructTransitionsAnd(rte1:Rte,rte2:Rte): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
@@ -267,7 +267,7 @@ object Thompson {
                  outs:Seq[Int],
                  transitions:Seq[(Int,SimpleTypeD,Int)]
                 ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
-    val grouped = transitions.groupMap(_._1){case (_,y,z) => (y,z)}
+    val grouped = transitions.groupMap(_._1){case (_,td,y) => (td,y)}
     val (accessibleOuts,accessibleTransitions) = traceTransitionGraph[Int](in,
                                                                          q => grouped.getOrElse(q,Seq()),
                                                                          q => outs.contains(q))
@@ -280,7 +280,7 @@ object Thompson {
                   ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
     val proxy = makeNewState(in, outs, transitions,count)
     val augmentedTransitions = transitions ++ outs.map(q => (q,STop,proxy))
-    val grouped = augmentedTransitions.groupMap(_._3){case (x,tr,_) => (tr,x)}
+    val grouped = augmentedTransitions.groupMap(_._3){case (x,td,_) => (td,x)}
     // we now compute the coaccessible transitions, but each transition is reversed (z,td,x)
     val (coaccessibleOuts,reversedTransitions) = traceTransitionGraph[Int](proxy,
                                                                          q => grouped.getOrElse(q,Seq()),
