@@ -59,6 +59,33 @@ object Thompson {
           } yield (x, label, qs(y)))
   }
 
+  def constructVarArgsTransitions(operands:Seq[Rte],
+                                  id:Rte,
+                                  binOp:(Rte,Rte)=>Rte,
+                                  varArgsOp:Seq[Rte]=>Rte,
+                                  continuation:(Rte,Rte)=>(Int,Int,Seq[(Int,Option[SimpleTypeD],Int)])
+                                 ): (Int,Int,Seq[(Int,Option[SimpleTypeD],Int)]) = {
+    operands match {
+      case Seq() => constructTransitions(id)
+      case Seq(r) => constructTransitions(r)
+      case Seq(rte1, rte2) => continuation(rte1, rte2)
+      // If there are more than two arguments, we rewrite as follows
+      //  Or(a,b,c,d,e,f,...) -> Or(a,Or(b,d,e,f,...))
+      //  Now Or has two arguments.
+      // TODO, here we are grouping 1 way.  This decision is arbitrary.
+      //    We could very well group different ways  E.g., Or(Or(a,b),Or(c,d),Or(e,f),g)
+      //    We need to investigate whether a smarter grouping has an effect on
+      //    the size (or other characteristics) of the automaton being constructed.
+      case _ if operands.size % 2 == 0 =>
+        constructTransitions(varArgsOp(operands.grouped(2).map {
+          case Seq(x, y) => binOp(x, y)
+          case _ => sys.error("uneven size")
+        }.toSeq))
+      case _ => constructTransitions(binOp(operands.head,
+                                           varArgsOp(operands.tail)))
+    }
+  }
+
   // Construct a sequence of transitions specifying an epsilon-nondeterministic-finite-automaton.
   // Also return the initial and final state.
   def constructTransitions(rte: Rte): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
@@ -66,11 +93,11 @@ object Thompson {
     lazy val out = count()
     rte match {
       case EmptyWord =>
-        (in, out, Seq((in,None,out)))
+        (in, out, Seq((in, None, out)))
       case EmptySet =>
         (in, out, Seq())
       case Sigma =>
-        (in, out, Seq((in,Some(STop),out)))
+        (in, out, Seq((in, Some(STop), out)))
       case Singleton(td) =>
         (in, out, Seq((in, Some(td), out)))
       case Star(rte) =>
@@ -82,56 +109,51 @@ object Thompson {
                       (outInner, None, inInner)))
       // Handle Or(...)
       // Or might have 0 or more rts, we need to handle 4 cases.
-      case Or(Seq()) => constructTransitions(EmptySet)
-      case Or(Seq(rte)) => constructTransitions(rte)
-      case Or(Seq(rte1,rte2)) =>
-
-        val (or1In, or1Out, transitions1) = constructTransitions(rte1)
-        val (or2In, or2Out, transitions2) = constructTransitions(rte2)
-        (in, out, transitions1 ++
-                  transitions2 ++
-                  Seq((in, None, or1In),
-                      (in, None, or2In),
-                      (or1Out, None, out),
-                      (or2Out, None, out)))
       case Or(rtes) =>
-        // If there are more than two arguments, we rewrite as follows
-        //  Or(a,b,c,d,e,f,...) -> Or(a,Or(b,d,e,f,...))
-        //  Now Or has two arguments.
-        // TODO, here we are grouping 1 way.  This decision is arbitrary.
-        //    We could very well group different ways  E.g., Or(Or(a,b),Or(c,d),Or(e,f),g)
-        //    We need to investigate whether a smarter grouping has an effect on
-        //    the size (or other characteristics) of the automaton being constructed.
-        constructTransitions(Or(rtes.head,
-                                 createOr(rtes.tail)))
+        constructVarArgsTransitions(rtes,
+                                    EmptySet,
+                                    (rte1: Rte, rte2: Rte) => Or(rte1, rte2),
+                                    createOr,
+                                    (rte1: Rte, rte2: Rte) => {
+                                      val (or1In, or1Out, transitions1) = constructTransitions(rte1)
+                                      val (or2In, or2Out, transitions2) = constructTransitions(rte2)
+                                      (in, out, transitions1 ++
+                                                transitions2 ++
+                                                Seq((in, None, or1In),
+                                                    (in, None, or2In),
+                                                    (or1Out, None, out),
+                                                    (or2Out, None, out)))
+                                    }
+                                    )
 
       // Handle Cat(...)
       // Cat might have 0 or more rts, we need to handle 4 cases.
-      case Cat(Seq()) => constructTransitions(EmptyWord)
-      case Cat(Seq(rte)) => constructTransitions(rte)
-      case Cat(Seq(rte1, rte2)) =>
-        val (cat1In, cat1Out, transitions1) = constructTransitions(rte1)
-        val (cat2In, cat2Out, transitions2) = constructTransitions(rte2)
-        (cat1In, cat2Out, transitions1 ++
-                          transitions2 ++
-                          Seq((cat1Out, None, cat2In)))
       case Cat(rtes) =>
-        // If there are more than two arguments, we rewrite as follows
-        //  Cat(a,b,c,d,e,f,...) -> Cat(a,Cat(b,d,e,f,...))
-        //  Now Cat has two arguments.
-        constructTransitions(Cat(rtes.head,
-                                 createCat(rtes.tail)))
+        constructVarArgsTransitions(rtes,
+                                    EmptyWord,
+                                    (rte1: Rte, rte2: Rte) => Cat(rte1, rte2),
+                                    createCat,
+                                    (rte1: Rte, rte2: Rte) => {
+                                      val (cat1In, cat1Out, transitions1) = constructTransitions(rte1)
+                                      val (cat2In, cat2Out, transitions2) = constructTransitions(rte2)
+                                      (cat1In, cat2Out, transitions1 ++
+                                                        transitions2 ++
+                                                        Seq((cat1Out, None, cat2In)))
+                                    }
+                                    )
+
       // Handle And(...)
       // And might have 0 or more rts, we need to handle 4 cases.
-      case And(Seq()) => constructTransitions(Star(Sigma))
-      case And(Seq(rte)) => constructTransitions(rte)
-      case And(Seq(rte1,rte2)) => constructTransitionsAnd(rte1,rte2)
       case And(rtes) =>
-        // If there are more than two arguments, we rewrite as follows
-        //  And(a,b,c,d,e,f,...) -> And(a,And(b,d,e,f,...))
-        //  Now And has two arguments.
-        constructTransitions(And(rtes.head,
-                                 createAnd(rtes.tail)))
+        constructVarArgsTransitions(rtes,
+                                    Star(Sigma),
+                                    (rte1: Rte, rte2: Rte) => And(rte1, rte2),
+                                    createAnd,
+                                    (rte1: Rte, rte2: Rte) => {
+                                      constructTransitionsAnd(rte1, rte2)
+                                    }
+                                    )
+
       // Handle Not(rte)
       case Not(rte) => constructTransitionsNot(rte)
     }
