@@ -184,7 +184,7 @@ object Thompson {
       grouped.get(q) match {
         // for states with no exiting transitions
         case None => Some((q,STop,sink))
-        // for states withs ome exiting transitions, find the complement of their union
+        // for states with some exiting transitions, find the complement of their union
         case Some(transitions) =>
           val tds = transitions.map(_._2)
           val remaining = SNot(SOr.createOr(tds))
