@@ -193,7 +193,7 @@ object Thompson {
           if (remaining.inhabited.contains(false))
             None
           else
-            Some(q,remaining,sink)
+            Some((q,remaining,sink))
       }
     }
     if (clean.isEmpty)
