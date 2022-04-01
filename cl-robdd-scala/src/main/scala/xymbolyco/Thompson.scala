@@ -280,7 +280,7 @@ object Thompson {
                   ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
     val proxy = makeNewState(in, outs, transitions,count)
     val augmentedTransitions = transitions ++ outs.map(q => (q,STop,proxy))
-    val grouped = augmentedTransitions.groupMap(_._3){case (x,y,_) => (y,x)}
+    val grouped = augmentedTransitions.groupMap(_._3){case (x,tr,_) => (tr,x)}
     // we now compute the coaccessible transitions, but each transition is reversed (z,td,x)
     val (coaccessibleOuts,reversedTransitions) = traceTransitionGraph[Int](proxy,
                                                                          q => grouped.getOrElse(q,Seq()),
