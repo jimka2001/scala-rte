@@ -106,28 +106,28 @@ object Types {
       if (tds.isEmpty)
         decomposition
       else {
-        val td = tds.head // take any element from the given type set, does not matter which
-        val n = SNot(td)
+        val u = tds.head // take any element from the given type set, does not matter which
+        val n = SNot(u)
         val nc = n.canonicalize(Some(NormalForm.Dnf))
 
         def f(triple: (S,List[S],List[S])): Seq[(S,List[S],List[S])] = {
           val (td1,factors,disjoints) = triple
-          lazy val a = SAnd(td, td1).canonicalize(Some(NormalForm.Dnf))
+          lazy val a = SAnd(u, td1).canonicalize(Some(NormalForm.Dnf))
           lazy val b = SAnd(nc, td1).canonicalize(Some(NormalForm.Dnf))
-          if (td.disjoint(td1).contains(true))
-            Seq((td1,n::factors,td::disjoints))
+          if (u.disjoint(td1).contains(true))
+            Seq((td1,n::factors,u::disjoints))
           else if (n.disjoint(td1).contains(true))
-            Seq((td1, td::factors, n::disjoints))
+            Seq((td1, u::factors, n::disjoints))
           else if (a.inhabited.contains(false))
-            Seq((td1, n::factors, td::disjoints))
+            Seq((td1, n::factors, u::disjoints))
           else if (b.inhabited.contains(false))
-            Seq((td1, td::factors, n::disjoints))
+            Seq((td1, u::factors, n::disjoints))
           else
-            Seq((a, td::factors, n::disjoints),
-                (b, n::factors, td::disjoints))
+            Seq((a, u::factors, n::disjoints),
+                (b, n::factors, u::disjoints))
         }
 
-        recur(decomposition.flatMap(f), tds - td)
+        recur(decomposition.flatMap(f), tds - u)
       }
     }
 
