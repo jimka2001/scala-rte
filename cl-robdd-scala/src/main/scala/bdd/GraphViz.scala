@@ -45,7 +45,7 @@ object GraphViz {
     val pngPath = png.getAbsolutePath
     val dot = File.createTempFile("bdd", ".dot")
     val dotPath = dot.getAbsolutePath
-    bddToPng(bdd,dotPath, drawFalseLeaf, title,labelToString)
+    bddToPng(bdd, dotPath, drawFalseLeaf, title,labelToString)
 
     locally {
       import sys.process._
