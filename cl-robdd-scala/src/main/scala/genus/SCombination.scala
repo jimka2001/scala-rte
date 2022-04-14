@@ -326,6 +326,54 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     }
     create(newargs)
   }
+
+  def conversion17():SimpleTypeD = {
+
+    // A !B + A B --> A
+    // (A + !B)(A + B) -> A
+    def f(td:SCombination):SimpleTypeD = {
+      if (!dualCombination(td))
+        td
+      else {
+        //# e.g., SOr(SAnd(a,b,c...),...,SAnd(a,b,!c...))
+        //# -->   SOr(SAnd(a,b),...SAnd(a,b,!c))
+        val others = tds.collect {
+          case c: SCombination if c != td && dualCombination(c) => c
+        }
+
+        def except_for(c: SimpleTypeD, tds1: Seq[SimpleTypeD], tds2: Seq[SimpleTypeD]): Boolean = {
+          if (tds1.size != tds2.size)
+            false
+          else {
+            val shorter = tds1.filter(x => x != c)
+            c match {
+              case SNot(s) => shorter == tds2.filter(x=> x != s)
+              case _ =>
+                val nc = SNot(c)
+                shorter == tds2.filter(x => x != nc)
+            }
+          }
+        }
+
+        // is there an element, c, of the arglist of td and an x in others
+        // such that x.tds has the same elements as td.tds
+        // except that c is in td.tds and !c is in x.tds
+        // or          !c is in td.tds and c is in x.tds
+        // if so remove c or !c from td.tds
+        td.tds.find(c =>
+                      others.exists(x => except_for(c, td.tds, x.tds))
+                    ) match {
+          case None => td
+          case Some(negated) => createDual(td.tds.filter(x => x != negated))
+        }
+      }
+    }
+    create(tds.map {
+      case c: SCombination => f(c)
+      case td => td
+    })
+  }
+
   def conversionD1():SimpleTypeD
 
   def conversionD3():SimpleTypeD
@@ -357,6 +405,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       "14" -> conversion14,
       "15" -> conversion15,
       "16" -> conversion16,
+      "17" -> conversion17,
       "D1" -> conversionD1,
       "D3" -> conversionD3,
       "98" -> conversion98,

@@ -652,6 +652,37 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SAnd(SInt, SNot(SMember(1, 2, 3, 4, "a", "b"))).conversion16()
              == SAnd(SInt, SNot(SMember(1, 2, 3, 4))))
   }
+
+  test("combo conversion17"){
+    val odd = SSatisfies((a:Any) => a match {
+      case a:Int => a%2 == 1
+      case _ => false
+    }, "odd")
+    val even = SSatisfies((a:Any) => a match {
+      case a:Int => a%2 == 0
+      case _ => false
+    }, "even")
+    val t0 = SOr(SAnd(SNot(odd), even), SAnd(even,odd))
+    assert( t0.conversion17() == SOr(even, even))
+    assert( t0.canonicalize() == even, s"canonicalize = ${t0.canonicalize()}")
+
+    val t1 = SAnd(SOr(SNot(odd),even), SOr(even,odd))
+    assert( t1.conversion17() == SAnd(even, even))
+    assert( t1.canonicalize() == even)
+    val a = SEql("a")
+    val b = SEql("b")
+    val c = SEql("c")
+    val d = SEql("d")
+    assert( SOr(SAnd(a,b,c),SAnd(a,SNot(b),c)).conversion17() == SOr(SAnd(a,c),SAnd(a,c)))
+    assert( SAnd(SOr(a,b,c),SOr(a,SNot(b),c)).conversion17() == SAnd(SOr(a,c),SOr(a,c)))
+
+    assert( SOr(SAnd(a, b, c, d), SAnd(a, SNot(b), c, d)).conversion17() == SOr(SAnd(a, c, d), SAnd(a, c, d)))
+    assert( SAnd(SOr(a, b, c, d), SOr(a, SNot(b), c, d)).conversion17() == SAnd(SOr(a, c, d), SOr(a, c, d)))
+
+    assert( SOr(SAnd(a, b, c, d), SAnd(a, SNot(b), c, SNot(d))).conversion17() == SOr(SAnd(a, b, c, d), SAnd(a, SNot(b), c, SNot(d))))
+    assert( SAnd(SOr(a, b, c, d), SOr(a, SNot(b), c, SNot(d))).conversion17() == SAnd(SOr(a, b, c, d), SOr(a, SNot(b), c, SNot(d))))
+  }
+
   test("combo conversionC12"){
 
     trait TraitA
