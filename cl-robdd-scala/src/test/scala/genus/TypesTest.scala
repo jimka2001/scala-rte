@@ -132,8 +132,8 @@ class TypesTest extends AnyFunSuite {
                  == data.reverse.sortWith(cmpTypeDesignators))
       }
     }
-    trait Trait1
-    trait Trait2
+    //trait Trait1
+    //trait Trait2
     assert(! eql(0,0.0))
     for {d <- 1 to 3
          n <- 1 to 100
@@ -173,12 +173,34 @@ class TypesTest extends AnyFunSuite {
          t3 = randomType(d)
          } triangle_inequality(t1,t2,t3)
   }
-  test("mdtd"){
+  test("mdtd") {
     // Set(String, Int?, [= -1], [= 1])
-    mdtd(Set(SAtomic(classOf[String]),
-             SInt,
-             SEql(-1),
-             SEql(1)))
+    val str = SAtomic(classOf[String])
+    val m = mdtd(Set(str,
+                     SInt,
+                     SEql(-1),
+                     SEql(1)))
+
+    val expected = Map(SAnd(str, SInt) ->
+                         (Set(SNot(SEql(1)), SNot(SEql(-1)), SInt, str, STop),
+                           Set(SEql(1), SEql(-1), SNot(SInt), SNot(str), SEmpty)),
+                       SAnd(str, SNot(SInt)) ->
+                         (Set(SNot(SEql(1)), SNot(SEql(-1)), SNot(SInt), str, STop),
+                           Set(SEql(1), SEql(-1), SInt, SNot(str), SEmpty)),
+                       SEql(-1) ->
+                         (Set(SNot(SEql(1)), SEql(-1), SInt, SNot(str), STop),
+                           Set(SEql(1), SNot(SEql(-1)), SNot(SInt), str, SEmpty)),
+                       SEql(1) ->
+                         (Set(SEql(1), SNot(SEql(-1)), SInt, SNot(str), STop),
+                           Set(SNot(SEql(1)), SEql(-1), SNot(SInt), str, SEmpty)),
+                       SAnd(SInt, SNot(str), SNot(SMember(-1, 1))) ->
+                         (Set(SNot(SEql(1)), SNot(SEql(-1)), SInt, !str, STop),
+                           Set(SEql(1), SEql(-1), SNot(SInt), str, SEmpty)),
+                       SAnd(SNot(str), SNot(SInt)) ->
+                         (Set(!SEql(1), SNot(SEql(-1)), SNot(SInt), SNot(str), STop),
+                           Set(SEql(1), SEql(-1), SInt, str, SEmpty)))
+    for {(a, e) <- m.zip(expected)} assert(a == e)
+    assert(m == expected)
   }
   test("typeEquivalent random") {
     for {_ <- 0 to 1000

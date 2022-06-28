@@ -169,9 +169,9 @@ class DerivativeTestSuite extends AnyFunSuite {
          rt = Rte.randomRte(depth)
          can = rt.canonicalize
          m = Types.mdtd(can.firstTypes)
-         (td,factors,disjoints) <- m
+         (td,(factors,disjoints)) <- m
          } {
-      can.derivative(Some(td),factors,disjoints)
+      can.derivative(Some(td),factors.toList,disjoints.toList)
     }
   }
 
@@ -188,11 +188,11 @@ class DerivativeTestSuite extends AnyFunSuite {
     //println(s"rt=$rt")
     //println(s"first types = $ft")
     Types.mdtd(ft).map {
-      case (td,factors,disjoints) =>
+      case (td,(factors,disjoints)) =>
         //println(s"td=$td")
         //println(s"  factors   = $factors")
         //println(s"  disjoints = $disjoints")
-        val deriv = rt.derivative(Some(td),factors,disjoints)
+        val deriv = rt.derivative(Some(td),factors.toList,disjoints.toList)
         //println("  rt.derivative(Some(td)) = " + deriv)
         //println("  --> " + deriv.canonicalize)
         deriv

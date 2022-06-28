@@ -348,7 +348,7 @@ object Thompson {
       //      to each type.
       //      The pair returned from step 2 is exactly what is needed by traceGraph
       val tr2 = withSetCollector[(SimpleTypeD,Int)](collect =>
-                         for { (td, factors, _) <- mdtd(tds)
+                         for { (td, (factors, _)) <- mdtd(tds)
                                q <- qs
                                trs <- grouped.get(q)
                                (_, td1, y ) <- trs

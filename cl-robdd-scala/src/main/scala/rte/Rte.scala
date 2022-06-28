@@ -130,12 +130,12 @@ abstract class Rte {
       val fts = rt.firstTypes
       val wrts = Types.mdtd(fts)
 
-      wrts.map{case (td,factors,disjoints) => (td,
+      wrts.map{case (td, (factors,disjoints)) => (td,
         // Here we call rt.derivative, but we pass along the correct-by-construction
         //   factors and disjoint types.  The Singleton:disjointDown method takes
         //   advantage of these trusted lists to easily determine whether the type
         //   in question is a subtype or a disjoint type of the type in question.
-        try rt.derivative(Some(td),factors,disjoints).canonicalize
+        try rt.derivative(Some(td),factors.toList,disjoints.toList).canonicalize
         catch {
           case e: CannotComputeDerivative =>
             throw new CannotComputeDerivatives(msg=Seq("when generating derivatives of",
@@ -150,7 +150,7 @@ abstract class Rte {
                                                firstTypes = rt.firstTypes,
                                                mdtd = Types.mdtd(rt.firstTypes)
                                                )
-        })}
+        })}.toSeq
     }
 
     traceGraph(this,edges)
@@ -405,6 +405,6 @@ class CannotComputeDerivative(val msg:String, val rte:Rte, val wrt:SimpleTypeD) 
 class CannotComputeDerivatives(val msg:String,
                                val rte:Rte,
                                val firstTypes:Set[SimpleTypeD],
-                               val mdtd:Seq[(SimpleTypeD,List[SimpleTypeD],List[SimpleTypeD])]) extends Exception(msg) {}
+                               val mdtd:Map[SimpleTypeD,(Set[SimpleTypeD],Set[SimpleTypeD])]) extends Exception(msg) {}
 
 class CannotComputeDfa(val msg:String, val rte:Rte ) extends Exception(msg){}

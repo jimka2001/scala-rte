@@ -99,10 +99,10 @@ object Types {
   // x partially overlap z.  Consequently, if some of the given type designators
   // in tds are partially overlapping, then some td in the return value is a subtype
   // of multiple type designators from tds.
-  def mdtd(tds: Set[SimpleTypeD]): Seq[(SimpleTypeD,List[SimpleTypeD],List[SimpleTypeD])] = {
+  def mdtd(tds: Set[SimpleTypeD]): Map[SimpleTypeD,(Set[SimpleTypeD],Set[SimpleTypeD])] = {
     type S = SimpleTypeD // local type def just to simplify the following type declarations
     @tailrec
-    def recur(decomposition: Seq[(S,List[S],List[S])], tds: Set[S]): Seq[(S,List[S],List[S])] = {
+    def recur(decomposition: Map[S,(Set[S],Set[S])], tds: Set[S]): Map[S,(Set[S],Set[S])] = {
       if (tds.isEmpty)
         decomposition
       else {
@@ -110,28 +110,28 @@ object Types {
         val n = SNot(u)
         val nc = n.canonicalize(Some(NormalForm.Dnf))
 
-        def f(triple: (S,List[S],List[S])): Seq[(S,List[S],List[S])] = {
-          val (td1,factors,disjoints) = triple
+        def f(pair: (S,(Set[S],Set[S]))): Map[S,(Set[S],Set[S])] = {
+          val (td1,(factors,disjoints)) = pair
           lazy val a = SAnd(u, td1).canonicalize(Some(NormalForm.Dnf))
           lazy val b = SAnd(nc, td1).canonicalize(Some(NormalForm.Dnf))
           if (u.disjoint(td1).contains(true))
-            Seq((td1,n::factors,u::disjoints))
+            Map(td1 -> (factors+n,disjoints + u))
           else if (n.disjoint(td1).contains(true))
-            Seq((td1, u::factors, n::disjoints))
+            Map(td1 -> (factors+u, disjoints+n))
           else if (a.inhabited.contains(false))
-            Seq((td1, n::factors, u::disjoints))
+            Map(td1 -> (factors + n, disjoints+u))
           else if (b.inhabited.contains(false))
-            Seq((td1, u::factors, n::disjoints))
+            Map(td1 -> (factors+u, disjoints+n))
           else
-            Seq((a, u::factors, n::disjoints),
-                (b, n::factors, u::disjoints))
+            Map(a -> (factors + u, disjoints + n),
+                b -> (factors + n, disjoints + u))
         }
 
         recur(decomposition.flatMap(f), tds - u)
       }
     }
 
-    recur(Seq((STop,List(STop),List(SEmpty))), tds - STop)
+    recur(Map(STop -> (Set(STop),Set(SEmpty))), tds - STop)
   }
 
   def compareSequence(tds1: Seq[SimpleTypeD], tds2: Seq[SimpleTypeD]): Boolean = {
