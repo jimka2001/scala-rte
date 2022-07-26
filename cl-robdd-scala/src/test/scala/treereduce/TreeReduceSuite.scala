@@ -150,6 +150,46 @@ class TreeReduceSuite extends AnyFunSuite {
       })
     }
   }
+  test("tree map reduce 1 item"){
+    import treereduce.TreeReducible._
+    // This imports the obj.treeMapReduce() syntax.
+    import treereduce.TreeReduce._
+    val sample: List[Int] = List(13)
+
+    def addInt(a: Int, b: Int): Int = a + b
+
+    def id(i: Int): Int = i
+
+    assert(sample.treeMapReduce(0)(id, addInt) == 13)
+  }
+  test("tree map reduce 2 items"){
+    import treereduce.TreeReducible._
+    // This imports the obj.treeMapReduce() syntax.
+    import treereduce.TreeReduce._
+    val sample: List[Int] = List(13,14)
+
+    def addInt(a: Int, b: Int): Int = a + b
+
+    def id(i: Int): Int = i
+
+    assert(sample.treeMapReduce(0)(id, addInt) == 27)
+  }
+
+  test("tree map reduce 166") {
+    // This imports the TreeReducible instances.
+    import treereduce.TreeReducible._
+    // This imports the obj.treeMapReduce() syntax.
+    import treereduce.TreeReduce._
+    def addInt(a: Int, b: Int): Int = a + b
+    def id(i: Int): Int = i
+
+    for {hi <- 1 to 32
+         sample = (1 to hi).toList
+         } {
+      //println("n=" + sample.size)
+      assert(sample.treeMapReduce(0)(id, addInt) == sample.sum)
+    }
+  }
 
   test("tree map reduce 1") {
     // This imports the TreeReducible instances.

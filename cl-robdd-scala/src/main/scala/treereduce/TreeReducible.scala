@@ -73,22 +73,22 @@ object TreeReduce {
         case _ => stack
       }
     }
-    // TODO performance issue, should cons (1,(car seq)) rather than (1,init)
-    // and check thus check for empty sequence
-    val stack = reducible.foldLeft(m)((1, init) :: Nil) { (stack: List[(Int, B)], ob: A) =>
+    val stack = reducible.foldLeft(m)(List[(Int,B)]()) { (stack: List[(Int, B)], ob: A) =>
       consumeStack((1, seqOp(ob)) :: stack)
     }
-    assert(stack != Nil)
-    //println(s"    treeReduce cleanup: ${stack.length}")
+
     // At this point stack is a length of pairs of type (Int,B).
     //   The Ints are increasing from left to right, but not necessarily increasing by 1.
     //   The Int at head is >= 1, and the Int in the final element is <= log_2 N were N=length(m).
-    //   So here we call reduce on a List[B] whose length <= log_2(N) << N.
-    // stack.map(_._2) has type List[B] (independent of the type of `this`),
-    // so we just need to fold those B's with combOp.  Since stack is not Nil
-    // we can use reduce rather than fold.
-    stack.map(_._2).reduce{(b1:B,b2:B) =>
-      combOp(b2,b1)}
+    //   So here we construct a List (independent of type M) whose length <= log_2(N) << N.
+    // stack.map(_._2).reverse has type List[B] (independent of the type of `this`),
+    // We must reverse here because we don't know that combOp is commutative.
+    // So we can use a recursive call to treeMapReduceIntern.
+    stack match {
+      case Nil => init
+      case (_,b)::Nil => b
+      case _ => treeMapReduceIntern(stack.map(_._2).reverse)(init)((b:B)=>b,combOp)
+    }
   }
 
   implicit class RichReducible[A, M[_]: TreeReducible](m: M[A]) {
