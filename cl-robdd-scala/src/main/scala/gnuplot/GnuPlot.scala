@@ -175,6 +175,8 @@ object GnuPlot {
           println(s"finished $outputFileName with exit code=$exitCode verbose=$verbose]")
         else if (verbose)
           println(s"finished $outputFileName]")
+        if (exitCode == 0 && view)
+          openGraphicalFile(outputFileName)
       }
   }
 }
