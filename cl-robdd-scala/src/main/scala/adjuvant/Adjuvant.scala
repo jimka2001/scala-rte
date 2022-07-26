@@ -290,6 +290,15 @@ object Adjuvant {
     fileName
   }
 
+  def makeTmpFileName(prefix:String, suffix:String):String = {
+    if (suffix != "" && suffix(0) != '.')
+      makeTmpFileName(prefix, "." + suffix)
+    else {
+      import java.io.File
+      File.createTempFile(prefix+"-", suffix).getAbsolutePath
+    }
+  }
+
   def eql(x:Any, y:Any):Boolean = {
     if (x.getClass != y.getClass)
       false

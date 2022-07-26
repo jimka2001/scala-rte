@@ -27,6 +27,8 @@
 
 package gnuplot
 
+import adjuvant.Adjuvant.makeTmpFileName
+
 object GnuPlot {
 
   val gnuPlotPath: String = List("/opt/local/bin/gnuplot", "/usr/local/bin/gnuplot").find { fName =>
@@ -37,12 +39,10 @@ object GnuPlot {
 
   def writeCsv(dataToPlot: List[(String, List[Double], List[Double])],
                xAxisLabel:String,
-               outputDirName     : String,
                outputFileBaseName: String,
                verbose: Boolean): Unit = {
-    require(outputDirName.takeRight(1) == "/")
     import java.io._
-    val csvName = s"$outputDirName$outputFileBaseName.csv"
+    val csvName = makeTmpFileName(outputFileBaseName, ".csv")
     val csv = new PrintWriter(new File(csvName))
     if (verbose)
       println(s"[writing to $csvName\n")
@@ -80,24 +80,25 @@ object GnuPlot {
               yAxisLabel        : String="",
               yLog              : Boolean=false,
               grid              : Boolean=false,
-              outputDirName     : String = "/tmp/",
+              // outputDirName     : String = "/tmp/",
               // outputFileBaseName is basename without the .pdf, .gnu, .png etc and without leading path
               outputFileBaseName: String = "curves",
               plotWith          : String = "linespoints",
               key:String = "horizontal bmargin",
-              verbose:Boolean
+              verbose:Boolean,
+              view:Boolean = false
              ): Unit = {
     // TODO verify that "lines" can be used as plotWith, not 100% sure
     require(Set("linespoints", "points", "lines").contains(plotWith))
-    assert(outputDirName.takeRight(1) == "/", s"outputDirName=$outputDirName must end with /")
 
     import java.io._
     import adjuvant.Accumulators.withOutputToString
+    import adjuvant.Adjuvant.openGraphicalFile
 
-    val gnuName = s"$outputDirName$outputFileBaseName.gnu"
+    val gnuName = makeTmpFileName(outputFileBaseName, ".gnu")
     val gnu = new PrintWriter(new File(gnuName))
 
-    writeCsv(dataToPlot,xAxisLabel,outputDirName,outputFileBaseName,verbose)
+    writeCsv(dataToPlot,xAxisLabel,outputFileBaseName,verbose)
     if (verbose)
       println(s"[writing to $gnuName\n")
     gnu.write(s"# $comment\n")
@@ -158,7 +159,7 @@ object GnuPlot {
     })
       terminals.foreach { terminal =>
         import sys.process._
-        val outputFileName = s"$outputDirName$outputFileBaseName.$terminal"
+        val outputFileName = makeTmpFileName(outputFileBaseName, terminal)
 
         if (verbose)
           println(s"[generating $outputFileName")

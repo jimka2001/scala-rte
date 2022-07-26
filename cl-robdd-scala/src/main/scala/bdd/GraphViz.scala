@@ -21,11 +21,11 @@
 
 package bdd
 
-import adjuvant.Adjuvant.openGraphicalFile
+import adjuvant.Adjuvant.{openGraphicalFile,makeTmpFileName}
 
 object GraphViz {
 
-  import java.io.{File, OutputStream}
+  import java.io.{OutputStream}
 
   def bddView(bdd: Bdd, drawFalseLeaf: Boolean, title:String="", labelToString:Int=>String): String = {
     val png = bddToPng(bdd,drawFalseLeaf,title,labelToString)
@@ -41,10 +41,8 @@ object GraphViz {
   }
 
   def bddToPng(bdd:Bdd,drawFalseLeaf: Boolean, title:String, labelToString:Int=>String): String = {
-    val png = File.createTempFile("bdd", ".png")
-    val pngPath = png.getAbsolutePath
-    val dot = File.createTempFile("bdd", ".dot")
-    val dotPath = dot.getAbsolutePath
+    val pngPath = makeTmpFileName("bdd", ".png")
+    val dotPath = makeTmpFileName("bdd",".dot")
     bddToPng(bdd, dotPath, drawFalseLeaf, title,labelToString)
 
     locally {
