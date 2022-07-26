@@ -85,10 +85,10 @@ object RationalFoldTest {
                                  val sum = piercedInterval.treeMapReduce(Rational(0, 1))(Rational(1, _), _ + _)
                                  assert(sum === zero)
                                })
-                               t2 = time(3, s"$r  pairMapReduce", {
-                                 val sum = pairMapReduce(piercedInterval)(Rational(0, 1), Rational(1, _), rationalAdd) //(indexedSeqPairable)
-                                 assert(sum === zero)
-                               })
+//                               t2 = time(3, s"$r  pairMapReduce", {
+//                                 val sum = pairMapReduce(piercedInterval)(Rational(0, 1), Rational(1, _), rationalAdd) //(indexedSeqPairable)
+//                                 assert(sum === zero)
+//                               })
                                t3 = time(3, s"$r           fold", {
                                  val sum = piercedInterval.map {
                                    Rational(1, _)
@@ -96,14 +96,14 @@ object RationalFoldTest {
                                  assert(sum === zero)
                                })
                                _ = println()
-                               } yield (r.toDouble, t1, t2, t3)).toList.sortBy(_._1)
+                               } yield (r.toDouble, t1, t3)).toList.sortBy(_._1)
 
     val rs = rawDataForPlot.map(_._1)
     val t1s = rawDataForPlot.map(_._2)
-    val t2s = rawDataForPlot.map(_._3)
-    val t3s = rawDataForPlot.map(_._4)
+    //val t2s = rawDataForPlot.map(_._3)
+    val t3s = rawDataForPlot.map(_._3)
     val dataForPlot = List(("tree-fold", rs, t1s)
-                           , ("pair-wise-fold", rs, t2s)
+                           //, ("pair-wise-fold", rs, t2s)
                            , ("fold-left", rs, t3s))
     gnuPlot(dataForPlot)(
       title = "Fold Strategy Performance of Rational Addition" + (if (randomize) " (shuffled)" else " (sorted)"),
@@ -112,7 +112,8 @@ object RationalFoldTest {
       yAxisLabel = "Time (ms)", yLog = true,
       grid = true,
       outputFileBaseName = "rational-addition" + (if (randomize) "-random" else ""),
-      verbose = verbose)
+      verbose = verbose,
+      view = true)
   }
 
   def main(argv:Array[String]):Unit = {
