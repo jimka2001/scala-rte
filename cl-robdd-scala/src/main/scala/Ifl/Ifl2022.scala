@@ -91,6 +91,10 @@ object Ifl2022 {
   def fourColor():Unit = {
     import bdd.sampleColoring.europeTimedMapColoringTest
     europeTimedMapColoringTest(41,view=true,verbose=true)
+    // need to also make some measurements of time of 4-coloring
+    //  1. for different sized graphs
+    //  2. without instrumentation.
+    //     i.e., does the instrumentation effect the computation time.
   }
 
   def main(argv: Array[String]): Unit = {
