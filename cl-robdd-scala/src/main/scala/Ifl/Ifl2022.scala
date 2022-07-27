@@ -68,8 +68,8 @@ object Ifl2022 {
         List(("fold-left",xs,rawData.map{case (_,exact,fold,_) => abs(exact.toDouble - fold) }),
              ("tree-fold",xs,rawData.map{case (_,exact,_,tree) => abs(exact.toDouble - tree)}))
       gnuPlot(dataToPlot)(
-        title = "Fold Strategy Accuracy of Floating Point Addition",
-        comment = "Fold Strategy Accuracy of Floating Point Addition",
+        title = "Fold Strategy Error of Floating Point Addition",
+        comment = "Fold Strategy Error of Floating Point Addition",
         xAxisLabel = "Number of terms", xLog = true,
         yAxisLabel = "Error", yLog = true,
         grid = true,
@@ -83,11 +83,19 @@ object Ifl2022 {
   // rational sums
   def rationalSums():Unit = {
     // Rational sums
-    rationalFoldTest(5000, verbose = true)
+    // summing 1/n from n=-1000 to n=1000 (excluding 1/0)
+    //   in sorted order and randomized order
+    rationalFoldTest(1000, verbose = true)
+  }
+
+  def fourColor():Unit = {
+    import bdd.sampleColoring.europeTimedMapColoringTest
+    europeTimedMapColoringTest(41,view=true,verbose=true)
   }
 
   def main(argv: Array[String]): Unit = {
     rationalSums()
     floatSums()
+    fourColor()
   }
 }
