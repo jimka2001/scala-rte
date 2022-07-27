@@ -436,8 +436,8 @@ object sampleColoring {
                                                                             view=view,
                                                                             verbose=verbose)
     val colors = timedColorizeMap(numRegions, "US", "ME",
-                                  stateUniGraph, // removeStates(List("Russia"), stateUniGraph),
-                                  stateBiGraph, //removeStates(List("Russia"), stateBiGraph),
+                                  stateUniGraph,
+                                  stateBiGraph,
                                   List("MA", "VT", "NH"),
                                   verbose = false)
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions-colors"
@@ -456,9 +456,9 @@ object sampleColoring {
                            view=view,
                            verbose=verbose)
 
-    val colors = timedColorizeMap(numRegions, "europe", "Russia",
-                                  stateUniGraph, //removeStates(List("Russia"), stateUniGraph),
-                                  stateBiGraph, // removeStates(List("Russia"), stateBiGraph),
+    val colors = timedColorizeMap(numRegions, "europe", "Germany",
+                                  stateUniGraph,
+                                  stateBiGraph,
                                   List("Croatia", "Bosnia", "Serbia", "Montenegro"),
                                   colors = pallet,
                                   verbose)
