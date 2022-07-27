@@ -1,4 +1,4 @@
-package political
+package graphcolor
 
 object USAgraph extends PoliticalMap[String] {
   // this object contains connectivity information about the states in the USA.

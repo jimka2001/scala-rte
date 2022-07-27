@@ -89,7 +89,7 @@ object Ifl2022 {
   }
 
   def fourColor():Unit = {
-    import political.sampleColoring.europeTimedMapColoringTest
+    import graphcolor.sampleColoring.europeTimedMapColoringTest
     europeTimedMapColoringTest(41,view=true,verbose=true)
     // need to also make some measurements of time of 4-coloring
     //  1. for different sized graphs

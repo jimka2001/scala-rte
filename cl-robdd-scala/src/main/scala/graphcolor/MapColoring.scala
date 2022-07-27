@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package political
+package graphcolor
 
 import bdd.{Bdd, Xor, BddTrue, BddFalse, And, Or, Assignment}
 
@@ -103,7 +103,7 @@ object MapColoring {
                     verbose: Boolean): (Map[V, (Int, Int)], Bdd) = {
 
     require(differentColor.length <= 4) // states whose colors are different to reduce the size of the BDD
-    import political.GenericGraph.orderStates
+    import graphcolor.GenericGraph.orderStates
 
     val states = differentColor ++ orderStates(seed, biGraph)
       .filter { st => !differentColor.contains(st) }
@@ -436,7 +436,7 @@ object MapColoring {
 
 object sampleColoring {
   import MapColoring._
-  import political.GenericGraph._
+  import graphcolor.GenericGraph._
   def usTimedMapColoringTest(numRegions:Int, view:Boolean, verbose:Boolean): Int = {
     import USAgraph._
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols,

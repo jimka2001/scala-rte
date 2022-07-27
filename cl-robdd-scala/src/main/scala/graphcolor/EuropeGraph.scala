@@ -1,4 +1,4 @@
-package political
+package graphcolor
 
 object EuropeGraph extends PoliticalMap[String] {
   val allStates: Set[String] = Set("Albania",
@@ -174,7 +174,7 @@ object EuropeGraph extends PoliticalMap[String] {
   assert(allStates.forall { state => stateBiGraph.contains(state) })
 
   def main(argv: Array[String]): Unit = {
-    import political.GenericGraph._
+    import graphcolor.GenericGraph._
     println("-------------------")
     for {(st, states) <- stateBiGraph}
       println(s"$st -> $states")
