@@ -48,14 +48,14 @@ class MapColoringTestSuite extends AnyFunSuite {
                                                              "d" -> Set("c", "b"))
 
       val colors = Array("red", "green", "blue", "yellow")
-      val (colorization, bdd) = graphToBdd(nodes,
-                                           uniDirectionalGraph,
-                                           biDirectionalGraph,
-                                           4,
+      val (colorization, bdd) = politicalGraphToBdd(nodes,
+                                                    uniDirectionalGraph,
+                                                    biDirectionalGraph,
+                                                    4,
                                            (_,_)=>(),
-                                           List(),
-                                           1,
-                                           verbose=false)
+                                                    List(),
+                                                    1,
+                                                    verbose=false)
       bdd.visitSatisfyingAssignments { (assignTrue,assignFalse) =>
         val colorMapping: Map[String, String] = assignColors(colorization, assignTrue,assignFalse, colors)
         colors.foreach { color =>
@@ -89,14 +89,14 @@ class MapColoringTestSuite extends AnyFunSuite {
     import adjuvant.Accumulators._
     Bdd.withNewBddHash {
       //val (states, subGraph) = findSubGraph("AL", numNodes)
-      val (colorization,bdd) = graphToBdd(List("CA"),
-                                           USAgraph.stateUniGraph,
-                                           USAgraph.stateBiGraph,
-                                           numNodes,
+      val (colorization,bdd) = politicalGraphToBdd(List("CA"),
+                                                   USAgraph.stateUniGraph,
+                                                   USAgraph.stateBiGraph,
+                                                   numNodes,
                                           (n,size)=> if (verbose) println(s"plot $n ${size()}"),
-                                           List("AZ","CO","NM","UT"),
-                                           1,
-                                           verbose=verbose)
+                                                   List("AZ","CO","NM","UT"),
+                                                   1,
+                                                   verbose=verbose)
 
       if (verbose) println(s"colors=$colorization")
       val countSolutions =

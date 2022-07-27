@@ -93,14 +93,14 @@ object MapColoring {
     recur(Set(states.head), List()) // just start with any one, doesn't matter for now
   }
 
-  def graphToBdd[V](seed: List[V],
-                    uniGraph: Map[V, Set[V]],
-                    biGraph: Map[V, Set[V]],
-                    numNodes: Int,
-                    consume: (Double, () => Double) => Unit,
-                    differentColor: List[V],
-                    fold: Int,
-                    verbose: Boolean): (Map[V, (Int, Int)], Bdd) = {
+  def politicalGraphToBdd[V](seed: List[V],
+                             uniGraph: Map[V, Set[V]],
+                             biGraph: Map[V, Set[V]],
+                             numNodes: Int,
+                             consume: (Double, () => Double) => Unit,
+                             differentColor: List[V],
+                             fold: Int,
+                             verbose: Boolean): (Map[V, (Int, Int)], Bdd) = {
 
     require(differentColor.length <= 4) // states whose colors are different to reduce the size of the BDD
     import graphcolor.GenericGraph.orderStates
@@ -249,7 +249,7 @@ object MapColoring {
         }
     }
   }
-  
+
   def colorizeMap[V](givenBiGraph: Map[V, Set[V]],
                      palette: Array[String] = Array("red", "green", "orange", "yellow"),
                     ): Map[V, String] = {
@@ -259,11 +259,11 @@ object MapColoring {
         Map()
       else
         Bdd.withNewBddHash {
-          val (colorization, bdd) = graphToBdd(List(biGraph.head._1), uniGraph, biGraph, biGraph.size,
+          val (colorization, bdd) = politicalGraphToBdd(List(biGraph.head._1), uniGraph, biGraph, biGraph.size,
                                                (_, _) => (),
-                                               Nil,
-                                               fold = 0,
-                                               verbose = false)
+                                                        Nil,
+                                                        fold = 0,
+                                                        verbose = false)
           bdd.findSatisfyingAssignment(determinist=false) match {
             case None => Map[V, String]()
             case Some((assignTrue, assignFalse)) =>
@@ -301,13 +301,13 @@ object MapColoring {
         // the size is exponential in complexity given that the size of the Bdd grows
         // exponentially.
         val time0 = nanoTime.toDouble
-        val bdd = graphToBdd(List(start), uniGraph, biGraph, numNodes,
+        val bdd = politicalGraphToBdd(List(start), uniGraph, biGraph, numNodes,
                              (n: Double, _: () => Double) => {
                                newTimeCB(n, nanoTime() - time0)
                              },
-                             differentColor,
-                             fold = fold,
-                             verbose = verbose)
+                                      differentColor,
+                                      fold = fold,
+                                      verbose = verbose)
         //GraphViz.bddView(bdd._2,drawFalseLeaf=false,s"$baseName-$numNodes")
         bdd
       }
@@ -327,7 +327,7 @@ object MapColoring {
 
         val gcCount0 = gcCount().toDouble
         val gcTime0 = gcTime().toDouble
-        val (colorization, bdd) = graphToBdd(List(start), uniGraph, biGraph, numNodes,
+        val (colorization, bdd) = politicalGraphToBdd(List(start), uniGraph, biGraph, numNodes,
                                              (n: Double, size: () => Double) => {
                                                newGcCountCB(n, gcCount() - gcCount0)
                                                newGcTimeCB(n, gcTime() - gcTime0)
@@ -336,9 +336,9 @@ object MapColoring {
                                                newHashSizeCB(n, hashSize.toDouble)
                                                newNumAllocationsCB(n, numAllocations.toDouble)
                                              },
-                                             differentColor,
-                                             fold = fold,
-                                             verbose = verbose)
+                                                      differentColor,
+                                                      fold = fold,
+                                                      verbose = verbose)
         bdd.findSatisfyingAssignment(determinist=false) match {
           case None => Map[V, String]()
           case Some((assignTrue, assignFalse)) =>
@@ -465,8 +465,8 @@ object sampleColoring {
                            verbose=verbose)
 
     val colors = timedColorizeMap(numRegions, "europe", "Germany",
-                                  stateUniGraph,
-                                  stateBiGraph,
+                                  removeStates(List(), stateUniGraph),
+                                  removeStates(List(), stateBiGraph),
                                   List("Croatia", "Bosnia", "Serbia", "Montenegro"),
                                   colors = pallet,
                                   view = view,
