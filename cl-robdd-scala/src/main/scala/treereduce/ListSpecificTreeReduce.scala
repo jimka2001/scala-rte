@@ -75,10 +75,14 @@ object ListSpecificTreeReduce{
       }
     }
 
-    val stack = m.foldLeft((1, z) :: Nil) { (stack, ob) =>
+    val stack = m.foldLeft(List[(Int,A)]()) { (stack, ob) =>
       consumeStack((1, ob) :: stack)
     }
 
-    stack.map(_._2).reduce { (a1, a2) => f(a2, a1) }
+    stack match {
+      case Nil => z
+      case (_,b)::Nil => b
+      case _ => treeFold(stack.map(_._2).reverse)(z)(f)
+    }
   }
 }
