@@ -278,6 +278,7 @@ object MapColoring {
                           biGraph: Map[V, Set[V]],
                           differentColor: List[V],
                           colors: Array[String] = Array("red", "green", "orange", "yellow"),
+                          view:Boolean = false,
                           verbose: Boolean): Map[V, String] = {
     if (verbose)
       println(s"colorizeMap differentColor = $differentColor")
@@ -420,6 +421,7 @@ object MapColoring {
         yLog = yLog,
         grid = true,
         outputFileBaseName = s"$baseName-$numNodes-4-color-$outputFileBaseName",
+        view = view,
         verbose = verbose
         )
     }
@@ -439,6 +441,7 @@ object sampleColoring {
                                   stateUniGraph,
                                   stateBiGraph,
                                   List("MA", "VT", "NH"),
+                                  view=view,
                                   verbose = false)
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions-colors"
                  )(symbols = symbols,
@@ -461,6 +464,7 @@ object sampleColoring {
                                   stateBiGraph,
                                   List("Croatia", "Bosnia", "Serbia", "Montenegro"),
                                   colors = pallet,
+                                  view = view,
                                   verbose)
 
     biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions-colors"
