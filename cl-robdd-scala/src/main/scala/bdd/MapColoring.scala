@@ -36,7 +36,10 @@ object MapColoring {
           (
             "fold-left",
             (states, top, getConstraints, op) =>
-              states.map(getConstraints).foldLeft(top)(op)))
+              states.map(getConstraints).reduceOption(op) match {
+                case None => top
+                case Some(bdd) => bdd
+              }))
   }
 
   // assign every state two Boolean variables to represent 1 of 4 colors
@@ -285,12 +288,12 @@ object MapColoring {
     import System.nanoTime
 
     def colorize(fold: Int,
-                 newSize: (Double, Double) => Unit,
-                 newGcCount: (Double, Double) => Unit,
-                 newGcTime: (Double, Double) => Unit,
-                 newHashSize: (Double, Double) => Unit,
-                 newNumAllocations: (Double, Double) => Unit,
-                 newTime: (Double, Double) => Unit): Map[V, String] = {
+                 newSizeCB: (Double, Double) => Unit,
+                 newGcCountCB: (Double, Double) => Unit,
+                 newGcTimeCB: (Double, Double) => Unit,
+                 newHashSizeCB: (Double, Double) => Unit,
+                 newNumAllocationsCB: (Double, Double) => Unit,
+                 newTimeCB: (Double, Double) => Unit): Map[V, String] = {
       Bdd.withNewBddHash {
         // we first convert the graph to a Bdd without counting the size, because counting
         // the size is exponential in complexity given that the size of the Bdd grows
@@ -298,7 +301,7 @@ object MapColoring {
         val time0 = nanoTime.toDouble
         val bdd = graphToBdd(List(start), uniGraph, biGraph, numNodes,
                              (n: Double, _: () => Double) => {
-                               newTime(n, nanoTime() - time0)
+                               newTimeCB(n, nanoTime() - time0)
                              },
                              differentColor,
                              fold = fold,
@@ -324,12 +327,12 @@ object MapColoring {
         val gcTime0 = gcTime().toDouble
         val (colorization, bdd) = graphToBdd(List(start), uniGraph, biGraph, numNodes,
                                              (n: Double, size: () => Double) => {
-                                               newGcCount(n, gcCount() - gcCount0)
-                                               newGcTime(n, gcTime() - gcTime0)
-                                               newSize(n, size())
+                                               newGcCountCB(n, gcCount() - gcCount0)
+                                               newGcTimeCB(n, gcTime() - gcTime0)
+                                               newSizeCB(n, size())
                                                val (hashSize, numAllocations) = Bdd.getBddSizeCount
-                                               newHashSize(n, hashSize.toDouble)
-                                               newNumAllocations(n, numAllocations.toDouble)
+                                               newHashSizeCB(n, hashSize.toDouble)
+                                               newNumAllocationsCB(n, numAllocations.toDouble)
                                              },
                                              differentColor,
                                              fold = fold,
@@ -398,16 +401,16 @@ object MapColoring {
                      "Hash size at step (K objects)",
                      "hash-size"),
                    (numAllocations, 1 / 1000.0, true,
-                     "Num Allocations for Map 4-coloring",
-                     "Num Allocations accumulated through step (K objects)",
+                     "Num BDD Allocations for Map 4-coloring",
+                     "Num BDD nodes accumulated through step (K objects)",
                      "num-allocations"),
                    (reclaimed, 1 / 1000.0, true,
                      "Num Objects reclaimed for Map 4-coloring",
                      "Num Objects reclaimed through step (K objects)",
                      "reclaimed"),
                    (times, 1e-9, true,
-                     "Time elapsed for Map 4-coloring",
-                     "Total time elapsed (sec)",
+                     "Incremental time for Map 4-coloring",
+                     "Time elapsed (sec) for first 1 steps",
                      "time")
                    )} {
       import gnuplot.GnuPlot._

@@ -163,7 +163,7 @@ object GenericGraph extends PoliticalMap {
       if (view)
         openGraphicalFile(pngPathName)
       if(verbose)
-        println(s"[finished to $pngPathName")
+        println(s"finished $pngPathName ]")
       status
     }
   }
