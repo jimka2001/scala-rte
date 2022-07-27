@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package Ifl
+package ifl
 
 // Code associated with my submission to IFL 2022
 // IFL 2022 = The 34th Symposium on Implementation and Application of Functional Languages
