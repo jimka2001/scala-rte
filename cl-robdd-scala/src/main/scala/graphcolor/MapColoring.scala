@@ -21,8 +21,10 @@
 
 package graphcolor
 
-import bdd.{Bdd, Xor, BddTrue, BddFalse, And, Or, Assignment}
+import bdd.{And, Assignment, Bdd, BddFalse, BddTrue, Or, Xor}
+import gnuplot.GnuPlot.gnuPlot
 
+import java.lang.System.nanoTime
 import scala.annotation.tailrec
 
 object MapColoring {
@@ -276,6 +278,48 @@ object MapColoring {
     rewindSimpleVertices(palette,biGraph,colorize(uniGraph,biGraph),unwind)
   }
 
+  def timeColorizeGraphs[V]():Unit = {
+    // create plots showing time of different fold algorithms
+    //   x-axis is number of states to be colors.
+    val start = "Germany"
+    val uniGraph = EuropeGraph.stateUniGraph
+    val biGraph = EuropeGraph.stateBiGraph
+
+    val data = for {
+      _ <- 1 to 4
+      numNodes <- 10 to 25 // 41
+      ((text, _), fold) <- folders[V]().zipWithIndex
+    } yield
+      Bdd.withNewBddHash {
+        println(s"numNodes=$numNodes  $text")
+        // we first convert the graph to a Bdd without counting the size, because counting
+        // the size is exponential in complexity given that the size of the Bdd grows
+        // exponentially.
+        val time0 = nanoTime.toDouble
+        politicalGraphToBdd(List(start), uniGraph, biGraph, numNodes,
+                            (_: Double, _: () => Double) => (),
+                            List(),
+                            fold = fold,
+                            verbose = true)
+        (text, numNodes, (nanoTime.toDouble - time0)/1e6)
+      }
+    val grouped = data.groupBy(_._1)
+    gnuPlot(for {(text, triples) <- grouped.toSeq
+                 // (time, triples) <- triples.groupBy(_._1)
+                 ordered = triples.sortBy(_._2)
+                 } yield (text, ordered.map(_._2).map(_.toDouble), ordered.map(_._3)))(
+      title = "Time per number of states",
+      xAxisLabel = "Number of states",
+      yAxisLabel = "Time (ms)",
+      yLog = true,
+      grid = true,
+      outputFileBaseName = "time-per-num-states-",
+      view = true,
+      verbose = true
+      )
+  }
+
+
   def timedColorizeMap[V](numNodes: Int,
                           baseName: String,
                           start: V,
@@ -495,8 +539,8 @@ object sampleColoring {
   }
 
   def main(argv: Array[String]): Unit = {
-
-      europeMapColoringTest()
+    timeColorizeGraphs()
+    europeMapColoringTest()
 
   }
 }

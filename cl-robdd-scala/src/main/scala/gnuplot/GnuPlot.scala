@@ -37,7 +37,7 @@ object GnuPlot {
     Files.exists(Paths.get(fName))
   }.getOrElse("gnuplot")
 
-  def writeCsv(dataToPlot: List[(String, Seq[Double], Seq[Double])],
+  def writeCsv(dataToPlot: Seq[(String, Seq[Double], Seq[Double])],
                xAxisLabel:String,
                outputFileBaseName: String,
                verbose: Boolean): Unit = {
@@ -71,7 +71,7 @@ object GnuPlot {
     if (verbose)
       println(s"finished $csvName]")
   }
-  def gnuPlot(dataToPlot: List[(String, Seq[Double], Seq[Double])])(
+  def gnuPlot(dataToPlot: Seq[(String, Seq[Double], Seq[Double])])(
               terminals: Set[String]=Set("png"), // e.g Set("png","tikz")
               title             : String = "",
               comment           : String = "",

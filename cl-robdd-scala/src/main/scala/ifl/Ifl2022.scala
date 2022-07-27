@@ -24,9 +24,11 @@ package ifl
 // Code associated with my submission to IFL 2022
 // IFL 2022 = The 34th Symposium on Implementation and Application of Functional Languages
 
+import graphcolor.MapColoring.timeColorizeGraphs
 import spire.math.Rational
 import treereduce.RationalFoldTest.rationalFoldTest
 import treereduce.TreeReduce.RichReducible
+
 import scala.math.abs
 
 object Ifl2022 {
@@ -101,5 +103,6 @@ object Ifl2022 {
     rationalSums()
     floatSums()
     fourColor()
+    timeColorizeGraphs()
   }
 }
