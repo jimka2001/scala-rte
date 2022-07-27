@@ -22,6 +22,7 @@
 package bdd
 import org.scalatest._
 import org.scalatest.funsuite.AnyFunSuite
+import political.USAgraph
 
 class MapColoringTestSuite extends AnyFunSuite {
   import org.scalactic.source
@@ -32,7 +33,7 @@ class MapColoringTestSuite extends AnyFunSuite {
       println(s"] finished $testName")
     }
   }
-  import MapColoring._
+  import political.MapColoring._
 
   test("coloring") {
     Bdd.withNewBddHash {
@@ -74,7 +75,7 @@ class MapColoringTestSuite extends AnyFunSuite {
   }
 
   test("europe"){
-    import bdd.sampleColoring.europeTimedMapColoringTest
+    import political.sampleColoring.europeTimedMapColoringTest
 
     europeTimedMapColoringTest(12, view=false, verbose = false)
   }

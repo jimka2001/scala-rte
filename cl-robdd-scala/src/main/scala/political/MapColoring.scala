@@ -19,7 +19,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package bdd
+package political
+
+import bdd.{Bdd, Xor, BddTrue, BddFalse, And, Or, Assignment}
 
 import scala.annotation.tailrec
 
@@ -27,8 +29,8 @@ object MapColoring {
   type FOLD_FUN[V] = (Seq[V], Bdd, V => Bdd, (Bdd, Bdd) => Bdd) => Bdd
 
   def folders[V](): Array[(String, FOLD_FUN[V])] = {
-    import treereduce.TreeReducible._ // This imports the TreeReducible instances.
-    import treereduce.TreeReduce._ // This imports the obj.treeMapReduce() syntax.
+    import treereduce.TreeReduce._
+    import treereduce.TreeReducible._ // This imports the obj.treeMapReduce() syntax.
     Array((
             "tree-fold",
             (states, top, getConstraints, op) =>
@@ -101,7 +103,7 @@ object MapColoring {
                     verbose: Boolean): (Map[V, (Int, Int)], Bdd) = {
 
     require(differentColor.length <= 4) // states whose colors are different to reduce the size of the BDD
-    import GenericGraph.orderStates
+    import political.GenericGraph.orderStates
 
     val states = differentColor ++ orderStates(seed, biGraph)
       .filter { st => !differentColor.contains(st) }
@@ -434,7 +436,7 @@ object MapColoring {
 
 object sampleColoring {
   import MapColoring._
-  import GenericGraph._
+  import political.GenericGraph._
   def usTimedMapColoringTest(numRegions:Int, view:Boolean, verbose:Boolean): Int = {
     import USAgraph._
     biGraphToDot(stateBiGraph, statePositions, s"us-political-$numRegions")(symbols = symbols,

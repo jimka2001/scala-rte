@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package bdd
+package political
 
 import adjuvant.Adjuvant.openGraphicalFile
 
@@ -79,7 +79,7 @@ class PoliticalMap[V] {
   }
 
   val dotProgram:String = locally{
-    import java.nio.file.{Paths, Files}
+    import java.nio.file.{Files, Paths}
     Seq("/usr/local/bin/neato","/opt/local/bin/neato").find(p => Files.exists(Paths.get(p))) match {
       case None => "neato"
       case Some(path) => path
