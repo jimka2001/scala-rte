@@ -35,7 +35,7 @@ object GnuPlot {
     Files.exists(Paths.get(fName))
   }.getOrElse("gnuplot")
 
-  def writeCsv(dataToPlot: List[(String, List[Double], List[Double])],
+  def writeCsv(dataToPlot: List[(String, Seq[Double], Seq[Double])],
                xAxisLabel:String,
                outputDirName     : String,
                outputFileBaseName: String,
@@ -71,7 +71,7 @@ object GnuPlot {
     if (verbose)
       println(s"finished $csvName]")
   }
-  def gnuPlot(dataToPlot: List[(String, List[Double], List[Double])])(
+  def gnuPlot(dataToPlot: List[(String, Seq[Double], Seq[Double])])(
               terminals: Set[String]=Set("png"), // e.g Set("png","tikz")
               title             : String = "",
               comment           : String = "",
@@ -102,7 +102,7 @@ object GnuPlot {
       println(s"[writing to $gnuName\n")
     gnu.write(s"# $comment\n")
 
-    def logCompatible(projection:((String,List[Double],List[Double]))=>List[Double]):Boolean = {
+    def logCompatible(projection:((String,Seq[Double],Seq[Double]))=>Seq[Double]):Boolean = {
       dataToPlot.forall{data =>
         val numbers = projection(data)
         numbers.forall(_>0) && numbers.nonEmpty && (numbers.max > numbers.min)
@@ -126,7 +126,7 @@ object GnuPlot {
     gnu.write("plot ")
     val footer: String = withOutputToString { prFooter =>
       val header: String = withOutputToString { prHeader =>
-        def plot(title: String, xys: List[(Double, Double)]): Unit = {
+        def plot(title: String, xys: Seq[(Double, Double)]): Unit = {
           prHeader(""""-" using 1:2""")
           prHeader(s" with $plotWith")
           prHeader(s""" title "$title"""")
@@ -153,7 +153,7 @@ object GnuPlot {
     if (verbose)
       println(s"finished $gnuName]")
 
-    if(dataToPlot.exists{data: (String,List[Double],List[Double]) =>
+    if(dataToPlot.exists{data: (String,Seq[Double],Seq[Double]) =>
       data._2.nonEmpty && data._3.nonEmpty
     })
       terminals.foreach { terminal =>
