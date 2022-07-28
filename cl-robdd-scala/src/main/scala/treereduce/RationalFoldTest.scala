@@ -30,27 +30,23 @@ package treereduce
 object RationalFoldTest {
   // returns the average amount of time of evaluating block
   // after evaluating block repetitions number of times.
-  def time[R](repetitions: Int, name: String, block: => R): Double = {
+  def time1[R](block: => R):Double = {
     val t0 = System.nanoTime()
-    (1 to repetitions).foreach { _ => block }
-    val t1 = System.nanoTime()
-    val elapsed = {
-      (t1 - t0) / (repetitions * 1.0e6)
-    }
-    println(s"$name: Elapsed time: $elapsed ms")
-    elapsed
+    block
+    System.nanoTime() - t0
   }
-  def rationalFoldTest(verbose:Boolean):Unit = {
-    val bounds = List(5, 10, 15, 20, 25, 30, 40, 45, 50, 55, 60, 70, 80, 90, 95
-                      , 100, 125, 150, 175, 200, 300, 400, 500, 750
-                      , 1000, 2000, 3000, 4000, 5000, 7500
-                      , 10000
-                      )
 
-    rationalFoldTest(bounds=bounds,randomize=true,verbose=verbose)
-    rationalFoldTest(bounds=bounds,randomize=false,verbose=verbose)
+  def time[R](repetitions: Int, name: String, block: => R): Double = {
+    val minTime = (1 to repetitions).map(_ => time1(block)).min / 1e6
+
+    println(s"$name: Min Elapsed time: $minTime ms")
+    minTime
   }
-  def rationalFoldTest(maxBound:Int,verbose:Boolean):Unit = {
+
+  def rationalFoldTest(maxBound:Int,
+                       verbose:Boolean,
+                       randomize:Boolean,
+                       gnuFileCB:String=>Unit = (_)=>()):Unit = {
     require(maxBound >= 10)
     val bases = List(10, 12, 15, 20, 25, 30, 40, 45, 50, 55, 60, 70, 80, 90)
     val bounds = for {
@@ -59,10 +55,16 @@ object RationalFoldTest {
       candidate = (base * math.pow(10.0, exp.toDouble)).toInt
       if candidate <= maxBound
     } yield candidate
-    rationalFoldTest(bounds.toList,randomize=true,verbose=verbose)
-    rationalFoldTest(bounds.toList,randomize=false,verbose=verbose)
+    rationalFoldTestBounds(bounds.toList,
+                           randomize = randomize,
+                           gnuFileCB = gnuFileCB,
+                           verbose = verbose)
   }
-  def rationalFoldTest(bounds:List[Int],randomize:Boolean,verbose:Boolean):Unit = {
+
+  def rationalFoldTestBounds(bounds:List[Int],
+                       randomize:Boolean,
+                       verbose:Boolean,
+                       gnuFileCB:String=>Unit=(_)=>()):Unit = {
     import spire.implicits._
     import spire.math._
     import treereduce.TreeParallelReduce._
@@ -74,49 +76,45 @@ object RationalFoldTest {
     def rationalAdd(a: Rational, b: Rational): Rational = a + b
 
     val zero = Rational(0, 1)
-
-    val rawDataForPlot = (for {r <- bounds.sorted.reverse.par // allow computation in parallel
+    val numRepetitions = 3
+    val rawDataForPlot = (for {r <- bounds.sorted.reverse
                                piercedInterval = (if (randomize)
-                                 scala.util.Random.shuffle( (( -r to -1) ++ (1 to r)).toList)
+                                 scala.util.Random.shuffle(((-r to -1) ++ (1 to r)).toList)
                                else
-                                 (( -r to -1) ++ (1 to r)).toList)
+                                 ((-r to -1) ++ (1 to r)).toList)
 
-                               t1 = time(3, s"$r  treeMapReduce", {
+                               t1 = time(numRepetitions, s"$r  treeMapReduce", {
                                  val sum = piercedInterval.treeMapReduce(Rational(0, 1))(Rational(1, _), _ + _)
                                  assert(sum === zero)
                                })
-//                               t2 = time(3, s"$r  pairMapReduce", {
-//                                 val sum = pairMapReduce(piercedInterval)(Rational(0, 1), Rational(1, _), rationalAdd) //(indexedSeqPairable)
-//                                 assert(sum === zero)
-//                               })
-                               t3 = time(3, s"$r           fold", {
+
+                               t3 = time(numRepetitions, s"$r           fold", {
                                  val sum = piercedInterval.map {
                                    Rational(1, _)
                                  }.foldLeft(Rational(0, 1))(_ + _)
                                  assert(sum === zero)
                                })
-                               _ = println()
-                               } yield (r.toDouble, t1, t3)).toList.sortBy(_._1)
+                               } yield (r.toDouble, t1, t3)).sortBy(_._1)
 
     val rs = rawDataForPlot.map(_._1)
     val t1s = rawDataForPlot.map(_._2)
-    //val t2s = rawDataForPlot.map(_._3)
     val t3s = rawDataForPlot.map(_._3)
     val dataForPlot = List(("tree-fold", rs, t1s)
-                           //, ("pair-wise-fold", rs, t2s)
                            , ("fold-left", rs, t3s))
     gnuPlot(dataForPlot)(
       title = "Fold Strategy Performance of Rational Addition" + (if (randomize) " (shuffled)" else " (sorted)"),
       comment = "Fold Strategy Performance of Rational Addition",
       xAxisLabel = "Number of terms (density)", xLog = true,
-      yAxisLabel = "Time (ms)", yLog = true,
+      yAxisLabel = s"Time (ms) (best of $numRepetitions)", yLog = true,
       grid = true,
       outputFileBaseName = "rational-addition" + (if (randomize) "-random" else ""),
+      gnuFileCB = gnuFileCB,
+      key = "inside left",
       verbose = verbose,
       view = true)
   }
 
   def main(argv:Array[String]):Unit = {
-    rationalFoldTest(5000, verbose = true)
+    rationalFoldTest(5000, verbose = true, randomize=false)
   }
 }

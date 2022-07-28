@@ -85,6 +85,7 @@ object GnuPlot {
               outputFileBaseName: String = "curves",
               plotWith          : String = "linespoints",
               key:String = "horizontal bmargin",
+              gnuFileCB:String=>Unit = (_)=>(),
               verbose:Boolean,
               view:Boolean = false
              ): Unit = {
@@ -151,6 +152,7 @@ object GnuPlot {
     }
     gnu.write(footer)
     gnu.close()
+    gnuFileCB(gnuName)
     if (verbose)
       println(s"finished $gnuName]")
 

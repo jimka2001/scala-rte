@@ -295,7 +295,8 @@ object MapColoring {
     recur(triples.toList,List())
   }
 
-  def timeColorizeGraphs[V](maxNumNodes:Int):Unit = {
+  def timeColorizeGraphs[V](maxNumNodes:Int,
+                            gnuFileCB:String=>Unit = (_)=>()):Unit = {
     // create plots showing time of different fold algorithms
     //   x-axis is number of states to be colors.
     val start = "Germany"
@@ -330,6 +331,7 @@ object MapColoring {
       yAxisLabel = "Time (ms)",
       yLog = true,
       grid = true,
+      key = "inside left",
       outputFileBaseName = "time-range-per-num-states-",
       view = true,
       verbose = true
@@ -352,6 +354,8 @@ object MapColoring {
       yLog = true,
       grid = true,
       outputFileBaseName = "time-per-num-states-",
+      gnuFileCB = gnuFileCB,
+      key = "inside left",
       view = true,
       verbose = true
       )

@@ -24,6 +24,7 @@ package ifl
 // Code associated with my submission to IFL 2022
 // IFL 2022 = The 34th Symposium on Implementation and Application of Functional Languages
 
+import adjuvant.Adjuvant.copyFile
 import graphcolor.MapColoring.timeColorizeGraphs
 import spire.math.Rational
 import treereduce.RationalFoldTest.rationalFoldTest
@@ -32,6 +33,7 @@ import treereduce.TreeReduce.RichReducible
 import scala.math.abs
 
 object Ifl2022 {
+  val gnuPlotDataDirName = "/Users/jnewton/Repos/research/gnuplot/"
   def rationalAdd(a: Rational, b: Rational): Rational = a + b
   val rationalZero = Rational(0, 1)
   // measure round-off error
@@ -72,10 +74,13 @@ object Ifl2022 {
       gnuPlot(dataToPlot)(
         title = "Fold Strategy Error of Floating Point Addition",
         comment = "Fold Strategy Error of Floating Point Addition",
-        xAxisLabel = "Number of terms", xLog = true,
+        xAxisLabel = "Number of terms added", xLog = true,
         yAxisLabel = "Error", yLog = true,
         grid = true,
+        key = "inside left",
         outputFileBaseName = "float-accuracy",
+        gnuFileCB = (gnuName:String) => copyFile(gnuName,gnuPlotDataDirName + "float-accuracy.gnu"),
+
         verbose = true,
         view = true
         )
@@ -87,7 +92,18 @@ object Ifl2022 {
     // Rational sums
     // summing 1/n from n=-1000 to n=1000 (excluding 1/0)
     //   in sorted order and randomized order
-    rationalFoldTest(1000, verbose = true)
+    rationalFoldTest(1000,
+                     verbose = true,
+                     randomize=true,
+                     gnuFileCB=(fn:String)=>{
+                       copyFile(fn,gnuPlotDataDirName+"ifl-rational-addition-random.gnu")
+                     })
+    rationalFoldTest(1000,
+                     verbose = true,
+                     randomize=false,
+                     gnuFileCB=(fn:String)=>{
+                       copyFile(fn,gnuPlotDataDirName+"ifl-rational-addition.gnu")
+                     })
   }
 
   def fourColor():Unit = {
@@ -103,6 +119,7 @@ object Ifl2022 {
     rationalSums()
     floatSums()
     fourColor()
-    timeColorizeGraphs(30)
+    timeColorizeGraphs(30,
+                       gnuFileCB = (fn:String) => copyFile(fn,gnuPlotDataDirName + "time-per-num-states.gnu"))
   }
 }

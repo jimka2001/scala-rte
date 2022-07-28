@@ -299,6 +299,11 @@ object Adjuvant {
     }
   }
 
+  def copyFile(from:String, to:String):Int = {
+    import sys.process._
+    Seq("cp", from, to).!
+  }
+
   def eql(x:Any, y:Any):Boolean = {
     if (x.getClass != y.getClass)
       false
