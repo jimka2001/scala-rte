@@ -103,6 +103,6 @@ object Ifl2022 {
     rationalSums()
     floatSums()
     fourColor()
-    timeColorizeGraphs()
+    timeColorizeGraphs(30)
   }
 }

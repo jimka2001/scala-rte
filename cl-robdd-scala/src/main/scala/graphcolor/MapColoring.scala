@@ -278,20 +278,37 @@ object MapColoring {
     rewindSimpleVertices(palette,biGraph,colorize(uniGraph,biGraph),unwind)
   }
 
-  def timeColorizeGraphs[V]():Unit = {
+  def keepMins(triples:Seq[(String,Int,Double)]):List[(String,Int,Double)] = {
+    def recur(in:List[(String,Int,Double)],out:List[(String,Int,Double)]):List[(String,Int,Double)] = {
+      in match {
+        case (trip1@(_,n1,time1))::(trip2@(_,n2,time2)) :: trips
+      if n1 == n2 => if (time1 < time2)
+        // omit time2
+        recur(trip1::trips, out)
+        else
+        // omit time1
+        recur(trip2::trips, out)
+        case h::t => recur(t,h::out)
+        case Nil => out.reverse
+      }
+    }
+    recur(triples.toList,List())
+  }
+
+  def timeColorizeGraphs[V](maxNumNodes:Int):Unit = {
     // create plots showing time of different fold algorithms
     //   x-axis is number of states to be colors.
     val start = "Germany"
     val uniGraph = EuropeGraph.stateUniGraph
     val biGraph = EuropeGraph.stateBiGraph
-
+    val numSamples = 4
     val data = for {
-      _ <- 1 to 4
-      numNodes <- 10 to 25 // 41
-      ((text, _), fold) <- folders[V]().zipWithIndex
+      k <- 1 to numSamples
+      numNodes <- 10 to maxNumNodes
+      ((text, _), fold) <- folders[V]().zipWithIndex.reverse
     } yield
       Bdd.withNewBddHash {
-        println(s"numNodes=$numNodes  $text")
+        println(s"k=$k numNodes=$numNodes  $text")
         // we first convert the graph to a Bdd without counting the size, because counting
         // the size is exponential in complexity given that the size of the Bdd grows
         // exponentially.
@@ -303,12 +320,33 @@ object MapColoring {
                             verbose = true)
         (text, numNodes, (nanoTime.toDouble - time0)/1e6)
       }
-    val grouped = data.groupBy(_._1)
-    gnuPlot(for {(text, triples) <- grouped.toSeq
+    val grouped = data.groupBy(_._1).toSeq
+    gnuPlot(for {(text, triples) <- grouped
+                 // each triple has the form (text, numNodes, time)
+                 ordered = triples.sortBy(_._2)
+                 } yield (text, ordered.map(_._2).map(_.toDouble), ordered.map(_._3)))(
+      title = "Time per number of states (with HotSpot)",
+      xAxisLabel = "Number of states",
+      yAxisLabel = "Time (ms)",
+      yLog = true,
+      grid = true,
+      outputFileBaseName = "time-range-per-num-states-",
+      view = true,
+      verbose = true
+      )
+    // each element of grouped is of the form
+    //    (text List[text,numNodes,time])
+    //    we want to filter that List[...] so that numNodes appears
+    //    only once,   if the starting list has multiple entries for
+    //    a given numNodes, then keep only the one with minimum time.
+    val justMin = for{ (text,triples) <- grouped
+                       } yield (text,keepMins(triples.sortBy(_._2)))
+    gnuPlot(for {(text, triples) <- justMin
+                 // each triple has the form (text, numNodes, time)
                  // (time, triples) <- triples.groupBy(_._1)
                  ordered = triples.sortBy(_._2)
                  } yield (text, ordered.map(_._2).map(_.toDouble), ordered.map(_._3)))(
-      title = "Time per number of states",
+      title = s"Time per number of states (best of $numSamples)",
       xAxisLabel = "Number of states",
       yAxisLabel = "Time (ms)",
       yLog = true,
@@ -539,8 +577,8 @@ object sampleColoring {
   }
 
   def main(argv: Array[String]): Unit = {
-    timeColorizeGraphs()
     europeMapColoringTest()
+    timeColorizeGraphs(41)
 
   }
 }
