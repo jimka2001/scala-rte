@@ -359,6 +359,36 @@ object MapColoring {
       view = true,
       verbose = true
       )
+    def ratioData(triples1:List[(String,Int,Double)],
+                  triples2:List[(String,Int,Double)],
+                  ds1:List[Double],
+                  ds2:List[Double]):(List[Double],List[Double]) = {
+      (triples1,triples2) match {
+        case (Nil,_) |
+             (_, Nil) =>  (ds1.reverse,ds2.reverse)
+        case ((_,n1,_)::ts1,(_,n2,_)::_) if n1 < n2 => ratioData(ts1,triples2,ds1,ds2)
+        case ((_,n1,_)::_,(_,n2,_)::ts2) if n1 > n2 => ratioData(triples1,ts2,ds1,ds2)
+        case ((_,n1,t1)::ts1,(_,_,t2)::ts2) => ratioData(ts1,ts2,
+                                                       n1.toDouble::ds1,
+                                                         t1/t2::ds2)
+      }
+    }
+    val justMinMap = justMin.toMap
+    val (numNodess,ratios) = ratioData(justMinMap("fold-left").sortBy(_._2),
+                                       justMinMap("tree-fold").sortBy(_._2),
+                                       List(),List())
+    gnuPlot(List(("ratio", numNodess, ratios)))(
+      title = s"Time ratios (best of $numSamples)",
+      xAxisLabel = "Number of states",
+      yAxisLabel = "Time ratio",
+      yLog = false,
+      grid = true,
+      outputFileBaseName = "time-ratio-num-states-",
+      gnuFileCB = gnuFileCB,
+      key = "inside left",
+      view = false,
+      verbose = true
+    )
   }
 
 
@@ -369,6 +399,7 @@ object MapColoring {
                           biGraph: Map[V, Set[V]],
                           differentColor: List[V],
                           colors: Array[String] = Array("red", "green", "orange", "yellow"),
+                          gnuFileCB: String=>Unit = (_)=>(),
                           view:Boolean = false,
                           verbose: Boolean): Map[V, String] = {
     if (verbose)
@@ -512,6 +543,7 @@ object MapColoring {
         yLog = yLog,
         grid = true,
         outputFileBaseName = s"$baseName-$numNodes-4-color-$outputFileBaseName",
+        gnuFileCB=gnuFileCB,
         view = view,
         verbose = verbose
         )
@@ -541,7 +573,10 @@ object sampleColoring {
                    verbose=verbose)
   }
 
-  def europeTimedMapColoringTest(numRegions:Int, view:Boolean, verbose:Boolean): Int = {
+  def europeTimedMapColoringTest(numRegions:Int,
+                                 gnuFileCB:String=>Unit=(_)=>(),
+                                 view:Boolean,
+                                 verbose:Boolean): Int = {
     import EuropeGraph._
     val pallet = Array("red", "green", "orange", "yellow")
 
@@ -555,8 +590,9 @@ object sampleColoring {
                                   removeStates(List(), stateBiGraph),
                                   List("Croatia", "Bosnia", "Serbia", "Montenegro"),
                                   colors = pallet,
+                                  gnuFileCB = gnuFileCB,
                                   view = view,
-                                  verbose)
+                                  verbose=verbose)
 
     biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions-colors"
                  )(symbols = symbols,

@@ -121,7 +121,9 @@ object GnuPlot {
       gnu.write(s"""set ylabel "$yAxisLabel"\n""")
     if (grid)
       gnu.write(s"set grid\n")
-
+    gnu.write("set key font ',15'\n")
+    gnu.write("set xtics font ',15'\n")
+    gnu.write("set ytics font ',15'\n")
     gnu.write(s"set key $key\n") // TODO can also use set key at x,y
     if ("" != title)
       gnu.write(s"""set title "$title"\n""")
