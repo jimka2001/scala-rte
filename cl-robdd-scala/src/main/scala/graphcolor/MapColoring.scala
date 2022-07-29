@@ -535,13 +535,14 @@ object MapColoring {
       import gnuplot.GnuPlot._
 
       gnuPlot(folders[V]().zipWithIndex.map { case ((folder, _), k) =>
-        (s"Using $folder", measurements(k).map(_._1), measurements(k).map(_._2).map(_ * scale))
+        (folder, measurements(k).map(_._1), measurements(k).map(_._2).map(_ * scale))
       }.toList)(
         title = title,
         xAxisLabel = "Step",
         yAxisLabel = yAxisLabel,
         yLog = yLog,
         grid = true,
+        key = "inside left",
         outputFileBaseName = s"$baseName-$numNodes-4-color-$outputFileBaseName",
         gnuFileCB=gnuFileCB,
         view = view,

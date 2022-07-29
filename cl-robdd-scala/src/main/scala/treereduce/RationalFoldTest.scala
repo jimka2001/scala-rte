@@ -111,7 +111,7 @@ object RationalFoldTest {
       gnuFileCB = gnuFileCB,
       key = "inside left",
       verbose = verbose,
-      view = true)
+      view = false)
   }
 
   def main(argv:Array[String]):Unit = {

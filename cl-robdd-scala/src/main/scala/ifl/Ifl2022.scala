@@ -134,15 +134,30 @@ object Ifl2022 {
     //     i.e., does the instrumentation effect the computation time.
   }
 
+  def timeColorGraph():Unit = {
+    timeColorizeGraphs(30,
+                       gnuFileCB = (fn: String) => {
+                         println(s"fn = $fn")
+                         if (fn.matches(".*time-per-num-states.*"))
+
+                           filterFile(fn, gnuPlotDataDirName + "time-per-num-states.gnu",
+                                      suppressTitle)
+                         else if (fn.matches(".*time-ratio-num-states.*"))
+                           filterFile(fn, gnuPlotDataDirName + "time-ratio-num-states.gnu",
+                                      suppressTitle)
+                       }
+                       )
+  }
+
   def main(argv: Array[String]): Unit = {
     // produce files
     //   ifl-rational-addition-random.gnu
     //   ifl-rational-addition.gnu
-    //rationalSums()
+    rationalSums()
 
     // produce file
     //    float-accuracy.gnu
-    //floatSums()
+    floatSums()
 
     // produce files
     //   europe-4-color-allocation.gnu
@@ -152,22 +167,12 @@ object Ifl2022 {
     //   europe-4-color-num-allocations.gnu
     //   europe-4-color-reclaimed.gnu
     //   europe-4-color-time.gnu
-
-    //fourColor()
+    fourColor()
 
     // produce file
     //   time-per-num-states.gnu
-    timeColorizeGraphs(30,
-                       gnuFileCB = (fn:String) => {
-                         println(s"fn = $fn")
-                         if (fn.matches(".*time-per-num-states.*"))
+    //   time-ratio-num-states.gnu
+    timeColorGraph()
 
-                             filterFile(fn, gnuPlotDataDirName + "time-per-num-states.gnu",
-                                        suppressTitle)
-                         else if (fn.matches(".*time-ratio-num-states.*"))
-                             filterFile(fn, gnuPlotDataDirName + "time-ratio-num-states.gnu",
-                                        suppressTitle)
-                       }
-                       )
   }
 }
