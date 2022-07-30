@@ -24,6 +24,8 @@ package ifl
 // Code associated with my submission to IFL 2022
 // IFL 2022 = The 34th Symposium on Implementation and Application of Functional Languages
 
+import adjuvant.Adjuvant
+import adjuvant.Adjuvant.{copyFile, filterFile}
 import graphcolor.MapColoring.timeColorizeGraphs
 import spire.math.Rational
 import treereduce.RationalFoldTest.rationalFoldTest
@@ -32,8 +34,12 @@ import treereduce.TreeReduce.RichReducible
 import scala.math.abs
 
 object Ifl2022 {
+  val gnuPlotDataDirName = "/Users/jnewton/Repos/research/gnuplot/"
   def rationalAdd(a: Rational, b: Rational): Rational = a + b
   val rationalZero = Rational(0, 1)
+  def suppressTitle(line:String):Boolean = {
+    ! line.startsWith("set title")
+  }
   // measure round-off error
   def floatAddition(n:Int):(Rational,Double,Double) = {
     val tenth = Rational(1,10)
@@ -72,10 +78,15 @@ object Ifl2022 {
       gnuPlot(dataToPlot)(
         title = "Fold Strategy Error of Floating Point Addition",
         comment = "Fold Strategy Error of Floating Point Addition",
-        xAxisLabel = "Number of terms", xLog = true,
+        xAxisLabel = "Number of terms added", xLog = true,
         yAxisLabel = "Error", yLog = true,
         grid = true,
+        key = "inside left",
         outputFileBaseName = "float-accuracy",
+        gnuFileCB = (gnuName:String) => filterFile(gnuName,
+                                                   gnuPlotDataDirName + "float-accuracy.gnu",
+                                                   suppressTitle),
+
         verbose = true,
         view = true
         )
@@ -87,12 +98,36 @@ object Ifl2022 {
     // Rational sums
     // summing 1/n from n=-1000 to n=1000 (excluding 1/0)
     //   in sorted order and randomized order
-    rationalFoldTest(1000, verbose = true)
+    rationalFoldTest(1000,
+                     verbose = true,
+                     randomize=true,
+                     gnuFileCB=(fn:String)=>{
+                       filterFile(fn,gnuPlotDataDirName+"ifl-rational-addition-random.gnu",
+                                  suppressTitle)
+                     })
+    rationalFoldTest(1000,
+                     verbose = true,
+                     randomize=false,
+                     gnuFileCB=(fn:String)=>{
+                       filterFile(fn,gnuPlotDataDirName+"ifl-rational-addition.gnu",
+                                suppressTitle)
+                     })
   }
 
   def fourColor():Unit = {
     import graphcolor.sampleColoring.europeTimedMapColoringTest
-    europeTimedMapColoringTest(41,view=true,verbose=true)
+    def captureGnu(fn:String):Unit = {
+      val worked = fn
+        .replaceAll("-[0-9]+.gnu", ".gnu")
+        .replaceAll("^/.*/europe-[0-9]+-", gnuPlotDataDirName + "europe-")
+      println(s"    fn = $fn")
+      println(s"worked = $worked")
+      filterFile(fn,worked,suppressTitle)
+    }
+    europeTimedMapColoringTest(30,
+                               gnuFileCB=captureGnu ,
+                               view=false,
+                               verbose=true)
     // need to also make some measurements of time of 4-coloring
     //  1. for different sized graphs
     //  2. without instrumentation.
@@ -100,7 +135,7 @@ object Ifl2022 {
   }
 
   def drawMapConstraints():Unit = {
-    import bdd.{Bdd,Or,Xor,And}
+    import bdd.{Bdd, Or, Xor, And}
     import bdd.GraphViz.GraphVizOps
 
     // france <-> spain
@@ -112,19 +147,56 @@ object Ifl2022 {
     val Ag = 5
     val Bg = 6
     Bdd.withNewBddHash {
-      val bddFS = Or(Xor(Af,As),Xor(Bf,Bs))
-      val bddFG = Or(Xor(Af,Ag),Xor(Bf,Bg))
-      bddFS.bddView(drawFalseLeaf=true,title="France -> Spain")
-      bddFG.bddView(drawFalseLeaf=true,title="France -> Germany")
-      And(bddFS,bddFG).bddView(drawFalseLeaf=true,title="2 borders")
+      val bddFS = Or(Xor(Af, As), Xor(Bf, Bs))
+      val bddFG = Or(Xor(Af, Ag), Xor(Bf, Bg))
+      bddFS.bddView(drawFalseLeaf = true, title = "France -> Spain")
+      bddFG.bddView(drawFalseLeaf = true, title = "France -> Germany")
+      And(bddFS, bddFG).bddView(drawFalseLeaf = true, title = "2 borders")
     }
+  }
 
+  def timeColorGraph():Unit = {
+    timeColorizeGraphs(30,
+                       gnuFileCB = (fn: String) => {
+                         println(s"fn = $fn")
+                         if (fn.matches(".*time-per-num-states.*"))
+
+                           filterFile(fn, gnuPlotDataDirName + "time-per-num-states.gnu",
+                                      suppressTitle)
+                         else if (fn.matches(".*time-ratio-num-states.*"))
+                           filterFile(fn, gnuPlotDataDirName + "time-ratio-num-states.gnu",
+                                      suppressTitle)
+                       }
+                       )
   }
 
   def main(argv: Array[String]): Unit = {
+    // produce files
+    //   ifl-rational-addition-random.gnu
+    //   ifl-rational-addition.gnu
     rationalSums()
+
+    // produce file
+    //    float-accuracy.gnu
     floatSums()
+
+    // produce files
+    //   europe-4-color-allocation.gnu
+    //   europe-4-color-gc-count.gnu
+    //   europe-4-color-gc-time.gnu
+    //   europe-4-color-hash-size.gnu
+    //   europe-4-color-num-allocations.gnu
+    //   europe-4-color-reclaimed.gnu
+    //   europe-4-color-time.gnu
     fourColor()
-    timeColorizeGraphs()
+
+    // produce files
+    //   time-per-num-states.gnu
+    //   time-ratio-num-states.gnu
+    timeColorGraph()
+
+    // produce file
+
+    drawMapConstraints()
   }
 }

@@ -85,6 +85,7 @@ object GnuPlot {
               outputFileBaseName: String = "curves",
               plotWith          : String = "linespoints",
               key:String = "horizontal bmargin",
+              gnuFileCB:String=>Unit = (_)=>(),
               verbose:Boolean,
               view:Boolean = false
              ): Unit = {
@@ -120,7 +121,9 @@ object GnuPlot {
       gnu.write(s"""set ylabel "$yAxisLabel"\n""")
     if (grid)
       gnu.write(s"set grid\n")
-
+    gnu.write("set key font ',15'\n")
+    gnu.write("set xtics font ',15'\n")
+    gnu.write("set ytics font ',15'\n")
     gnu.write(s"set key $key\n") // TODO can also use set key at x,y
     if ("" != title)
       gnu.write(s"""set title "$title"\n""")
@@ -151,6 +154,7 @@ object GnuPlot {
     }
     gnu.write(footer)
     gnu.close()
+    gnuFileCB(gnuName)
     if (verbose)
       println(s"finished $gnuName]")
 

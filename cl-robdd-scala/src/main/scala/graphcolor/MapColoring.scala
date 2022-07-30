@@ -278,20 +278,38 @@ object MapColoring {
     rewindSimpleVertices(palette,biGraph,colorize(uniGraph,biGraph),unwind)
   }
 
-  def timeColorizeGraphs[V]():Unit = {
+  def keepMins(triples:Seq[(String,Int,Double)]):List[(String,Int,Double)] = {
+    def recur(in:List[(String,Int,Double)],out:List[(String,Int,Double)]):List[(String,Int,Double)] = {
+      in match {
+        case (trip1@(_,n1,time1))::(trip2@(_,n2,time2)) :: trips
+      if n1 == n2 => if (time1 < time2)
+        // omit time2
+        recur(trip1::trips, out)
+        else
+        // omit time1
+        recur(trip2::trips, out)
+        case h::t => recur(t,h::out)
+        case Nil => out.reverse
+      }
+    }
+    recur(triples.toList,List())
+  }
+
+  def timeColorizeGraphs[V](maxNumNodes:Int,
+                            gnuFileCB:String=>Unit = (_)=>()):Unit = {
     // create plots showing time of different fold algorithms
     //   x-axis is number of states to be colors.
     val start = "Germany"
     val uniGraph = EuropeGraph.stateUniGraph
     val biGraph = EuropeGraph.stateBiGraph
-
+    val numSamples = 4
     val data = for {
-      _ <- 1 to 4
-      numNodes <- 10 to 25 // 41
-      ((text, _), fold) <- folders[V]().zipWithIndex
+      k <- 1 to numSamples
+      numNodes <- 10 to maxNumNodes
+      ((text, _), fold) <- folders[V]().zipWithIndex.reverse
     } yield
       Bdd.withNewBddHash {
-        println(s"numNodes=$numNodes  $text")
+        println(s"k=$k numNodes=$numNodes  $text")
         // we first convert the graph to a Bdd without counting the size, because counting
         // the size is exponential in complexity given that the size of the Bdd grows
         // exponentially.
@@ -303,20 +321,74 @@ object MapColoring {
                             verbose = true)
         (text, numNodes, (nanoTime.toDouble - time0)/1e6)
       }
-    val grouped = data.groupBy(_._1)
-    gnuPlot(for {(text, triples) <- grouped.toSeq
+    val grouped = data.groupBy(_._1).toSeq
+    gnuPlot(for {(text, triples) <- grouped
+                 // each triple has the form (text, numNodes, time)
+                 ordered = triples.sortBy(_._2)
+                 } yield (text, ordered.map(_._2).map(_.toDouble), ordered.map(_._3)))(
+      title = "Time per number of states (with HotSpot)",
+      xAxisLabel = "Number of states",
+      yAxisLabel = "Time (ms)",
+      yLog = true,
+      grid = true,
+      key = "inside left",
+      outputFileBaseName = "time-range-per-num-states-",
+      view = true,
+      verbose = true
+      )
+    // each element of grouped is of the form
+    //    (text List[text,numNodes,time])
+    //    we want to filter that List[...] so that numNodes appears
+    //    only once,   if the starting list has multiple entries for
+    //    a given numNodes, then keep only the one with minimum time.
+    val justMin = for{ (text,triples) <- grouped
+                       } yield (text,keepMins(triples.sortBy(_._2)))
+    gnuPlot(for {(text, triples) <- justMin
+                 // each triple has the form (text, numNodes, time)
                  // (time, triples) <- triples.groupBy(_._1)
                  ordered = triples.sortBy(_._2)
                  } yield (text, ordered.map(_._2).map(_.toDouble), ordered.map(_._3)))(
-      title = "Time per number of states",
+      title = s"Time per number of states (best of $numSamples)",
       xAxisLabel = "Number of states",
       yAxisLabel = "Time (ms)",
       yLog = true,
       grid = true,
       outputFileBaseName = "time-per-num-states-",
+      gnuFileCB = gnuFileCB,
+      key = "inside left",
       view = true,
       verbose = true
       )
+    def ratioData(triples1:List[(String,Int,Double)],
+                  triples2:List[(String,Int,Double)],
+                  ds1:List[Double],
+                  ds2:List[Double]):(List[Double],List[Double]) = {
+      (triples1,triples2) match {
+        case (Nil,_) |
+             (_, Nil) =>  (ds1.reverse,ds2.reverse)
+        case ((_,n1,_)::ts1,(_,n2,_)::_) if n1 < n2 => ratioData(ts1,triples2,ds1,ds2)
+        case ((_,n1,_)::_,(_,n2,_)::ts2) if n1 > n2 => ratioData(triples1,ts2,ds1,ds2)
+        case ((_,n1,t1)::ts1,(_,_,t2)::ts2) => ratioData(ts1,ts2,
+                                                       n1.toDouble::ds1,
+                                                         t1/t2::ds2)
+      }
+    }
+    val justMinMap = justMin.toMap
+    val (numNodess,ratios) = ratioData(justMinMap("fold-left").sortBy(_._2),
+                                       justMinMap("tree-fold").sortBy(_._2),
+                                       List(),List())
+    gnuPlot(List(("ratio", numNodess, ratios)))(
+      title = s"Time ratios (best of $numSamples)",
+      xAxisLabel = "Number of states",
+      yAxisLabel = "Time ratio",
+      yLog = false,
+      grid = true,
+      outputFileBaseName = "time-ratio-num-states-",
+      gnuFileCB = gnuFileCB,
+      key = "inside left",
+      view = false,
+      verbose = true
+    )
   }
 
 
@@ -327,6 +399,7 @@ object MapColoring {
                           biGraph: Map[V, Set[V]],
                           differentColor: List[V],
                           colors: Array[String] = Array("red", "green", "orange", "yellow"),
+                          gnuFileCB: String=>Unit = (_)=>(),
                           view:Boolean = false,
                           verbose: Boolean): Map[V, String] = {
     if (verbose)
@@ -462,14 +535,16 @@ object MapColoring {
       import gnuplot.GnuPlot._
 
       gnuPlot(folders[V]().zipWithIndex.map { case ((folder, _), k) =>
-        (s"Using $folder", measurements(k).map(_._1), measurements(k).map(_._2).map(_ * scale))
+        (folder, measurements(k).map(_._1), measurements(k).map(_._2).map(_ * scale))
       }.toList)(
         title = title,
         xAxisLabel = "Step",
         yAxisLabel = yAxisLabel,
         yLog = yLog,
         grid = true,
+        key = "inside left",
         outputFileBaseName = s"$baseName-$numNodes-4-color-$outputFileBaseName",
+        gnuFileCB=gnuFileCB,
         view = view,
         verbose = verbose
         )
@@ -499,7 +574,10 @@ object sampleColoring {
                    verbose=verbose)
   }
 
-  def europeTimedMapColoringTest(numRegions:Int, view:Boolean, verbose:Boolean): Int = {
+  def europeTimedMapColoringTest(numRegions:Int,
+                                 gnuFileCB:String=>Unit=(_)=>(),
+                                 view:Boolean,
+                                 verbose:Boolean): Int = {
     import EuropeGraph._
     val pallet = Array("red", "green", "orange", "yellow")
 
@@ -513,8 +591,9 @@ object sampleColoring {
                                   removeStates(List(), stateBiGraph),
                                   List("Croatia", "Bosnia", "Serbia", "Montenegro"),
                                   colors = pallet,
+                                  gnuFileCB = gnuFileCB,
                                   view = view,
-                                  verbose)
+                                  verbose=verbose)
 
     biGraphToDot(stateBiGraph, statePositions, s"europe-political-$numRegions-colors"
                  )(symbols = symbols,
@@ -539,8 +618,8 @@ object sampleColoring {
   }
 
   def main(argv: Array[String]): Unit = {
-    timeColorizeGraphs()
     europeMapColoringTest()
+    timeColorizeGraphs(41)
 
   }
 }
