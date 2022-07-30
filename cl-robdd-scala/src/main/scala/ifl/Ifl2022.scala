@@ -99,6 +99,28 @@ object Ifl2022 {
     //     i.e., does the instrumentation effect the computation time.
   }
 
+  def drawMapConstraints():Unit = {
+    import bdd.{Bdd,Or,Xor,And}
+    import bdd.GraphViz.GraphVizOps
+
+    // france <-> spain
+    // Af != As  || Bf != Bs
+    val Af = 1
+    val Bf = 2
+    val As = 3
+    val Bs = 4
+    val Ag = 5
+    val Bg = 6
+    Bdd.withNewBddHash {
+      val bddFS = Or(Xor(Af,As),Xor(Bf,Bs))
+      val bddFG = Or(Xor(Af,Ag),Xor(Bf,Bg))
+      bddFS.bddView(drawFalseLeaf=true,title="France -> Spain")
+      bddFG.bddView(drawFalseLeaf=true,title="France -> Germany")
+      And(bddFS,bddFG).bddView(drawFalseLeaf=true,title="2 borders")
+    }
+
+  }
+
   def main(argv: Array[String]): Unit = {
     rationalSums()
     floatSums()
