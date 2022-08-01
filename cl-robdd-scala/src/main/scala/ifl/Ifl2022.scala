@@ -35,10 +35,16 @@ import scala.math.abs
 
 object Ifl2022 {
   val gnuPlotDataDirName = "/Users/jnewton/Repos/research/gnuplot/"
+  val dotDirName = "/Users/jnewton/Repos/research/dot/"
   def rationalAdd(a: Rational, b: Rational): Rational = a + b
   val rationalZero = Rational(0, 1)
-  def suppressTitle(line:String):Boolean = {
-    ! line.startsWith("set title")
+
+  def suppressGnuTitle(line: String): Boolean = {
+    !line.startsWith("set title")
+  }
+
+  def suppressDotTitle(line: String): Boolean = {
+    !(line.startsWith("  labelloc=") || line.startsWith("  label="))
   }
   // measure round-off error
   def floatAddition(n:Int):(Rational,Double,Double) = {
@@ -85,7 +91,7 @@ object Ifl2022 {
         outputFileBaseName = "float-accuracy",
         gnuFileCB = (gnuName:String) => filterFile(gnuName,
                                                    gnuPlotDataDirName + "float-accuracy.gnu",
-                                                   suppressTitle),
+                                                   suppressGnuTitle),
 
         verbose = true,
         view = true
@@ -102,15 +108,15 @@ object Ifl2022 {
                      verbose = true,
                      randomize=true,
                      gnuFileCB=(fn:String)=>{
-                       filterFile(fn,gnuPlotDataDirName+"ifl-rational-addition-random.gnu",
-                                  suppressTitle)
+                       filterFile(fn, gnuPlotDataDirName+"ifl-rational-addition-random.gnu",
+                                  suppressGnuTitle)
                      })
     rationalFoldTest(1000,
                      verbose = true,
                      randomize=false,
                      gnuFileCB=(fn:String)=>{
-                       filterFile(fn,gnuPlotDataDirName+"ifl-rational-addition.gnu",
-                                suppressTitle)
+                       filterFile(fn, gnuPlotDataDirName+"ifl-rational-addition.gnu",
+                                  suppressGnuTitle)
                      })
   }
 
@@ -122,7 +128,7 @@ object Ifl2022 {
         .replaceAll("^/.*/europe-[0-9]+-", gnuPlotDataDirName + "europe-")
       println(s"    fn = $fn")
       println(s"worked = $worked")
-      filterFile(fn,worked,suppressTitle)
+      filterFile(fn, worked, suppressGnuTitle)
     }
     europeTimedMapColoringTest(30,
                                gnuFileCB=captureGnu ,
@@ -146,12 +152,39 @@ object Ifl2022 {
     val Bs = 4
     val Ag = 5
     val Bg = 6
+    def labelToString(k:Int):String = {
+      val ar = Array("no-label",
+                     "<A<sub>FR</sub>>","<B<sub>FR</sub>>",
+                     "<A<sub>ES</sub>>","<B<sub>ES</sub>>",
+                     "<A<sub>DE</sub>>","<B<sub>DE</sub>>"
+                     )
+      ar(k)
+    }
+    def dotFileCB(fn:String):String=>Unit = {
+      (rawDotFileName:String) => {
+        println(s"fn = $fn")
+        filterFile(rawDotFileName,
+                   dotDirName + fn,
+                   suppressDotTitle
+                   )
+        ()
+      }
+    }
     Bdd.withNewBddHash {
       val bddFS = Or(Xor(Af, As), Xor(Bf, Bs))
       val bddFG = Or(Xor(Af, Ag), Xor(Bf, Bg))
-      bddFS.bddView(drawFalseLeaf = true, title = "France -> Spain")
-      bddFG.bddView(drawFalseLeaf = true, title = "France -> Germany")
-      And(bddFS, bddFG).bddView(drawFalseLeaf = true, title = "2 borders")
+      bddFS.bddView(drawFalseLeaf = true, title = "France -> Spain",
+                    labelToString=labelToString,
+                    dotFileCB=dotFileCB("france-spain.dot"),
+                    htmlLabels=true)
+      bddFG.bddView(drawFalseLeaf = true, title = "France -> Germany",
+                    labelToString=labelToString,
+                    dotFileCB=dotFileCB("france-germany.dot"),
+                    htmlLabels=true)
+      And(bddFS, bddFG).bddView(drawFalseLeaf = true, title = "2 borders",
+                                labelToString=labelToString,
+                                dotFileCB=dotFileCB("france-spain-germany.dot"),
+                                htmlLabels=true)
     }
   }
 
@@ -162,10 +195,10 @@ object Ifl2022 {
                          if (fn.matches(".*time-per-num-states.*"))
 
                            filterFile(fn, gnuPlotDataDirName + "time-per-num-states.gnu",
-                                      suppressTitle)
+                                      suppressGnuTitle)
                          else if (fn.matches(".*time-ratio-num-states.*"))
                            filterFile(fn, gnuPlotDataDirName + "time-ratio-num-states.gnu",
-                                      suppressTitle)
+                                      suppressGnuTitle)
                        }
                        )
   }
@@ -196,7 +229,9 @@ object Ifl2022 {
     timeColorGraph()
 
     // produce file
-
+    //   france-spain.dot
+    //   france-germany.dot
+    //   france-spain-germany.dot
     drawMapConstraints()
   }
 }

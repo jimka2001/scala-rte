@@ -27,8 +27,13 @@ object GraphViz {
 
   import java.io.{OutputStream}
 
-  def bddView(bdd: Bdd, drawFalseLeaf: Boolean, title:String="", labelToString:Int=>String): String = {
-    val png = bddToPng(bdd,drawFalseLeaf,title,labelToString)
+  def bddView(bdd: Bdd, drawFalseLeaf: Boolean, title:String="",
+              dotFileCB:String=>Unit=(_=>()),
+              labelToString:Int=>String,
+              htmlLabels:Boolean): String = {
+    val png = bddToPng(bdd,drawFalseLeaf,title,
+                       dotFileCB=dotFileCB,labelToString=labelToString,
+                       htmlLabels=htmlLabels)
     openGraphicalFile(png)
   }
 
@@ -40,10 +45,13 @@ object GraphViz {
     }
   }
 
-  def bddToPng(bdd:Bdd,drawFalseLeaf: Boolean, title:String, labelToString:Int=>String): String = {
+  def bddToPng(bdd:Bdd,drawFalseLeaf: Boolean, title:String,
+               dotFileCB:String=>Unit,
+               labelToString:Int=>String=n=>n.toString,
+               htmlLabels:Boolean=false): String = {
     val pngPath = makeTmpFileName("bdd", ".png")
     val dotPath = makeTmpFileName("bdd",".dot")
-    bddToPng(bdd, dotPath, drawFalseLeaf, title,labelToString)
+    bddToDot(bdd, dotPath, drawFalseLeaf, title,dotFileCB,labelToString,htmlLabels)
 
     locally {
       import sys.process._
@@ -56,14 +64,26 @@ object GraphViz {
     pngPath
   }
 
-  def bddToPng(bdd:Bdd,pathname: String, drawFalseLeaf: Boolean, title:String, labelToString:Int=>String): String = {
+  def bddToDot(bdd:Bdd,
+               pathname: String,
+               drawFalseLeaf: Boolean,
+               title:String,
+               dotFileCB:String=>Unit,
+               labelToString:Int=>String,
+               htmlLabels:Boolean): String = {
     val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-    bddToDot(bdd,stream, drawFalseLeaf, title, labelToString)
+    bddToDotStream(bdd,stream, drawFalseLeaf, title, labelToString,htmlLabels)
     stream.close()
+    dotFileCB(pathname)
     pathname
   }
 
-  def bddToDot(bdd:Bdd,stream: OutputStream, drawFalseLeaf: Boolean, title:String, labelToString:Int=>String): Unit = {
+  def bddToDotStream(bdd:Bdd,
+                     stream: OutputStream,
+                     drawFalseLeaf: Boolean,
+                     title:String,
+                     labelToString:Int=>String,
+                     htmlLabels:Boolean): Unit = {
     val penWidth = 2
 
     def write(str: String): Unit = {
@@ -82,13 +102,19 @@ object GraphViz {
 
     write("digraph G {\n")
     val (_, names) = bdd.fold((1, Map[Bdd, Int]())) { case ((n: Int, names: Map[Bdd, Int]), bdd: Bdd) =>
+      val quote = """""""
       bdd match {
         case BddTrue => dotTrue(n)
         case BddFalse => dotFalse(n, drawFalseLeaf)
         case bdd: BddNode =>
-          write(s""" $n [shape="ellipse",label="""")
+
+          write(s""" $n [shape="ellipse",label=""")
+          if (!htmlLabels)
+            write(quote)
           write(labelToString(bdd.label))
-          write(s"""",penWidth=$penWidth]\n""")
+          if (!htmlLabels)
+            write(quote)
+          write(s""",penWidth=$penWidth]\n""")
       }
       (n + 1, names + (bdd -> n))
     }
@@ -145,19 +171,27 @@ object GraphViz {
     //   bdd.bddToDot(...)
     def bddView(drawFalseLeaf: Boolean,
                 title:String,
-                labelToString:Int=>String=labelToString): Unit = {
-      GraphViz.bddView(givenBdd, drawFalseLeaf,title,labelToString)
+                labelToString:Int=>String=labelToString,
+                dotFileCB:String=>Unit=(_=>()),
+                htmlLabels:Boolean=false): Unit = {
+      GraphViz.bddView(givenBdd, drawFalseLeaf,title,
+                       dotFileCB=dotFileCB, labelToString=labelToString,
+                       htmlLabels=htmlLabels)
     }
     def bddToPng(drawFalseLeaf: Boolean,
                  title:String,
+                 dotFileCB:String=>Unit=(_=>()),
                  labelToString:Int=>String=labelToString): String = {
-      GraphViz.bddToPng(givenBdd,drawFalseLeaf,title,labelToString)
+      GraphViz.bddToPng(givenBdd,drawFalseLeaf,title,
+                        dotFileCB=dotFileCB, labelToString=labelToString)
     }
     def bddToDot(stream: OutputStream,
                  drawFalseLeaf: Boolean,
                  title:String,
-                 labelToString:Int=>String=labelToString): Unit = {
-      GraphViz.bddToDot(givenBdd,stream,drawFalseLeaf,title,labelToString)
+                 dotFileCB:String=>Unit = _=>(),
+                 labelToString:Int=>String=labelToString,
+                 htmlLabels:Boolean): Unit = {
+      GraphViz.bddToDotStream(givenBdd,stream,drawFalseLeaf,title,labelToString,htmlLabels=htmlLabels)
     }
   }
 
@@ -166,7 +200,11 @@ object GraphViz {
     Bdd.withNewBddHash {
       val bdd3 = Bdd(3)
       val bdd2 = Bdd(2)
-      Bdd(1, bdd2, bdd3).bddToDot(System.out, drawFalseLeaf=drawFalse,"")
+      Bdd(1, bdd2, bdd3).bddToDot(System.out,
+                                  drawFalseLeaf=drawFalse,
+                                  dotFileCB=_=>(),
+                                  title="",
+                                  htmlLabels=false)
       Bdd(1, bdd2, bdd3).bddView(drawFalseLeaf=drawFalse,"")
       Or(1, 2, -3, And(-1, 4), And(2, Not(Or(1, 3)))).bddView(drawFalseLeaf=drawFalse,"")
 
@@ -177,7 +215,7 @@ object GraphViz {
              Xor(1, 2, And(-2, -3, 4)),
              AndNot(2, 3))).bddView(drawFalseLeaf=drawFalse,title="")
 
-      Or(1, 2).bddToDot(System.out, drawFalseLeaf = true, title="")
+      Or(1, 2).bddToDot(System.out, drawFalseLeaf = true, title="", htmlLabels=false)
 
     }
     BddTrue.bddView(drawFalse,title="")
