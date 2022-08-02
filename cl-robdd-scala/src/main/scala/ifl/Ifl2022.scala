@@ -26,12 +26,13 @@ package ifl
 
 import adjuvant.Adjuvant
 import adjuvant.Adjuvant.{copyFile, filterFile}
+import gnuplot.GnuPlot.gnuPlot
 import graphcolor.MapColoring.timeColorizeGraphs
 import spire.math.Rational
 import treereduce.RationalFoldTest.rationalFoldTest
 import treereduce.TreeReduce.RichReducible
 
-import scala.math.abs
+import scala.math.{abs, log10}
 
 object Ifl2022 {
   val gnuPlotDataDirName = "/Users/jnewton/Repos/research/gnuplot/"
@@ -55,22 +56,63 @@ object Ifl2022 {
     val byFoldLeft = (1 to n).foldLeft(0.0)((acc:Double,i:Int) =>
                                             acc + (i + 0.1))
 
-    val byTreeFold = (1 to n).treeMapReduce(0.0)((i:Int)=>(i.toDouble + 0.1),
-                                                 (acc:Double,d:Double)=> acc + d)
+    val byTreeFold = (1 to n).treeMapReduce(0.0)((i: Int) => (i.toDouble + 0.1),
+                                                 (acc: Double, d: Double) => acc + d)
 
     (exact,byFoldLeft,byTreeFold)
   }
 
+  def indices(scale: Double, data: List[Int], n:Int): List[Int] = {
+    data match {
+      case a :: as if a > n => as.reverse
+      case a :: _ => indices(scale, (a * scale).round.toInt :: data,n)
+    }
+  }
+
+  def floatSumsRandom(n:Int=50000):Unit = {
+    import scala.util.Random
+    val r = Random
+    //r.setSeed(1000L)
+    val numX = 100
+    val p: Double = numX * log10(n)
+    val rawData = for{k <- indices(1.1,List(1000),n)
+                      nums = Random.shuffle(for {i <- 0 to k
+                                                 x = r.nextDouble()
+                                                 y <- List(x,-x)
+                                                 } yield y)
+
+                      v1 = nums.foldLeft(0.0)(_ + _)
+                      //r.setSeed(1000L)
+                      v2 = nums.treeMapReduce(0.0)((x:Double) => x,
+                                                   (acc: Double, d: Double) => acc + d)
+                      } yield (k,v1,v2)
+    val xs = rawData.map(_._1.toDouble)
+    val dataToPlot: List[(String, Seq[Double], Seq[Double])] =
+      List(("fold-left", xs, rawData.map(x => abs(x._2))),
+           ("tree-fold", xs, rawData.map(x => abs(x._3))))
+
+    gnuPlot(dataToPlot)(
+      title = "Fold Strategy Error of Floating Point Addition",
+      comment = "Fold Strategy Error of Floating Point Addition",
+      xAxisLabel = "Number of terms added", xLog = true,
+      yAxisLabel = "Error", yLog = false,
+      grid = true,
+      key = "inside left",
+      outputFileBaseName = "float-random-accuracy",
+      gnuFileCB = (gnuName: String) => filterFile(gnuName,
+                                                  gnuPlotDataDirName + "float-random-accuracy.gnu",
+                                                  suppressGnuTitle),
+
+      verbose = true,
+      view = true
+      )
+  }
+
   def floatSums(n:Int=50000):Unit = {
     import gnuplot.GnuPlot.gnuPlot
-    def indices(scale:Double, data:List[Int]):List[Int] = {
-      data match {
-        case a::as if a > n => as.reverse
-        case a::_ => indices(scale, (a * scale).round.toInt :: data)
-      }
-    }
 
-    val rawData = for{k<- indices(1.1, List(100))
+
+    val rawData = for{k<- indices(1.1, List(100),n)
                       (exact, byFoldLeft, byTreeFold) = floatAddition(k)
                       if exact != byFoldLeft
                       if exact != byTreeFold
@@ -78,9 +120,9 @@ object Ifl2022 {
 
     {
       val xs = rawData.map(_._1).map(_.toDouble)
-      val dataToPlot:List[(String, Seq[Double], Seq[Double])] =
-        List(("fold-left",xs,rawData.map{case (_,exact,fold,_) => abs(exact.toDouble - fold) }),
-             ("tree-fold",xs,rawData.map{case (_,exact,_,tree) => abs(exact.toDouble - tree)}))
+      val dataToPlot: List[(String, Seq[Double], Seq[Double])] =
+        List(("fold-left", xs, rawData.map { case (_, exact, fold, _) => abs(exact.toDouble - fold) }),
+             ("tree-fold", xs, rawData.map { case (_, exact, _, tree) => abs(exact.toDouble - tree) }))
       gnuPlot(dataToPlot)(
         title = "Fold Strategy Error of Floating Point Addition",
         comment = "Fold Strategy Error of Floating Point Addition",
@@ -207,11 +249,15 @@ object Ifl2022 {
     // produce files
     //   ifl-rational-addition-random.gnu
     //   ifl-rational-addition.gnu
-    rationalSums()
+    //rationalSums()
 
     // produce file
     //    float-accuracy.gnu
-    floatSums()
+    //floatSums()
+
+    // produce file
+    //     float-random-accuracy.gnu
+    floatSumsRandom()
 
     // produce files
     //   europe-4-color-allocation.gnu
@@ -221,17 +267,17 @@ object Ifl2022 {
     //   europe-4-color-num-allocations.gnu
     //   europe-4-color-reclaimed.gnu
     //   europe-4-color-time.gnu
-    fourColor()
+    //fourColor()
 
     // produce files
     //   time-per-num-states.gnu
     //   time-ratio-num-states.gnu
-    timeColorGraph()
+    //timeColorGraph()
 
     // produce file
     //   france-spain.dot
     //   france-germany.dot
     //   france-spain-germany.dot
-    drawMapConstraints()
+    //drawMapConstraints()
   }
 }
