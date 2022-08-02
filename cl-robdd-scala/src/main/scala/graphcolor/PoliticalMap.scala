@@ -1,4 +1,4 @@
-// Copyright (c) 2019,20 EPITA Research and Development Laboratory
+// Copyright (c) 2019,20,22 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package bdd
+package graphcolor
 
 import adjuvant.Adjuvant.openGraphicalFile
 
@@ -79,7 +79,7 @@ class PoliticalMap[V] {
   }
 
   val dotProgram:String = locally{
-    import java.nio.file.{Paths, Files}
+    import java.nio.file.{Files, Paths}
     Seq("/usr/local/bin/neato","/opt/local/bin/neato").find(p => Files.exists(Paths.get(p))) match {
       case None => "neato"
       case Some(path) => path
@@ -163,7 +163,7 @@ object GenericGraph extends PoliticalMap {
       if (view)
         openGraphicalFile(pngPathName)
       if(verbose)
-        println(s"[finished to $pngPathName")
+        println(s"finished $pngPathName ]")
       status
     }
   }

@@ -27,6 +27,8 @@
 
 package gnuplot
 
+import adjuvant.Adjuvant.makeTmpFileName
+
 object GnuPlot {
 
   val gnuPlotPath: String = List("/opt/local/bin/gnuplot", "/usr/local/bin/gnuplot").find { fName =>
@@ -35,14 +37,12 @@ object GnuPlot {
     Files.exists(Paths.get(fName))
   }.getOrElse("gnuplot")
 
-  def writeCsv(dataToPlot: List[(String, Seq[Double], Seq[Double])],
+  def writeCsv(dataToPlot: Seq[(String, Seq[Double], Seq[Double])],
                xAxisLabel:String,
-               outputDirName     : String,
                outputFileBaseName: String,
                verbose: Boolean): Unit = {
-    require(outputDirName.takeRight(1) == "/")
     import java.io._
-    val csvName = s"$outputDirName$outputFileBaseName.csv"
+    val csvName = makeTmpFileName(outputFileBaseName, ".csv")
     val csv = new PrintWriter(new File(csvName))
     if (verbose)
       println(s"[writing to $csvName\n")
@@ -71,7 +71,7 @@ object GnuPlot {
     if (verbose)
       println(s"finished $csvName]")
   }
-  def gnuPlot(dataToPlot: List[(String, Seq[Double], Seq[Double])])(
+  def gnuPlot(dataToPlot: Seq[(String, Seq[Double], Seq[Double])])(
               terminals: Set[String]=Set("png"), // e.g Set("png","tikz")
               title             : String = "",
               comment           : String = "",
@@ -80,24 +80,26 @@ object GnuPlot {
               yAxisLabel        : String="",
               yLog              : Boolean=false,
               grid              : Boolean=false,
-              outputDirName     : String = "/tmp/",
+              // outputDirName     : String = "/tmp/",
               // outputFileBaseName is basename without the .pdf, .gnu, .png etc and without leading path
               outputFileBaseName: String = "curves",
               plotWith          : String = "linespoints",
               key:String = "horizontal bmargin",
-              verbose:Boolean
+              gnuFileCB:String=>Unit = (_)=>(),
+              verbose:Boolean,
+              view:Boolean = false
              ): Unit = {
     // TODO verify that "lines" can be used as plotWith, not 100% sure
     require(Set("linespoints", "points", "lines").contains(plotWith))
-    assert(outputDirName.takeRight(1) == "/", s"outputDirName=$outputDirName must end with /")
 
     import java.io._
     import adjuvant.Accumulators.withOutputToString
+    import adjuvant.Adjuvant.openGraphicalFile
 
-    val gnuName = s"$outputDirName$outputFileBaseName.gnu"
+    val gnuName = makeTmpFileName(outputFileBaseName, ".gnu")
     val gnu = new PrintWriter(new File(gnuName))
 
-    writeCsv(dataToPlot,xAxisLabel,outputDirName,outputFileBaseName,verbose)
+    writeCsv(dataToPlot,xAxisLabel,outputFileBaseName,verbose)
     if (verbose)
       println(s"[writing to $gnuName\n")
     gnu.write(s"# $comment\n")
@@ -119,7 +121,9 @@ object GnuPlot {
       gnu.write(s"""set ylabel "$yAxisLabel"\n""")
     if (grid)
       gnu.write(s"set grid\n")
-
+    gnu.write("set key font ',15'\n")
+    gnu.write("set xtics font ',15'\n")
+    gnu.write("set ytics font ',15'\n")
     gnu.write(s"set key $key\n") // TODO can also use set key at x,y
     if ("" != title)
       gnu.write(s"""set title "$title"\n""")
@@ -150,6 +154,7 @@ object GnuPlot {
     }
     gnu.write(footer)
     gnu.close()
+    gnuFileCB(gnuName)
     if (verbose)
       println(s"finished $gnuName]")
 
@@ -158,7 +163,7 @@ object GnuPlot {
     })
       terminals.foreach { terminal =>
         import sys.process._
-        val outputFileName = s"$outputDirName$outputFileBaseName.$terminal"
+        val outputFileName = makeTmpFileName(outputFileBaseName, terminal)
 
         if (verbose)
           println(s"[generating $outputFileName")
@@ -174,6 +179,8 @@ object GnuPlot {
           println(s"finished $outputFileName with exit code=$exitCode verbose=$verbose]")
         else if (verbose)
           println(s"finished $outputFileName]")
+        if (exitCode == 0 && view)
+          openGraphicalFile(outputFileName)
       }
   }
 }

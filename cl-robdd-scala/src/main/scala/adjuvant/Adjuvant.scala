@@ -290,6 +290,30 @@ object Adjuvant {
     fileName
   }
 
+  def makeTmpFileName(prefix:String, suffix:String):String = {
+    if (suffix != "" && suffix(0) != '.')
+      makeTmpFileName(prefix, "." + suffix)
+    else {
+      import java.io.File
+      File.createTempFile(prefix+"-", suffix).getAbsolutePath
+    }
+  }
+
+  def copyFile(from:String, to:String):Int = {
+    import sys.process._
+    Seq("cp", from, to).!
+  }
+
+  def filterFile(from:String, to:String, keepIf:String=>Boolean):Unit = {
+    import scala.io.Source
+    import java.io._
+    val w = new BufferedWriter(new FileWriter(to))
+    for{ line <- Source.fromFile(from).getLines()
+         if keepIf(line)
+         } w.write(line + "\n")
+    w.close()
+  }
+
   def eql(x:Any, y:Any):Boolean = {
     if (x.getClass != y.getClass)
       false

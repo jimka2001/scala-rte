@@ -22,6 +22,7 @@
 package bdd
 import org.scalatest._
 import org.scalatest.funsuite.AnyFunSuite
+import graphcolor.USAgraph
 
 class MapColoringTestSuite extends AnyFunSuite {
   import org.scalactic.source
@@ -32,7 +33,7 @@ class MapColoringTestSuite extends AnyFunSuite {
       println(s"] finished $testName")
     }
   }
-  import MapColoring._
+  import graphcolor.MapColoring._
 
   test("coloring") {
     Bdd.withNewBddHash {
@@ -47,14 +48,14 @@ class MapColoringTestSuite extends AnyFunSuite {
                                                              "d" -> Set("c", "b"))
 
       val colors = Array("red", "green", "blue", "yellow")
-      val (colorization, bdd) = graphToBdd(nodes,
-                                           uniDirectionalGraph,
-                                           biDirectionalGraph,
-                                           4,
+      val (colorization, bdd) = politicalGraphToBdd(nodes,
+                                                    uniDirectionalGraph,
+                                                    biDirectionalGraph,
+                                                    4,
                                            (_,_)=>(),
-                                           List(),
-                                           1,
-                                           verbose=false)
+                                                    List(),
+                                                    1,
+                                                    verbose=false)
       bdd.visitSatisfyingAssignments { (assignTrue,assignFalse) =>
         val colorMapping: Map[String, String] = assignColors(colorization, assignTrue,assignFalse, colors)
         colors.foreach { color =>
@@ -74,7 +75,7 @@ class MapColoringTestSuite extends AnyFunSuite {
   }
 
   test("europe"){
-    import bdd.sampleColoring.europeTimedMapColoringTest
+    import graphcolor.sampleColoring.europeTimedMapColoringTest
 
     europeTimedMapColoringTest(12, view=false, verbose = false)
   }
@@ -88,14 +89,14 @@ class MapColoringTestSuite extends AnyFunSuite {
     import adjuvant.Accumulators._
     Bdd.withNewBddHash {
       //val (states, subGraph) = findSubGraph("AL", numNodes)
-      val (colorization,bdd) = graphToBdd(List("CA"),
-                                           USAgraph.stateUniGraph,
-                                           USAgraph.stateBiGraph,
-                                           numNodes,
+      val (colorization,bdd) = politicalGraphToBdd(List("CA"),
+                                                   USAgraph.stateUniGraph,
+                                                   USAgraph.stateBiGraph,
+                                                   numNodes,
                                           (n,size)=> if (verbose) println(s"plot $n ${size()}"),
-                                           List("AZ","CO","NM","UT"),
-                                           1,
-                                           verbose=verbose)
+                                                   List("AZ","CO","NM","UT"),
+                                                   1,
+                                                   verbose=verbose)
 
       if (verbose) println(s"colors=$colorization")
       val countSolutions =
