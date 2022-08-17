@@ -25,7 +25,7 @@ package ifl
 // IFL 2022 = The 34th Symposium on Implementation and Application of Functional Languages
 
 import adjuvant.Adjuvant
-import adjuvant.Adjuvant.{copyFile, filterFile}
+import adjuvant.Adjuvant.{copyFile, filterFile, directoryExists}
 import gnuplot.GnuPlot.gnuPlot
 import graphcolor.MapColoring.timeColorizeGraphs
 import spire.math.Rational
@@ -35,8 +35,10 @@ import treereduce.TreeReduce.RichReducible
 import scala.math.{abs, log10}
 
 object Ifl2022 {
-  val gnuPlotDataDirName = "/Users/jnewton/Repos/research/gnuplot/"
-  val dotDirName = "/Users/jnewton/Repos/research/dot/"
+  val gnuPlotDataDirName = Seq("/Users/jnewton/Repos/research/gnuplot/",
+                               "/Users/jimka/Repos/research/gnuplot/").find(dname => directoryExists(dname)).get
+  val dotDirName = Seq("/Users/jnewton/Repos/research/dot/",
+                       "/Users/jimka/Repos/research/dot/").find(dname => directoryExists(dname)).get
   def rationalAdd(a: Rational, b: Rational): Rational = a + b
   val rationalZero = Rational(0, 1)
 

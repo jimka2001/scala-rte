@@ -104,7 +104,7 @@ object RationalFoldTest {
     gnuPlot(dataForPlot)(
       title = "Fold Strategy Performance of Rational Addition" + (if (randomize) " (shuffled)" else " (sorted)"),
       comment = "Fold Strategy Performance of Rational Addition",
-      xAxisLabel = "Number of terms (density)", xLog = true,
+      xAxisLabel = "Number of terms", xLog = true,
       yAxisLabel = s"Time (ms) (best of $numRepetitions)", yLog = true,
       grid = true,
       outputFileBaseName = "rational-addition" + (if (randomize) "-random" else ""),
