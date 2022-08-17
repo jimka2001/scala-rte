@@ -505,7 +505,7 @@ object MapColoring {
     for {(measurements, scale, yLog, title, yAxisLabel, outputFileBaseName)
            <- List((sizes, 1 / 1000.0, true,
                      "Allocation for Map 4-coloring",
-                     "Bdd size computed per step (K objects)",
+                     "BDD node count x1000 per step n",
                      "allocation"),
                    (gcCounts, 1.0, false,
                      "GC count for Map 4-coloring",
@@ -521,7 +521,7 @@ object MapColoring {
                      "hash-size"),
                    (numAllocations, 1 / 1000.0, true,
                      "Num BDD Allocations for Map 4-coloring",
-                     "Num BDD nodes accumulated through step (K objects)",
+                     "BDD node count x1000 through step n",
                      "num-allocations"),
                    (reclaimed, 1 / 1000.0, true,
                      "Num Objects reclaimed for Map 4-coloring",
@@ -529,7 +529,7 @@ object MapColoring {
                      "reclaimed"),
                    (times, 1e-9, true,
                      "Incremental time for Map 4-coloring",
-                     "Time elapsed (sec) for first 1 steps",
+                     "Time elapsed (sec) for first n steps",
                      "time")
                    )} {
       import gnuplot.GnuPlot._

@@ -314,6 +314,12 @@ object Adjuvant {
     w.close()
   }
 
+  def directoryExists(dname:String):Boolean = {
+    import java.nio.file.{Paths, Files}
+
+    Files.exists(Paths.get(dname + "/."))
+  }
+
   def eql(x:Any, y:Any):Boolean = {
     if (x.getClass != y.getClass)
       false
