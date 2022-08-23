@@ -115,13 +115,15 @@ object Types {
           lazy val a = SAnd(u, td1).canonicalize(Some(NormalForm.Dnf))
           lazy val b = SAnd(nc, td1).canonicalize(Some(NormalForm.Dnf))
           if (u.disjoint(td1).contains(true))
-            Map(td1 -> (factors+n,disjoints + u))
+            Map(td1 -> (factors + n, disjoints + u))
           else if (n.disjoint(td1).contains(true))
-            Map(td1 -> (factors+u, disjoints+n))
-          else if (a.inhabited.contains(false))
-            Map(td1 -> (factors + n, disjoints+u))
-          else if (b.inhabited.contains(false))
-            Map(td1 -> (factors+u, disjoints+n))
+            Map(td1 -> (factors + u, disjoints + n))
+          // we omit the expensive inhabited check unless u.disjoint(td1) == dont-know
+          else if (u.disjoint(td1).isEmpty && a.inhabited.contains(false))
+            Map(td1 -> (factors + n, disjoints + u))
+          // we omit the expensive inhabited check unless n.disjoint(td1) == dont-know
+          else if (n.disjoint(td1).isEmpty && b.inhabited.contains(false))
+            Map(td1 -> (factors + u, disjoints + n))
           else
             Map(a -> (factors + u, disjoints + n),
                 b -> (factors + n, disjoints + u))
