@@ -41,12 +41,33 @@ object Nfa {
     }
   (newInit, newFinals,newTransitions)
   }
-  /*
-  def rebase() : () ={}
+
+  def rebase(initials: Set[Int], finals: Set[Int], transitions : Array[(Int, Char, Int)], rebaseNumber:Int)
+  : (Set[Int], Set[Int], Array[(Int, Char, Int)]) = {
+    val newTransitions : Array[(Int, Char, Int)] = Array.fill[(Int, Char, Int)](transitions.length)((-1,'a',-1))
+    var newInit : Set[Int]=  Set()
+    var newFinals : Set[Int] = Set()
+    var mylist = initials.toList
+    for(i<-Range(0,mylist.size)){
+      newInit += mylist(i)-rebaseNumber
+    }
+    mylist = finals.toList
+    for(i<-Range(0,mylist.size)){
+      newFinals +=mylist(i)-rebaseNumber
+    }
+    for(i<-transitions.indices)
+    {
+      newTransitions(i) = (transitions(i)._1-rebaseNumber,transitions(i)._2,transitions(i)._3-rebaseNumber)
+    }
+    (newInit, newFinals,newTransitions)
+
+
+  }
   def append() : () ={}
-    def findUseless() : () = {}
-    def remove() :() = {}
-    def canonicalize() : () = {}
+
+  /*def findUseless() : () = {}
+  def remove() :() = {}
+  def canonicalize() : () = {}
   */
   def main(args : Array[String]) :Unit =
   {
