@@ -1,5 +1,6 @@
 package xymbolyco
 
+
 import adjuvant.Accumulators.{makeCounter, withSetCollector}
 import adjuvant.Adjuvant.{fixedPoint, traceGraph}
 import genus.Types.mdtd
