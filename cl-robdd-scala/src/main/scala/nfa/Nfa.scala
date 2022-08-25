@@ -1,223 +1,138 @@
 package nfa
 
+import scalafx.scene.input.KeyCode.S
+
+import scala.collection.immutable.Queue
+
 object Nfa {
   def compactify[L](initials: Set[Int], finals: Set[Int], transitions : Array[(Int, L, Int)])
   : (Set[Int], Set[Int], Array[(Int,L, Int)]) = {
-
-    val newTransitions : Array[(Int, L, Int)] = Array.fill[(Int, L, Int)](transitions.length)((-1,null,-1))
-    var newInit : Set[Int]=  Set()
-    var newFinals : Set[Int] = Set()
-    var states = initials
-    states ++= finals
-    for(i<-transitions.indices)
-    {
-      states += transitions(i)._1
-      states += transitions(i)._3
-    }
-    val min = states.min
-    val max = states.max
-    var map = Map(min->0)
-    var temp = 0
-    for(i<-Range(1,max-min+1))
-    {
-      if(states.contains(min+i)){
-        map = map ++ Map((min+i)->(i-temp))
-      }
-      else{
-        temp+=1
-      }
-    }
-    var mylist = initials.toList
-    for(i<-Range(0,mylist.size)){
-      newInit += map(mylist(i))
-    }
-    mylist = finals.toList
-    for(i<-Range(0,mylist.size)){
-      newFinals +=map(mylist(i))
-    }
-    for(i<-transitions.indices)
-    {
-      newTransitions(i) = (map(transitions(i)._1),transitions(i)._2,map(transitions(i)._3))
-    }
-  (newInit, newFinals,newTransitions)
-  }
-
+    rebase(initials,finals,transitions,0)}
   def rebase[L](initials: Set[Int], finals: Set[Int], transitions : Array[(Int, L, Int)], rebaseNumber:Int)
   : (Set[Int], Set[Int], Array[(Int, L, Int)]) = {
-    val newTransitions : Array[(Int, L, Int)] = Array.fill[(Int, L, Int)](transitions.length)((-1,null,-1))
-    var newInit : Set[Int]=  Set()
-    var newFinals : Set[Int] = Set()
-    var mylist = initials.toList
-    for(i<-Range(0,mylist.size)){
-      newInit += mylist(i)+rebaseNumber
-    }
-    mylist = finals.toList
-    for(i<-Range(0,mylist.size)){
-      newFinals +=mylist(i)+rebaseNumber
-    }
-    for(i<-transitions.indices)
-    {
-      newTransitions(i) = (transitions(i)._1+rebaseNumber,transitions(i)._2,transitions(i)._3+rebaseNumber)
-    }
-    (newInit, newFinals,newTransitions)
-
-
+    val all : Set[Int] = initials ++ finals ++ transitions.flatMap(tr=>Seq(tr._1,tr._3))
+    val mymap = all.zip(Range(rebaseNumber,all.size+rebaseNumber)).toMap
+    (initials.map(mymap),finals.map(mymap), transitions.map(tr=>(mymap(tr._1),tr._2,mymap(tr._3))))
   }
   def append[L](init1 : Set[Int], fin1 : Set[Int],transit1 : Array[(Int, L, Int)],
              init2 : Set[Int], fin2 : Set[Int],transit2 : Array[(Int, L, Int)])
   : (Set[Int], Set[Int], Array[(Int, L, Int)]) ={
-    val newTransitions : Array[(Int, L, Int)] = Array.fill[(Int, L, Int)](transit1.length+transit2.length)((-1,null,-1))
-    var (newInit1,newFinal1,newTrans1) = compactify(init1,fin1,transit1)
-    val (newInit2,newFinal2,newTrans2) = compactify(init2,fin2,transit2)
-    var states = newInit1
-    states ++= newFinal1
-    for(i<-newTrans1.indices)
-    {
-      states += newTrans1(i)._1
-      states += newTrans1(i)._3
-    }
-
-    val (newInit3,newFinal3,newTrans3)=rebase(newInit2,newFinal2,newTrans2,states.size)
-    var newInit = newInit1
-    newInit ++= newInit3
-    var newFinals = newFinal1
-    newFinals++=newFinal3
-    for(i<-newTrans1.indices)
-    {
-      newTransitions(i) = newTrans1(i)
-    }
-    for(i<-newTrans3.indices)
-    {
-      newTransitions(i+newTrans1.length) = newTrans3(i)
-    }
-    (newInit,newFinals,newTransitions)
+    val (newInit1,newFinal1,newTrans1) = compactify(init1,fin1,transit1)
+    val states =newInit1 ++ newFinal1 ++ newTrans1.flatMap(tr=>Seq(tr._1,tr._3))
+    val (newInit2,newFinal2,newTrans2) = rebase(init2,fin2,transit2,states.size)
+    (newInit1++newInit2,newFinal1++newFinal2,newTrans1++newTrans2)
   }
-
+  def accessible[L](initials: Set[Int], transitions : Array[(Int, L, Int)]) : Set[Int]=
+  {
+    def delta(S : Int): Set[Int]=
+    {
+      var myset : Set[Int] = Set()
+      for(i<-transitions.indices)
+      {
+        if(transitions(i)._1==S)
+        {
+          myset += transitions(i)._3
+        }
+      }
+      myset
+    }
+    def recur(here : Set[Int], done: Set[Int]) : Set[Int] =
+    {
+      if(here.nonEmpty)
+      {
+        return recur(here.flatMap(delta).diff(done),done++here)
+      }
+      done
+    }
+    recur(initials,Set())
+  }
+  def coaccessible[L](finals: Set[Int], transitions : Array[(Int, L, Int)]) : Set[Int]=
+  {
+    def delta(S : Int): Set[Int]=
+    {
+      var myset : Set[Int] = Set()
+      for(i<-transitions.indices)
+      {
+        if(transitions(i)._3==S)
+        {
+          myset += transitions(i)._1
+        }
+      }
+      myset
+    }
+    def recur(here : Set[Int], done: Set[Int]) : Set[Int] =
+    {
+      if(here.nonEmpty)
+      {
+        return recur(here.flatMap(delta).diff(done),done++here)
+      }
+      done
+    }
+    recur(finals,Set())
+  }
   def findUseless[L](initials: Set[Int], finals: Set[Int], transitions : Array[(Int, L, Int)])
   : Set[Int] = {
-
-    var useless :Set[Int] = Set()
-    var allstates = initials
-    var useful = initials
-    allstates ++= finals
-    useful++= finals
-    for(i<-transitions.indices)
-    {
-      allstates+= transitions(i)._1
-      allstates += transitions(i)._3
-    }
-    var queue = initials
-    var a = 0
-    while(queue.nonEmpty)
-    {
-      a= queue.head
-      for(i<-transitions.indices)
-      {
-        if(transitions(i)._1==a)
-        {
-          if(!useful.contains(transitions(i)._3)){
-            queue += transitions(i)._3
-          }
-        }
-      }
-      useful += a
-      queue -= a
-    }
-    queue = finals
-    while(queue.nonEmpty)
-    {
-      a= queue.head
-      for(i<-transitions.indices)
-      {
-        if(transitions(i)._3==a)
-        {
-          if(!useful.contains(transitions(i)._1)){
-            queue += transitions(i)._1
-          }
-        }
-      }
-      useful+=a
-      queue -=a
-    }
-    val mylist = allstates.toList
-    for(i<-mylist.indices)
-    {
-      if(!useful.contains(mylist(i)))
-      {
-        useless+=mylist(i)
-      }
-    }
-    useless
+    val allstates = transitions.flatMap(tr=>Seq(tr._1,tr._3)).toSet
+    allstates.diff(accessible(initials,transitions).union(coaccessible(finals,transitions)))
   }
   def remove[L](initials: Set[Int], finals: Set[Int], transitions : Array[(Int, L, Int)])
   : (Set[Int], Set[Int], Array[(Int, L, Int)]) = {
-    var useless: Set[Int] = Set()
-    var allstates = initials
-    var access: Set[Int] = Set()
-    allstates ++= finals
-    for (i <- transitions.indices) {
-      allstates += transitions(i)._1
-      allstates += transitions(i)._3
-    }
-    var queue = initials
-    var a = 0
-    while (queue.nonEmpty) {
-      a = queue.head
-      for (i <- transitions.indices) {
-        if (transitions(i)._1 == a) {
-          if (!access.contains(transitions(i)._3)) {
-            queue += transitions(i)._3
-          }
-        }
-      }
-      access+= a
-      queue -= a
-    }
-    var coaccess: Set[Int]= Set()
-
-    queue = finals
-    while (queue.nonEmpty) {
-      a = queue.head
-      for (i <- transitions.indices) {
-        if (transitions(i)._3 == a) {
-          if (!coaccess.contains(transitions(i)._1)) {
-            queue += transitions(i)._1
-          }
-        }
-      }
-      coaccess+=a
-      queue -= a
-    }
-    val useful = access intersect coaccess
-
-    var newInit = initials intersect useful
-    var newFinals = finals intersect useful
-    var count : Set[Int] = Set()
+    val allstates = initials ++ finals ++ transitions.flatMap(tr=>Seq(tr._1,tr._3)).toSet
+    val useful = allstates.intersect(accessible(initials,transitions).intersect(coaccessible(finals,transitions)))
+    val newInit = initials intersect useful
+    val newFinals = finals intersect useful
+    var newTransitions : Array[(Int, L, Int)] = Array()
     for(i<-transitions.indices)
     {
       if(useful.contains(transitions(i)._1) && useful.contains(transitions(i)._3))
       {
-        count += i
+        newTransitions = newTransitions.appended(transitions(i))
       }
-    }
-    val newTransitions : Array[(Int, L, Int)] = Array.fill[(Int, L, Int)](count.size)((-1,NULL,-1))
-    val mylist2 = count.toList
-    for(i<-mylist2.indices)
-    {
-      newTransitions(i)=transitions(mylist2(i))
     }
   (newInit,newFinals, newTransitions)
   }
-  //def canonicalize() : () = {}
 
+ /* def canonicalize[L](initials : Set[Int], finals: Set[Int],transitions : Array[(Int,L,Int)])
+  : (Set[Int], Set[Int], Array[(Int, L, Int)]) = {
+    if(initials.size!=1)
+    {
+      var count = 0
+      var mymap : Map[Int,Int] = Map()
+      var a =0
+      var queue = initials
+      while(queue.nonEmpty)
+      {
+        a = queue.head
+        for (i <- transitions.indices) {
+          if (transitions(i)._1 == a) {
+            if (!mymap.contains(transitions(i)._3)) {
+              queue += transitions(i)._3
+            }
+          }
+        }
+        mymap ++= Map(a->count)
+        queue -= a
+      }
+      return(initials,finals,transitions)
+    }
+
+
+  }
+
+
+  */
   def main(args : Array[String]) :Unit =
   {
 
     val myNFAInit= Set(2,3)
     val myNFAFinal=Set(4,6)
-    val myNFATransitions = Array((2, 'a', 3), (4, 'b', 6), (3, 'b', 6),(7,'b',8))
-    val use = findUseless(myNFAInit,myNFAFinal,myNFATransitions)
-    println(use)
+    val myNFATransitions = Array((2, 'a', 3), (5,'c',5) ,(4, 'b', 6), (3, 'b', 6),(7,'b',8))
+    val (a,b,c) = remove(myNFAInit,myNFAFinal,myNFATransitions)
+    println(a)
+    println(b)
+    for(i<-c.indices){
+      println(c(i))
+    }
     /*val myNFAInit2= Set(12,13)
     val myNFAFinal2=Set(14,16)
     val myNFATransitions2 = Array((12, 'a', 13), (14, 'b', 16), (13, 'b', 16))
