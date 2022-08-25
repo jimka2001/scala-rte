@@ -1,7 +1,5 @@
 package nfa
 
-import scalafx.scene.input.KeyCode.S
-
 import scala.collection.immutable.Queue
 
 object Nfa {
@@ -92,42 +90,59 @@ object Nfa {
   (newInit,newFinals, newTransitions)
   }
 
- /* def canonicalize[L](initials : Set[Int], finals: Set[Int],transitions : Array[(Int,L,Int)])
-  : (Set[Int], Set[Int], Array[(Int, L, Int)]) = {
-    if(initials.size!=1)
+  def fchar(c1 : Char, c2 : Char) : Boolean =
+  {
+    if(c1>c2)
     {
-      var count = 0
-      var mymap : Map[Int,Int] = Map()
-      var a =0
-      var queue = initials
-      while(queue.nonEmpty)
-      {
-        a = queue.head
-        for (i <- transitions.indices) {
-          if (transitions(i)._1 == a) {
-            if (!mymap.contains(transitions(i)._3)) {
-              queue += transitions(i)._3
-            }
+      return false
+    }
+     true
+  }
+  def canonicalize[L](initials : Set[Int], finals: Set[Int],transitions : Array[(Int,L,Int)], f: (L,L)=> Boolean)
+  : (Set[Int], Set[Int], Array[(Int, L, Int)]) = {
+    if (initials.size != 1) {
+      return (initials, finals, transitions)
+    }
+    var count = 1
+    var a: (Int, Queue[Int]) = (0, Queue())
+    var queue: Queue[Int] = Queue()
+    val mylist = initials.toList
+    var mymap: Map[Int, Int] = Map(mylist(0)->0)
+    queue = queue.enqueue(mylist(0))
+
+    while (queue.nonEmpty) {
+      a = queue.dequeue
+      queue = a._2
+      for (i <- transitions.indices) {
+        if (transitions(i)._1 == a._1) {
+          if (!mymap.contains(transitions(i)._3)) {
+            queue = queue.enqueue(transitions(i)._3)
+            mymap ++= Map(transitions(i)._3 -> count)
+            count+=1
           }
         }
-        mymap ++= Map(a->count)
-        queue -= a
       }
-      return(initials,finals,transitions)
     }
-
-
+    var newTransitions : Array[(Int,L,Int)] = Array()
+    for(i<-transitions.indices)
+    {
+      if(mymap.contains(transitions(i)._1))
+      {
+        newTransitions = newTransitions++ Array((mymap(transitions(i)._1), transitions(i)._2,mymap(transitions(i)._3)))
+      }
+    }
+    (initials.map(mymap), finals.map(mymap), newTransitions)
   }
 
 
-  */
+
   def main(args : Array[String]) :Unit =
   {
 
-    val myNFAInit= Set(2,3)
+    val myNFAInit= Set(2)
     val myNFAFinal=Set(4,6)
-    val myNFATransitions = Array((2, 'a', 3), (5,'c',5) ,(4, 'b', 6), (3, 'b', 6),(7,'b',8))
-    val (a,b,c) = remove(myNFAInit,myNFAFinal,myNFATransitions)
+    val myNFATransitions = Array((2, 'a', 3), (2,'c',5) ,(3, 'b',4), (3, 'b', 6),(5,'b',6),(7,'a',6))
+    val (a,b,c) = canonicalize(myNFAInit,myNFAFinal,myNFATransitions,fchar)
     println(a)
     println(b)
     for(i<-c.indices){
