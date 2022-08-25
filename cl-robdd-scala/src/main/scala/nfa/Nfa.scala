@@ -90,14 +90,14 @@ object Nfa {
   (newInit,newFinals, newTransitions)
   }
 
-  def fchar(c1 : Char, c2 : Char) : Boolean =
+ /* def fchar[L](c1 : L, c2 : L) : Boolean =
   {
-    if(c1>c2)
+    if(c2 > c1)
     {
       return false
     }
      true
-  }
+  }*/
   def canonicalize[L](initials : Set[Int], finals: Set[Int],transitions : Array[(Int,L,Int)], f: (L,L)=> Boolean)
   : (Set[Int], Set[Int], Array[(Int, L, Int)]) = {
     if (initials.size != 1) {
@@ -109,20 +109,37 @@ object Nfa {
     val mylist = initials.toList
     var mymap: Map[Int, Int] = Map(mylist(0)->0)
     queue = queue.enqueue(mylist(0))
-
+    var myarray : Array[(Int,L,Int)]= Array()
     while (queue.nonEmpty) {
+      println(count)
       a = queue.dequeue
       queue = a._2
       for (i <- transitions.indices) {
         if (transitions(i)._1 == a._1) {
-          if (!mymap.contains(transitions(i)._3)) {
-            queue = queue.enqueue(transitions(i)._3)
-            mymap ++= Map(transitions(i)._3 -> count)
-            count+=1
+          if ((!mymap.contains(transitions(i)._3)) || (!queue.contains(transitions(i)._3))) {
+            myarray = myarray ++ Array(transitions(i))
           }
         }
       }
+
+      for(i<-Range(0,myarray.length-1))
+      {
+       if(!f(myarray(i)._2,myarray(i+1)._2)) {
+          val temp = myarray(i+1)
+          myarray(i+1)=myarray(i)
+         myarray(i)= temp
+       }
+      }
+
+      for (i <- myarray.indices) {
+        queue = queue.enqueue(myarray(i)._3)
+        mymap ++= Map(myarray(i)._3 -> count)
+        count += 1
+      }
+      myarray = Array()
+
     }
+
     var newTransitions : Array[(Int,L,Int)] = Array()
     for(i<-transitions.indices)
     {
@@ -142,13 +159,13 @@ object Nfa {
     val myNFAInit= Set(2)
     val myNFAFinal=Set(4,6)
     val myNFATransitions = Array((2, 'a', 3), (2,'c',5) ,(3, 'b',4), (3, 'b', 6),(5,'b',6),(7,'a',6))
-    val (a,b,c) = canonicalize(myNFAInit,myNFAFinal,myNFATransitions,fchar)
+    /*val (a,b,c) = canonicalize(myNFAInit,myNFAFinal,myNFATransitions,fchar)
     println(a)
     println(b)
     for(i<-c.indices){
       println(c(i))
     }
-    /*val myNFAInit2= Set(12,13)
+    val myNFAInit2= Set(12,13)
     val myNFAFinal2=Set(14,16)
     val myNFATransitions2 = Array((12, 'a', 13), (14, 'b', 16), (13, 'b', 16))
     var (a,b,c) =append(myNFAInit, myNFAFinal,myNFATransitions, myNFAInit2, myNFAFinal2, myNFATransitions2)
