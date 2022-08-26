@@ -1,6 +1,7 @@
 package nfa
 
 import scala.collection.immutable.Queue
+import scala.util.matching.Regex
 
 object Nfa {
   def compactify[L](initials: Set[Int], finals: Set[Int], transitions : Array[(Int, L, Int)])
@@ -24,15 +25,7 @@ object Nfa {
   {
     def delta(S : Int): Set[Int]=
     {
-      var myset : Set[Int] = Set()
-      for(i<-transitions.indices)
-      {
-        if(transitions(i)._1==S)
-        {
-          myset += transitions(i)._3
-        }
-      }
-      myset
+      transitions.flatMap(tr=>if(tr._1==S){Set(tr._3)}else{Set()}).toSet
     }
     def recur(here : Set[Int], done: Set[Int]) : Set[Int] =
     {
@@ -48,15 +41,7 @@ object Nfa {
   {
     def delta(S : Int): Set[Int]=
     {
-      var myset : Set[Int] = Set()
-      for(i<-transitions.indices)
-      {
-        if(transitions(i)._3==S)
-        {
-          myset += transitions(i)._1
-        }
-      }
-      myset
+      transitions.flatMap(tr=>if(tr._3==S){Set(tr._1)}else{Set()}).toSet
     }
     def recur(here : Set[Int], done: Set[Int]) : Set[Int] =
     {
@@ -92,11 +77,7 @@ object Nfa {
 
  def fchar(c1 : Char, c2 : Char) : Boolean =
   {
-    if(c2 > c1)
-    {
-      return false
-    }
-     true
+    !(c1<c2)
   }
   def canonicalize[L](initials : Set[Int], finals: Set[Int],transitions : Array[(Int,L,Int)], f: (L,L)=> Boolean)
   : (Set[Int], Set[Int], Array[(Int, L, Int)]) = {
@@ -151,6 +132,22 @@ object Nfa {
     (initials.map(mymap), finals.map(mymap), newTransitions)
   }
 
+/*
+  def createnodefromregex[L](regex: String, Transitions : Array[(Int,L,Int)], start : Int, end :Int) : Array[(Int,L,Int)] =
+  {
+
+    //'ε'
+    var i = 0
+    while(regex(i)!= '+' || regex(i)!= '*' || regex(i)!='.')
+    {
+      i+=1
+    }
+
+
+    var newtransitions = Transitions
+
+    newtransitions
+  }*/
 
 
   def main(args : Array[String]) :Unit =
