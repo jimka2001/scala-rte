@@ -75,23 +75,25 @@ object Nfa {
   }
  def fchar(c1 : Char, c2 : Char) : Boolean =
   {
-    !(c1<c2)
+    (c1<c2)
   }
+  def ftrans2[L](useful : Map[Int,Int], trans : (Int,L,Int)) : Boolean =
+  {
+    useful.contains(trans._1)
+  }
+
   def canonicalize[L](initials : Set[Int], finals: Set[Int],transitions : Array[(Int,L,Int)], f: (L,L)=> Boolean)
   : (Set[Int], Set[Int], Array[(Int, L, Int)]) = {
     if (initials.size != 1) {
       (initials, finals, transitions)
     }
     else{
-    var count = 1
     var a: (Int, Queue[Int]) = (0, Queue())
     var queue: Queue[Int] = Queue()
-    val mylist = initials.toList
-    var mymap: Map[Int, Int] = Map(mylist(0)->0)
-    queue = queue.enqueue(mylist(0))
+    var mymap: Map[Int, Int] = Map(initials.head->0)
+    queue = queue.enqueue(initials.head)
     var myarray : Array[(Int,L,Int)]= Array()
     while (queue.nonEmpty) {
-      println(count)
       a = queue.dequeue
       queue = a._2
       for (i <- transitions.indices) {
@@ -101,7 +103,6 @@ object Nfa {
           }
         }
       }
-
       for (i <- Range(0, myarray.length - 1)) {
         if (!f(myarray(i)._2, myarray(i + 1)._2)) {
           val temp = myarray(i + 1)
@@ -109,25 +110,14 @@ object Nfa {
           myarray(i) = temp
         }
       }
-
       for (i <- myarray.indices) {
         queue = queue.enqueue(myarray(i)._3)
-        mymap ++= Map(myarray(i)._3 -> count)
-        count += 1
+        mymap ++= Map(myarray(i)._3 -> mymap.size)
       }
       myarray = Array()
-
     }
-
-    var newTransitions : Array[(Int,L,Int)] = Array()
-    for(i<-transitions.indices)
-    {
-      if(mymap.contains(transitions(i)._1))
-      {
-        newTransitions = newTransitions++ Array((mymap(transitions(i)._1), transitions(i)._2,mymap(transitions(i)._3)))
-      }
-    }
-    (initials.map(mymap), finals.map(mymap), newTransitions)
+    (initials.map(mymap), finals.map(mymap),
+      transitions.flatMap(tr => if (ftrans2(mymap, tr)) {Set((mymap(tr._1),tr._2,mymap(tr._3)))} else {Set()}))
   }
   }
 
@@ -154,8 +144,8 @@ object Nfa {
 
     val myNFAInit= Set(2)
     val myNFAFinal=Set(4,6)
-    val myNFATransitions = Array((2, 'a', 3), (5,'c',5) ,(3, 'b',4), (3, 'b', 6),(5,'b',6),(7,'a',6))
-    val (a,b,c) = remove(myNFAInit,myNFAFinal,myNFATransitions)
+    val myNFATransitions = Array((2, 'a', 3), (2,'c',5) ,(3, 'b',4), (3, 'b', 6),(5,'b',6),(7,'a',6))
+    val (a,b,c) = canonicalize(myNFAInit,myNFAFinal,myNFATransitions,fchar)
     println(a)
     println(b)
     for(i<-c.indices){
