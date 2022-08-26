@@ -416,6 +416,9 @@ object Thompson {
                          out: Seq[Int],
                          transitions: Seq[(Int, L, Int)],
                          cmp: (L, L) => Boolean): (Int, Seq[Int], Seq[(Int, L, Int)]) = {
+    def cmpTransitions(tr1:(Int,L,Int),tr2:(Int,L,Int)):Boolean = {
+      cmp(tr1._2, tr2._2)
+    }
     def generateCanonMap(toDo: List[Int],
                          done: Set[Int],
                          mapping: Map[Int, Int],
@@ -430,16 +433,13 @@ object Thompson {
                            mapping + (q0 -> nextState),
                            nextState + 1)
         case q0 :: qs =>
-          val stateTransitions = transitions
-            .filter(tr => (tr._1 == q0) && !done.contains(tr._3))
-            .sortWith((tr1, tr2) => cmp(tr1._2, tr2._2))
-            .toList
-          val unvisited = uniquify(stateTransitions.map(_._3).reverse).reverse
-          val unvisitedMap = unvisited.zip(nextState until nextState + unvisited.size).toMap
-          generateCanonMap(qs,
+          val stateTransitions = transitions.filter(tr => tr._1 == q0).sortWith(cmpTransitions).toList
+          val unmapped = uniquify(stateTransitions.filter(tr => !mapping.contains(tr._3)).map(_._3).reverse).reverse
+          val unvisitedMap = unmapped.zip(nextState until nextState + unmapped.size).toMap
+          generateCanonMap(qs ++ stateTransitions.map(_._3),
                            done + q0,
                            mapping ++ unvisitedMap,
-                           nextState + unvisited.size)
+                           nextState + unmapped.size)
       }
     }
 
