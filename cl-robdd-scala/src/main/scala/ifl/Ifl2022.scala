@@ -25,13 +25,14 @@ package ifl
 // IFL 2022 = The 34th Symposium on Implementation and Application of Functional Languages
 
 import adjuvant.Adjuvant
-import adjuvant.Adjuvant.{copyFile, filterFile, directoryExists}
+import adjuvant.Adjuvant.{copyFile, directoryExists, filterFile}
 import gnuplot.GnuPlot.gnuPlot
 import graphcolor.MapColoring.timeColorizeGraphs
 import spire.math.Rational
 import treereduce.RationalFoldTest.rationalFoldTest
 import treereduce.TreeReduce.RichReducible
 
+import java.lang.System.nanoTime
 import scala.math.{abs, log10}
 
 object Ifl2022 {
@@ -103,6 +104,52 @@ object Ifl2022 {
       outputFileBaseName = "float-random-accuracy",
       gnuFileCB = (gnuName: String) => filterFile(gnuName,
                                                   gnuPlotDataDirName + "float-random-accuracy.gnu",
+                                                  suppressGnuTitle),
+
+      verbose = true,
+      view = true
+      )
+  }
+
+  import scala.util.Random
+  val r1 = Random
+  def setUnionsRandom[A](n: Int = 50000, getA:()=>A): Unit = {
+    val rawData = for {k <- indices(1.1, List(1000), n)
+                       pairs:Seq[List[A]] = Random.shuffle(for {i <- 0 to k
+                                                   x1 = getA()
+                                                   x2 = getA()
+                                                  y = List(x1, x2)
+                                                  } yield y)
+                       time0 = nanoTime.toDouble/1e6 // milliseconds
+
+                       time1 = locally { // fold-left
+                         //pairs.foldLeft(Set[A]())((acc:Set[A],d:Set[A])=> acc++d)
+                         pairs.treeMapReduce(Set[A]())((x: List[A]) => x.toSet,
+                                                       (acc: Set[A], d: Set[A]) => acc ++ d)
+                         nanoTime.toDouble / 1e6 // ms
+                       }
+                       time2 = locally { // tree-fold
+                         pairs.foldLeft(Set[A]())((acc:Set[A],d:List[A])=> acc++(d.toSet))
+                         //pairs.treeMapReduce(Set[A]())((x: Set[A]) => x,
+                         //                              (acc: Set[A], d: Set[A]) => acc ++ d)
+                         nanoTime.toDouble / 1e6 // ms
+                       }
+                       } yield (2*k, time1-time0, time2-time1)
+    val xs = rawData.map(_._1.toDouble)
+    val dataToPlot: List[(String, Seq[Double], Seq[Double])] =
+      List(("fold-left", xs, rawData.map(x => abs(x._3))),
+           ("tree-fold", xs, rawData.map(x => abs(x._2))))
+
+    gnuPlot(dataToPlot)(
+      title = "Fold Strategy of Set Union",
+      comment = "Fold Strategy of Set Union",
+      xAxisLabel = "Number of elements unioned", xLog = true,
+      yAxisLabel = "Time (ms)", yLog = false,
+      grid = true,
+      key = "inside left",
+      outputFileBaseName = "set-unions",
+      gnuFileCB = (gnuName: String) => filterFile(gnuName,
+                                                  gnuPlotDataDirName + "set-unions.gnu",
                                                   suppressGnuTitle),
 
       verbose = true,
@@ -259,7 +306,7 @@ object Ifl2022 {
 
     // produce file
     //     float-random-accuracy.gnu
-    floatSumsRandom()
+    //floatSumsRandom()
 
     // produce files
     //   europe-4-color-allocation.gnu
@@ -281,5 +328,7 @@ object Ifl2022 {
     //   france-germany.dot
     //   france-spain-germany.dot
     //drawMapConstraints()
+
+    setUnionsRandom[Double](50000, () => r1.nextDouble())
   }
 }
