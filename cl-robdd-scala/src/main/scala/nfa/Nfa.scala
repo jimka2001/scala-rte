@@ -90,14 +90,14 @@ object Nfa {
   (newInit,newFinals, newTransitions)
   }
 
- /* def fchar[L](c1 : L, c2 : L) : Boolean =
+ def fchar(c1 : Char, c2 : Char) : Boolean =
   {
     if(c2 > c1)
     {
       return false
     }
      true
-  }*/
+  }
   def canonicalize[L](initials : Set[Int], finals: Set[Int],transitions : Array[(Int,L,Int)], f: (L,L)=> Boolean)
   : (Set[Int], Set[Int], Array[(Int, L, Int)]) = {
     if (initials.size != 1) {
