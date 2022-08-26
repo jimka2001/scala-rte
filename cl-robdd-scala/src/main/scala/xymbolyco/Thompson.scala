@@ -2,7 +2,7 @@ package xymbolyco
 
 
 import adjuvant.Accumulators.{makeCounter, withSetCollector}
-import adjuvant.Adjuvant.{fixedPoint, traceGraph}
+import adjuvant.Adjuvant.{fixedPoint, traceGraph, uniquify}
 import genus.Types.mdtd
 import genus.{SAnd, SNot, SOr, STop, SimpleTypeD}
 import rte.And.createAnd
@@ -396,6 +396,55 @@ object Thompson {
   def findAllStates[V,L](transitions:Seq[(V,L,V)]):Set[V]={
     (for {(x, _, y) <- transitions
           z <- Seq(x, y)} yield z).toSet
+  }
+  // given a Dfa, and a Map[Int,Int], return a new Dfa will all the states
+  //   mapped by the mapping.
+  // states not mentioned in the mapping are filtered out.
+  def reNumber[L](in: Int,
+               out: Seq[Int],
+               transitions: Seq[(Int, L, Int)],
+               rename: Map[Int,Int]): (Int, Seq[Int], Seq[(Int, L, Int)]) = {
+    assert(rename.contains(in))
+    val out2 = out.filter(q => rename.contains(q))
+    val transitions2 = transitions.filter(tr => rename.contains(tr._1) && rename.contains(tr._3))
+    (rename(in),
+      out2.map(rename),
+      transitions2.map(tr => (rename(tr._1),tr._2, rename(tr._3))))
+  }
+
+  def canonicalizeDfa[L](in: Int,
+                         out: Seq[Int],
+                         transitions: Seq[(Int, L, Int)],
+                         cmp: (L, L) => Boolean): (Int, Seq[Int], Seq[(Int, L, Int)]) = {
+    def generateCanonMap(toDo: List[Int],
+                         done: Set[Int],
+                         mapping: Map[Int, Int],
+                         nextState: Int): Map[Int, Int] = {
+      toDo match {
+        case Nil => mapping
+        case q0 :: qs if done.contains(q0) =>
+          generateCanonMap(qs, done, mapping, nextState)
+        case q0 :: _ if !mapping.contains(q0) =>
+          generateCanonMap(toDo,
+                           done,
+                           mapping + (q0 -> nextState),
+                           nextState + 1)
+        case q0 :: qs =>
+          val stateTransitions = transitions
+            .filter(tr => (tr._1 == q0) && !done.contains(tr._3))
+            .sortWith((tr1, tr2) => cmp(tr1._2, tr2._2))
+            .toList
+          val unvisited = uniquify(stateTransitions.map(_._3).reverse).reverse
+          val unvisitedMap = unvisited.zip(nextState until nextState + unvisited.size).toMap
+          generateCanonMap(qs,
+                           done + q0,
+                           mapping ++ unvisitedMap,
+                           nextState + unvisited.size)
+      }
+    }
+
+    reNumber(in, out, transitions,
+             generateCanonMap(List(in), Set(), Map(), 0))
   }
 
   // compute and return the transitions of a non-deterministic finite automaton

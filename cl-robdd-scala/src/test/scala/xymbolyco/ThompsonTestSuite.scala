@@ -428,4 +428,24 @@ class ThompsonTestSuite  extends AnyFunSuite {
                                     (1, STop, 98),
                                     ))
   }
+  test("canonicalize"){
+    def cmp(a:Char,b:Char):Boolean = {
+      a < b
+    }
+
+    assert(canonicalizeDfa(1, Seq(4, 3), Seq((1, 'a', 4),
+                                             (1, 'c', 5),
+                                             (1, 'b', 3)
+                                             ), cmp)
+             == (0, Seq(1, 2), Seq((0, 'a', 1), (0, 'c', 3), (0, 'b', 2))))
+
+    assert(canonicalizeDfa(1, Seq(4, 3), Seq((1, 'a', 4),
+                                             (1, 'c', 5),
+                                             (1, 'b', 3),
+                                             (4,'a',3),
+                                             (1,'a',2)
+                                             ), cmp)
+             == (0, Seq(1, 3), Seq((0, 'a', 1), (0, 'c', 4), (0, 'b', 3),(1,'a',3),(0,'a',2))))
+
+  }
 }
