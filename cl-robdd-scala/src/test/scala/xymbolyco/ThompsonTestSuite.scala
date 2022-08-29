@@ -457,6 +457,7 @@ class ThompsonTestSuite  extends AnyFunSuite {
   }
   test("thomp/brz/Trait3"){
     import genus.RandomType.Trait3
-    Profiling.check(Singleton(SAtomic(classOf[Trait3])),1,1)
+    val data = Profiling.check(Singleton(SAtomic(classOf[Trait3])),1,1)
+    assert(data("thompson_min") == data("brzozowski-min"))
   }
 }
