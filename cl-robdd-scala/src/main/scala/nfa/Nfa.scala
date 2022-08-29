@@ -82,42 +82,36 @@ object Nfa {
     useful.contains(trans._1)
   }
 
+
+def transsort[L](tr1 : (Int,L,Int), tr2 : (Int,L,Int) , f : (L,L) => Boolean): Boolean =
+{
+  f(tr1._2,tr2._2)
+}
   def canonicalize[L](initials : Set[Int], finals: Set[Int],transitions : Array[(Int,L,Int)], f: (L,L)=> Boolean)
   : (Set[Int], Set[Int], Array[(Int, L, Int)]) = {
     if (initials.size != 1) {
       (initials, finals, transitions)
     }
     else{
-    var a: (Int, Queue[Int]) = (0, Queue())
-    var queue: Queue[Int] = Queue()
-    var mymap: Map[Int, Int] = Map(initials.head->0)
-    queue = queue.enqueue(initials.head)
-    var myarray : Array[(Int,L,Int)]= Array()
-    while (queue.nonEmpty) {
-      a = queue.dequeue
-      queue = a._2
-      for (i <- transitions.indices) {
-        if (transitions(i)._1 == a._1) {
-          if ((!mymap.contains(transitions(i)._3)) || (!queue.contains(transitions(i)._3))) {
-            myarray = myarray ++ Array(transitions(i))
-          }
+      def delta(S : Int): Set[(Int,L,Int)]=
+      {
+        transitions.flatMap(tr=>if(tr._1==S){Set(tr)}else{Set()}).toSet
+      }
+    def recur(next : List[Int], visited :List[Int]) : List[Int]= {
+      if (next.nonEmpty) {
+        val a : List[Int] = delta(next.head).toList.sortWith((a, b) => f(a._2, b._2)).flatMap(a => if (!next.contains(a._3) && !visited.contains(a._3)) {
+          List(a._3)
         }
+        else {List()}
+        )
+        recur(next.tail++a,visited:+next.head)
       }
-      for (i <- Range(0, myarray.length - 1)) {
-        if (!f(myarray(i)._2, myarray(i + 1)._2)) {
-          val temp = myarray(i + 1)
-          myarray(i + 1) = myarray(i)
-          myarray(i) = temp
-        }
-      }
-      for (i <- myarray.indices) {
-        queue = queue.enqueue(myarray(i)._3)
-        mymap ++= Map(myarray(i)._3 -> mymap.size)
-      }
-      myarray = Array()
+      else visited
     }
-    (initials.map(mymap), finals.map(mymap),
-      transitions.flatMap(tr => if (ftrans2(mymap, tr)) {Set((mymap(tr._1),tr._2,mymap(tr._3)))} else {Set()}))
+      val mylist : List[Int] = recur(List(initials.head), List(): List[Int])
+      val mymap2 : Map[Int,Int] =  mylist.zip(0 until mylist.size).toMap
+    (initials.map(mymap2), finals.flatMap(a=> if(mymap2.contains(a)){Set(a)}else{Set()}),
+      transitions.flatMap(tr => if (ftrans2(mymap2, tr)) {Set((mymap2(tr._1),tr._2,mymap2(tr._3)))} else {Set()}))
   }
   }
 
@@ -141,10 +135,9 @@ object Nfa {
 
   def main(args : Array[String]) :Unit =
   {
-
-    val myNFAInit= Set(2)
-    val myNFAFinal=Set(4,6)
-    val myNFATransitions = Array((2, 'a', 3), (2,'c',5) ,(3, 'b',4), (3, 'b', 6),(5,'b',6),(7,'a',6))
+    val myNFAInit= Set(8)
+    val myNFAFinal=Set(4,9,6)
+    val myNFATransitions = Array((8, 'a', 3), (8,'c',5) ,(3, 'b',4), (3, 'c', 6),(5,'b',6),(2,'a',6))
     val (a,b,c) = canonicalize(myNFAInit,myNFAFinal,myNFATransitions,fchar)
     println(a)
     println(b)
