@@ -448,4 +448,8 @@ class ThompsonTestSuite  extends AnyFunSuite {
              == (0, Seq(1, 3), Seq((0, 'a', 1), (0, 'c', 4), (0, 'b', 3),(1,'a',3),(0,'a',2))))
 
   }
+  test("thomp/brz/Trait3"){
+    import genus.RandomType.Trait3
+    Profiling.check(Singleton(SAtomic(classOf[Trait3])),1,1)
+  }
 }
