@@ -140,8 +140,21 @@ object Nfa {
     }
   }
 
-  //def generateisomorphic()
-  def generate[L](nb : Int, Alpha : Array[L], nbfinal : Int, nbconnect : Int,isDeterministic : Boolean) : (Set[Int],Set[Int],Array[(Int,L,Int)]) =
+  def generateisomorphic[L](initials : Set[Int],finals : Set[Int], transitions: Array[(Int,L,Int)]) :(Set[Int],Set[Int],Array[(Int,L,Int)]) =
+    {
+      val r = scala.util.Random
+      val allstates = initials ++ finals ++ transitions.flatMap(tr => Seq(tr._1, tr._3)).toSet
+      var myset : Set[Int] = Set()
+      while(myset.size!=allstates.size)
+      {
+        myset+= r.nextInt(allstates.size*2)
+      }
+      val mymap = allstates.zip(myset).toMap
+      (initials.map(mymap), finals.map(mymap), transitions.map(tr => (mymap(tr._1), tr._2, mymap(tr._3))))
+    }
+
+
+  def generateNFA[L](nb : Int, Alpha : Array[L], nbfinal : Int, nbconnect : Int,isDeterministic : Boolean) : (Set[Int],Set[Int],Array[(Int,L,Int)]) =
     {
       val r = scala.util.Random
       var finals : Set[Int] = Set()
@@ -149,7 +162,6 @@ object Nfa {
       while(finals.size < nbfinal){
         finals += r.nextInt(nb)
         }
-
       if(!isDeterministic) for(i<-Range(0,nb)) {
         for(j<-Range(0,r.nextInt(nbconnect)+1)) {
           transitions = transitions ++ Array((i,Alpha(r.nextInt(Alpha.length)),r.nextInt(nb)))
@@ -168,49 +180,18 @@ object Nfa {
           }
           }
         }
-
       }
       (Set(r.nextInt(nb)),finals,transitions)
     }
-  /*
-    def createnodefromregex[L](regex: String, Transitions : Array[(Int,L,Int)], start : Int, end :Int) : Array[(Int,L,Int)] =
-    {
 
-      //'ε'
-      var i = 0
-      while(regex(i)!= '+' || regex(i)!= '*' || regex(i)!='.')
-      {
-        i+=1
-      }
-
-
-      var newtransitions = Transitions
-
-      newtransitions
-    }*/
-
-
+  /*def generate[L](rangeOfStates: Int,rangeOfConnections:Int,rangeOfFinals : Int, alphabet : Array[L], determinism : Boolean) : Array[(Set[Int],Set[Int],Array[(Int,L,Int)])] =
+  {
+    for {x <- (0 until rangeOfStates)
+         y <- 0 until rangeOfConnections
+         z <- 0 until rangeOfFinals}
+  }*/
   def main(args: Array[String]): Unit = {
-    val (a,b,c) = generate(6,Array('a','b','c'),2,3,false)
-    println(a)
-    println(b)
-    for(i<-c.indices)
-    {
-      println(c(i))
-    }
-    /*val myNFAInit = Set(8)
-    val myNFAFinal = Set(4, 9, 6)
-    val myNFATransitions = Array((8, 'a', 3), (8, 'c', 5), (3, 'b', 4), (3, 'c', 6), (5, 'b', 6), (2, 'a', 6))
-    val (a, b, c) = canonicalize(myNFAInit, myNFAFinal, myNFATransitions, fchar)
-    println(a)
-    println(b)
-    for (i <- c.indices) {
-      println(c(i))
-    }
-    val myNFAInit2= Set(12,13)
-    val myNFAFinal2=Set(14,16)
-    val myNFATransitions2 = Array((12, 'a', 13), (14, 'b', 16), (13, 'b', 16))
-    var (a,b,c) =append(myNFAInit, myNFAFinal,myNFATransitions, myNFAInit2, myNFAFinal2, myNFATransitions2)
+    /*val (a,b,c) = generate(6,Array('a','b','c'),2,3,false)
     println(a)
     println(b)
     for(i<-c.indices)
