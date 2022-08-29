@@ -9,6 +9,7 @@ import rte.And.createAnd
 import rte.Cat.createCat
 import rte.{And, Cat, EmptySet, EmptyWord, Not, Or, Rte, Sigma, Singleton, Star}
 import rte.Or.createOr
+import xymbolyco.GraphViz.dfaView
 
 import scala.annotation.tailrec
 
@@ -566,6 +567,30 @@ object Thompson {
 
 object Profiling {
 
+  def check(pattern:Rte,r:Int,depth:Int):Map[String,Int] = {
+    val dfa_thompson = Minimize.trim(Thompson.constructThompsonDfa(pattern, 42))
+    val min_thompson = Minimize.minimize(dfa_thompson)
+    val dfa_brzozowski = Minimize.trim(pattern.toDfa(42))
+    val min_brzozowski = Minimize.minimize(dfa_brzozowski)
+    val data = Map(
+      "thompson_size" -> dfa_thompson.Q.size,
+      "thompson_min" -> min_thompson.Q.size,
+      "brzozowski_size" -> dfa_brzozowski.Q.size,
+      "brzozowski_min" -> min_brzozowski.Q.size)
+    if (min_brzozowski.Q.size != min_thompson.Q.size) {
+      dfaView(dfa_thompson, "thompson", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
+      dfaView(min_thompson, "thompson-min", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
+      dfaView(dfa_brzozowski, "brzozowski", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
+      dfaView(min_brzozowski, "brzozowski-min", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
+
+      dfaView(Rte.dfaXor(min_thompson, min_brzozowski),
+              title = "xor",
+              abbrev = true,
+              label = Some(s"$depth.$r " + pattern.toString))
+    }
+    data
+  }
+
   def main(argv:Array[String]) : Unit = { // ("brz vs thomp") {
     // here we generate some random Rte patterns, then construct
     //  both the Thompson and Brzozowski automata, trim and minimize
@@ -576,26 +601,8 @@ object Profiling {
     for {depth <- 5 until 6
          r <- 0 until num_random_tests
          pattern = Rte.randomRte(depth)
-         dfa_thompson = Minimize.trim(Thompson.constructThompsonDfa(pattern, 42))
-         min_thompson = Minimize.minimize(dfa_thompson)
-         dfa_brzozowski = Minimize.trim(pattern.toDfa(42))
-         min_brzozowski = Minimize.minimize(dfa_brzozowski)
-         if min_brzozowski.Q.size != min_thompson.Q.size
-         data = Map(
-           "thompson_size" -> dfa_thompson.Q.size,
-           "thompson_min" -> min_thompson.Q.size,
-           "brzozowski_size" -> dfa_brzozowski.Q.size,
-           "brzozowski_min" -> min_brzozowski.Q.size)
+         data = check(pattern,r,depth)
          } {
-      if (true) {
-        GraphViz.dfaView(min_thompson, "thompson", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
-        GraphViz.dfaView(min_brzozowski, "brzozowski", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
-        GraphViz.dfaView(Rte.dfaXor(min_thompson,min_brzozowski),
-                         title="xor",
-                         abbrev=true,
-                         label=Some(s"$depth.$r " + pattern.toString))
-      }
-
       println(depth, data, pattern)
     }
   }
