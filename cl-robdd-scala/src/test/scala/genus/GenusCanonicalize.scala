@@ -129,6 +129,11 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SMember("hello", "world", "world", "hello").canonicalize()
            == SMember("hello", "world"))
     assert(SMember(1, 1.0, 1L, 1, 1.0, 1L, 2).canonicalize() == SMember(1, 1.0, 2, 1L))
+
+    assert(SMember(1, 1, 2, 2).canonicalize() == SMember(1, 2))
+
+    assert(SMember(true, false).canonicalize() == SAtomic(classOf[java.lang.Boolean]))
+    assert(SMember(false, true).canonicalize() == SAtomic(classOf[java.lang.Boolean]))
   }
 
   test("canonicalize or") {

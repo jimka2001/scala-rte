@@ -51,6 +51,17 @@ abstract class SMemberImpl(val xs:Vector[(SimpleTypeD,Any)]) extends SimpleTypeD
       Some(xs.forall{case (_,b) => t.typep(b)})
   }
 
+  override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
+    // Member(true,false) should be the same as SAtomic(java.lang.Boolean)
+    val b = SAtomic(classOf[java.lang.Boolean])
+    if (this.xs.size == 2
+      && this.xs.contains(b -> true)
+      && this.xs.contains(b -> false))
+      b
+    else
+      super.canonicalizeOnce(nf)
+  }
+
   // SMember(xs: Any*)
   override def cmpToSameClassObj(t:SimpleTypeD):Boolean = {
     if (this == t)
