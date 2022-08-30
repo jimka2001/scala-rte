@@ -132,7 +132,7 @@ object Nfa {
       val mylist: List[Int] = recur(List(initials.head), List(): List[Int])
       val mymap2: Map[Int, Int] = mylist.zip(0 until mylist.size).toMap
       (initials.map(mymap2), finals.flatMap(a => if (mymap2.contains(a)) {
-        Set(a)
+        Set(mymap2(a))
       } else Set()),
         transitions.flatMap(tr => if (ftrans2(mymap2, tr)) {
           Set((mymap2(tr._1), tr._2, mymap2(tr._3)))
@@ -196,28 +196,66 @@ object Nfa {
   {
     val (i1,f1,t1) = canonicalize(init1,final1,trans1,f)
     val (i2,f2,t2) = canonicalize(init2,final2,trans2,f)
-    var myset= i1 intersect(i2)
-    if(myset.size!=0)
+    val myset= i1 intersect i2
+    if(myset.size != i1.size)
     {
       false
     }
     else
     {
-      myset = f1 intersect(f2)
-      if(myset.size!=0)
+      val myset2 = f1 intersect f2
+      if(myset2.size != f1.size)
       {
         false
+      }
+      else
+      {
+        val myarray = t1 intersect t2
+        if(myarray.length != t1.length)
+        {
+          false
+        }
+        else true
       }
     }
   }
   def main(args: Array[String]): Unit = {
-    val nfas = generate(5,3,1,Array('a','b','c'), determinism = true)
+    /*val nfas = generate(5,3,1,Array('a','b','c'), determinism = true)
     nfas.foreach{case (a,b,c)=>
     println(a)
     println(b)
     for(i<-c.indices)
     {
       println(c(i))
-    }}
+    }}*/
+    val nfas = generate(10  ,5,1,Array('a','b','c','d','e'),determinism = true)
+    nfas.foreach{case (a,b,c) => val (d,e,f) = generateisomorphic(a,b,c); println(isIsomorphic(fchar,a,d,b,e,c,f))
+    }
+    /*
+    val (a,b,c) = generateNFA(3,Array('a','b','c'),1,2,isDeterministic = true)
+    val (d,e,f) = generateisomorphic(a,b,c)
+    println(isIsomorphic(fchar,a,d,b,e,c,f))*/
+    /*println(a)
+    println(d)
+    println(b)
+    println(e)
+    for(i<-c.indices)
+    {
+      println(c(i))
+      println(f(i))
+    }
+    val (a1,b1,c1)= canonicalize(a,b,c,fchar)
+    println("hi")
+    val (d1,e1,f1)= canonicalize(d,e,f,fchar)
+    println(a1)
+    println(d1)
+    println(b1)
+    println(e1)
+    for(i<-c1.indices)
+    {
+      println(c1(i))
+      println(f1(i))
+    }*/
+
   }
 }
