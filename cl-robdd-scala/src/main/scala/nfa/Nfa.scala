@@ -184,19 +184,28 @@ object Nfa {
       (Set(r.nextInt(nb)),finals,transitions)
     }
 
-  /*def generate[L](rangeOfStates: Int,rangeOfConnections:Int,rangeOfFinals : Int, alphabet : Array[L], determinism : Boolean) : Array[(Set[Int],Set[Int],Array[(Int,L,Int)])] =
+  def generate[L](rangeOfStates: Int,rangeOfConnections:Int,rangeOfFinals : Int, alphabet : Array[L], determinism : Boolean) : Seq[(Set[Int],Set[Int],Array[(Int,L,Int)])] =
   {
-    for {x <- (0 until rangeOfStates)
-         y <- 0 until rangeOfConnections
-         z <- 0 until rangeOfFinals}
-  }*/
+    for {x <- (1 to rangeOfStates)
+         y <- 1 to rangeOfConnections
+         z <- 1 to rangeOfFinals}
+      yield generateNFA(x,alphabet,z,y,determinism)
+  }
+
+  def isIsomorphic[L](init1 :Set[Int], init2 : Set[Int], final1 : Set[Int], final2 : Set[Int], trans1 : Array[(Int,L,Int)], trans2 : Array[(Int,L,Int)]) : Boolean =
+  {
+    val compact1 = compactify(init1,final1,trans1)
+    var compact2 = compactify(init2,final2,trans2)
+
+  }
   def main(args: Array[String]): Unit = {
-    /*val (a,b,c) = generate(6,Array('a','b','c'),2,3,false)
+    val nfas = generate(5,3,1,Array('a','b','c'), determinism = true)
+    nfas.foreach{case (a,b,c)=>
     println(a)
     println(b)
     for(i<-c.indices)
     {
       println(c(i))
-    }*/
+    }}
   }
 }
