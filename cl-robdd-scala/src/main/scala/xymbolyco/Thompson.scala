@@ -602,13 +602,17 @@ object Profiling {
     //  them both, and look for cases where the resulting size
     //  is different in terms of state count.
 
-    val num_random_tests = 100*3
+    val num_random_tests = 1000*3
     for {depth <- 5 until 6
          r <- 0 until num_random_tests
          pattern = Rte.randomRte(depth)
-         data = check(pattern,r,depth)
          } {
-      println(depth, data, pattern)
+      val data = check(pattern,r,depth)
+      assert(data("thompson_min") == data("brzozowski_min"),
+        {
+          println(depth, data, pattern)
+          s"different minimized sizes ${data("thompson_min")} vs ${data("brzozowski_min")}"
+        })
     }
   }
 }
