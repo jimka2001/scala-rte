@@ -174,6 +174,22 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
       this
   }
 
+  def conversion177(): SimpleTypeD = {
+    // SAnd(Boolean,SNot(true)) -> false
+    // SAnd(Boolean,SNot(false)) -> true
+    val b = SAtomic(classOf[Boolean])
+    val nt = SNot(SEql(true))
+    val nf = SNot(SEql(false))
+    if (!tds.contains(b))
+      this
+    else if (tds.contains(nt))
+      SEql(false)
+    else if (tds.contains(nf))
+      SEql(true)
+    else
+      this
+  }
+
   // SAnd(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     findSimplifier(tag="SAnd",this,verbose=false,List[(String,() => SimpleTypeD)](
