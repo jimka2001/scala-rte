@@ -289,10 +289,12 @@ object Adjuvant {
     if (Desktop.isDesktopSupported) {
       Desktop.getDesktop.browse(new URI("file://" + fileName))
     }
-    else if ("Mac OS X" == System.getProperty("os.name"))
-      Seq("open", "-g", "-a", "Preview", fileName).!
-    else
-      sys.error(s"cannot open $fileName because OS = ${System.getProperty("os.name")}")
+    else {
+      // I don't know all the cases where this ELSE branch is taken,
+      // but at least it is taken on Linux while running the CI/CD pipeline
+      // in gitlab.
+      println(s"cannot open $fileName in OS = ${System.getProperty("os.name")} because desktop not supported")
+    }
     fileName
   }
 
