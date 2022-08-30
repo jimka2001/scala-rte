@@ -192,11 +192,23 @@ object Nfa {
       yield generateNFA(x,alphabet,z,y,determinism)
   }
 
-  def isIsomorphic[L](init1 :Set[Int], init2 : Set[Int], final1 : Set[Int], final2 : Set[Int], trans1 : Array[(Int,L,Int)], trans2 : Array[(Int,L,Int)]) : Boolean =
+  def isIsomorphic[L](f : (L,L)=> Boolean,init1 :Set[Int], init2 : Set[Int], final1 : Set[Int], final2 : Set[Int], trans1 : Array[(Int,L,Int)], trans2 : Array[(Int,L,Int)]) : Boolean =
   {
-    val compact1 = compactify(init1,final1,trans1)
-    var compact2 = compactify(init2,final2,trans2)
-
+    val (i1,f1,t1) = canonicalize(init1,final1,trans1,f)
+    val (i2,f2,t2) = canonicalize(init2,final2,trans2,f)
+    var myset= i1 intersect(i2)
+    if(myset.size!=0)
+    {
+      false
+    }
+    else
+    {
+      myset = f1 intersect(f2)
+      if(myset.size!=0)
+      {
+        false
+      }
+    }
   }
   def main(args: Array[String]): Unit = {
     val nfas = generate(5,3,1,Array('a','b','c'), determinism = true)
