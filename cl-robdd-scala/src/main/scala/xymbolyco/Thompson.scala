@@ -581,17 +581,17 @@ object Profiling {
       "brzozowski_size" -> dfa_trim_brzozowski.Q.size,
       "brzozowski_min" -> min_brzozowski.Q.size)
     if (min_brzozowski.Q.size != min_thompson.Q.size) {
-      dfaView(dfa_thompson, "thompson", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
-      dfaView(dfa_trim_thompson, "trim-thompson", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
-      dfaView(min_thompson, "thompson-min", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
-      dfaView(dfa_brzozowski, "brzozowski", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
-      dfaView(dfa_trim_brzozowski, "trim-brzozowski", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
-      dfaView(min_brzozowski, "brzozowski-min", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
+      dfaView(dfa_thompson, "thompson", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
+      dfaView(dfa_trim_thompson, "trim-thompson", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
+      dfaView(min_thompson, "thompson-min", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
+      dfaView(dfa_brzozowski, "brzozowski", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
+      dfaView(dfa_trim_brzozowski, "trim-brzozowski", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
+      dfaView(min_brzozowski, "brzozowski-min", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
 
       dfaView(Rte.dfaXor(min_thompson, min_brzozowski),
               title = "xor",
               abbrev = true,
-              label = Some(s"$depth.$r " + pattern.toString))
+              label = Some(s"depth=$depth:$r " + pattern.toString))
     }
     data
   }
