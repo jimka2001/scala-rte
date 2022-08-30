@@ -166,8 +166,7 @@ object Nfa {
         for(j<-Range(0,r.nextInt(nbconnect)+1)) {
           transitions = transitions ++ Array((i,Alpha(r.nextInt(Alpha.length)),r.nextInt(nb)))
         }}
-      else
-      {
+      else{
         for(i<-Range(0,nb))
         {
           var count = 0
@@ -186,11 +185,24 @@ object Nfa {
 
   def generate[L](rangeOfStates: Int,rangeOfConnections:Int,rangeOfFinals : Int, alphabet : Array[L], determinism : Boolean) : Seq[(Set[Int],Set[Int],Array[(Int,L,Int)])] =
   {
-    for {x <- (1 to rangeOfStates)
+    for {x <- 1 to rangeOfStates
          y <- 1 to rangeOfConnections
-         z <- 1 to rangeOfFinals}
+         z <- 1 to rangeOfFinals
+         if z<x}
       yield generateNFA(x,alphabet,z,y,determinism)
   }
+  def generate2[L](g: (L,L) => Boolean,rangeOfStates: Int,rangeOfConnections:Int,rangeOfFinals : Int, alphabet : Array[L], determinism : Boolean) : Unit =
+  {
+    for (x <- 1 to rangeOfStates)
+         for(y <- 1 to rangeOfConnections)
+         for(z <- 1 to rangeOfFinals)
+         if (z<x){
+           val (a,b,c) = generateNFA(x,alphabet,z,y,determinism)
+           val (d,e,f) = generateisomorphic(a,b,c)
+           println(isIsomorphic(g,a,d,b,e,c,f))
+         }
+  }
+
 
   def isIsomorphic[L](f : (L,L)=> Boolean,init1 :Set[Int], init2 : Set[Int], final1 : Set[Int], final2 : Set[Int], trans1 : Array[(Int,L,Int)], trans2 : Array[(Int,L,Int)]) : Boolean =
   {
@@ -220,42 +232,6 @@ object Nfa {
     }
   }
   def main(args: Array[String]): Unit = {
-    /*val nfas = generate(5,3,1,Array('a','b','c'), determinism = true)
-    nfas.foreach{case (a,b,c)=>
-    println(a)
-    println(b)
-    for(i<-c.indices)
-    {
-      println(c(i))
-    }}*/
-    val nfas = generate(10  ,5,1,Array('a','b','c','d','e'),determinism = true)
-    nfas.foreach{case (a,b,c) => val (d,e,f) = generateisomorphic(a,b,c); println(isIsomorphic(fchar,a,d,b,e,c,f))
-    }
-    /*
-    val (a,b,c) = generateNFA(3,Array('a','b','c'),1,2,isDeterministic = true)
-    val (d,e,f) = generateisomorphic(a,b,c)
-    println(isIsomorphic(fchar,a,d,b,e,c,f))*/
-    /*println(a)
-    println(d)
-    println(b)
-    println(e)
-    for(i<-c.indices)
-    {
-      println(c(i))
-      println(f(i))
-    }
-    val (a1,b1,c1)= canonicalize(a,b,c,fchar)
-    println("hi")
-    val (d1,e1,f1)= canonicalize(d,e,f,fchar)
-    println(a1)
-    println(d1)
-    println(b1)
-    println(e1)
-    for(i<-c1.indices)
-    {
-      println(c1(i))
-      println(f1(i))
-    }*/
-
+    val nfas = generate2(fchar,100 ,4,5,Array('a','b','c','d','e'),determinism = true)
   }
 }
