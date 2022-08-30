@@ -568,19 +568,24 @@ object Thompson {
 object Profiling {
 
   def check(pattern:Rte,r:Int,depth:Int):Map[String,Int] = {
-    val dfa_thompson = Minimize.trim(Thompson.constructThompsonDfa(pattern, 42))
-    val min_thompson = Minimize.minimize(dfa_thompson)
-    val dfa_brzozowski = Minimize.trim(pattern.toDfa(42))
-    val min_brzozowski = Minimize.minimize(dfa_brzozowski)
+    val dfa_thompson = Thompson.constructThompsonDfa(pattern, 42)
+
+    val dfa_trim_thompson = Minimize.trim(dfa_thompson)
+    val min_thompson = Minimize.minimize(dfa_trim_thompson)
+    val dfa_brzozowski = pattern.toDfa(42)
+    val dfa_trim_brzozowski = Minimize.trim(dfa_brzozowski)
+    val min_brzozowski = Minimize.minimize(dfa_trim_brzozowski)
     val data = Map(
-      "thompson_size" -> dfa_thompson.Q.size,
+      "thompson_size" -> dfa_trim_thompson.Q.size,
       "thompson_min" -> min_thompson.Q.size,
-      "brzozowski_size" -> dfa_brzozowski.Q.size,
+      "brzozowski_size" -> dfa_trim_brzozowski.Q.size,
       "brzozowski_min" -> min_brzozowski.Q.size)
     if (min_brzozowski.Q.size != min_thompson.Q.size) {
       dfaView(dfa_thompson, "thompson", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
+      dfaView(dfa_trim_thompson, "trim-thompson", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
       dfaView(min_thompson, "thompson-min", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
       dfaView(dfa_brzozowski, "brzozowski", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
+      dfaView(dfa_trim_brzozowski, "trim-brzozowski", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
       dfaView(min_brzozowski, "brzozowski-min", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
 
       dfaView(Rte.dfaXor(min_thompson, min_brzozowski),
