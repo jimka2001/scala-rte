@@ -603,7 +603,7 @@ object Profiling {
     //  is different in terms of state count.
 
     val num_random_tests = 1000*3
-    for {depth <- 5 until 6
+    for {depth <- 1 until 6
          r <- 0 until num_random_tests
          pattern = Rte.randomRte(depth)
          } {
