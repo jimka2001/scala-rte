@@ -377,7 +377,7 @@ object MapColoring {
     val (numNodess,ratios) = ratioData(justMinMap("fold-left").sortBy(_._2),
                                        justMinMap("tree-fold").sortBy(_._2),
                                        List(),List())
-    gnuPlot(List(("ratio", numNodess, ratios)))(
+    gnuPlot(List(("fold-left/tree-fold", numNodess, ratios)))(
       title = s"Time ratios (best of $numSamples)",
       xAxisLabel = "Number of states",
       yAxisLabel = "Time ratio",
