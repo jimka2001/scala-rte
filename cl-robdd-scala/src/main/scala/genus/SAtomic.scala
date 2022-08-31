@@ -131,8 +131,10 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
           }
 
         case SMember(_) =>
+          // TODO, need to verify this assumption.  E.g., for an Algebraic Data Type?
           Some(false) // no member type exhausts all the values of an Atomic Type
 
+        // TODO, need to verify this assumption.  E.g., for an Algebraic Data Type?
         case SEql(_) =>
           Some(false)
 
