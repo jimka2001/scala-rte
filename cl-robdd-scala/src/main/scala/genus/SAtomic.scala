@@ -119,7 +119,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
           else {
             // here we know that neither inhabited nor s.inhabited is Some(false)
             (inhabited, s.inhabited) match {
-              // case (Some(false),_) => Some(true) // redundant case because of of if/then/else
+              // case (Some(false),_) => Some(true) // redundant case because of if/then/else
               case (_,None) => None
               case (None,Some(true)) => None
               // super.isAssignableFrom(sub) means sub is subtype of super
