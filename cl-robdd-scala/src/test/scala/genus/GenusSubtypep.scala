@@ -376,4 +376,13 @@ class GenusSubtypep extends MyFunSuite {
     assert(      SNot(SMember(1,2)).subtypep(SOr(SEql(3),SNot(SMember(1,2)))).contains(true), "#4" )
     assert(      SNot(SEql(0)).subtypep( SOr(SEql(3),SNot(SEql(0))) ).contains(true), "#5" )
   }
+  test("boolean subtype"){
+    val b = SAtomic(classOf[Boolean])
+    assert(SEql(true).subtypep(b).contains(true), "# 380")
+    assert(SEql(false).subtypep(b).contains(true), "# 381")
+    assert(SMember(false,true).subtypep(b).contains(true), "# 382")
+    assert(SMember(true,false).subtypep(b).contains(true), "# 383")
+    assert(b.typep(true), "# 384")
+    assert(b.typep(false), "# 385")
+  }
 }

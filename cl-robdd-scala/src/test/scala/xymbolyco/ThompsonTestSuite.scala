@@ -439,17 +439,41 @@ class ThompsonTestSuite  extends AnyFunSuite {
                                              ), cmp)
              == (0, Seq(1, 2), Seq((0, 'a', 1), (0, 'c', 3), (0, 'b', 2))))
 
-    assert(canonicalizeDfa(1, Seq(4, 3), Seq((1, 'a', 4),
-                                             (1, 'c', 5),
-                                             (1, 'b', 3),
-                                             (4,'a',3),
-                                             (1,'a',2)
-                                             ), cmp)
-             == (0, Seq(1, 3), Seq((0, 'a', 1), (0, 'c', 4), (0, 'b', 3),(1,'a',3),(0,'a',2))))
+
+    assert(canonicalizeDfa(7, Seq(1), Seq((7,'a',6), (7,'b',5),
+                                          (6, 'a', 2), (6, 'b', 3),
+                                          (5, 'a', 3), (5, 'b', 4),
+                                          (2,'b',6),
+                                          (3,'b',1)
+                                          ),
+                           cmp)
+           == (0, Seq(6), Seq((0,'a',1),(0,'b',2),
+                              (1,'a',3), (1,'b',4),
+                              (2,'a',4), (2,'b',5),
+                              (3,'b',1),
+                              (4,'b',6)
+                                )))
 
   }
-  test("thomp/brz/Trait3"){
+
+  test("thomp/brz/Trait3") {
     import genus.RandomType.Trait3
-    Profiling.check(Singleton(SAtomic(classOf[Trait3])),1,1)
+    val data = Profiling.check(Singleton(SAtomic(classOf[Trait3])), 1, 1)
+    assert(data("thompson_min") == data("brzozowski_min"))
+  }
+  test("discovered 463") {
+    import genus.RandomType.{Trait3X,Abstract1X}
+    val s1 = Singleton(SEql(1))
+    val t3x = Singleton(SAtomic(classOf[Trait3X]))
+    val a1x = Singleton(SAtomic(classOf[Abstract1X]))
+    val num = Singleton(SAtomic(classOf[Number]))
+    val abc = Singleton(SMember("a","b","c"))
+    val stop = Singleton(STop)
+    // And((Or(Or(Not(<= 1:Integer>),And(<SAtomic:Trait3X>,<{a:String,b:String,c:String}>)),
+    //    Cat(Not(<SAtomic:Number>),Or(<SAtomic:Abstract1X>,<SAtomic:Number>))))*,(<STop>)*)
+    val rte = And(Star(Or(Or(Not(s1),And(t3x,abc)),
+                          Cat(Not(num),Or(a1x,num)))),Star(stop))
+    val data = Profiling.check(rte, 1, 1)
+    assert(data("thompson_min") == data("brzozowski_min"))
   }
 }

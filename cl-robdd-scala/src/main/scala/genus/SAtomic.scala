@@ -73,7 +73,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     }
   }
 
-  override protected def inhabitedDown: Some[Boolean] = {
+  override protected def inhabitedDown: Some[Boolean] = { // TODO, should this be Option[Boolean]
     if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
     else if (SAtomic.closedWorldView.value)
@@ -87,6 +87,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
     t match {
       case SEmpty => Some(true)
+      // TODO, do we know that t is inhabited? if not, do we need to check for it?
       case STop => Some(false) // STop is only disjoint with SEmpty, but this != SEmpty
       case SAtomic(tp) =>
         if (inhabited.contains(false))
@@ -119,7 +120,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
           else {
             // here we know that neither inhabited nor s.inhabited is Some(false)
             (inhabited, s.inhabited) match {
-              // case (Some(false),_) => Some(true) // redundant case because of of if/then/else
+              // case (Some(false),_) => Some(true) // redundant case because of if/then/else
               case (_,None) => None
               case (None,Some(true)) => None
               // super.isAssignableFrom(sub) means sub is subtype of super
@@ -131,8 +132,10 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
           }
 
         case SMember(_) =>
+          // TODO, need to verify this assumption.  E.g., for an Algebraic Data Type?
           Some(false) // no member type exhausts all the values of an Atomic Type
 
+        // TODO, need to verify this assumption.  E.g., for an Algebraic Data Type?
         case SEql(_) =>
           Some(false)
 

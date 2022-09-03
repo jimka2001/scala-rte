@@ -417,6 +417,9 @@ object Thompson {
                          out: Seq[Int],
                          transitions: Seq[(Int, L, Int)],
                          cmp: (L, L) => Boolean): (Int, Seq[Int], Seq[(Int, L, Int)]) = {
+    def cmpTransitions(tr1:(Int,L,Int),tr2:(Int,L,Int)):Boolean = {
+      cmp(tr1._2, tr2._2)
+    }
     def generateCanonMap(toDo: List[Int],
                          done: Set[Int],
                          mapping: Map[Int, Int],
@@ -431,16 +434,13 @@ object Thompson {
                            mapping + (q0 -> nextState),
                            nextState + 1)
         case q0 :: qs =>
-          val stateTransitions = transitions
-            .filter(tr => (tr._1 == q0) && !done.contains(tr._3))
-            .sortWith((tr1, tr2) => cmp(tr1._2, tr2._2))
-            .toList
-          val unvisited = uniquify(stateTransitions.map(_._3).reverse).reverse
-          val unvisitedMap = unvisited.zip(nextState until nextState + unvisited.size).toMap
-          generateCanonMap(qs,
+          val stateTransitions = transitions.filter(tr => tr._1 == q0).sortWith(cmpTransitions).toList
+          val unmapped = uniquify(stateTransitions.filter(tr => !mapping.contains(tr._3)).map(_._3).reverse).reverse
+          val unvisitedMap = unmapped.zip(nextState until nextState + unmapped.size).toMap
+          generateCanonMap(qs ++ stateTransitions.map(_._3),
                            done + q0,
                            mapping ++ unvisitedMap,
-                           nextState + unvisited.size)
+                           nextState + unmapped.size)
       }
     }
 
@@ -568,25 +568,30 @@ object Thompson {
 object Profiling {
 
   def check(pattern:Rte,r:Int,depth:Int):Map[String,Int] = {
-    val dfa_thompson = Minimize.trim(Thompson.constructThompsonDfa(pattern, 42))
-    val min_thompson = Minimize.minimize(dfa_thompson)
-    val dfa_brzozowski = Minimize.trim(pattern.toDfa(42))
-    val min_brzozowski = Minimize.minimize(dfa_brzozowski)
+    val dfa_thompson = Thompson.constructThompsonDfa(pattern, 42)
+
+    val dfa_trim_thompson = Minimize.trim(dfa_thompson)
+    val min_thompson = Minimize.minimize(dfa_trim_thompson)
+    val dfa_brzozowski = pattern.toDfa(42)
+    val dfa_trim_brzozowski = Minimize.trim(dfa_brzozowski)
+    val min_brzozowski = Minimize.minimize(dfa_trim_brzozowski)
     val data = Map(
-      "thompson_size" -> dfa_thompson.Q.size,
+      "thompson_size" -> dfa_trim_thompson.Q.size,
       "thompson_min" -> min_thompson.Q.size,
-      "brzozowski_size" -> dfa_brzozowski.Q.size,
+      "brzozowski_size" -> dfa_trim_brzozowski.Q.size,
       "brzozowski_min" -> min_brzozowski.Q.size)
     if (min_brzozowski.Q.size != min_thompson.Q.size) {
-      dfaView(dfa_thompson, "thompson", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
-      dfaView(min_thompson, "thompson-min", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
-      dfaView(dfa_brzozowski, "brzozowski", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
-      dfaView(min_brzozowski, "brzozowski-min", abbrev = true, label = Some(s"$depth.$r " + pattern.toString))
+      dfaView(dfa_thompson, "thompson", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
+      dfaView(dfa_trim_thompson, "trim-thompson", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
+      dfaView(min_thompson, "thompson-min", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
+      dfaView(dfa_brzozowski, "brzozowski", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
+      dfaView(dfa_trim_brzozowski, "trim-brzozowski", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
+      dfaView(min_brzozowski, "brzozowski-min", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
 
       dfaView(Rte.dfaXor(min_thompson, min_brzozowski),
               title = "xor",
               abbrev = true,
-              label = Some(s"$depth.$r " + pattern.toString))
+              label = Some(s"depth=$depth:$r " + pattern.toString))
     }
     data
   }
@@ -597,13 +602,17 @@ object Profiling {
     //  them both, and look for cases where the resulting size
     //  is different in terms of state count.
 
-    val num_random_tests = 100*3
-    for {depth <- 5 until 6
+    val num_random_tests = 1000*3
+    for {depth <- 1 until 6
          r <- 0 until num_random_tests
          pattern = Rte.randomRte(depth)
-         data = check(pattern,r,depth)
          } {
-      println(depth, data, pattern)
+      val data = check(pattern,r,depth)
+      assert(data("thompson_min") == data("brzozowski_min"),
+        {
+          println(depth, data, pattern)
+          s"different minimized sizes ${data("thompson_min")} vs ${data("brzozowski_min")}"
+        })
     }
   }
 }

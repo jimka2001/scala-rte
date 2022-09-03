@@ -280,13 +280,21 @@ object Adjuvant {
       case seq:Seq[A] => recurS(seq,Seq())
     }
   }
+
   def openGraphicalFile(fileName:String):String = {
+    import java.awt.Desktop
+    import java.net.URI
     import sys.process._
-    val cmd = Seq("open", "-g", "-a", "Preview", fileName)
-    if ("Mac OS X" == System.getProperty("os.name"))
-      cmd.!
-    else
-      sys.error(s"cannot open $fileName because OS = ${System.getProperty("os.name")}")
+
+    if (Desktop.isDesktopSupported) {
+      Desktop.getDesktop.browse(new URI("file://" + fileName))
+    }
+    else {
+      // I don't know all the cases where this ELSE branch is taken,
+      // but at least it is taken on Linux while running the CI/CD pipeline
+      // in gitlab.
+      println(s"cannot open $fileName in OS = ${System.getProperty("os.name")} because desktop not supported")
+    }
     fileName
   }
 
