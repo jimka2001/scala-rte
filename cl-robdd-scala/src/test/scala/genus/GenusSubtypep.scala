@@ -232,7 +232,7 @@ class GenusSubtypep extends MyFunSuite {
              s"\n   rt2.canonicalize= ${rt2.canonicalize()}")
     assert(!rt2.subtypep(rt1).contains(false),
            s": $comment: \n   rt1= $rt1 \n   rt2= $rt2" +
-             "\n  failed rt1 > rt2" +
+             "\n  failed rt1 > rt2 => " + rt2.subtypep(rt1) +
              s"\n   rt1.canonicalize= ${rt1.canonicalize()}"+
              s"\n   rt2.canonicalize= ${rt2.canonicalize()}")
   }
