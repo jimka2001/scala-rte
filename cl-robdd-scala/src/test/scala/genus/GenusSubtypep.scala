@@ -255,7 +255,9 @@ class GenusSubtypep extends MyFunSuite {
     assert(!rt1.subtypep(rt2).contains(false))
     assert(!rt2.subtypep(rt1).contains(false))
   }
-
+  test("discovered 258"){
+    checkSubtype(SMember(true,false), SAtomic(classOf[Boolean]),"test 258")
+  }
   test("randomized testing of subtypep with normalization") {
     import NormalForm._
 
