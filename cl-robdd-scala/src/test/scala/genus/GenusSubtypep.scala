@@ -255,8 +255,16 @@ class GenusSubtypep extends MyFunSuite {
     assert(!rt1.subtypep(rt2).contains(false))
     assert(!rt2.subtypep(rt1).contains(false))
   }
+  test("discovered 257"){
+    assert(SAtomic(classOf[java.lang.Boolean]).subtypep(SMember(true,false)).contains(true))
+  }
   test("discovered 258"){
+    assert(SAtomic(Boolean).subtypep(SAtomic(Boolean)).contains(true))
+    assert(SAtomic(classOf[java.lang.Boolean]).subtypep(SAtomic(classOf[java.lang.Boolean])).contains(true))
+
+    checkSubtype(SMember(true,false), SAtomic(classOf[java.lang.Boolean]),"test 257")
     checkSubtype(SMember(true,false), SAtomic(classOf[Boolean]),"test 258")
+
   }
   test("randomized testing of subtypep with normalization") {
     import NormalForm._
