@@ -455,6 +455,7 @@ class ThompsonTestSuite  extends AnyFunSuite {
                                 )))
 
   }
+
   test("thomp/brz/Trait3") {
     import genus.RandomType.Trait3
     val data = Profiling.check(Singleton(SAtomic(classOf[Trait3])), 1, 1)
