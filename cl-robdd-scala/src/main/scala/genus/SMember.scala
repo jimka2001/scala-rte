@@ -33,4 +33,7 @@ case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SMemberIm
 
 object SMember {
   def apply(xs:Any*):SimpleTypeD = createMember(xs)
+
+  val trueOrFalse = SMember(true,false)
+
 }

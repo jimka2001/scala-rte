@@ -110,6 +110,8 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   override protected def subtypepDown(s: SimpleTypeD): Option[Boolean] = {
     if ( inhabited.contains(false))
       Some(true)
+    else if (ct == classOf[java.lang.Boolean] && s == SMember.trueOrFalse)
+      Some(true)
     else
       s match {
         case SEmpty => this.inhabited.map(!_)
@@ -201,6 +203,7 @@ object SAtomic {
   @tailrec
   def apply(ct: Class[_]): SimpleTypeD = {
     if (ct == classOf[Nothing]) SEmpty
+    else if (ct == classOf[Boolean]) SAtomic(classOf[java.lang.Boolean])
     else if (ct == classOf[Any]) STop
     else if (ct == classOf[Int]) SAtomic(classOf[Integer])
     else knownSAtomics.getOrElseUpdate((getClosedWorldView(),ct),new SAtomic(ct))

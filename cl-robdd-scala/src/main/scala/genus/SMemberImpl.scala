@@ -53,11 +53,8 @@ abstract class SMemberImpl(val xs:Vector[(SimpleTypeD,Any)]) extends SimpleTypeD
 
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     // Member(true,false) should be the same as SAtomic(java.lang.Boolean)
-    val b = SAtomic(classOf[java.lang.Boolean])
-    if (this.xs.size == 2
-      && this.xs.contains(b -> true)
-      && this.xs.contains(b -> false))
-      b
+    if (this == SMember.trueOrFalse)
+      SAtomic(classOf[java.lang.Boolean])
     else
       super.canonicalizeOnce(nf)
   }
