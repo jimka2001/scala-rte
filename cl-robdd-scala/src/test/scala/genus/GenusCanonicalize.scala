@@ -513,9 +513,11 @@ class GenusCanonicalize extends AnyFunSuite {
     val dnf = td.canonicalize(Some(Dnf))
     val inverse = SNot(dnf)
 
-    assert(td - dnf == SEmpty,
+    assert((td - dnf).inhabited != Some(true),
            s"td=$td dnf=$dnf, dnf inverse=$inverse, td-dnf=${td - dnf}, expecting SEmpty")
-    assert(((td || inverse) == STop) || (!(td || inverse) == SEmpty),
+    assert(((td || inverse) == STop)
+             || (!(td || inverse) == SEmpty)
+             || (!(td||inverse)).inhabited != Some(true),
            s"td=$td inverse=$inverse, td || inverse=${td || inverse}, expecting SEmpty")
   }
 
