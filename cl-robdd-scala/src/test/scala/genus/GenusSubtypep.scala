@@ -266,6 +266,21 @@ class GenusSubtypep extends MyFunSuite {
     checkSubtype(SMember(true,false), SAtomic(classOf[Boolean]),"test 258")
 
   }
+  test("discovered 269"){
+    val rt = SOr(SOr(SMember(false, true), SMember(4, 5, 6)),
+                 SOr(SEql(true), SAtomic(Boolean)))
+    val rt2 = SOr(SMember(false, true,4,5,6),
+                  SAtomic(Boolean))
+    //val rt_can = rt.canonicalize() // SMember(false,true,4,5,6)
+    val rt_can = SMember(false,true,4,5,6)
+    assert(SAtomic(Boolean).subtypep(SMember(false,true,4,5,6)) != Some(false), "270")
+    assert(rt2.subtypep(SMember(false, true,4,5,6)) != Some(false), "271")
+    assert(rt.subtypep(SMember(false, true,4,5,6)) != Some(false), "272")
+    assert(rt.subtypep(rt_can) != Some(false), "273")
+    assert(rt_can.subtypep(rt) != Some(false), "274")
+    checkSubtype(rt, rt_can, "discovered 269")
+  }
+
   test("randomized testing of subtypep with normalization") {
     import NormalForm._
 

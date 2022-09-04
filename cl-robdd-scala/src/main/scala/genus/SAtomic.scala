@@ -56,8 +56,8 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     // according to Sébastien Doeraene https://gitter.im/scala/center?at=6124feac63dca8189120a1c9
     // if ct is a primitive (ct.isPrimitive() returns True) then isInstance always returns false
 
+
     (a.getClass == ct) || ct.isInstance(a) || locally{
-      //println(s"typep testing $ct vs ${a.getClass}")
       if (ct == classOf[Boolean])
         a.getClass == classOf[java.lang.Boolean]
       else if (ct == classOf[scala.Long])
@@ -110,8 +110,6 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   override protected def subtypepDown(s: SimpleTypeD): Option[Boolean] = {
     if ( inhabited.contains(false))
       Some(true)
-    else if (ct == classOf[java.lang.Boolean] && s == SMember.trueOrFalse)
-      Some(true)
     else
       s match {
         case SEmpty => this.inhabited.map(!_)
@@ -133,10 +131,22 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
             }
           }
 
-        case SMember(_) =>
+        case SMember(xs) => {
+          import SMember.trueOrFalse
+          // this strange piece of code is probably unnecessary.  I'm not sure how to
+          //   correctly write it, given the language constraints.
+          //   trueOrFalse has type SimpleTypeD, but it is actually SMember(true,false)
+          //   so in order to get the xs out of the SMember object we have to use a pattern
+          //   match with a useless 2nd case.
+          if (ct == classOf[java.lang.Boolean] )
+            trueOrFalse match {
+              case SMember(xs2) => Some(xs2.forall(p => xs.contains(p)) )
+              case _ => None // impossible because trueOrFalse is SMember(true,false)
+          }
+          else
           // TODO, need to verify this assumption.  E.g., for an Algebraic Data Type?
           Some(false) // no member type exhausts all the values of an Atomic Type
-
+        }
         // TODO, need to verify this assumption.  E.g., for an Algebraic Data Type?
         case SEql(_) =>
           Some(false)
