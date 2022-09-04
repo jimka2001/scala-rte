@@ -102,7 +102,8 @@ class GenusBddTest extends MyFunSuite {
 
   test("test 103"){
     val td = SAnd(SNot(SEql(true)),
-                  SOr(SMember(false,true),SAtomic(String),SMember(false,true)))
+                  SOr(SMember(false,true),SAtomic(String)
+                      ))
     Bdd.withNewBddHash {
       testDnf(td, mutable.Map[SimpleTypeD, Int](), -1)
     }
