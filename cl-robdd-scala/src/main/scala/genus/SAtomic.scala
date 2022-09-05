@@ -135,14 +135,11 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
           import SMember.trueOrFalse
           // this strange piece of code is probably unnecessary.  I'm not sure how to
           //   correctly write it, given the language constraints.
-          //   trueOrFalse has type SimpleTypeD, but it is actually SMember(true,false)
+          //   trueOrFalse has declared type SimpleTypeD, but it is actually SMember(true,false)
           //   so in order to get the xs out of the SMember object we have to use a pattern
           //   match with a useless 2nd case.
           if (ct == classOf[java.lang.Boolean] )
-            trueOrFalse match {
-              case SMember(xs2) => Some(xs2.forall(p => xs.contains(p)) )
-              case _ => None // impossible because trueOrFalse is SMember(true,false)
-          }
+            Some(trueOrFalse.xs.forall(p => xs.contains(p)))
           else
           // TODO, need to verify this assumption.  E.g., for an Algebraic Data Type?
           Some(false) // no member type exhausts all the values of an Atomic Type

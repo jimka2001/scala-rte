@@ -32,8 +32,11 @@ import genus.Types.createMember
 case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SMemberImpl(xs) with TerminalType
 
 object SMember {
-  def apply(xs:Any*):SimpleTypeD = createMember(xs)
+  def apply(xs: Any*): SimpleTypeD = createMember(xs)
 
-  val trueOrFalse = SMember(true,false)
-
+  val trueOrFalse: SMember =
+    SMember(true, false) match {
+      case td: SMember => td
+      case _ => sys.error("It is expected that this line is never reached.")
+    }
 }
