@@ -35,6 +35,12 @@ object RandomType {
   abstract class Abstract1
   abstract class Abstract2 extends Trait3
 
+  sealed abstract class ADT_abstr
+  class ADT1 extends ADT_abstr
+  class ADT2 extends ADT_abstr
+  class ADT3 extends ADT_abstr
+
+
   trait Trait1X
   trait Trait2X
   trait Trait3X extends Trait2X
@@ -79,7 +85,11 @@ object RandomType {
     SAtomic(classOf[Abstract1X]),
     SAtomic(classOf[Abstract2X]),
     SAtomic(classOf[Class1X]),
-    SAtomic(classOf[Class2X])
+    SAtomic(classOf[Class2X]),
+    SAtomic(classOf[ADT1]),
+    SAtomic(classOf[ADT2]),
+    SOr(SAtomic(classOf[ADT1]), SAtomic(classOf[ADT2]), SAtomic(classOf[ADT3])),
+    SAtomic(classOf[ADT_abstr])
     )
   val interestingValues:Vector[Any] = Vector(
     -1, -1, 0, 1, 2, 3, 4, 5, 6,
