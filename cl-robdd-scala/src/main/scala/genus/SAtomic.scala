@@ -73,7 +73,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     }
   }
 
-  override protected def inhabitedDown: Some[Boolean] = {
+  override protected def inhabitedDown: Some[Boolean] = { // TODO, should this be Option[Boolean]
     if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
     else if (SAtomic.closedWorldView.value)
@@ -87,6 +87,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
     t match {
       case SEmpty => Some(true)
+      // TODO, do we know that t is inhabited? if not, do we need to check for it?
       case STop => Some(false) // STop is only disjoint with SEmpty, but this != SEmpty
       case SAtomic(tp) =>
         if (inhabited.contains(false))

@@ -283,11 +283,10 @@ object Adjuvant {
 
   def openGraphicalFile(fileName:String):String = {
     import java.awt.Desktop
-    import java.net.URI
-    import sys.process._
 
     if (Desktop.isDesktopSupported) {
-      Desktop.getDesktop.browse(new URI("file://" + fileName))
+      // See: https://users.scala-lang.org/t/uri-syntaxexception-illegal-character-in-authority-at-index-7/8777
+      Desktop.getDesktop.browse(java.nio.file.Paths.get(fileName).toUri)
     }
     else {
       // I don't know all the cases where this ELSE branch is taken,
