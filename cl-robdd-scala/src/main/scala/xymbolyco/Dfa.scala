@@ -37,12 +37,13 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   // each element of Fids is in Qids
   require(Fids.subsetOf(Qids))
   // each triple in protoDelta is of the form (x,_,y) where x and y are elements of Qids
-  require(protoDelta.forall { case (from: Int, _, to: Int) => Qids.contains(from) && Qids.contains(to) })
+  require(protoDelta.forall  { case (from: Int, _, to: Int) => Qids.contains(from) && Qids.contains(to) })
 
   // returns a map of src -> Set(dst)
   def successors():Map[Int,Set[Int]] = {
     for{ (src,triples) <- protoDelta.groupBy{case (src,_,_) => src}
-         } yield src -> triples.map(_._3)
+      triples2= triples.filter{case (_,tr,_) => !labeler.inhabited(tr).contains(false)}
+         } yield src -> triples2.map(_._3)
   }
 
   // returns a map of dst -> Set(src)
