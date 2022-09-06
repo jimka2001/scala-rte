@@ -572,7 +572,7 @@ object Profiling {
     val dfa_trim_thompson = Minimize.trim(dfa_thompson)
     val min_thompson = Minimize.minimize(dfa_trim_thompson)
     val dfa_brzozowski = pattern.toDfa(42)
-    val dfa_trim_brzozowski = Minimize.trim(dfa_brzozowski)
+    val dfa_trim_brzozowski = Minimize.trim(dfa_brzozowski,true)
     val min_brzozowski = Minimize.minimize(dfa_trim_brzozowski)
     val data = Map(
       "thompson_size" -> dfa_trim_thompson.Q.size,

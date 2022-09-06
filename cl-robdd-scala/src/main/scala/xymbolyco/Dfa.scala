@@ -40,6 +40,8 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   require(protoDelta.forall  { case (from: Int, _, to: Int) => Qids.contains(from) && Qids.contains(to) })
 
   // returns a map of src -> Set(dst)
+  // tests if the transitions are valid, if the transitions carry a type that is empty
+  // the following state will not be added to the queue
   def successors():Map[Int,Set[Int]] = {
     for{ (src,triples) <- protoDelta.groupBy{case (src,_,_) => src}
       triples2= triples.filter{case (_,tr,_) => !labeler.inhabited(tr).contains(false)}

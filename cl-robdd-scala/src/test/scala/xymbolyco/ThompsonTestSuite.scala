@@ -119,7 +119,6 @@ class ThompsonTestSuite  extends AnyFunSuite {
                               (1, ti, 2)
                               )))
   }
-
   test("complete 1") {
     val ts: SimpleTypeD = SAtomic(classOf[String])
     val ti: SimpleTypeD = SAtomic(classOf[Int])
@@ -137,7 +136,6 @@ class ThompsonTestSuite  extends AnyFunSuite {
                                   (2, STop, q),
                                   (q, STop, q)))
   }
-
   test("determinize 1") {
     val ti: SimpleTypeD = SAtomic(classOf[Int])
     val (in, outs, determinized) = determinize(0,
@@ -455,7 +453,6 @@ class ThompsonTestSuite  extends AnyFunSuite {
                                 )))
 
   }
-
   test("thomp/brz/Trait3") {
     import genus.RandomType.Trait3
     val data = Profiling.check(Singleton(SAtomic(classOf[Trait3])), 1, 1)
