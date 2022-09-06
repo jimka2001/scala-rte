@@ -31,7 +31,7 @@ object Minimize {
   //trust accessible will be true for brzozowski constructions as it does not have unsatisfiable or unaccesible states
   def trim[Σ, L, E](dfa: Dfa[Σ, L, E], trustAccessible: Boolean = false): Dfa[Σ, L, E] = {
     if (!trustAccessible) {
-      removeNonAccessible(removeNonCoAccessible(dfa))
+      removeNonCoAccessible(removeNonAccessible(dfa))
     }
     else {
       removeNonCoAccessible(dfa)
