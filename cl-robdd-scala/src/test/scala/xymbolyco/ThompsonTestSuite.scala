@@ -21,6 +21,7 @@
 
 package xymbolyco
 
+import genus.RandomType.Abstract1
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import rte._
@@ -472,8 +473,16 @@ class ThompsonTestSuite  extends AnyFunSuite {
     // And((Or(Or(Not(<= 1:Integer>),And(<SAtomic:Trait3X>,<{a:String,b:String,c:String}>)),
     //    Cat(Not(<SAtomic:Number>),Or(<SAtomic:Abstract1X>,<SAtomic:Number>))))*,(<STop>)*)
     val rte = And(Star(Or(Or(Not(s1),And(t3x,abc)),
-                          Cat(Not(num),Or(a1x,num)))),Star(stop))
+                          Cat(Not(num),Or(a1x,num)))),
+                  Star(stop))
     val data = Profiling.check(rte, 1, 1)
     assert(data("thompson_min") == data("brzozowski_min"))
+  }
+  test("discovered 479"){
+    val rte:Rte = Cat(Singleton(SMember(4,5,6)),
+                      Singleton(SAtomic(classOf[Abstract1])))
+    val dfa = constructThompsonDfa(rte, 42)
+    val trim_dfa = Minimize.trim(dfa)
+    assert(trim_dfa.Q.size == 1, "trimming created the wrong sized dfa")
   }
 }
