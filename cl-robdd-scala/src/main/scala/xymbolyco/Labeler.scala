@@ -29,6 +29,7 @@ abstract class Labeler[Σ,L] {
   def intersectLabels(l1:L,l2:L):L = ???
   def subtractLabels(l1:L,ls:Seq[L]):L = ???
   def inhabited(l1:L):Option[Boolean] = ???
+  def graphicalText():Seq[String] = Seq()
 }
 
 import genusbdd.GenusBdd
@@ -60,4 +61,13 @@ case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
     SAnd(l1,SNot(SOr(ls : _*))).canonicalize()
   }
   override def inhabited(l1:SimpleTypeD):Option[Boolean] = l1.inhabited
+
+  override def graphicalText():Seq[String] = {
+    import genus.SAtomic.getClosedWorldView
+
+    if (getClosedWorldView())
+      Seq("world-view=closed")
+    else
+      Seq("world-view=open")
+  }
 }
