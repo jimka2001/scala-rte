@@ -78,6 +78,7 @@ class GenusBddTest extends MyFunSuite {
   def testDnf(td: SimpleTypeD, tdToInt: mutable.Map[SimpleTypeD, Int], depth:Int): Unit = {
     val bdd = GenusBdd(td, tdToInt)
     val dnf = bdd.dnf
+
     if (dnf == td)
       ()
     else {
@@ -100,14 +101,24 @@ class GenusBddTest extends MyFunSuite {
     }
   }
 
-  test("test 103"){
+  test("test 108"){
     val td = SAnd(SNot(SEql(true)),
-                  SOr(SMember(false,true),SAtomic(String)
+                  SMember(false, true)
+                  )
+    val dnf = SEql(false)
+    assert(dnf - td == SEmpty)
+    assert(td - dnf == SEmpty)
+  }
+
+  test("test 111") {
+    val td = SAnd(SNot(SEql(true)),
+                  SOr(SMember(false, true), SAtomic(String)
                       ))
     Bdd.withNewBddHash {
       testDnf(td, mutable.Map[SimpleTypeD, Int](), -1)
     }
   }
+
   test("test 1") {
     Bdd.withNewBddHash {
 

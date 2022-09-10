@@ -177,15 +177,31 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   def conversion177(): SimpleTypeD = {
     // SAnd(Boolean,SNot(true)) -> false
     // SAnd(Boolean,SNot(false)) -> true
+    // SAnd(Boolean, SNot(true), X) -> SAnd(false, X)
+    // SAnd(Boolean, SNot(false), X) -> SAnd(true, X)
     val b = SAtomic(classOf[Boolean])
     val nt = SNot(SEql(true))
     val nf = SNot(SEql(false))
     if (!tds.contains(b))
       this
-    else if (tds.contains(nt))
-      SEql(false)
-    else if (tds.contains(nf))
-      SEql(true)
+    else if (tds.contains(nt)) {
+      create(tds.flatMap { td =>
+        if (td == nt)
+          Seq(SEql(false))
+        else if (td == b)
+          Seq()
+        else
+          Seq(td)
+      })
+    } else if (tds.contains(nf))
+      create(tds.flatMap { td =>
+        if (td == nf)
+          Seq(SEql(true))
+        else if (td == b)
+          Seq()
+        else
+          Seq(td)
+      })
     else
       this
   }
