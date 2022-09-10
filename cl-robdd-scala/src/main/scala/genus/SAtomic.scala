@@ -56,7 +56,6 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     // according to Sébastien Doeraene https://gitter.im/scala/center?at=6124feac63dca8189120a1c9
     // if ct is a primitive (ct.isPrimitive() returns True) then isInstance always returns false
 
-
     (a.getClass == ct) || ct.isInstance(a) || locally{
       if (ct == classOf[Boolean])
         a.getClass == classOf[java.lang.Boolean]
@@ -84,8 +83,13 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
   // SAtomic(ct: Class[_])
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
-
-    t match {
+    import genus.Types.booleanType
+    import genus.SMember.trueOrFalse
+    lazy val dd = trueOrFalse.disjoint(t)
+    if (this == booleanType && ! dd.isEmpty) {
+      dd
+    }
+    else t match {
       case SEmpty => Some(true)
       // TODO, do we know that t is inhabited? if not, do we need to check for it?
       case STop => Some(false) // STop is only disjoint with SEmpty, but this != SEmpty

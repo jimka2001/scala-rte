@@ -216,4 +216,10 @@ class GenusDisjoint extends AnyFunSuite {
       assert(SAtomic(classOf[Test6]).disjoint(SAtomic(classOf[Test7])).contains(true))
     }
   }
+  test("boolean disjoint"){
+    val b = SAtomic(classOf[Boolean])
+
+    assert(SMember(true,false).disjoint(oddType).contains(true))
+    assert(b.disjoint(oddType).contains(true))
+  }
 }
