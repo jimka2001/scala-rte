@@ -192,14 +192,14 @@ object Types {
   val doubleJavaType: SimpleTypeD = SAtomic(Double)
   val stringType: SimpleTypeD = SAtomic(String)
   val listAnyType: SimpleTypeD = SAtomic(ListAny)
-  val booleanJavaType: SimpleTypeD = SAtomic(Boolean)
+  val booleanType: SimpleTypeD = SAtomic(Boolean)
   val unitRuntimeType: SimpleTypeD = SAtomic(Unit)
   val charJavaType: SimpleTypeD = SAtomic(Char)
   val anyRefType: SimpleTypeD = SAtomic(AnyRef)
   val numericType: SimpleTypeD = SAtomic(Numeric)
 
   val atomicTypesSeq: Seq[SimpleTypeD] =
-    Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanJavaType, unitRuntimeType,
+    Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanType, unitRuntimeType,
         charJavaType, anyRefType, numericType)
 
   def isEven(x: Any): Boolean = {

@@ -131,8 +131,8 @@ class GenusDisjoint extends AnyFunSuite {
   }
 
   test("disjoint unknown") {
-    println(SOr(intJavaType, stringType).disjoint(SOr(charJavaType, booleanJavaType)))
-    println(SAnd(SOr(intJavaType, doubleJavaType), stringType).disjoint(stringType))
+    SOr(intJavaType, stringType).disjoint(SOr(charJavaType, booleanType))
+    SAnd(SOr(intJavaType, doubleJavaType), stringType).disjoint(stringType)
   }
   class Test1
   class Test2 extends Test1
