@@ -87,6 +87,13 @@ class TypesTest extends AnyFunSuite {
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
   }
+  test("reflection Number"){
+    // this tests that reflection has properly installed the sublcass relationships to Number
+    assert(SEql(1).subtypep(SAtomic(classOf[Number])) == Some(true))
+    assert(SAtomic(classOf[Number]).inhabited == Some(true))
+    assert(SMember(1,2,3).subtypep( SAtomic(classOf[Number])) == Some(true))
+    assert(SAtomic(classOf[java.lang.Double]).subtypep(SAtomic(classOf[Number])) == Some(true))
+  }
   test("sort 1") {
     assert(List(SEmpty, STop).sortWith(cmpTypeDesignators)
            == List(STop, SEmpty).sortWith(cmpTypeDesignators))
