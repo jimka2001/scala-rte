@@ -25,6 +25,8 @@ package rte
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import RandomType.randomType
+import xymbolyco.GraphViz.dfaView
+import xymbolyco.Profiling
 
 class DerivativeTestSuite extends AnyFunSuite {
   test("nullable") {
@@ -271,4 +273,36 @@ class DerivativeTestSuite extends AnyFunSuite {
                  Sigma),
              Singleton(SMember("a","b","c","d")))).toDfa()
   }
+
+//  test("Number 4,5,6") {
+//    val num = SAtomic(classOf[Number])
+//    val rte = Star(Or(Singleton(num), Singleton(SMember(4, 5, 6))))
+//    val firsts = rte.firstTypes
+//    val mdtd = Types.mdtd(firsts)
+//    println(mdtd)
+//    println("subtype = " + SMember(4, 5, 6).subtypep(num))
+//
+//    for {(wrt, (factors, disjoints)) <- mdtd} {
+//      println(s" wrt=$wrt --> " + rte.derivative(Some(wrt), factors.toList, disjoints.toList))
+//      println(s"   canonicalized --> " + rte.derivative(Some(wrt), factors.toList, disjoints.toList).canonicalize)
+//    }
+//  }
+//  test("Number*") {
+//    val num = SAtomic(classOf[Number])
+//    val rte = Star(Singleton(num))
+//    val firsts = rte.firstTypes
+//    val mdtd = Types.mdtd(firsts)
+//
+//    println(s"inhabited = " + num.inhabited)
+//
+//    println(mdtd)
+//
+//    for {(wrt, (factors, disjoints)) <- mdtd} {
+//      println(s" wrt=$wrt --> " + rte.derivative(Some(wrt), factors.toList, disjoints.toList))
+//      println(s"   canonicalized --> " + rte.derivative(Some(wrt), factors.toList, disjoints.toList).canonicalize)
+//    }
+//
+//    Profiling.check(rte,1,1)
+//    dfaView(rte.toDfa(42),title="Number-star",true,Some("xyzzy"))
+//  }
 }
