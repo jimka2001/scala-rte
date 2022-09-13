@@ -299,7 +299,7 @@ object SAtomic {
 }
 
 object sanityCheck {
-  val reflect = new org.reflections.Reflections("")
+  val reflect = new org.reflections.Reflections()
 
   def main(argv:Array[String]):Unit = {
     describeSubclasses(classOf[java.lang.Number])
