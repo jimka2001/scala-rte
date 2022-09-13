@@ -87,6 +87,13 @@ class TypesTest extends AnyFunSuite {
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
   }
+  test("reflection Number"){
+    // this tests that reflection has properly installed the sublcass relationships to Number
+    assert(SEql(1).subtypep(SAtomic(classOf[Number])) == Some(true))
+    assert(SAtomic(classOf[Number]).inhabited == Some(true))
+    assert(SMember(1,2,3).subtypep( SAtomic(classOf[Number])) == Some(true))
+    assert(SAtomic(classOf[java.lang.Double]).subtypep(SAtomic(classOf[Number])) == Some(true))
+  }
   test("sort 1") {
     assert(List(SEmpty, STop).sortWith(cmpTypeDesignators)
            == List(STop, SEmpty).sortWith(cmpTypeDesignators))
@@ -258,6 +265,14 @@ class TypesTest extends AnyFunSuite {
       assert(b.subtypep(a) == gt, s"\na=$a\nb=$b\nexpecting a > b = $gt, got ${b.subtypep(a)}")
       assert(a.typeEquivalent(b) == eq, s"\na=$a\nb=$b\nexpecting a = b = $eq, got ${a.typeEquivalent(b)}")
     }
+  }
+  test("test 103") {
+    val td = SAnd(SNot(SEql(true)),
+                  SMember(false, true)
+                  )
+    val dnf = SAnd(SAtomic(classOf[Boolean]), !SEql(true: Boolean))
+    val diff: SAnd = SAnd(dnf, SNot(td))
+    assert(SAnd(dnf,SNot(td)).canonicalize() == SEmpty)
   }
 }
 

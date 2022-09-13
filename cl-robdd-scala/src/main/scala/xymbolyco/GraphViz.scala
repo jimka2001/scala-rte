@@ -29,7 +29,12 @@ object GraphViz {
 
   def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbrev:Boolean=false,
                         label:Option[String]=None): String = {
-    val png = dfaToPng(dfa, title, abbrev=abbrev,label=label)
+    val extendedLabel = (label,dfa.labeler.graphicalText()) match {
+      case (_, Seq()) => label
+      case (None, strings) => Some(strings.mkString("\\l"))
+      case (Some(str),strings) => Some(str + "\\l" + strings.mkString("\\l"))
+    }
+    val png = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel)
     openGraphicalFile(png)
   }
 

@@ -129,6 +129,11 @@ class GenusCanonicalize extends AnyFunSuite {
     assert(SMember("hello", "world", "world", "hello").canonicalize()
            == SMember("hello", "world"))
     assert(SMember(1, 1.0, 1L, 1, 1.0, 1L, 2).canonicalize() == SMember(1, 1.0, 2, 1L))
+
+    assert(SMember(1, 1, 2, 2).canonicalize() == SMember(1, 2))
+
+    assert(SMember(true, false).canonicalize() == SAtomic(classOf[java.lang.Boolean]))
+    assert(SMember(false, true).canonicalize() == SAtomic(classOf[java.lang.Boolean]))
   }
 
   test("canonicalize or") {
@@ -508,9 +513,11 @@ class GenusCanonicalize extends AnyFunSuite {
     val dnf = td.canonicalize(Some(Dnf))
     val inverse = SNot(dnf)
 
-    assert(td - dnf == SEmpty,
+    assert((td - dnf).inhabited != Some(true),
            s"td=$td dnf=$dnf, dnf inverse=$inverse, td-dnf=${td - dnf}, expecting SEmpty")
-    assert(((td || inverse) == STop) || (!(td || inverse) == SEmpty),
+    assert(((td || inverse) == STop)
+             || (!(td || inverse) == SEmpty)
+             || (!(td||inverse)).inhabited != Some(true),
            s"td=$td inverse=$inverse, td || inverse=${td || inverse}, expecting SEmpty")
   }
 
@@ -992,5 +999,19 @@ class GenusCanonicalize extends AnyFunSuite {
 
     assert(SOr(SAtomic(Integer),SEql(1)).canonicalize() == SAtomic(Integer))
     assert(SOr(SAtomic(Integer),SEql(1L)).canonicalize() == SOr(SAtomic(Integer),SEql(1L)))
+  }
+  test("combo conversion 177"){
+    class ClassX
+    val X = SAtomic(classOf[ClassX])
+    val b = SAtomic(classOf[Boolean])
+    // SAnd
+    assert(SAnd(b, SNot(SEql(false))).conversion177() == SEql(true))
+    assert(SAnd(b, SNot(SEql(true))).conversion177() == SEql(false))
+    assert(SAnd(b, SNot(SEql(false)), X).conversion177() == SAnd(SEql(true),X))
+    assert(SAnd(b , SNot(SEql(true)), X).conversion177() == SAnd(SEql(false),X))
+
+    // SOr
+    assert(SOr(SEql(true),SEql(false)).conversion177() == b)
+    assert(SOr(SEql(true),SEql(false), X).conversion177() == SOr(b, X))
   }
 }

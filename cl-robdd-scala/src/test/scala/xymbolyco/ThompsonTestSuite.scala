@@ -355,6 +355,21 @@ class ThompsonTestSuite  extends AnyFunSuite {
              s"disagreement on pattern=$pattern")
     }
   }
+  test("discovered case 358") {
+    import rte.Rte.dfaEquivalent
+    import genus.Types.oddType
+    for {pattern <- Seq(Or(Singleton(oddType), Singleton(SMember(true, false)))
+                        , Or(Singleton(oddType),
+                           Singleton(SMember(1,2,3,4)),
+                           Singleton(SMember(false,true)))
+                        )
+         dfa_thompson = constructThompsonDfa(pattern, 42)
+         dfa_brzozowski = pattern.toDfa(42)
+         }
+      assert(dfaEquivalent(dfa_brzozowski, dfa_thompson) != Some(false),
+             s"disagreement on pattern=$pattern")
+  }
+
   test("randomCreate") {
     import rte.Rte.dfaEquivalent
     for {depth <- 0 until 3

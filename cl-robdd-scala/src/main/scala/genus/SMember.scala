@@ -29,8 +29,19 @@ import genus.Types.createMember
  *
  * @param xs var-arg, the members of the type
  */
-case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SMemberImpl(xs) with TerminalType
+case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SMemberImpl(xs) with TerminalType {
+  override def toString: String = xs.map {
+    case (td: SAtomic, a: Any) => a.toString + ":" + td.shortTypeName()
+    case (_, a: Any) => a.toString + ":???"
+  }.mkString("SMember(", ",", ")")
+}
 
 object SMember {
-  def apply(xs:Any*):SimpleTypeD = createMember(xs)
+  def apply(xs: Any*): SimpleTypeD = createMember(xs)
+
+  val trueOrFalse: SMember =
+    SMember(true, false) match {
+      case td: SMember => td
+      case _ => sys.error("It is expected that this line is never reached.")
+    }
 }

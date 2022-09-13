@@ -232,7 +232,7 @@ class GenusSubtypep extends MyFunSuite {
              s"\n   rt2.canonicalize= ${rt2.canonicalize()}")
     assert(!rt2.subtypep(rt1).contains(false),
            s": $comment: \n   rt1= $rt1 \n   rt2= $rt2" +
-             "\n  failed rt1 > rt2" +
+             "\n  failed rt1 > rt2 => " + rt2.subtypep(rt1) +
              s"\n   rt1.canonicalize= ${rt1.canonicalize()}"+
              s"\n   rt2.canonicalize= ${rt2.canonicalize()}")
   }
@@ -254,6 +254,31 @@ class GenusSubtypep extends MyFunSuite {
     val rt2 = rt1.toDnf
     assert(!rt1.subtypep(rt2).contains(false))
     assert(!rt2.subtypep(rt1).contains(false))
+  }
+  test("discovered 257"){
+    assert(SAtomic(classOf[java.lang.Boolean]).subtypep(SMember(true,false)).contains(true))
+  }
+  test("discovered 258"){
+    assert(SAtomic(Boolean).subtypep(SAtomic(Boolean)).contains(true))
+    assert(SAtomic(classOf[java.lang.Boolean]).subtypep(SAtomic(classOf[java.lang.Boolean])).contains(true))
+
+    checkSubtype(SMember(true,false), SAtomic(classOf[java.lang.Boolean]),"test 257")
+    checkSubtype(SMember(true,false), SAtomic(classOf[Boolean]),"test 258")
+
+  }
+  test("discovered 269"){
+    val rt = SOr(SOr(SMember(false, true), SMember(4, 5, 6)),
+                 SOr(SEql(true), SAtomic(Boolean)))
+    val rt2 = SOr(SMember(false, true,4,5,6),
+                  SAtomic(Boolean))
+    //val rt_can = rt.canonicalize() // SMember(false,true,4,5,6)
+    val rt_can = SMember(false,true,4,5,6)
+    assert(SAtomic(Boolean).subtypep(SMember(false,true,4,5,6)) != Some(false), "270")
+    assert(rt2.subtypep(SMember(false, true,4,5,6)) != Some(false), "271")
+    assert(rt.subtypep(SMember(false, true,4,5,6)) != Some(false), "272")
+    assert(rt.subtypep(rt_can) != Some(false), "273")
+    assert(rt_can.subtypep(rt) != Some(false), "274")
+    checkSubtype(rt, rt_can, "discovered 269")
   }
 
   test("randomized testing of subtypep with normalization") {

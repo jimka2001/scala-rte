@@ -57,7 +57,6 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     // if ct is a primitive (ct.isPrimitive() returns True) then isInstance always returns false
 
     (a.getClass == ct) || ct.isInstance(a) || locally{
-      //println(s"typep testing $ct vs ${a.getClass}")
       if (ct == classOf[Boolean])
         a.getClass == classOf[java.lang.Boolean]
       else if (ct == classOf[scala.Long])
@@ -84,8 +83,13 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
   // SAtomic(ct: Class[_])
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
-
-    t match {
+    import genus.Types.booleanType
+    import genus.SMember.trueOrFalse
+    lazy val dd = trueOrFalse.disjoint(t)
+    if (this == booleanType && ! dd.isEmpty) {
+      dd
+    }
+    else t match {
       case SEmpty => Some(true)
       // TODO, do we know that t is inhabited? if not, do we need to check for it?
       case STop => Some(false) // STop is only disjoint with SEmpty, but this != SEmpty
@@ -131,10 +135,19 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
             }
           }
 
-        case SMember(_) =>
+        case SMember(xs) => {
+          import SMember.trueOrFalse
+          // this strange piece of code is probably unnecessary.  I'm not sure how to
+          //   correctly write it, given the language constraints.
+          //   trueOrFalse has declared type SimpleTypeD, but it is actually SMember(true,false)
+          //   so in order to get the xs out of the SMember object we have to use a pattern
+          //   match with a useless 2nd case.
+          if (ct == classOf[java.lang.Boolean] )
+            Some(trueOrFalse.xs.forall(p => xs.contains(p)))
+          else
           // TODO, need to verify this assumption.  E.g., for an Algebraic Data Type?
           Some(false) // no member type exhausts all the values of an Atomic Type
-
+        }
         // TODO, need to verify this assumption.  E.g., for an Algebraic Data Type?
         case SEql(_) =>
           Some(false)
@@ -201,6 +214,7 @@ object SAtomic {
   @tailrec
   def apply(ct: Class[_]): SimpleTypeD = {
     if (ct == classOf[Nothing]) SEmpty
+    else if (ct == classOf[Boolean]) SAtomic(classOf[java.lang.Boolean])
     else if (ct == classOf[Any]) STop
     else if (ct == classOf[Int]) SAtomic(classOf[Integer])
     else knownSAtomics.getOrElseUpdate((getClosedWorldView(),ct),new SAtomic(ct))
@@ -299,7 +313,7 @@ object SAtomic {
 }
 
 object sanityCheck {
-  val reflect = new org.reflections.Reflections("")
+  val reflect = new org.reflections.Reflections()
 
   def main(argv:Array[String]):Unit = {
     describeSubclasses(classOf[java.lang.Number])

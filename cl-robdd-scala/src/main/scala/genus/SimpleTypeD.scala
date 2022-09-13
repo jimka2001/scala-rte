@@ -178,6 +178,19 @@ abstract class SimpleTypeD { // SimpleTypeD
     }
   }
 
+  // canonicalizeN is useful for debugging,  with verbose=true it will print
+  // the various *increments* of canonicalization, by calling canonicalizeOnce
+  // n times.
+  def canonicalizeN(n:Int, verbose:Boolean, nf: Option[NormalForm] = None): SimpleTypeD = {
+    if (n < 0)
+      this
+    else {
+      if (verbose)
+        println(s"$n: $this")
+      canonicalizeOnce(nf).canonicalizeN(n-1, verbose, nf)
+    }
+  }
+
   def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = this
 
   val canonicalizedHash: scala.collection.mutable.Map[Option[NormalForm], SimpleTypeD] = scala.collection.mutable.Map()
