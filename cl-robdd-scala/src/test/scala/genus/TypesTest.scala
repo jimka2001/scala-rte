@@ -259,5 +259,13 @@ class TypesTest extends AnyFunSuite {
       assert(a.typeEquivalent(b) == eq, s"\na=$a\nb=$b\nexpecting a = b = $eq, got ${a.typeEquivalent(b)}")
     }
   }
+  test("test 103") {
+    val td = SAnd(SNot(SEql(true)),
+                  SMember(false, true)
+                  )
+    val dnf = SAnd(SAtomic(classOf[Boolean]), !SEql(true: Boolean))
+    val diff: SAnd = SAnd(dnf, SNot(td))
+    assert(SAnd(dnf,SNot(td)).canonicalize() == SEmpty)
+  }
 }
 

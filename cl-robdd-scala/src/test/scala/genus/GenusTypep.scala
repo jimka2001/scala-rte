@@ -77,7 +77,7 @@ class GenusTypep extends AnyFunSuite {
   test("typep of a UnionType") {
     val unionIntType = SOr(intJavaType, intType)
     val unionAnyString = SOr(stringType, anyType, nothingType)
-    val unionStringUnitBoolean = SOr(stringType, unitRuntimeType, booleanJavaType)
+    val unionStringUnitBoolean = SOr(stringType, unitRuntimeType, booleanType)
     val unionCharInt = SOr(charJavaType, intJavaType)
 
     val x: Unit = {}

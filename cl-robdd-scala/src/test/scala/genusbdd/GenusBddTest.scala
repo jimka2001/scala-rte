@@ -75,16 +75,17 @@ class GenusBddTest extends MyFunSuite {
     }
   }
 
-  def testDnf(td: SimpleTypeD, tdToInt: mutable.Map[SimpleTypeD, Int]): Unit = {
+  def testDnf(td: SimpleTypeD, tdToInt: mutable.Map[SimpleTypeD, Int], depth:Int): Unit = {
     val bdd = GenusBdd(td, tdToInt)
     val dnf = bdd.dnf
+
     if (dnf == td)
       ()
     else {
-      assert((dnf - td) == SEmpty,
-             s"dnf=$dnf  td=$td   dnf-td=${dnf - td} expecting SEmpty")
-      assert((td - dnf) == SEmpty,
-             s"dnf=$dnf  td=$td   dnf-td=${td - dnf} expecting SEmpty")
+      assert((dnf - td).inhabited != Some(true),
+             s"depth=$depth\n  dnf=$dnf\n  td=$td\n  dnf-td=${dnf - td} expecting SEmpty")
+      assert((td - dnf).inhabited != Some(true),
+             s"depth=$depth\n  dnf=$dnf\n  td=$td\n  dnf-td=${td - dnf} expecting SEmpty")
     }
   }
 
@@ -92,11 +93,29 @@ class GenusBddTest extends MyFunSuite {
     for {depth <- 2 to 5} {
       val tdToInt: mutable.Map[SimpleTypeD, Int] = mutable.Map[SimpleTypeD, Int]()
       Bdd.withNewBddHash {
-        for {_ <- 0 to 750 - 100 * depth
+        for {_ <- 0 to 1750 - 100 * depth
              td = randomType(depth = depth)
              }
-          testDnf(td, tdToInt)
+          testDnf(td, tdToInt, depth)
       }
+    }
+  }
+
+  test("test 108"){
+    val td = SAnd(SNot(SEql(true)),
+                  SMember(false, true)
+                  )
+    val dnf = SEql(false)
+    assert(dnf - td == SEmpty)
+    assert(td - dnf == SEmpty)
+  }
+
+  test("test 111") {
+    val td = SAnd(SNot(SEql(true)),
+                  SOr(SMember(false, true), SAtomic(String)
+                      ))
+    Bdd.withNewBddHash {
+      testDnf(td, mutable.Map[SimpleTypeD, Int](), -1)
     }
   }
 

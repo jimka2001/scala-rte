@@ -121,6 +121,21 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
       this
   }
 
+  def conversion177(): SimpleTypeD = {
+    // SOr(true,false) -> Boolean
+    val b = SAtomic(classOf[Boolean])
+    val t = SEql(true)
+    val f = SEql(false)
+    if (tds.contains(t) && tds.contains(f))
+      create(tds.flatMap(td => if (td == t)
+        Seq(b)
+      else if (td == f)
+        Seq()
+      else
+        Seq(td)))
+    else
+      this
+  }
   // SOr(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
     findSimplifier(tag="SOr",this,verbose=false,List[(String,() => SimpleTypeD)](

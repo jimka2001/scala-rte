@@ -131,8 +131,8 @@ class GenusDisjoint extends AnyFunSuite {
   }
 
   test("disjoint unknown") {
-    println(SOr(intJavaType, stringType).disjoint(SOr(charJavaType, booleanJavaType)))
-    println(SAnd(SOr(intJavaType, doubleJavaType), stringType).disjoint(stringType))
+    SOr(intJavaType, stringType).disjoint(SOr(charJavaType, booleanType))
+    SAnd(SOr(intJavaType, doubleJavaType), stringType).disjoint(stringType)
   }
   class Test1
   class Test2 extends Test1
@@ -215,5 +215,11 @@ class GenusDisjoint extends AnyFunSuite {
       // neither is trait nor superclass nor final
       assert(SAtomic(classOf[Test6]).disjoint(SAtomic(classOf[Test7])).contains(true))
     }
+  }
+  test("boolean disjoint"){
+    val b = SAtomic(classOf[Boolean])
+
+    assert(SMember(true,false).disjoint(oddType).contains(true))
+    assert(b.disjoint(oddType).contains(true))
   }
 }

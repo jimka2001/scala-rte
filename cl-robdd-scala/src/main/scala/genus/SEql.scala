@@ -36,12 +36,12 @@ case class SEql(a: (SimpleTypeD,Any)) extends SMemberImpl(Vector(a)) with Termin
     })+")"
 
   override def toString:String = {
-    s"= ${a._2}:" +
+    s"SEql(${a._2}:" +
       (a._1 match {
         case td@SAtomic(_) => td.shortTypeName()
         case _ => "???"
       }) +
-    ""
+    ")"
   }
 
   override def typep(b: Any): Boolean = {

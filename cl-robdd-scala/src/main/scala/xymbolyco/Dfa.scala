@@ -39,16 +39,22 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   // each triple in protoDelta is of the form (x,_,y) where x and y are elements of Qids
   require(protoDelta.forall { case (from: Int, _, to: Int) => Qids.contains(from) && Qids.contains(to) })
 
-  // returns a map of src -> Set(dst)
+  // returns a Map of src -> Set(dst)
+  // The Map collects the destinations per origin, omitting those
+  //   only reachable by un-satisfiable transitions.
   def successors():Map[Int,Set[Int]] = {
     for{ (src,triples) <- protoDelta.groupBy{case (src,_,_) => src}
-         } yield src -> triples.map(_._3)
+         satisfiable = triples.filter { case (_, lab, _) => !labeler.inhabited(lab).contains(false) }
+         } yield src -> satisfiable.map(_._3)
   }
 
   // returns a map of dst -> Set(src)
+  // The Map collects the origins per destination, omitting those
+  //   only reachable by un-satisfiable transitions.
   def predecessors():Map[Int,Set[Int]] = {
     for{ (dst,triples) <- protoDelta.groupBy{case (_,_,dst) => dst}
-         } yield dst -> triples.map(_._1)
+         satisfiable = triples.filter { case (_, lab, _) => !labeler.inhabited(lab).contains(false) }
+         } yield dst -> satisfiable.map(_._1)
   }
 
   def exitValue(q: State[Σ, L, E]): E = fMap(q.id)

@@ -206,8 +206,20 @@ object Minimize {
                         } yield (lab,(dst1,dst2),(lab1,lab2))
 
       val edgeSeq = edges.toSeq
-      assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
-             s"duplicate transitions found in " + edgeSeq.map(_.toString).mkString(": ","\n: ",""))
+      val countDuplicates = edgeSeq.size - edgeSeq.map(_._1).distinct.size
+      if(countDuplicates > 0) {
+        for{trans <- edgeSeq
+            c = edgeSeq.count(p => p._1 == trans._1)
+            if c > 1
+            } {
+          println(s"$c * $trans")
+        }
+        GraphViz.dfaView(dfa1, abbrev = true, title = "sxp dfa1")
+        GraphViz.dfaView(dfa2, abbrev = true, title = "sxp dfa2")
+        assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
+               s"$countDuplicates duplicate transition(s) found in \n"
+                 + edgeSeq.map(_.toString).mkString(": ", "\n: ", ""))
+      }
       edgeSeq.map{tr => (tr._1,tr._2)}
     }
     val (vertices,edges) = traceGraph[(Int,Int),L]((dfa1.q0id,dfa2.q0id),
