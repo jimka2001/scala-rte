@@ -378,14 +378,14 @@ class GenusCanonicalize extends AnyFunSuite {
          } {
       assert(td.typep(v) == cnf.typep(v),
              s"\nv = $v" + " type=" + v.getClass +
-               "\nclosedWorldView = " + SAtomic.closedWorldView.value +
+               "\nclosedWorldView = " + SAtomic.worldView.value +
                s"\ntd=$td" +
                s"\ncnf=$cnf" +
                "\nlhs = td.typep(v)  = " + td.typep(v) +
                "\nrhs = cnf.typep(v) = " + cnf.typep(v)
              )
       assert(td.typep(v) == dnf.typep(v),
-             "\n closedWorldView = " + SAtomic.closedWorldView.value +
+             "\n closedWorldView = " + SAtomic.worldView.value +
                s"\ntd=$td" +
                s"\ndnf=$dnf" +
                "\nlhs=" + td.typep(v) +

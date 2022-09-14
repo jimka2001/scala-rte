@@ -74,7 +74,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   override protected def inhabitedDown: Some[Boolean] = { // TODO, should this be Option[Boolean]
     if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
-    else if (SAtomic.closedWorldView.value)
+    else if (SAtomic.getWorldView() == ClosedWorldView)
       Some(SAtomic.existsInstantiatableSubclass(ct))
     else
       Some(true)
@@ -203,12 +203,15 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     }
   }
 }
+sealed abstract class WorldView
+object ClosedWorldView extends WorldView
+object OpenWorldView extends WorldView
 
 /** The AtomicType object, implementing an apply method in order to
  * deal with EmptyType and TopType construction.
  */
 object SAtomic {
-  val knownSAtomics:mutable.Map[(Boolean,Class[_]),SAtomic] = mutable.Map[(Boolean,Class[_]),SAtomic]()
+  val knownSAtomics:mutable.Map[(WorldView,Class[_]),SAtomic] = mutable.Map[(WorldView,Class[_]),SAtomic]()
 
   @tailrec
   def apply(ct: Class[_]): SimpleTypeD = {
@@ -216,7 +219,7 @@ object SAtomic {
     else if (ct == classOf[Boolean]) SAtomic(classOf[java.lang.Boolean])
     else if (ct == classOf[Any]) STop
     else if (ct == classOf[Int]) SAtomic(classOf[Integer])
-    else knownSAtomics.getOrElseUpdate((getClosedWorldView(),ct),new SAtomic(ct))
+    else knownSAtomics.getOrElseUpdate((getWorldView(),ct), new SAtomic(ct))
   }
 
   import scala.util.DynamicVariable
@@ -228,23 +231,23 @@ object SAtomic {
   //   exist which actually exist NOW, thus thus if there are not common
   //   subclasses of two given classes, then we conclude the classes are
   //   disjoint.
-  val closedWorldView: DynamicVariable[Boolean] = new DynamicVariable[Boolean](true)
+  val worldView: DynamicVariable[WorldView] = new DynamicVariable[WorldView](ClosedWorldView)
 
   //noinspection AccessorLikeMethodIsEmptyParen
-  def getClosedWorldView():Boolean = closedWorldView.value
+  def getWorldView():WorldView= worldView.value
 
   // evaluate a piece of code in a dynamic context where it is considers that classes
   //   may be loaded at run-time.  Thus, for example, it is NOT considered that
   //   two given traits are disjoint.
   def withOpenWorldView[T](code: =>T):T = {
-    closedWorldView.withValue(false){code}
+    worldView.withValue(OpenWorldView){code}
   }
 
   // evaluate a piece of code in a dynamic context where it is considers that classes
   //   may NOT be loaded at run-time.  Thus, for example, it is considered that
   //   two given traits are disjoint if there exists no common instantiable subclass.
   def withClosedWorldView[T](code: =>T):T = {
-    closedWorldView.withValue(true){code}
+    worldView.withValue(ClosedWorldView){code}
   }
 
   def instantiatableSubclasses(cl: Class[_]): Array[Class[_]] = {

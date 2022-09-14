@@ -63,9 +63,7 @@ case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
   override def inhabited(l1:SimpleTypeD):Option[Boolean] = l1.inhabited
 
   override def graphicalText():Seq[String] = {
-    import genus.SAtomic.getClosedWorldView
-
-    if (getClosedWorldView())
+    if (SAtomic.getWorldView() == ClosedWorldView)
       Seq("world-view=closed")
     else
       Seq("world-view=open")
