@@ -23,7 +23,6 @@ package genus
 
 // genus
 import NormalForm._
-
 import scala.annotation.tailrec
 import scala.collection.mutable
 
@@ -313,6 +312,12 @@ object SAtomic {
 }
 
 object sanityCheck {
+  import org.reflections.util.ConfigurationBuilder
+
+  // it is suggested to use ConfigurationBuilder rather than empty argument
+  // list, but this doesn't seem to work.
+  // https://github.com/ronmamo/reflections/issues/324#issuecomment-1246432941
+  //val reflect = new org.reflections.Reflections(new ConfigurationBuilder())
   val reflect = new org.reflections.Reflections()
 
   def main(argv:Array[String]):Unit = {
@@ -327,10 +332,10 @@ object sanityCheck {
     val subs:List[Class[_]] = cl :: reflect.getSubTypesOf(cl).toArray.toList.collect {
       case c: Class[_] => c
     }
-    println("---------")
-    for{ sub <- subs
-         } println( s"$sub is " + Modifier.toString(sub.getModifiers)  + ", superclass is " + cl.getSuperclass)
-
+    println(s"--------- subclasses of $cl")
+    println("   superclass is " + cl.getSuperclass)
+    for{ (sub,i) <- subs.zipWithIndex
+         } println( s"$i: $sub is " + Modifier.toString(sub.getModifiers))
   }
   def makeNumber():Unit = {
     class MyNumber extends Number {
