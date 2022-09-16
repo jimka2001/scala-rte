@@ -63,8 +63,8 @@ class ExtractTestSuite  extends AnyFunSuite {
       val empty1 = Xor(rt1,rt2).canonicalize
       val empty_dfa = empty1.toDfa(true)
       val label_path = empty_dfa.vacuous() match {
-        case None => empty_dfa.findTrace(None)
-        case Some(false) => empty_dfa.findTrace(Some(true))
+        case None => empty_dfa.findTrace(List(Some(true),None))
+        case Some(false) => empty_dfa.findTrace(List(Some(true)))
         case Some(true) => None
       }
       if (empty_dfa.vacuous().contains(false)) {

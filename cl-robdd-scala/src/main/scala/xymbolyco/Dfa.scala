@@ -87,27 +87,22 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       mq.flatMap(_.successor(s))
     }
   }
-  def keeper(label:L,satisfiable:Option[Boolean]):Boolean = {
-    satisfiable match {
-      case Some(true) => labeler.inhabited(label).contains(true)
-      case None => ! labeler.inhabited(label).contains(false)
-      case Some(false) => false
-    }
-  }
+
   // find some sequence of objects of labels leading
   // from q0 to a final state.
-  //   if satisfiable = Some(true), then we only traverse transitions which are
+  //   if satisfiable = Seq(Some(true)), then we only traverse transitions which are
   //      definitely satisfiable, i.e., the labeler.inhabited(label) function returns Some(true)
   //          as opposed to None for dont-know whether it is satisfiable
-  //   if satisfiable = None, then we also traverse transitions for which
+  //   if satisfiable = Seq(Some(true),None), then we also traverse transitions for which
   //          we get None from label.inhabited(label) meaning that we don't know for sure
   //          that the label is satisfiable.
-  def findTrace(satisfiable:Option[Boolean]=Some(true)):Option[Seq[L]] = {
+  def findTrace(satisfiable:Seq[Option[Boolean]]=Seq(Some(true))):Option[Seq[L]] = {
     findSpanningPath().map{states =>
       states.toList.tails.flatMap{
         case q1::q2::_ =>
           val Some(Transition(_,label,_)) = q1.transitions.find{
-            case Transition(_,label,dst) if dst == q2 && keeper(label,satisfiable) => true
+            case Transition(_,label,dst)
+              if dst == q2 && satisfiable.contains(labeler.inhabited(label)) => true
             case _ => false
           }
           List(label)
@@ -124,12 +119,12 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //   if satisfiable = None, then we also traverse transitions for which
   //          we get None from label.inhabited(label) meaning that we don't know for sure
   //          that the label is satisfiable.
-  def findSpanningPath(satisfiable:Option[Boolean]=Some(true)):Option[Seq[State[Σ,L,E]]] = {
+  def findSpanningPath(satisfiable:Seq[Option[Boolean]]=Seq(Some(true))):Option[Seq[State[Σ,L,E]]] = {
     def augment(paths: Seq[List[State[Σ, L, E]]]): Seq[List[State[Σ, L, E]]] = {
       paths.flatMap {
         case s :: ss => for {Transition(_, label, dst) <- s.transitions
                              if s != dst && !ss.contains(dst)
-                             if keeper(label,satisfiable)
+                             if satisfiable.contains(labeler.inhabited(label))
                              } yield dst :: s :: ss
         case _ => Nil // unused but silences compiler warning
       }
@@ -161,9 +156,9 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       Some(true)
     else if (F.isEmpty)
       Some(true)
-    else if (findSpanningPath(Some(true)).isEmpty)
+    else if (findSpanningPath(Seq(Some(true))).isEmpty)
       Some(true)
-    else if (findSpanningPath(None).isEmpty)
+    else if (findSpanningPath(Seq(Some(true),None)).isEmpty)
       None
     else
       Some(false)

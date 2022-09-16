@@ -65,10 +65,10 @@ abstract class Rte {
   //         So we call dfa.findSpanningPath(satisfiable), passing along the
   //         value of satisfiable given to isomorphic(that,satisfiable).
   //   If you'd like isomorphic to return True only if we can prove the Rtes
-  //         are equivalent, then use satisfiable=Some(True).
+  //         are equivalent, then use satisfiable=Seq(Some(true)).
   //   If you'd like to return True when we cannot disprove the isomorphism,
-  //         then use satisfiable=None.
-  def isomorphic(that:Rte, satisfiable:Option[Boolean]=Some(true)):Boolean = {
+  //         then use satisfiable=Seq(Some(true),None).
+  def isomorphic(that:Rte, satisfiable:Seq[Option[Boolean]]=List(Some(true))):Boolean = {
     (this,that) match {
       case (x,y) if x == y => true
         // compare the arguments of And and Or in any order
