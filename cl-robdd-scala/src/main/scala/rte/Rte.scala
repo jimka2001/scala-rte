@@ -45,8 +45,26 @@ abstract class Rte {
     }
   }
 
-  // isomorphic
   def ~=(that:Rte):Boolean = {
+  // predicate to determine whether two Rtes are equivalent,
+  //   i.e., represent the same language.
+  //   Sometimes this is impossible because of transitions whose
+  //   satisfiability we cannot determine.
+  // To determine whether two Rtes are isomorphic we try several things:
+  //   1. are they syntactically equal
+  //   2. are they both And(...) or both Or(...) whose arguments are syntactically
+  //      equal but maybe in different orders
+  //   3. construct the Dfa of the XOR of the two Rtes,
+  //         and see if that Dfa has no final states.
+  //         As a last resort if it has final states, then there is still a chance
+  //         that those final states are not accessible because of the satisfiability
+  //         of the transitions.
+  //         So we call dfa.findSpanningPath(satisfiable), passing along the
+  //         value of satisfiable given to isomorphic(that,satisfiable).
+  //   If you'd like isomorphic to return True only if we can prove the Rtes
+  //         are equivalent, then use satisfiable=Some(True).
+  //   If you'd like to return True when we cannot disprove the isomorphism,
+  //         then use satisfiable=None.
     (this,that) match {
       case (x,y) if x == y => true
         // compare the arguments of And and Or in any order
@@ -59,6 +77,7 @@ abstract class Rte {
           || dfa.findSpanningPath().isEmpty) // no path to a final state from q0
     }
   }
+
   def toLaTeX():String
   def nullable:Boolean
   def firstTypes:Set[SimpleTypeD]
@@ -67,6 +86,7 @@ abstract class Rte {
                     (r:Rte) => r.canonicalizeOnce,
                     (r1:Rte,r2:Rte)=>r1==r2)
   }
+
   // This method is used for debugging to print the different
   //   stages of development for canonicalize.
   def canonicalizeDebug(n:Int,f:(Rte,Rte)=>Unit):Rte = {
@@ -81,6 +101,7 @@ abstract class Rte {
     }
     r1
   }
+
   def canonicalizeDebug(n:Int,samples:Seq[Seq[Any]]):Rte = {
         canonicalizeDebug(n,
                           (r1:Rte,r2:Rte)=> {
@@ -300,6 +321,9 @@ object Rte {
   }
 
 
+  // Compute the intersection of two given types (SimpleTypeD) for the purpose
+  // of creating a label on a Dfa transition.  So we return None if the resulting
+  // label (is proved to be) is an empty type, and Some(SimpleTypeD) otherwise.
   def intersectLabels(td1:SimpleTypeD,td2:SimpleTypeD):Option[SimpleTypeD] = {
     val comb = SAnd(td1,td2).canonicalize()
     comb.inhabited match {
@@ -307,6 +331,7 @@ object Rte {
       case _ => Some(comb)
     }
   }
+
   def combineFmap[E](e1:Option[E],e2:Option[E]):Option[E] = {
     (e1,e2) match {
       case (None,None) => None
