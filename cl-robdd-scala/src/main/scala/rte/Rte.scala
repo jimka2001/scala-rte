@@ -45,11 +45,12 @@ abstract class Rte {
     }
   }
 
+  // can this and that be proven to be equivalent?
   def ~=(that:Rte):Boolean = {
-    isomorphic(that)
+    isomorphic(that).contains(true)
   }
 
-  // predicate to determine whether two Rtes are equivalent,
+  // Determine whether two Rtes are equivalent,
   //   i.e., represent the same language.
   //   Sometimes this is impossible because of transitions whose
   //   satisfiability we cannot determine.
@@ -64,21 +65,29 @@ abstract class Rte {
   //         of the transitions.
   //         So we call dfa.findSpanningPath(satisfiable), passing along the
   //         value of satisfiable given to isomorphic(that,satisfiable).
-  //   If you'd like isomorphic to return True only if we can prove the Rtes
-  //         are equivalent, then use satisfiable=Seq(Some(true)).
-  //   If you'd like to return True when we cannot disprove the isomorphism,
-  //         then use satisfiable=Seq(Some(true),None).
-  def isomorphic(that:Rte, satisfiable:Seq[Option[Boolean]]=List(Some(true))):Boolean = {
+  //   If we can determine that the two Rtes accept the same language, then
+  //     return Some(true)
+  //   If we can determine that the two Rtes DO NOT accept the same language,
+  //     return Some(false)
+  //   If every path from q0 to a final state traverses at least one transition,(q,td,q')
+  //     for which td.inhabited == None, then return None.
+  def isomorphic(that:Rte):Option[Boolean] = {
     (this,that) match {
-      case (x,y) if x == y => true
+      case (x,y) if x == y => Some(true)
         // compare the arguments of And and Or in any order
-      case (Or(Seq(r1s@_*)),Or(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => true
-      case (And(Seq(r1s@_*)),And(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => true
+      case (Or(Seq(r1s@_*)),Or(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
+      case (And(Seq(r1s@_*)),And(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
       case (rt1,rt2) =>
         val dfa = Or(And(rt1,Not(rt2)),
-                     And(rt2,Not(rt1))).canonicalize.toDfa()
-        (dfa.F.isEmpty // no final states
-          || dfa.findSpanningPath(satisfiable).isEmpty) // no path to a final state from q0
+          And(rt2,Not(rt1))).canonicalize.toDfa()
+        if (dfa.F.isEmpty) // no final states
+          Some(true)
+        else if (dfa.findSpanningPath(Seq(Some(true))).nonEmpty) // exists satisfiable path to a final state
+          Some(false)
+        else if (dfa.findSpanningPath(Seq(None,Some(true))).nonEmpty) // exists semi-satisfiable path to a final state
+          None
+        else
+          Some(false)
     }
   }
 
