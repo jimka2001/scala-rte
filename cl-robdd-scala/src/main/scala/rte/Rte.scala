@@ -46,6 +46,9 @@ abstract class Rte {
   }
 
   def ~=(that:Rte):Boolean = {
+    isomorphic(that)
+  }
+
   // predicate to determine whether two Rtes are equivalent,
   //   i.e., represent the same language.
   //   Sometimes this is impossible because of transitions whose
@@ -65,6 +68,7 @@ abstract class Rte {
   //         are equivalent, then use satisfiable=Some(True).
   //   If you'd like to return True when we cannot disprove the isomorphism,
   //         then use satisfiable=None.
+  def isomorphic(that:Rte, satisfiable:Option[Boolean]=Some(true)):Boolean = {
     (this,that) match {
       case (x,y) if x == y => true
         // compare the arguments of And and Or in any order
@@ -74,7 +78,7 @@ abstract class Rte {
         val dfa = Or(And(rt1,Not(rt2)),
                      And(rt2,Not(rt1))).canonicalize.toDfa()
         (dfa.F.isEmpty // no final states
-          || dfa.findSpanningPath().isEmpty) // no path to a final state from q0
+          || dfa.findSpanningPath(satisfiable).isEmpty) // no path to a final state from q0
     }
   }
 
