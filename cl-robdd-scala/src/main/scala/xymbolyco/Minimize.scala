@@ -213,6 +213,36 @@ object Minimize {
     val grouped1 = complete(dfa1).protoDelta.groupBy(_._1)
     val grouped2 = complete(dfa2).protoDelta.groupBy(_._1)
 
+    // This function does some consistency checking and prints
+    // errors, raises exceptions, displays results if duplicate
+    // transitions are found.
+    def reportInconsistent[L](edgeSeq: Seq[(L, (Int, Int), (L, L))]
+                             ):Seq[(L, (Int, Int), (L, L))] = {
+      val countDuplicates = edgeSeq.size - edgeSeq.map(_._1).distinct.size
+      if (countDuplicates > 0) {
+        for {trans <- edgeSeq
+             c = edgeSeq.count(p => p._1 == trans._1)
+             if c > 1
+             } {
+          println(s"$c * $trans")
+        }
+        GraphViz.dfaView(dfa1, abbrev = true, title = "sxp dfa1")
+        GraphViz.dfaView(dfa2, abbrev = true, title = "sxp dfa2")
+        assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
+               s"$countDuplicates duplicate transition(s) found in \n"
+                 + edgeSeq.map(_.toString).mkString(": ", "\n: ", ""))
+      }
+      edgeSeq
+    }
+
+    // Given a pair (q1id,q2id) we find (x1) the transitions of q1 in dfa1,
+    // and (x2) the transitions of q2 in dfa2, then we iterate over all
+    // (tr1,t2) where tr1 in x1 and tr2 in x2.
+    // For each such pairing, we use the function, combineLabels, which
+    //  returns and Option[L] indicating whether the transition should
+    //  be including in the Dfa under construction.  For example if the label
+    //  represents an empty type, then we should not build a non-satisfiable
+    //  transition.
     def getEdges(pair:(Int,Int)):Seq[(L, (Int,Int))] = {
       val (q1id,q2id) = pair
       val x1 = grouped1.getOrElse(q1id,Set.empty)
@@ -222,33 +252,7 @@ object Minimize {
                         lab <- combineLabels(lab1,lab2)
                         } yield (lab,(dst1,dst2),(lab1,lab2))
 
-      val edgeSeq = edges.toSeq
-    // This function does some consistency checking and prints
-    // errors, raises exceptions, displays results if duplicate
-    // transitions are found.
-      val countDuplicates = edgeSeq.size - edgeSeq.map(_._1).distinct.size
-      if(countDuplicates > 0) {
-        for{trans <- edgeSeq
-            c = edgeSeq.count(p => p._1 == trans._1)
-            if c > 1
-            } {
-          println(s"$c * $trans")
-        }
-        GraphViz.dfaView(dfa1, abbrev = true, title = "sxp dfa1")
-        GraphViz.dfaView(dfa2, abbrev = true, title = "sxp dfa2")
-        assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
-               s"$countDuplicates duplicate transition(s) found in \n"
-                 + edgeSeq.map(_.toString).mkString(": ", "\n: ", ""))
-      }
-      edgeSeq.map{tr => (tr._1,tr._2)}
-    // Given a pair (q1id,q2id) we find (x1) the transitions of q1 in dfa1,
-    // and (x2) the transitions of q2 in dfa2, then we iterate over all
-    // (tr1,t2) where tr1 in x1 and tr2 in x2.
-    // For each such pairing, we use the function, combineLabels, which
-    //  returns and Option[L] indicating whether the transition should
-    //  be including in the Dfa under construction.  For example if the label
-    //  represents an empty type, then we should not build a non-satisfiable
-    //  transition.
+      reportInconsistent(edges.toSeq).map{tr => (tr._1,tr._2)}
     }
     val (vertices,edges) = traceGraph[(Int,Int),L]((dfa1.q0id,dfa2.q0id),
                                                    getEdges)
