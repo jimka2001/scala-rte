@@ -170,7 +170,7 @@ object Minimize {
   //   It may be that unnecessary transitions are added in the case that
   //   some state is locally complete, but we cannot determine it to be so.
   def complete[Σ,L,E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    val sinkId = dfa.Qids.maxOption match {
+    lazy val sinkId = dfa.Qids.maxOption match {
       case Some(m) => m + 1
       case _ => 0
     }
