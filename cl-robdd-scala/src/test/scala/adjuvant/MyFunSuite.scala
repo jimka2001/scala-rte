@@ -24,19 +24,31 @@ import org.scalatest.funsuite.AnyFunSuite
 class MyFunSuite extends AnyFunSuite {
   import org.scalactic.source
   import org.scalatest.Tag
-  def printTime(ns:Long):String = {
-    if (ns < 1000)
-      s"$ns ns"
-    else if (ns < 1e6)
-      (ns/1000).toString + " us"
-    else if (ns < 1e9)
-      (ns/1e6).toString + " ms"
-    else if (ns < 1e9 * 60)
-      (ns/1e9).toString + " sec"
-    else if (ns < 1e9 * 60 * 60)
-      (ns/(1e9*60)).toString + " min"
+  def printTime(time:Long):String = {
+    var acc = time
+    val ns = acc % 1000
+    acc = acc / 1000
+    val us = acc % 1000
+    acc = acc / 1000
+    val ms = acc % 1000
+    acc = acc / 1000
+    val sec = acc % 60
+    acc = acc / 60
+    val min = acc % 60
+    val hour = acc / 60
+    
+    if (hour > 0)
+      s"$hour hours $min min $sec sec"
+    else if (min > 0)
+      s"$min min $sec sec"
+    else if (sec > 0)
+      s"$sec sec $ms ms"
+    else if (ms > 0)
+      s"$ms ms"
+    else if (us > 0)
+      s"$us us"
     else
-      (ns/(1e9*60*60)).toString + " hours"
+      s"$ns ns"
   }
   override def test(testName: String, testTags: Tag*)(testFun: => Any /* Assertion */)(implicit pos: source.Position):Unit = {
     super.test(testName,testTags : _*)(locally{
