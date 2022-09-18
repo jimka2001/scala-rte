@@ -342,7 +342,7 @@ class ThompsonTestSuite  extends MyFunSuite {
          dfa_thompson = try {
            constructThompsonDfa(pattern, 42)
          } catch {
-           case e =>
+           case e: Throwable =>
              println(s"could not construct thompson dfa")
              println(s"   problem with pattern=$pattern")
              throw (e)
@@ -379,7 +379,7 @@ class ThompsonTestSuite  extends MyFunSuite {
          dfa_thompson = try {
            constructThompsonDfa(pattern, 42)
          } catch {
-           case e =>
+           case e: Throwable =>
              println(s"could not construct thompson dfa")
              println(s"   problem with depth=$depth: pattern=$pattern")
              throw (e)
