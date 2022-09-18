@@ -24,8 +24,23 @@ import org.scalatest.funsuite.AnyFunSuite
 class MyFunSuite extends AnyFunSuite {
   import org.scalactic.source
   import org.scalatest.Tag
+  def printTime(ns:Long):String = {
+    if (ns < 1000)
+      s"$ns ns"
+    else if (ns < 1e6)
+      (ns/1000).toString + " us"
+    else if (ns < 1e9)
+      (ns/1e6).toString + " ms"
+    else if (ns < 1e9 * 60)
+      (ns/1e9).toString + " sec"
+    else if (ns < 1e9 * 60 * 60)
+      (ns/(1e9*60)).toString + " min"
+    else
+      (ns/(1e9*60*60)).toString + " hours"
+  }
   override def test(testName: String, testTags: Tag*)(testFun: => Any /* Assertion */)(implicit pos: source.Position):Unit = {
     super.test(testName,testTags : _*)(locally{
+      val start = System.nanoTime()
       println("[ starting " + testName)
       var finished = false
       try{
@@ -33,10 +48,11 @@ class MyFunSuite extends AnyFunSuite {
         finished = true
       }
       finally{
+        val end = System.nanoTime()
         if (finished)
-          println("] finished " + testName)
+          println("] finished " + testName + " " + printTime(end-start))
         else
-          println("] aborted " + testName)
+          println("] aborted " + testName + " " + printTime(end - start))
       }
     })(pos)
   }
