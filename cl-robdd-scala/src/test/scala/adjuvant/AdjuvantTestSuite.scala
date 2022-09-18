@@ -24,7 +24,7 @@ package adjuvant
 import adjuvant.Adjuvant._
 import org.scalatest.funsuite.AnyFunSuite
 
-class AdjuvantTestSuite extends AnyFunSuite {
+class AdjuvantTestSuite extends MyFunSuite {
   test("conj"){
     val l1 = List( 1, 2, 3)
     val v1 = Vector(1,2,3)

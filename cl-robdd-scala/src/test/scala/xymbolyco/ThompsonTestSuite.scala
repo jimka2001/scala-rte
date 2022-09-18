@@ -21,6 +21,7 @@
 
 package xymbolyco
 
+import adjuvant.MyFunSuite
 import genus.RandomType.Abstract1
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
@@ -29,7 +30,7 @@ import xymbolyco.Minimize.minimize
 import xymbolyco.Thompson._
 
 
-class ThompsonTestSuite  extends AnyFunSuite {
+class ThompsonTestSuite  extends MyFunSuite {
   val num_random_tests: Int = 1000
 
   test("remove epsilon transitions 1") {

@@ -22,9 +22,10 @@
 
 package genus
 
+import adjuvant.MyFunSuite
 import org.scalatest.funsuite.AnyFunSuite
 
-class GenusInhabited extends AnyFunSuite {
+class GenusInhabited extends MyFunSuite {
   class Abstract1
   class Abstract2
   trait Trait1

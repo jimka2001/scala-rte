@@ -21,14 +21,15 @@
 
 package rte
 
-import adjuvant.Adjuvant.{eql,fixedPoint}
+import adjuvant.Adjuvant.{eql, fixedPoint}
+import adjuvant.MyFunSuite
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import rte.RteImplicits._
 
 
 //noinspection RedundantDefaultArgument
-class AndTestSuite extends AnyFunSuite {
+class AndTestSuite extends MyFunSuite {
   test("implicits") {
     assert(And(SEql(1)) == And(Singleton(SEql(1))))
   }

@@ -25,8 +25,9 @@ import genus.Types._
 import org.scalatest.funsuite.AnyFunSuite
 import RandomType.randomType
 import adjuvant.Adjuvant.eql
+import adjuvant.MyFunSuite
 
-class TypesTest extends AnyFunSuite {
+class TypesTest extends MyFunSuite {
 
   test("SEql"){
     val z:SimpleTypeD = SEql(0)

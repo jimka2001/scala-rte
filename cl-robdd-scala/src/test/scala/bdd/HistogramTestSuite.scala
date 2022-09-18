@@ -21,9 +21,10 @@
 
 package bdd
 
+import adjuvant.MyFunSuite
 import org.scalatest.funsuite.AnyFunSuite
 
-class HistogramTestSuite extends AnyFunSuite {
+class HistogramTestSuite extends MyFunSuite {
 
   test("foreachBdd 1") {
     import Bdd._

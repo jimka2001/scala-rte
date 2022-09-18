@@ -26,10 +26,11 @@ import genus.Types._
 import genus.NormalForm._
 import org.scalatest.Assertion
 import org.scalatest.funsuite.AnyFunSuite
-import RandomType.{randomType,interestingValues}
+import RandomType.{interestingValues, randomType}
 import adjuvant.Adjuvant.eql
+import adjuvant.MyFunSuite
 
-class GenusCanonicalize extends AnyFunSuite {
+class GenusCanonicalize extends MyFunSuite {
 
   trait TraitA
 

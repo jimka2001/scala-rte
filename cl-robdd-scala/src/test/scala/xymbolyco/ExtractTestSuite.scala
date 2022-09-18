@@ -25,9 +25,10 @@ import rte._
 import genus._
 import Extract._
 import GraphViz._
+import adjuvant.MyFunSuite
 
 //noinspection RedundantDefaultArgument
-class ExtractTestSuite  extends AnyFunSuite {
+class ExtractTestSuite  extends MyFunSuite {
   val Σ: Sigma.type = Sigma
   val ε: EmptyWord.type = EmptyWord
   val t2x: Singleton = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
