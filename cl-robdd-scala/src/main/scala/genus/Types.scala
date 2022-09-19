@@ -22,6 +22,7 @@
 package genus
 
 import java.lang
+
 import scala.annotation.tailrec
 
 object Types {
@@ -34,29 +35,32 @@ object Types {
   //    classOf[A] && classOf[B]
   implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
 
-  def createMemberFromPairs(xs:Seq[(SimpleTypeD,Any)]):SimpleTypeD = {
+  def createMemberFromPairs(xs: Seq[(SimpleTypeD, Any)]): SimpleTypeD = {
     createMember(xs.map(_._2))
   }
 
   def createMember(xs: Seq[Any]): SimpleTypeD = {
     xs.toList match {
-      case (_,_)::_ => throw new Exception(s"warning createMember called with pairs: $xs")
+      case (_, _) :: _ => throw new Exception(s"warning createMember called with pairs: $xs")
       case _ => ()
     }
-    def cmp(a:(SimpleTypeD,Any),b:(SimpleTypeD,Any)):Boolean = {
+
+    def cmp(a: (SimpleTypeD, Any), b: (SimpleTypeD, Any)): Boolean = {
       if (a == b)
         false
       else if (a._1 != b._1)
-        cmpTypeDesignators(a._1,b._1)
+        cmpTypeDesignators(a._1, b._1)
       else
-      a._2.toString < b._2.toString
+        a._2.toString < b._2.toString
     }
-    xs.map(x => (SAtomic(x.getClass),x)).distinct.sortWith(cmp) match {
+
+    xs.map(x => (SAtomic(x.getClass), x)).distinct.sortWith(cmp) match {
       case Seq() => SEmpty
       case Seq(a) => SEql(a)
       case vec => new SMember(vec.toVector)
     }
   }
+
   val atomicp: SimpleTypeD => Boolean = {
     case SAtomic(_) => true
     case _ => false
@@ -99,10 +103,10 @@ object Types {
   // x partially overlap z.  Consequently, if some of the given type designators
   // in tds are partially overlapping, then some td in the return value is a subtype
   // of multiple type designators from tds.
-  def mdtd(tds: Set[SimpleTypeD]): Map[SimpleTypeD,(Set[SimpleTypeD],Set[SimpleTypeD])] = {
+  def mdtd(tds: Set[SimpleTypeD]): Map[SimpleTypeD, (Set[SimpleTypeD], Set[SimpleTypeD])] = {
     type S = SimpleTypeD // local type def just to simplify the following type declarations
     @tailrec
-    def recur(decomposition: Map[S,(Set[S],Set[S])], tds: Set[S]): Map[S,(Set[S],Set[S])] = {
+    def recur(decomposition: Map[S, (Set[S], Set[S])], tds: List[S], types: Vector[S]): Map[S, (Set[S], Set[S])] = {
       if (tds.isEmpty)
         decomposition
       else {
@@ -110,8 +114,8 @@ object Types {
         val n = SNot(u)
         val nc = n.canonicalize(Some(NormalForm.Dnf))
 
-        def f(pair: (S,(Set[S],Set[S]))): Map[S,(Set[S],Set[S])] = {
-          val (td1,(factors,disjoints)) = pair
+        def f(pair: (S, (Set[S], Set[S]))): Map[S, (Set[S], Set[S])] = {
+          val (td1, (factors, disjoints)) = pair
           lazy val a = SAnd(u, td1).canonicalize(Some(NormalForm.Dnf))
           lazy val b = SAnd(nc, td1).canonicalize(Some(NormalForm.Dnf))
           if (u.disjoint(td1).contains(true))
@@ -129,11 +133,11 @@ object Types {
                 b -> (factors + n, disjoints + u))
         }
 
-        recur(decomposition.flatMap(f), tds - u)
+        recur(decomposition.flatMap(f), tds.tail, types)
       }
     }
 
-    recur(Map(STop -> (Set(STop),Set(SEmpty))), tds - STop)
+    recur(Map(STop -> (Set(STop), Set(SEmpty))), (tds - STop).toList.sortBy(_.toString), RandomType.interestingTypes.tail)
   }
 
   def compareSequence(tds1: Seq[SimpleTypeD], tds2: Seq[SimpleTypeD]): Boolean = {
