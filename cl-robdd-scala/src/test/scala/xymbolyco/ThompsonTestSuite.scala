@@ -492,7 +492,9 @@ class ThompsonTestSuite  extends MyFunSuite {
     val data = Profiling.check(rte, 1, 1)
     assert(data("thompson_min") == data("brzozowski_min"))
   }
-  test("discovered 463 b") {
+
+  def discovered463b() = {
+
     import genus.RandomType.{Trait3X, Abstract1X}
     val s1 = Singleton(SEql(1))
     val t3x = Singleton(SAtomic(classOf[Trait3X]))
@@ -505,17 +507,13 @@ class ThompsonTestSuite  extends MyFunSuite {
                           Cat(Not(num), Or(a1x, num)))),
                   Star(stop))
     val data = Profiling.check(rte, 1, 1)
-    for{rte <- Seq(t3x, a1x, num)}{
-      println(s" $rte -> inhabited=${rte.inhabited}")
-      rte match {
-        case Singleton(td@SAtomic(cl)) =>
-          println(s"    instantiatable subclasses -> "
-                    + SAtomic.instantiatableSubclasses(cl).map(_.getName).toList )
-          println(s"  td=$td,   inhabited=${td.inhabited}")
-        case _ => ()
-      }
-    }
     assert(data("thompson_min") == data("brzozowski_min"))
+  }
+
+  test("discovered 463 b") {
+    // we are calling this 1000 times because it WAS happening
+    // that the test would pass sometimes and fail sometimes.
+    for{_ <- 0 to 1000} discovered463b()
   }
   test("discovered 479"){
     val rte:Rte = Cat(Singleton(SMember(4,5,6)),

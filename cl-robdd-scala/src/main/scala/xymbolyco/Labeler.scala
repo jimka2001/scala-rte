@@ -30,6 +30,10 @@ abstract class Labeler[Σ,L] {
   def subtractLabels(l1:L,ls:Seq[L]):L = ???
   def inhabited(l1:L):Option[Boolean] = ???
   def graphicalText():Seq[String] = Seq()
+
+  def universal(label: L): Boolean = {
+    inhabited(subtractLabels(universe, Seq(label))) == Some(false)
+  }
 }
 
 import genusbdd.GenusBdd

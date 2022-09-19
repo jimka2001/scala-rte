@@ -165,6 +165,30 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   }
 }
 
+object Dfa {
+
+  def mergeParallel[Σ, L](labeler:Labeler[Σ, L],
+                          transitions: Seq[(Int, L, Int)]): Set[(Int, L, Int)] = {
+    val merged = for {(src, triples1) <- transitions.groupBy(_._1)
+                      (dst, triples2) <- triples1.groupBy(_._3)
+                      label = triples2.map(_._2).reduce(labeler.combineLabels)
+                      label2 = if (labeler.universal(label)) labeler.universe else label
+                      } yield (src, label2, dst)
+
+    merged.toSet
+  }
+
+  def apply[Σ, L, E](Qids: Set[Int],
+           q0id: Int,
+           Fids: Set[Int],
+           protoDelta: Set[(Int, L,Int)],
+           labeler: Labeler[Σ, L],
+           fMap: Map[Int, E]):Dfa[Σ, L, E] = {
+    val merged = mergeParallel[Σ, L](labeler,protoDelta.toSeq)
+    new Dfa[Σ, L, E](Qids, q0id, Fids, merged, labeler, fMap)
+  }
+}
+
 object TestMe {
   import rte.{Or, Cat, Singleton, Not, And, Sigma, Star, EmptySet}
   import genus.SEql

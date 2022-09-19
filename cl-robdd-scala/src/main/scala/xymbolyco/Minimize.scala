@@ -45,7 +45,7 @@ object Minimize {
   def removeNonAccessible[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
     val succ:Map[Int,Set[Int]] = dfa.successors()
     val accessible:Set[Int] = findReachable(succ,Set(),Set(dfa.q0.id))
-    new Dfa(accessible,
+    Dfa(accessible,
             dfa.q0id,
             dfa.Fids.intersect(accessible),
             dfa.protoDelta.collect{case sld@(src,_,dst) if accessible.contains(src) && accessible.contains(dst) =>sld},
@@ -58,7 +58,7 @@ object Minimize {
     val pred:Map[Int,Set[Int]] = dfa.predecessors()
     val coaccessible:Set[Int] = findReachable(pred,Set[Int](),dfa.Fids)
     if(coaccessible.contains(dfa.q0id)){
-      new Dfa(coaccessible,
+      Dfa(coaccessible,
               dfa.q0id,
               dfa.Fids,
               dfa.protoDelta.collect{case sld@(src,_,dst) if coaccessible.contains(src) && coaccessible.contains(dst) =>sld},
@@ -74,7 +74,7 @@ object Minimize {
       else
         Set((q0id,allLabel.reduce((acc:L,lab:L)=> dfa.labeler.combineLabels(acc,lab)),q0id))
       // make trivial dfa with only a self-loop labeled Sigma on q0
-      new Dfa(Set(q0id),
+      Dfa(Set(q0id),
               q0id,
               Set(),
               protoDelta,
@@ -161,7 +161,7 @@ object Minimize {
     } yield id -> dfa.exitValue(q)
 
     // return a newly constructed Dfa extracted from the Hopcroft partition minimization
-    new Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
+    Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
   }
 
   // Construct a new Dfa which is complete, i.e., for each state q
@@ -191,7 +191,7 @@ object Minimize {
       toSink ++
       (if (toSink.nonEmpty) Set((sinkId, labeler.universe, sinkId)) else Set())
 
-    val dfaComplete = new Dfa[Σ, L, E](Qids = dfa.Qids + sinkId,
+    val dfaComplete = Dfa[Σ, L, E](Qids = dfa.Qids + sinkId,
                                        q0id = dfa.q0id,
                                        Fids = dfa.Fids,
                                        protoDelta = protoDelta,
@@ -271,7 +271,7 @@ object Minimize {
     val protoDelta = for { (seq,src) <- edges.zipWithIndex
                            (lab,dst) <- seq
                            } yield (src,lab,dst)
-    val dfa = new Dfa[Σ, L, E](vertices.indices.toSet,
+    val dfa = Dfa[Σ, L, E](vertices.indices.toSet,
                      0, // q0id:Int,
                      fIds.toSet, // Fids:Set[Int],
                      protoDelta.toSet, //    protoDelta:Set[(Int,L,Int)],
