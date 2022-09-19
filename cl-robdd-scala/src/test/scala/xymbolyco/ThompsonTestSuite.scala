@@ -477,19 +477,44 @@ class ThompsonTestSuite  extends MyFunSuite {
     assert(data("thompson_min") == data("brzozowski_min"))
   }
   test("discovered 463") {
-    import genus.RandomType.{Trait3X,Abstract1X}
+    import genus.RandomType.{Trait3X, Abstract1X}
     val s1 = Singleton(SEql(1))
     val t3x = Singleton(SAtomic(classOf[Trait3X]))
     val a1x = Singleton(SAtomic(classOf[Abstract1X]))
     val num = Singleton(SAtomic(classOf[Number]))
-    val abc = Singleton(SMember("a","b","c"))
+    val abc = Singleton(SMember("a", "b", "c"))
     val stop = Singleton(STop)
     // And((Or(Or(Not(<= 1:Integer>),And(<SAtomic:Trait3X>,<{a:String,b:String,c:String}>)),
     //    Cat(Not(<SAtomic:Number>),Or(<SAtomic:Abstract1X>,<SAtomic:Number>))))*,(<STop>)*)
-    val rte = And(Star(Or(Or(Not(s1),And(t3x,abc)),
-                          Cat(Not(num),Or(a1x,num)))),
+    val rte = And(Star(Or(Or(Not(s1), And(t3x, abc)),
+                          Cat(Not(num), Or(a1x, num)))),
                   Star(stop))
     val data = Profiling.check(rte, 1, 1)
+    assert(data("thompson_min") == data("brzozowski_min"))
+  }
+  test("discovered 463 b") {
+    import genus.RandomType.{Trait3X, Abstract1X}
+    val s1 = Singleton(SEql(1))
+    val t3x = Singleton(SAtomic(classOf[Trait3X]))
+    val a1x = Singleton(SAtomic(classOf[Abstract1X]))
+    val num = Singleton(SAtomic(classOf[Number]))
+    val abc = Singleton(SEql("a"))
+    val stop = Singleton(STop)
+
+    val rte = And(Star(Or(Or(Not(s1), And(t3x, abc)),
+                          Cat(Not(num), Or(a1x, num)))),
+                  Star(stop))
+    val data = Profiling.check(rte, 1, 1)
+    for{rte <- Seq(t3x, a1x, num)}{
+      println(s" $rte -> inhabited=${rte.inhabited}")
+      rte match {
+        case Singleton(td@SAtomic(cl)) =>
+          println(s"    instantiatable subclasses -> "
+                    + SAtomic.instantiatableSubclasses(cl).map(_.getName).toList )
+          println(s"  td=$td,   inhabited=${td.inhabited}")
+        case _ => ()
+      }
+    }
     assert(data("thompson_min") == data("brzozowski_min"))
   }
   test("discovered 479"){
