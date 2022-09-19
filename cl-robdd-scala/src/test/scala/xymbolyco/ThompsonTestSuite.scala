@@ -228,7 +228,6 @@ class ThompsonTestSuite  extends MyFunSuite {
   }
   test("Singleton") {
     val ti: SimpleTypeD = SAtomic(classOf[Int])
-    val ts: SimpleTypeD = SAtomic(classOf[String])
     val dfa = constructThompsonDfa(Singleton(ti), 42)
 
     assert(dfa.simulate(Seq(1)) == Some(42))
@@ -300,7 +299,6 @@ class ThompsonTestSuite  extends MyFunSuite {
     val ts: SimpleTypeD = SAtomic(classOf[String])
     val tb: SimpleTypeD = SAtomic(classOf[Boolean])
     val tn: SimpleTypeD = SAtomic(classOf[Number])
-    val t2x: SimpleTypeD = SAtomic(classOf[genus.RandomType.Trait2X])
     val t2: SimpleTypeD = SAtomic(classOf[genus.RandomType.Trait2])
     val tc2x: SimpleTypeD = SAtomic(classOf[genus.RandomType.Class2X])
     val t1x: SimpleTypeD = SAtomic(classOf[genus.RandomType.Trait1X])
@@ -312,7 +310,7 @@ class ThompsonTestSuite  extends MyFunSuite {
     constructThompsonDfa(pattern2, 42)
     constructThompsonDfa(pattern3, 42)
   }
-  test("disovered case 309") {
+  test("discovered case 309") {
     val t2x: Rte = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
     val Σ = Sigma
     val ε = EmptyWord
@@ -345,7 +343,7 @@ class ThompsonTestSuite  extends MyFunSuite {
            case e: Throwable =>
              println(s"could not construct thompson dfa")
              println(s"   problem with pattern=$pattern")
-             throw (e)
+             throw e
          }
          dfa_brzozowski = pattern.toDfa(42)
          } {
@@ -374,7 +372,7 @@ class ThompsonTestSuite  extends MyFunSuite {
   test("randomCreate") {
     import rte.Rte.dfaEquivalent
     for {depth <- 0 until 3
-         r <- 0 until num_random_tests * 10
+         _ <- 0 until num_random_tests * 10
          pattern = Rte.randomRte(depth)
          dfa_thompson = try {
            constructThompsonDfa(pattern, 42)
@@ -382,7 +380,7 @@ class ThompsonTestSuite  extends MyFunSuite {
            case e: Throwable =>
              println(s"could not construct thompson dfa")
              println(s"   problem with depth=$depth: pattern=$pattern")
-             throw (e)
+             throw e
          }
          dfa_brzozowski = pattern.toDfa(42)
          }
@@ -473,7 +471,7 @@ class ThompsonTestSuite  extends MyFunSuite {
 
   }
 
-  test("thomp/brz/Trait3") {
+  test("Thompson/brz/Trait3") {
     import genus.RandomType.Trait3
     val data = Profiling.check(Singleton(SAtomic(classOf[Trait3])), 1, 1)
     assert(data("thompson_min") == data("brzozowski_min"))
