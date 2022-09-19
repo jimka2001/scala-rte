@@ -196,7 +196,7 @@ abstract class Rte {
             q0id = 0,
             Fids = fids,
             protoDelta = (for {src <- rtes.indices
-                               (rt, dst) <- edges(src)
+                                 (rt, dst) <- edges(src)
                                } yield (src, rt, dst)).toSet,
             labeler = xymbolyco.GenusLabeler(),
             fMap = fmap)
