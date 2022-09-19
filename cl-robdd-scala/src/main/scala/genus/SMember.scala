@@ -31,9 +31,10 @@ import genus.Types.createMember
  */
 case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SMemberImpl(xs) with TerminalType {
   override def toString: String = xs.map {
-    case (td: SAtomic, a: Any) => a.toString + ":" + td.shortTypeName()
-    case (_, a: Any) => a.toString + ":???"
-  }.mkString("SMember(", ",", ")")
+    case (td: SAtomic, a: Any) => a.toString + " /* " + td.shortTypeName() + "*/"
+    case (_, a: Any) => a.toString + " /* ??? */"
+  }.mkString("SMember(", ", ", ")")
+  override def toMachineReadable = toString
 }
 
 object SMember {
