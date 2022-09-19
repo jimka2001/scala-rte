@@ -582,7 +582,7 @@ object Profiling {
       "thompson_min" -> min_thompson.Q.size,
       "brzozowski_size" -> dfa_trim_brzozowski.Q.size,
       "brzozowski_min" -> min_brzozowski.Q.size)
-    dfaView(dfa_brzozowski,"brz", true, Some(s"depth=$depth:$r " +pattern.toString))
+
     if (min_brzozowski.Q.size != min_thompson.Q.size) {
       dfaView(dfa_thompson, "thompson", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
       dfaView(dfa_trim_thompson, "trim-thompson", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
