@@ -24,9 +24,10 @@ package bdd
 
 import Bdd._
 import BitFiddle._
+import adjuvant.MyFunSuite
 import org.scalatest.funsuite.AnyFunSuite
 
-class BitFiddleTestSuite extends AnyFunSuite {
+class BitFiddleTestSuite extends MyFunSuite {
 
   test("genSample"){
     for{

@@ -25,9 +25,10 @@ import rte._
 import genus._
 import Extract._
 import GraphViz._
+import adjuvant.MyFunSuite
 
 //noinspection RedundantDefaultArgument
-class ExtractTestSuite  extends AnyFunSuite {
+class ExtractTestSuite  extends MyFunSuite {
   val Σ: Sigma.type = Sigma
   val ε: EmptyWord.type = EmptyWord
   val t2x: Singleton = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
@@ -63,8 +64,8 @@ class ExtractTestSuite  extends AnyFunSuite {
       val empty1 = Xor(rt1,rt2).canonicalize
       val empty_dfa = empty1.toDfa(true)
       val label_path = empty_dfa.vacuous() match {
-        case None => empty_dfa.findTrace(None)
-        case Some(false) => empty_dfa.findTrace(Some(true))
+        case None => empty_dfa.findTrace(List(Some(true),None))
+        case Some(false) => empty_dfa.findTrace(List(Some(true)))
         case Some(true) => None
       }
       if (empty_dfa.vacuous().contains(false)) {

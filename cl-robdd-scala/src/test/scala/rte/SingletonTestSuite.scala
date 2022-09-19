@@ -24,8 +24,9 @@ package rte
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import RandomType.randomType
+import adjuvant.MyFunSuite
 
-class SingletonTestSuite extends AnyFunSuite {
+class SingletonTestSuite extends MyFunSuite {
   test("singleton canonicalizeOnce") {
     val x = SEql("x")
     val y = SEql("y")

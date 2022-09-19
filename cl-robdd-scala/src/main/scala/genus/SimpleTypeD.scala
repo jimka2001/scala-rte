@@ -49,8 +49,8 @@ abstract class SimpleTypeD { // SimpleTypeD
   def typep(a: Any): Boolean
 
 
-  val knownDisjoint:mutable.Map[(Boolean,SimpleTypeD),Option[Boolean]] =
-    mutable.Map[(Boolean,SimpleTypeD),Option[Boolean]]()
+  val knownDisjoint:mutable.Map[(WorldView,SimpleTypeD),Option[Boolean]] =
+    mutable.Map[(WorldView,SimpleTypeD),Option[Boolean]]()
 
   /** Returns whether a given type and this type are disjoint.
    * This might be undecidable. The disjointDown method is used to avoid
@@ -62,7 +62,7 @@ abstract class SimpleTypeD { // SimpleTypeD
    */
   def disjoint(td: SimpleTypeD): Option[Boolean] = {
     knownDisjoint
-      .getOrElseUpdate((SAtomic.getClosedWorldView(),td), locally {
+      .getOrElseUpdate((SAtomic.getWorldView(),td), locally {
         val d1 = disjointDown(td)
         lazy val d2 = td.disjointDown(this)
         lazy val c1 = this.canonicalize()
@@ -105,8 +105,8 @@ abstract class SimpleTypeD { // SimpleTypeD
       None
   }
 
-  val knownSubtypes:mutable.Map[(Boolean,SimpleTypeD),Option[Boolean]] =
-    mutable.Map[(Boolean,SimpleTypeD),Option[Boolean]]()
+  val knownSubtypes:mutable.Map[(WorldView,SimpleTypeD),Option[Boolean]] =
+    mutable.Map[(WorldView,SimpleTypeD),Option[Boolean]]()
 
   /** Returns whether this type is a recognizable subtype of another given type.
    * It is a subset test. This might be undecidable.
@@ -116,7 +116,7 @@ abstract class SimpleTypeD { // SimpleTypeD
    */
   def subtypep(t: SimpleTypeD): Option[Boolean] = {
     knownSubtypes
-      .getOrElseUpdate((SAtomic.getClosedWorldView(),t),
+      .getOrElseUpdate((SAtomic.getWorldView(),t),
                        locally {
                          lazy val orResult = t match {
                            case SOr(args@_*) if args.exists(a => subtypep(a).contains(true)) => Some(true)

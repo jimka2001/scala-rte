@@ -169,18 +169,29 @@ object Minimize {
     new Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
   }
 
-  def complete[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    val sinkId = dfa.Qids.maxOption match {
+  // Construct a new Dfa which is complete, i.e., for each state q
+  //   the outgoing transitions of q partition Sigma.
+  //   This main entail creating a new state to be a sink state.
+  //   It may be that unnecessary transitions are added in the case that
+  //   some state is locally complete, but we cannot determine it to be so.
+  def complete[Σ,L,E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    lazy val sinkId = dfa.Qids.maxOption match {
       case Some(m) => m + 1
       case _ => 0
     }
     val labeler = dfa.labeler
     val toSink = for {(src, triples) <- dfa.protoDelta.groupBy(_._1)
                       tds = triples.map(_._2).toSeq
+                      // compute the union of the transition labels of this state
+                      // and subtract that from the universe.  If this is non-empty,
+                      // or if we cannot prove it is empty, then we create a
+                      // transition to the sink state.
                       newTd = labeler.subtractLabels(labeler.universe, tds)
                       if !labeler.inhabited(newTd).contains(false)
                       } yield (src, newTd, sinkId)
 
+    // add transitions to the sink state if there are any, and if so, also
+    //   the loop on the sink state.
     val protoDelta = dfa.protoDelta ++
       toSink ++
       (if (toSink.nonEmpty) Set((sinkId, labeler.universe, sinkId)) else Set())
@@ -194,28 +205,59 @@ object Minimize {
     dfaComplete
   }
 
-  def sxp[Σ, L, E](dfa1: Dfa[Σ, L, E],
-                   dfa2: Dfa[Σ, L, E],
-                   combineLabels: (L, L) => Option[L],
-                   arbitrateFinal: (Boolean, Boolean) => Boolean,
-                   combineFmap: (Option[E], Option[E]) => Option[E]): Dfa[Σ, L, E] = {
+  // Construct the Dfa representing the Cartesian product (sxp=Synchronized
+  //  Cross Product).  If dfa1 has m states and dfa2 has n states, the sxp
+  //  has some subset of m*n states.  The subset will contain all the
+  //  states accessible from the initial state.
+  def sxp[Σ, L, E](dfa1:Dfa[Σ, L, E],
+                   dfa2:Dfa[Σ, L, E],
+                   combineLabels:(L,L)=>Option[L],
+                   arbitrateFinal:(Boolean,Boolean)=>Boolean,
+                   combineFmap:(Option[E],Option[E])=>Option[E]):Dfa[Σ, L, E] = {
 
     val grouped1 = complete(dfa1).protoDelta.groupBy(_._1)
     val grouped2 = complete(dfa2).protoDelta.groupBy(_._1)
 
-    def getEdges(pair: (Int, Int)): Seq[(L, (Int, Int))] = {
-      val (q1id, q2id) = pair
-      val x1 = grouped1.getOrElse(q1id, Set.empty)
-      val x2 = grouped2.getOrElse(q2id, Set.empty)
-      val edges = for {(_, lab1, dst1) <- x1
-                       (_, lab2, dst2) <- x2
-                       lab <- combineLabels(lab1, lab2)
-                       } yield (lab, (dst1, dst2), (lab1, lab2))
+    // This function does some consistency checking and prints
+    // errors, raises exceptions, displays results if duplicate
+    // transitions are found.
+    def reportInconsistent[L](edgeSeq: Seq[(L, (Int, Int), (L, L))]
+                             ):Seq[(L, (Int, Int), (L, L))] = {
+      val countDuplicates = edgeSeq.size - edgeSeq.map(_._1).distinct.size
+      if (countDuplicates > 0) {
+        for {trans <- edgeSeq
+             c = edgeSeq.count(p => p._1 == trans._1)
+             if c > 1
+             } {
+          println(s"$c * $trans")
+        }
+        GraphViz.dfaView(dfa1, abbrev = true, title = "sxp dfa1")
+        GraphViz.dfaView(dfa2, abbrev = true, title = "sxp dfa2")
+        assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
+               s"$countDuplicates duplicate transition(s) found in \n"
+                 + edgeSeq.map(_.toString).mkString(": ", "\n: ", ""))
+      }
+      edgeSeq
+    }
 
-      val edgeSeq = edges.toSeq
-      assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
-        s"duplicate transitions found in " + edgeSeq.map(_.toString).mkString(": ", "\n: ", ""))
-      edgeSeq.map { tr => (tr._1, tr._2) }
+    // Given a pair (q1id,q2id) we find (x1) the transitions of q1 in dfa1,
+    // and (x2) the transitions of q2 in dfa2, then we iterate over all
+    // (tr1,t2) where tr1 in x1 and tr2 in x2.
+    // For each such pairing, we use the function, combineLabels, which
+    //  returns and Option[L] indicating whether the transition should
+    //  be including in the Dfa under construction.  For example if the label
+    //  represents an empty type, then we should not build a non-satisfiable
+    //  transition.
+    def getEdges(pair:(Int,Int)):Seq[(L, (Int,Int))] = {
+      val (q1id,q2id) = pair
+      val x1 = grouped1.getOrElse(q1id,Set.empty)
+      val x2 = grouped2.getOrElse(q2id,Set.empty)
+      val edges = for { (_,lab1,dst1) <- x1
+                        (_,lab2,dst2) <- x2
+                        lab <- combineLabels(lab1,lab2)
+                        } yield (lab,(dst1,dst2),(lab1,lab2))
+
+      reportInconsistent(edges.toSeq).map{tr => (tr._1,tr._2)}
     }
 
     val (vertices, edges) = traceGraph[(Int, Int), L]((dfa1.q0id, dfa2.q0id),

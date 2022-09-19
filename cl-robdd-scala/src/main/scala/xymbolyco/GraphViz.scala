@@ -27,6 +27,20 @@ object GraphViz {
 
   import java.io.{File, OutputStream}
 
+  def multiLineString(str:String,maxLine:Int=60):String = {
+    if (str.size <= maxLine)
+      str
+    else {
+     // start at column maxLine and count backwards for a delimiter
+      val delimeters = Seq(',',')')
+      val tab = "    "
+      (maxLine to 1 by -1).find(i => delimeters.contains(str(i))) match {
+        case Some(k) => str.take(k+1) + "\\l" + tab + multiLineString(str.drop(k+1),maxLine)
+        case None => str
+      }
+    }
+  }
+
   def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbrev:Boolean=false,
                         label:Option[String]=None): String = {
     val extendedLabel = (label,dfa.labeler.graphicalText()) match {
@@ -135,7 +149,8 @@ object GraphViz {
     dfa.Q.foreach{drawState}
 
     lazy val transitionLabelText:String = (for{(lab,i) <- labels.toSeq.zipWithIndex
-                                               } yield s"\\lt$i= $lab").mkString("","","\\l")
+                                               multiLab = multiLineString(lab.toString)
+                                               } yield s"\\lt$i= $multiLab").mkString("","","\\l")
 
     if(abbrev || title != ""){
       write( """  labelloc="t";""")

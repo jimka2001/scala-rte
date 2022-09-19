@@ -24,7 +24,7 @@ package adjuvant
 import adjuvant.CLcompat._
 import org.scalatest.funsuite.AnyFunSuite
 
-class CLcompatTestSuite extends AnyFunSuite {
+class CLcompatTestSuite extends MyFunSuite {
   type T= Int=>Nothing
   assert(42 == block{ret:T => ret(42)})
   assert(43 == block{_:T => 43})

@@ -42,9 +42,9 @@ object RandomType {
 
 
   trait Trait1X
-  trait Trait2X
-  trait Trait3X extends Trait2X
-  abstract class Abstract1X
+  trait Trait2X // has subclass Trait3X which has subclass Abstract2X
+  trait Trait3X extends Trait2X // has subclass Abstract2X
+  abstract class Abstract1X // has subclass Class1X
   abstract class Abstract2X extends Trait3X
   class Class1X extends Abstract1X
   class Class2X extends Abstract2X

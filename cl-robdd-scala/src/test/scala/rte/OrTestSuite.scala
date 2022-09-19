@@ -22,11 +22,12 @@
 
 package rte
 
+import adjuvant.MyFunSuite
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import rte.RteImplicits._
 
-class OrTestSuite extends AnyFunSuite {
+class OrTestSuite extends MyFunSuite {
 
   test("canonicalize or 31") {
     class TestSup

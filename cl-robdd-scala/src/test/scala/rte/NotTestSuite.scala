@@ -21,10 +21,11 @@
 
 package rte
 
+import adjuvant.MyFunSuite
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 
-class NotTestSuite extends AnyFunSuite {
+class NotTestSuite extends MyFunSuite {
   test("not canonicalizeOnce"){
     assert(Not(Sigma).canonicalizeOnce == Rte.notSigma)
     assert(Not(Singleton(STop)).canonicalizeOnce == Rte.notSigma)

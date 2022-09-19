@@ -22,10 +22,11 @@
 
 package rte
 
+import adjuvant.MyFunSuite
 import org.scalatest.funsuite.AnyFunSuite
 
 //noinspection RedundantDefaultArgument
-class RteDfaTestSuite extends AnyFunSuite {
+class RteDfaTestSuite extends MyFunSuite {
 
   test("dfa discovered case 29"){
     val rte1 = Not(Sigma)

@@ -22,9 +22,10 @@
 package genus
 
 import Types._
+import adjuvant.MyFunSuite
 import org.scalatest.funsuite.AnyFunSuite
 
-class GenusDisjoint extends AnyFunSuite {
+class GenusDisjoint extends MyFunSuite {
 
   test("discovered case 135") {
     SAtomic.withOpenWorldView {

@@ -20,11 +20,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package bdd
+import adjuvant.MyFunSuite
 import org.scalatest._
 import org.scalatest.funsuite.AnyFunSuite
 import graphcolor.USAgraph
 
-class MapColoringTestSuite extends AnyFunSuite {
+class MapColoringTestSuite extends MyFunSuite {
   import org.scalactic.source
   override def test(testName: String, testTags: Tag*)(testFun: =>Any)(implicit pos: source.Position):Unit = {
     super.test(testName, testTags :_*){

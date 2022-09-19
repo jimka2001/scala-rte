@@ -22,11 +22,12 @@
 
 package rte
 
+import adjuvant.MyFunSuite
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import rte.RteImplicits._
 
-class CatTestSuite extends AnyFunSuite {
+class CatTestSuite extends MyFunSuite {
 
   test("cat case 99"){
     assert(Cat(Sigma,Sigma,Star(Sigma),Sigma,Sigma,Star(Sigma)).canonicalize

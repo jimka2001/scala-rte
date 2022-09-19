@@ -26,10 +26,11 @@ import genus.Types._
 import genus.NormalForm._
 import org.scalatest.Assertion
 import org.scalatest.funsuite.AnyFunSuite
-import RandomType.{randomType,interestingValues}
+import RandomType.{interestingValues, randomType}
 import adjuvant.Adjuvant.eql
+import adjuvant.MyFunSuite
 
-class GenusCanonicalize extends AnyFunSuite {
+class GenusCanonicalize extends MyFunSuite {
 
   trait TraitA
 
@@ -378,14 +379,14 @@ class GenusCanonicalize extends AnyFunSuite {
          } {
       assert(td.typep(v) == cnf.typep(v),
              s"\nv = $v" + " type=" + v.getClass +
-               "\nclosedWorldView = " + SAtomic.closedWorldView.value +
+               "\nclosedWorldView = " + SAtomic.worldView.value +
                s"\ntd=$td" +
                s"\ncnf=$cnf" +
                "\nlhs = td.typep(v)  = " + td.typep(v) +
                "\nrhs = cnf.typep(v) = " + cnf.typep(v)
              )
       assert(td.typep(v) == dnf.typep(v),
-             "\n closedWorldView = " + SAtomic.closedWorldView.value +
+             "\n closedWorldView = " + SAtomic.worldView.value +
                s"\ntd=$td" +
                s"\ndnf=$dnf" +
                "\nlhs=" + td.typep(v) +

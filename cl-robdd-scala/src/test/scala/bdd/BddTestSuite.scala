@@ -22,10 +22,11 @@
 
 package bdd
 
+import adjuvant.MyFunSuite
 import bdd.Bdd._
 import org.scalatest.funsuite.AnyFunSuite
 
-class BddTestSuite extends AnyFunSuite {
+class BddTestSuite extends MyFunSuite {
 
   test("printing") {
     withNewBddHash {
