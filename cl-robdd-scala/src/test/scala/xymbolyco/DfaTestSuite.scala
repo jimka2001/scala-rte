@@ -56,7 +56,7 @@ class DfaTestSuite extends MyFunSuite {
       val t7 = And(Not(t2), t3) // !integer & number
       val t9 = Bdd(9) // symbol
 
-      val dfa = new Dfa[Int, Bdd, String](Qids = Set(0, 1, 2, 4, 5, 6, 7, 8),
+      val dfa = Dfa[Int, Bdd, String](Qids = Set(0, 1, 2, 4, 5, 6, 7, 8),
                                           q0id = 0,
                                           Fids = Set(4, 5, 6, 7),
                                           protoDelta = Set((0, t1, 1),
@@ -90,7 +90,7 @@ class DfaTestSuite extends MyFunSuite {
       val t7 = And(Not(t2), t3) // !integer & number
       val t9 = Bdd(9) // symbol
 
-      val dfa = new Dfa[Int, Bdd, String](Set(0, 1, 2, 4, 5, 6, 7, 8),
+      val dfa = Dfa[Int, Bdd, String](Set(0, 1, 2, 4, 5, 6, 7, 8),
                                           0,
                                           Set(4, 5, 6, 7),
                                           Set((0, t1, 1),
@@ -123,7 +123,7 @@ class DfaTestSuite extends MyFunSuite {
     val t7 = t3.diff(t2) // !integer & number
     val t9 = Set(9) // symbol
 
-    val dfa = new Dfa[Int, Set[Int], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
+    val dfa = Dfa[Int, Set[Int], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
                                              0,
                                              Set(4, 5, 6, 7),
                                              Set((0, t1, 1),
@@ -162,7 +162,7 @@ class DfaTestSuite extends MyFunSuite {
     val t7 = t3.diff(t2) // !integer & number
     val t9 = Set("e9") // symbol
 
-    val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
+    val dfa = Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
                                                    0,
                                                    Set(4, 5, 6, 7),
                                                    Set((0, t1, 1),
@@ -195,7 +195,7 @@ class DfaTestSuite extends MyFunSuite {
     val t6 = t3.diff(t1) // !fixnum & number
     val t7 = t3.diff(t2) // !integer & number
 
-    val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
+    val dfa = Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
                                                    0,
                                                    Set(4, 5, 6, 7),
                                                    Set((0, t1, 1),
@@ -223,7 +223,7 @@ class DfaTestSuite extends MyFunSuite {
     val t6 = t3.diff(t1) // !fixnum & number
     val t7 = t3.diff(t2) // !integer & number
 
-    val sdfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
+    val sdfa = Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
                                                    0,
                                                    Set(4, 5, 6, 7),
                                                    Set((0, t1, 1),
@@ -254,7 +254,7 @@ class DfaTestSuite extends MyFunSuite {
     val t6 = t3.diff(t1) // !fixnum & number
     val t7 = t3.diff(t2) // !integer & number
 
-    val dfa = new Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
+    val dfa = Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
                                                    0,
                                                    Set(4, 5, 6, 7),
                                                    Set((0, t1, 1), // a1
@@ -282,7 +282,7 @@ class DfaTestSuite extends MyFunSuite {
       val t2 = SOr(SAnd(SNot(t1), SNot(SMember(-1, 0, 1))),
                    SMember(-1, 1))
       val t3 = STop
-      new Dfa(Qids = Set(0, 1, 2),
+      Dfa(Qids = Set(0, 1, 2),
               q0id = 0,
               Fids = Set(2),
               protoDelta = Set((0, t0, 0),
@@ -295,7 +295,7 @@ class DfaTestSuite extends MyFunSuite {
     }
     val dfa2 = locally{
       val t1 = SEql(-1)
-      new Dfa(Qids= Set(0,2),
+      Dfa(Qids= Set(0,2),
               q0id = 0,
               Fids=Set(2),
               protoDelta = Set((0,t0,0),
@@ -316,7 +316,7 @@ class DfaTestSuite extends MyFunSuite {
     import genus._
     val dfa1 = locally {
       val t0:SimpleTypeD = SEql(-1)
-      new Dfa(Qids = Set(0, 1),
+      Dfa(Qids = Set(0, 1),
               q0id = 0,
               Fids = Set(1),
               protoDelta = Set((0, t0, 1)),
@@ -325,7 +325,7 @@ class DfaTestSuite extends MyFunSuite {
     }
     val dfa2 = locally{
       val t0:SimpleTypeD = SEql(-2)
-      new Dfa(Qids= Set(0,1),
+      Dfa(Qids= Set(0,1),
               q0id = 0,
               Fids=Set(1),
               protoDelta = Set((0,t0,1)),

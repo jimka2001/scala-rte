@@ -191,18 +191,24 @@ abstract class Rte {
     }
     val qids = rtes.indices.toSet
     val fids = qids.filter(i => rtes(i).nullable)
-    val fmap = fids.map { i => i -> exitValue }.toMap
-    new Dfa(Qids = qids,
-            q0id = 0,
-            Fids = fids,
-            protoDelta = (for {src <- rtes.indices
-                                 (rt, dst) <- edges(src)
-                               } yield (src, rt, dst)).toSet,
-            labeler = xymbolyco.GenusLabeler(),
-            fMap = fmap)
+    val fmap = fids.map{i => i -> exitValue}.toMap
+    val protoDelta = (for {src <- rtes.indices
+                           srcEdges: Seq[(SimpleTypeD, Int)] = edges(src)
+                           // in the case that all the transitions from src go to the same destination
+                           // then we know they all combine to 1 single transition labeled by STop
+                           // because the Dfa is complete by construction.
+                           trivial: Boolean = srcEdges.map(_._2).distinct.size == 1
+                           (rt, dst) <- if (trivial) Seq((STop,srcEdges.head._2) ) else srcEdges
+                           } yield (src, rt, dst)).toSet
+    Dfa(Qids = qids,
+        q0id = 0,
+        Fids = fids,
+        protoDelta = protoDelta,
+        labeler = xymbolyco.GenusLabeler(),
+        fMap = fmap)
   }
 
-  def simulate[E](exitValue: E, seq: Seq[Any]): Option[E] = {
+  def simulate[E](exitValue:E, seq:Seq[Any]):Option[E] = {
     toDfa(exitValue).simulate(seq)
   }
 

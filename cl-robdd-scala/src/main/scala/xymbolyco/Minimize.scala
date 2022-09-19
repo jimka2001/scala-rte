@@ -49,27 +49,28 @@ object Minimize {
   }
 
   def removeNonAccessible[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    val succ: Map[Int, Set[Int]] = dfa.successors()
-    val accessible: Set[Int] = findReachable(succ, Set(), Set(dfa.q0.id))
-    new Dfa(accessible,
-      dfa.q0id,
-      dfa.Fids.intersect(accessible),
-      dfa.protoDelta.collect { case sld@(src, _, dst) if accessible.contains(src) && accessible.contains(dst) => sld },
-      dfa.labeler,
-      dfa.fMap
-    )
+
+    val succ:Map[Int,Set[Int]] = dfa.successors()
+    val accessible:Set[Int] = findReachable(succ,Set(),Set(dfa.q0.id))
+    Dfa(accessible,
+            dfa.q0id,
+            dfa.Fids.intersect(accessible),
+            dfa.protoDelta.collect{case sld@(src,_,dst) if accessible.contains(src) && accessible.contains(dst) =>sld},
+            dfa.labeler,
+            dfa.fMap
+            )
   }
 
   def removeNonCoAccessible[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    val pred: Map[Int, Set[Int]] = dfa.predecessors()
-    val coaccessible: Set[Int] = findReachable(pred, Set[Int](), dfa.Fids)
-    if (coaccessible.contains(dfa.q0id)) {
-      new Dfa(coaccessible,
-        dfa.q0id,
-        dfa.Fids,
-        dfa.protoDelta.collect { case sld@(src, _, dst) if coaccessible.contains(src) && coaccessible.contains(dst) => sld },
-        dfa.labeler,
-        dfa.fMap)
+    val pred:Map[Int,Set[Int]] = dfa.predecessors()
+    val coaccessible:Set[Int] = findReachable(pred,Set[Int](),dfa.Fids)
+    if(coaccessible.contains(dfa.q0id)){
+      Dfa(coaccessible,
+              dfa.q0id,
+              dfa.Fids,
+              dfa.protoDelta.collect{case sld@(src,_,dst) if coaccessible.contains(src) && coaccessible.contains(dst) =>sld},
+              dfa.labeler,
+              dfa.fMap)
     }
     else {
       val q0id = dfa.q0id
@@ -79,13 +80,13 @@ object Minimize {
       else
         Set((q0id, allLabel.reduce((acc: L, lab: L) => dfa.labeler.combineLabels(acc, lab)), q0id))
       // make trivial dfa with only a self-loop labeled Sigma on q0
-      new Dfa(Set(q0id),
-        q0id,
-        Set(),
-        protoDelta,
-        dfa.labeler,
-        dfa.fMap
-      )
+      Dfa(Set(q0id),
+              q0id,
+              Set(),
+              protoDelta,
+              dfa.labeler,
+              dfa.fMap
+              )
     }
   }
 
@@ -166,7 +167,7 @@ object Minimize {
     } yield id -> dfa.exitValue(q)
 
     // return a newly constructed Dfa extracted from the Hopcroft partition minimization
-    new Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
+    Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
   }
 
   // Construct a new Dfa which is complete, i.e., for each state q
@@ -195,13 +196,12 @@ object Minimize {
     val protoDelta = dfa.protoDelta ++
       toSink ++
       (if (toSink.nonEmpty) Set((sinkId, labeler.universe, sinkId)) else Set())
-
-    val dfaComplete = new Dfa[Σ, L, E](Qids = dfa.Qids + sinkId,
-      q0id = dfa.q0id,
-      Fids = dfa.Fids,
-      protoDelta = protoDelta,
-      labeler = dfa.labeler,
-      fMap = dfa.fMap)
+    val dfaComplete = Dfa[Σ, L, E](Qids = dfa.Qids + sinkId,
+                                       q0id = dfa.q0id,
+                                       Fids = dfa.Fids,
+                                       protoDelta = protoDelta,
+                                       labeler = dfa.labeler,
+                                       fMap = dfa.fMap)
     dfaComplete
   }
 
@@ -269,22 +269,20 @@ object Minimize {
       arbitrateFinal(dfa1.Fids.contains(q1),
         dfa2.Fids.contains(q2))
     }
-
-    val fMap = for {q <- fIds
-                    (q1, q2) = vertices(q)
-                    e <- combineFmap(dfa1.fMap.get(q1), dfa2.fMap.get(q2))
-                    } yield q -> e
-    val protoDelta = for {(seq, src) <- edges.zipWithIndex
-                          (lab, dst) <- seq
-                          } yield (src, lab, dst)
-    val dfa = new Dfa[Σ, L, E](vertices.indices.toSet,
-      0, // q0id:Int,
-      fIds.toSet, // Fids:Set[Int],
-      protoDelta.toSet, //    protoDelta:Set[(Int,L,Int)],
-      dfa1.labeler, // labeler:Labeler[Σ,L],
-      fMap.toMap // val fMap:Map[Int,E]
-    )
-
+    val fMap = for { q <- fIds
+                     (q1,q2) = vertices(q)
+                     e <- combineFmap(dfa1.fMap.get(q1),dfa2.fMap.get(q2))
+                     } yield q -> e
+    val protoDelta = for { (seq,src) <- edges.zipWithIndex
+                           (lab,dst) <- seq
+                           } yield (src,lab,dst)
+    val dfa = Dfa[Σ, L, E](vertices.indices.toSet,
+                     0, // q0id:Int,
+                     fIds.toSet, // Fids:Set[Int],
+                     protoDelta.toSet, //    protoDelta:Set[(Int,L,Int)],
+                     dfa1.labeler, // labeler:Labeler[Σ,L],
+                     fMap.toMap // val fMap:Map[Int,E]
+                     )
     trim(dfa)
   }
 }

@@ -25,8 +25,6 @@ import genus.RandomType.Abstract1
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import rte._
-import xymbolyco.GraphViz.dfaView
-import xymbolyco.Minimize.minimize
 import xymbolyco.Thompson._
 
 
@@ -228,7 +226,6 @@ class ThompsonTestSuite extends AnyFunSuite {
   }
   test("Singleton") {
     val ti: SimpleTypeD = SAtomic(classOf[Int])
-    val ts: SimpleTypeD = SAtomic(classOf[String])
     val dfa = constructThompsonDfa(Singleton(ti), 42)
 
     assert(dfa.simulate(Seq(1)) == Some(42))
@@ -300,7 +297,6 @@ class ThompsonTestSuite extends AnyFunSuite {
     val ts: SimpleTypeD = SAtomic(classOf[String])
     val tb: SimpleTypeD = SAtomic(classOf[Boolean])
     val tn: SimpleTypeD = SAtomic(classOf[Number])
-    val t2x: SimpleTypeD = SAtomic(classOf[genus.RandomType.Trait2X])
     val t2: SimpleTypeD = SAtomic(classOf[genus.RandomType.Trait2])
     val tc2x: SimpleTypeD = SAtomic(classOf[genus.RandomType.Class2X])
     val t1x: SimpleTypeD = SAtomic(classOf[genus.RandomType.Trait1X])
@@ -312,7 +308,7 @@ class ThompsonTestSuite extends AnyFunSuite {
     constructThompsonDfa(pattern2, 42)
     constructThompsonDfa(pattern3, 42)
   }
-  test("disovered case 309") {
+  test("discovered case 309") {
     val t2x: Rte = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
     val Σ = Sigma
     val ε = EmptyWord
@@ -345,7 +341,7 @@ class ThompsonTestSuite extends AnyFunSuite {
            case e =>
              println(s"could not construct thompson dfa")
              println(s"   problem with pattern=$pattern")
-             throw (e)
+             throw e
          }
          dfa_brzozowski = pattern.toDfa(42)
          } {
@@ -370,26 +366,26 @@ class ThompsonTestSuite extends AnyFunSuite {
       assert(dfaEquivalent(dfa_brzozowski, dfa_thompson) != Some(false),
              s"disagreement on pattern=$pattern")
   }
-  /*
-    test("randomCreate") {
-      import rte.Rte.dfaEquivalent
-      for {depth <- 0 until 3
-           r <- 0 until num_random_tests * 10
-           pattern = Rte.randomRte(depth)
-           dfa_thompson = try {
-             constructThompsonDfa(pattern, 42)
-           } catch {
-             case e =>
-               println(s"could not construct thompson dfa")
-               println(s"   problem with depth=$depth: pattern=$pattern")
-               throw (e)
-           }
-           dfa_brzozowski = pattern.toDfa(42)
-           }
-      // equivalent might return None or Some(true), but need to fail if returns Some(false)
-        assert(dfaEquivalent(dfa_brzozowski, dfa_thompson) != Some(false),
-               s"disagreement on pattern=$pattern")
-    }*/
+  test("randomCreate") {
+    import rte.Rte.dfaEquivalent
+    for {depth <- 0 until 3
+         _ <- 0 until num_random_tests * 10
+         pattern = Rte.randomRte(depth)
+         dfa_thompson = try {
+           constructThompsonDfa(pattern, 42)
+         } catch {
+           case e: Throwable =>
+             println(s"could not construct thompson dfa")
+             println(s"   problem with depth=$depth: pattern=$pattern")
+             throw e
+         }
+         dfa_brzozowski = pattern.toDfa(42)
+         }
+    // equivalent might return None or Some(true), but need to fail if returns Some(false)
+      assert(dfaEquivalent(dfa_brzozowski, dfa_thompson) != Some(false),
+             s"disagreement on pattern=$pattern")
+  }
+
   test("simulate") {
     val ti: Rte = Singleton(SAtomic(classOf[Int]))
     val ts: Rte = Singleton(SAtomic(classOf[String]))
@@ -473,7 +469,7 @@ class ThompsonTestSuite extends AnyFunSuite {
 
   }
 
-  test("thomp/brz/Trait3") {
+  test("Thompson/brz/Trait3") {
     import genus.RandomType.Trait3
     val data = Profiling.check(Singleton(SAtomic(classOf[Trait3])), 1, 1)
     assert(data("thompson_min") == data("brzozowski_min"))
@@ -494,9 +490,34 @@ class ThompsonTestSuite extends AnyFunSuite {
     val data = Profiling.check(rte, 1, 1)
     assert(data("thompson_min") == data("brzozowski_min"))
   }
-  test("discovered 479") {
-    val rte: Rte = Cat(Singleton(SMember(4, 5, 6)),
-                       Singleton(SAtomic(classOf[Abstract1])))
+
+
+  def discovered463b() = {
+
+    import genus.RandomType.{Trait3X, Abstract1X}
+    val s1 = Singleton(SEql(1))
+    val t3x = Singleton(SAtomic(classOf[Trait3X]))
+    val a1x = Singleton(SAtomic(classOf[Abstract1X]))
+    val num = Singleton(SAtomic(classOf[Number]))
+    val abc = Singleton(SEql("a"))
+    val stop = Singleton(STop)
+
+    val rte = And(Star(Or(Or(Not(s1), And(t3x, abc)),
+                          Cat(Not(num), Or(a1x, num)))),
+                  Star(stop))
+    val data = Profiling.check(rte, 1, 1)
+    assert(data("thompson_min") == data("brzozowski_min"))
+  }
+
+  test("discovered 463 b") {
+    // we are calling this 1000 times because it WAS happening
+    // that the test would pass sometimes and fail sometimes.
+    for{_ <- 0 to 1000} discovered463b()
+  }
+  test("discovered 479"){
+    val rte:Rte = Cat(Singleton(SMember(4,5,6)),
+                      Singleton(SAtomic(classOf[Abstract1])))
+
     val dfa = constructThompsonDfa(rte, 42)
     val trim_dfa = Minimize.trim(dfa)
     assert(trim_dfa.Q.size == 1, "trimming created the wrong sized dfa")
