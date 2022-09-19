@@ -106,7 +106,7 @@ object Types {
   def mdtd(tds: Set[SimpleTypeD]): Map[SimpleTypeD, (Set[SimpleTypeD], Set[SimpleTypeD])] = {
     type S = SimpleTypeD // local type def just to simplify the following type declarations
     @tailrec
-    def recur(decomposition: Map[S, (Set[S], Set[S])], tds: List[S], types: Vector[S]): Map[S, (Set[S], Set[S])] = {
+    def recur(decomposition: Map[S, (Set[S], Set[S])], tds: List[S]): Map[S, (Set[S], Set[S])] = {
       if (tds.isEmpty)
         decomposition
       else {
@@ -133,11 +133,11 @@ object Types {
                 b -> (factors + n, disjoints + u))
         }
 
-        recur(decomposition.flatMap(f), tds.tail, types)
+        recur(decomposition.flatMap(f), tds.tail)
       }
     }
 
-    recur(Map(STop -> (Set(STop), Set(SEmpty))), (tds - STop).toList.sortBy(_.toString), RandomType.interestingTypes.tail)
+    recur(Map(STop -> (Set(STop), Set(SEmpty))), (tds - STop).toList.sortBy(_.toString))
   }
 
   def compareSequence(tds1: Seq[SimpleTypeD], tds2: Seq[SimpleTypeD]): Boolean = {
