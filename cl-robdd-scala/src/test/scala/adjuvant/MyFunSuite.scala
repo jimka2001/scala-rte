@@ -20,36 +20,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package adjuvant
+import adjuvant.Adjuvant.printTime
 import org.scalatest.funsuite.AnyFunSuite
 class MyFunSuite extends AnyFunSuite {
   import org.scalactic.source
   import org.scalatest.Tag
-  def printTime(time:Long):String = {
-    var acc = time
-    val ns = acc % 1000
-    acc = acc / 1000
-    val us = acc % 1000
-    acc = acc / 1000
-    val ms = acc % 1000
-    acc = acc / 1000
-    val sec = acc % 60
-    acc = acc / 60
-    val min = acc % 60
-    val hour = acc / 60
-    
-    if (hour > 0)
-      s"$hour hours $min min $sec sec"
-    else if (min > 0)
-      s"$min min $sec sec"
-    else if (sec > 0)
-      s"$sec sec $ms ms"
-    else if (ms > 0)
-      s"$ms ms"
-    else if (us > 0)
-      s"$us us"
-    else
-      s"$ns ns"
-  }
+
   override def test(testName: String, testTags: Tag*)(testFun: => Any /* Assertion */)(implicit pos: source.Position):Unit = {
     super.test(testName,testTags : _*)(locally{
       val start = System.nanoTime()
@@ -62,9 +38,9 @@ class MyFunSuite extends AnyFunSuite {
       finally{
         val end = System.nanoTime()
         if (finished)
-          println("] finished " + testName + " " + printTime(end-start))
+          println("] finished " + testName + ": " + printTime(end-start))
         else
-          println("] aborted " + testName + " " + printTime(end - start))
+          println("] aborted " + testName + ": " + printTime(end - start))
       }
     })(pos)
   }

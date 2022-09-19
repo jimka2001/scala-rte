@@ -348,4 +348,30 @@ object Adjuvant {
   def member(x:Any, ys:Seq[Any]):Boolean = {
     ys.exists{y => eql(x,y)}
   }
+
+  // Build and return a string which describes a time duration,
+  //   given in nanoseconds.
+  def printTime(time: Long): String = {
+    def recur(time: Long, divisors: List[Int]): List[Int] = {
+      divisors match {
+        case Nil => Nil
+        case d :: ds => (time / d).toInt :: recur(time / d, ds)
+      }
+    }
+
+    val List(ns, us, ms, sec, min, hour) = recur(time, List(1000, 1000, 1000,
+                                                            60, 60, 60))
+    if (hour > 0)
+      s"$hour hours $min min $sec sec"
+    else if (min > 0)
+      s"$min min $sec sec"
+    else if (sec > 0)
+      s"$sec sec $ms ms"
+    else if (ms > 0)
+      s"$ms ms"
+    else if (us > 0)
+      s"$us us"
+    else
+      s"$ns ns"
+  }
 }
