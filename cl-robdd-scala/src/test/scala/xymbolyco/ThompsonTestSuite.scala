@@ -366,6 +366,7 @@ class ThompsonTestSuite extends AnyFunSuite {
       assert(dfaEquivalent(dfa_brzozowski, dfa_thompson) != Some(false),
              s"disagreement on pattern=$pattern")
   }
+  /*
   test("randomCreate") {
     import rte.Rte.dfaEquivalent
     for {depth <- 0 until 3
@@ -385,7 +386,7 @@ class ThompsonTestSuite extends AnyFunSuite {
       assert(dfaEquivalent(dfa_brzozowski, dfa_thompson) != Some(false),
              s"disagreement on pattern=$pattern")
   }
-
+*/
   test("simulate") {
     val ti: Rte = Singleton(SAtomic(classOf[Int]))
     val ts: Rte = Singleton(SAtomic(classOf[String]))
@@ -512,7 +513,7 @@ class ThompsonTestSuite extends AnyFunSuite {
   test("discovered 463 b") {
     // we are calling this 1000 times because it WAS happening
     // that the test would pass sometimes and fail sometimes.
-    for{_ <- 0 to 1000} discovered463b()
+    for {i <- 0 to 1000} discovered463b()
   }
   test("discovered 479"){
     val rte:Rte = Cat(Singleton(SMember(4,5,6)),
@@ -582,6 +583,15 @@ class ThompsonTestSuite extends AnyFunSuite {
     for (i <- Range(0, 10)) {
       val rte: Rte = Cat(Or(Singleton(SAtomic(classOf[Trait1])), Singleton(SSatisfies(RandomType.oddp, "oddp"))),
                          Cat(Star(Singleton(SMember(1, 2, 3, 4)))), Singleton(SEmpty))
+      //val dfa = constructThompsonDfa(rte, 42)
+      //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
+      val data = Profiling.check(rte, 1, 1)
+      assert(data("thompson_min") == data("brzozowski_min"))
+    }
+  }
+  test("discovered 487") {
+    for (i <- Range(0, 10)) {
+      val rte: Rte = Star(Or(Singleton(SMember(false, true)),Singleton(SEql(0))))
       //val dfa = constructThompsonDfa(rte, 42)
       //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
       val data = Profiling.check(rte, 1, 1)
