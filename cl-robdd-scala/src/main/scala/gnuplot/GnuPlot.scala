@@ -71,6 +71,30 @@ object GnuPlot {
     if (verbose)
       println(s"finished $csvName]")
   }
+
+  // Create a plot using gnuplot (which we assume is stalled
+  //  on the system).
+  //   dataToPlot specifies a sequence of *curves*:
+  //      each curve is designated by a string, naming the curve
+  //      and a sequence of x-values and a sequence of y-values, both Double.
+  //      The curves will be drawn each in a different color, each curve
+  //      will be labeled with its name, in a legend.
+  //      Each curve will be drawn either as points, lines, or points-and-lines,
+  //         controlled by the parameter plotWith which must have a value,
+  //         "linespoints" (default), "points", "lines".
+  //  view: indicates whether to graphically display the image file once
+  //      it has been created.
+  //  gnuFileCB, if given, is a function which will be called given the name
+  //      of the .gnu file, i.e., the file containing the gnuplot commands,
+  //      before the .png file has been created.  This function may be used
+  //      to manipulate the file (add lines, delete lines, etc).   The function
+  //      is allowed to manipulate the file, but is expected to leave a file named
+  //      the same in the same directory, which will be used by the system
+  //      to create the .png file.
+  //  comment: a text string to write as a comment in the .gnu file,
+  //       this comment does not have any effect on the plot, but may be
+  //       used to distinguish the .gnu file as necessary.
+  //  title: optional title to display on the plot file.
   def gnuPlot(dataToPlot: Seq[(String, Seq[Double], Seq[Double])])(
               terminals: Set[String]=Set("png"), // e.g Set("png","tikz")
               title             : String = "",
