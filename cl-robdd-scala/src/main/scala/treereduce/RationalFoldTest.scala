@@ -70,7 +70,7 @@ object RationalFoldTest {
     import treereduce.TreeParallelReduce._
     import treereduce.TreeReduce._
     import treereduce.TreeReducible._
-    import gnuplot.GnuPlot.gnuPlot
+    import adjuvant.GnuPlot.gnuPlot
     import scala.collection.parallel.CollectionConverters._
 
     def rationalAdd(a: Rational, b: Rational): Rational = a + b

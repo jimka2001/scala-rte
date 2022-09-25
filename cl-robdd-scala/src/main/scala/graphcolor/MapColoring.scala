@@ -22,7 +22,7 @@
 package graphcolor
 
 import bdd.{And, Assignment, Bdd, BddFalse, BddTrue, Or, Xor}
-import gnuplot.GnuPlot.gnuPlot
+import adjuvant.GnuPlot.gnuPlot
 
 import java.lang.System.nanoTime
 import scala.annotation.tailrec
@@ -532,7 +532,7 @@ object MapColoring {
                      "Time elapsed (sec) for first n steps",
                      "time")
                    )} {
-      import gnuplot.GnuPlot._
+      import adjuvant.GnuPlot._
 
       gnuPlot(folders[V]().zipWithIndex.map { case ((folder, _), k) =>
         (folder, measurements(k).map(_._1), measurements(k).map(_._2).map(_ * scale))

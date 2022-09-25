@@ -1,44 +1,17 @@
-// Copyright (c) 2019 EPITA Research and Development Laboratory
-//
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation
-// files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge,
-// publish, distribute, sublicense, and/or sell copies of the Software,
-// and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
-// A significant portion of this typeclass definition was supplied by
-// Justin du Coeur @jducoeur.
-// The original text https://scastie.scala-lang.org/K2ar8VdMTpSUXqeJLkZcsQ
-// was modified by @jducoeur https://scastie.scala-lang.org/9EFL87qySHSNMmG93LIvMQ
-//
-
-package gnuplot
+package adjuvant
 
 import adjuvant.Adjuvant.makeTmpFileName
 
 object GnuPlot {
 
   val gnuPlotPath: String = List("/opt/local/bin/gnuplot", "/usr/local/bin/gnuplot").find { fName =>
-    import java.nio.file.{Paths, Files}
+    import java.nio.file.{Files, Paths}
 
     Files.exists(Paths.get(fName))
   }.getOrElse("gnuplot")
 
   def writeCsv(dataToPlot: Seq[(String, Seq[Double], Seq[Double])],
-               xAxisLabel:String,
+               xAxisLabel: String,
                outputFileBaseName: String,
                verbose: Boolean): Unit = {
     import java.io._
@@ -96,42 +69,43 @@ object GnuPlot {
   //       used to distinguish the .gnu file as necessary.
   //  title: optional title to display on the plot file.
   def gnuPlot(dataToPlot: Seq[(String, Seq[Double], Seq[Double])])(
-              terminals: Set[String]=Set("png"), // e.g Set("png","tikz")
-              title             : String = "",
-              comment           : String = "",
-              xAxisLabel: String = "",
-              xLog: Boolean = false,
-              yAxisLabel        : String="",
-              yLog              : Boolean=false,
-              grid              : Boolean=false,
-              // outputDirName     : String = "/tmp/",
-              // outputFileBaseName is basename without the .pdf, .gnu, .png etc and without leading path
-              outputFileBaseName: String = "curves",
-              plotWith          : String = "linespoints",
-              key:String = "horizontal bmargin",
-              gnuFileCB:String=>Unit = (_)=>(),
-              verbose:Boolean,
-              view:Boolean = false
-             ): Unit = {
+    terminals: Set[String] = Set("png"), // e.g Set("png","tikz")
+    title: String = "",
+    comment: String = "",
+    xAxisLabel: String = "",
+    xLog: Boolean = false,
+    yAxisLabel: String = "",
+    yLog: Boolean = false,
+    grid: Boolean = false,
+    // outputDirName     : String = "/tmp/",
+    // outputFileBaseName is basename without the .pdf, .gnu, .png etc and without leading path
+    outputFileBaseName: String = "curves",
+    plotWith: String = "linespoints",
+    key: String = "horizontal bmargin",
+    gnuFileCB: String => Unit = (_) => (),
+    verbose: Boolean,
+    view: Boolean = false
+  ): Unit = {
     // TODO verify that "lines" can be used as plotWith, not 100% sure
     require(Set("linespoints", "points", "lines").contains(plotWith))
 
-    import java.io._
     import adjuvant.Accumulators.withOutputToString
     import adjuvant.Adjuvant.openGraphicalFile
+
+    import java.io._
 
     val gnuName = makeTmpFileName(outputFileBaseName, ".gnu")
     val gnu = new PrintWriter(new File(gnuName))
 
-    writeCsv(dataToPlot,xAxisLabel,outputFileBaseName,verbose)
+    writeCsv(dataToPlot, xAxisLabel, outputFileBaseName, verbose)
     if (verbose)
       println(s"[writing to $gnuName\n")
     gnu.write(s"# $comment\n")
 
-    def logCompatible(projection:((String,Seq[Double],Seq[Double]))=>Seq[Double]):Boolean = {
-      dataToPlot.forall{data =>
+    def logCompatible(projection: ((String, Seq[Double], Seq[Double])) => Seq[Double]): Boolean = {
+      dataToPlot.forall { data =>
         val numbers = projection(data)
-        numbers.forall(_>0) && numbers.nonEmpty && (numbers.max > numbers.min)
+        numbers.forall(_ > 0) && numbers.nonEmpty && (numbers.max > numbers.min)
       }
     }
     // turn off log scale if range on axis is 0 or if it contains 0 or negative values
@@ -182,7 +156,7 @@ object GnuPlot {
     if (verbose)
       println(s"finished $gnuName]")
 
-    if(dataToPlot.exists{data: (String,Seq[Double],Seq[Double]) =>
+    if (dataToPlot.exists { data: (String, Seq[Double], Seq[Double]) =>
       data._2.nonEmpty && data._3.nonEmpty
     })
       terminals.foreach { terminal =>
