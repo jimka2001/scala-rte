@@ -216,21 +216,33 @@ object GnuPlot {
                                 gnuFileCB = gnuFileCB,
                                 verbose = verbose,
                                 view = view)
+    // convert dataToPlot to the form Seq[(String,Seq[Double],Seq[Double])]
     val curves = dataToPlot.map{
-      case (label:String,xys:Seq[(Double,Double)]) => (label,xys.map(_._1),xys.map(_._2))
-      case (label:String,xs:Seq[Double],ys:Seq[Double]) => (label,xs,ys)
+      case (label:String,xys:Seq[(Any,Double)]) => Tuple3(label,xys.map {
+        case (x:Double,_) => x
+        case (x:Int,_) => x.toDouble
+        case data => throw new NotImplementedError(s"invalid data: $data, in $dataToPlot")
+      } ,xys.map(_._2))
+      case (label:String,xs:Seq[Any],ys:Seq[Double]) =>
+        Tuple3(label,
+               xs.map{
+                 case x:Double => x
+                 case x:Int => x.toDouble
+                 case data => throw new NotImplementedError(s"invalid data: $data, in $dataToPlot")
+               },ys)
+      case data => throw new NotImplementedError(s"invalid data: $data, in $dataToPlot")
     }
     gpd.plot(dataToPlot=curves)
   }
 
   def main(argv:Array[String]):Unit = {
     gnuPlot(dataToPlot=Seq(("curve1",
-                             Seq(1.0,2.0,3.0,4),
-                             Seq(1.0,2.0, 2.5, 2.75)),
-                           ("curve2", Seq((1.0,2.0),
-                                          (2.0,2.25),
-                                          (3.0,2.125),
-                                          (4.0,2.012)))))(
+                             Seq(1.0, 2.0, 3, 4),
+                             Seq(1.0, 2.0, 2.5, 2.75)),
+                           ("curve2", Seq((1.0, 2.0),
+                                          (2, 2.25),
+                                          (3, 2.125),
+                                          (4, 2.012)))))(
             view=true)
   }
 }
