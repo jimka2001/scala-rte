@@ -43,19 +43,23 @@ object GraphViz {
 
   def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbrev:Boolean=false,
                          label:Option[String]=None,
-                         showSink:Boolean=true): String = {
+                         showSink:Boolean=true,
+                         dotFileCB:String=>Unit=(_=>())): String = {
     val extendedLabel = (label,dfa.labeler.graphicalText()) match {
       case (_, Seq()) => label
       case (None, strings) => Some(strings.mkString("\\l"))
       case (Some(str),strings) => Some(str + "\\l" + strings.mkString("\\l"))
     }
-    val png = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel, showSink=showSink)
+    val png = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel,
+                       showSink=showSink, dotFileCB=dotFileCB)
     openGraphicalFile(png)
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbrev:Boolean,
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String,
+                          abbrev:Boolean,
                           label:Option[String]=None,
-                          showSink:Boolean=true): String = {
+                          showSink:Boolean=true,
+                          dotFileCB:String=>Unit): String = {
     val prefix = if (title == "")
       "dfa"
     else
@@ -70,7 +74,7 @@ object GraphViz {
       case None => title
       case Some(lab) => s"$title\\l-- $lab"
     }
-    dfaToPng(dfa, dotPath, longTitle, abbrev=abbrev, showSink=showSink)
+    dfaToPng(dfa, dotPath, longTitle, abbrev=abbrev, showSink=showSink, dotFileCB=dotFileCB)
     locally {
       import sys.process._
       Seq("dot", "-Tplain", dotPath, "-o", altPath).! // write file containing coordinates
@@ -87,10 +91,12 @@ object GraphViz {
                           pathname: String,
                           title:String,
                           abbrev:Boolean,
-                          showSink:Boolean): String = {
+                          showSink:Boolean,
+                          dotFileCB:String=>Unit): String = {
     val stream = new java.io.FileOutputStream(new java.io.File(pathname))
     dfaToDot(dfa, stream, title, abbrev = abbrev, showSink=showSink)
     stream.close()
+    dotFileCB(pathname)
     pathname
   }
 
