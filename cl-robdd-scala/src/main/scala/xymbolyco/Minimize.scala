@@ -217,8 +217,8 @@ object Minimize {
     // This function does some consistency checking and prints
     // errors, raises exceptions, displays results if duplicate
     // transitions are found.
-    def reportInconsistent[L](edgeSeq: Seq[(L, (Int, Int), (L, L))]
-                             ):Seq[(L, (Int, Int), (L, L))] = {
+    def reportInconsistent(edgeSeq: Seq[(L, (Int, Int), (L, L))]
+                          ):Seq[(L, (Int, Int), (L, L))] = {
       val countDuplicates = edgeSeq.size - edgeSeq.map(_._1).distinct.size
       if (countDuplicates > 0) {
         for {trans <- edgeSeq
