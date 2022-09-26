@@ -63,7 +63,7 @@ class RteDfaTestSuite extends MyFunSuite {
          rt = Rte.randomRte(depth).canonicalize
          } {
 
-      dfaToPng(rt.toDfa(), s"depth=$depth,rep=$rep", abbrev = true)      
+      dfaToPng(rt.toDfa(), title=s"depth=$depth,rep=$rep")
     }
   }
   test("dfa minimize") {

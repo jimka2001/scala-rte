@@ -55,11 +55,20 @@ object GraphViz {
     openGraphicalFile(png)
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String,
-                          abbrev:Boolean,
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],
+                          title:String,
+                          abbrev:Boolean=true,
                           label:Option[String]=None,
                           showSink:Boolean=true,
-                          dotFileCB:String=>Unit): String = {
+                          dotFileCB:String=>Unit= _=>()): String = {
+    def toPng(pathname: String,
+              title: String): String = {
+      val stream = new java.io.FileOutputStream(new java.io.File(pathname))
+      dfaToDot(dfa, stream, title, abbrev = abbrev, showSink = showSink)
+      stream.close()
+      dotFileCB(pathname)
+      pathname
+    }
     val prefix = if (title == "")
       "dfa"
     else
@@ -74,7 +83,7 @@ object GraphViz {
       case None => title
       case Some(lab) => s"$title\\l-- $lab"
     }
-    dfaToPng(dfa, dotPath, longTitle, abbrev=abbrev, showSink=showSink, dotFileCB=dotFileCB)
+    toPng(dotPath, longTitle)
     locally {
       import sys.process._
       Seq("dot", "-Tplain", dotPath, "-o", altPath).! // write file containing coordinates
@@ -85,19 +94,6 @@ object GraphViz {
     //png.deleteOnExit()
     //dot.deleteOnExit()
     pngPath
-  }
-
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],
-                          pathname: String,
-                          title:String,
-                          abbrev:Boolean,
-                          showSink:Boolean,
-                          dotFileCB:String=>Unit): String = {
-    val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-    dfaToDot(dfa, stream, title, abbrev = abbrev, showSink=showSink)
-    stream.close()
-    dotFileCB(pathname)
-    pathname
   }
 
   def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],
