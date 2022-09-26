@@ -182,9 +182,10 @@ object GraphViz {
 
     if (abbrev || title != "") {
       write("""  labelloc="t";""")
-      write("label=\"")
+      write("\n  label=\"")
       write(title)
-      write(transitionLabelText)
+      if (abbrev)
+        write(transitionLabelText)
       write("\"\n")
     }
 
