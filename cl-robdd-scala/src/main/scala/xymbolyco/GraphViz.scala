@@ -100,7 +100,7 @@ object GraphViz {
                           abbrev:Boolean,
                           showSink:Boolean): Unit = {
     val qarr = dfa.Q.toArray
-    val sinkStateIds = dfa.findSinkStateIds().filter(id => id != dfa.q0)
+    val sinkStateIds = dfa.findSinkStateIds().filter(id => id != dfa.q0.id)
     val labels: Set[L] = for {q <- dfa.Q
                               if showSink || !sinkStateIds.contains(q.id)
                               (dst, transitions) <- q.transitions.groupBy(_.destination)
