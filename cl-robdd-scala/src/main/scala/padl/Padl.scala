@@ -21,6 +21,7 @@
 
 package padl
 
+import adjuvant.Adjuvant.filterFile
 import genus.SAtomic
 import genus.Types.{evenType, oddType}
 import rte.{Cat, Or, Rte, Singleton, Star}
@@ -29,16 +30,21 @@ import xymbolyco.GraphViz.dfaView
 
 
 object Padl {
-
+  val dotDir = "/Users/jnewton/Repos/research/dot/"
+  def cpTo(fromName:String,baseName:String):Unit = {
+    filterFile(fromName,
+               dotDir + baseName + ".dot",
+               keepIf= line=> !line.contains("labelloc=") && !line.contains("  label=") )
+  }
   def example1():Unit = {
     val str = Singleton(SAtomic(classOf[String]))
+    val num = Singleton(SAtomic(classOf[Number]))
     val odd = Singleton(oddType)
     val even = Singleton(evenType)
     val integer = Singleton(SAtomic(classOf[Int]))
-    val rt1: Rte = Cat(str, Or(Cat(odd, Star(integer)),
-                               Cat(odd, str)))
-
-    dfaView(rt1.toDfa(), abbrev = true, title = "rt1", showSink=false)
+    val rt1: Rte = Star(Cat(integer, str, even))
+    dfaView(rt1.toDfa(), abbrev = false, title = "rt1", showSink=false,
+            dotFileCB= str=>cpTo(str,"padl-example-1"))
   }
 
   def main(argv: Array[String]): Unit = {
