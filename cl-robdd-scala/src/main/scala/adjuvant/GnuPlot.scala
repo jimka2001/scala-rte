@@ -236,11 +236,13 @@ object GnuPlot {
   }
 
   def main(argv:Array[String]):Unit = {
-    gnuPlot(dataToPlot=Seq(("curve1",
-                             Seq(1.0, 2.0, 3, 4),
+    gnuPlot(dataToPlot=Seq(// gnuPlot can handle list of Xs followed by list of Ys
+                           ("curve1",
+                             Seq(1.0, 2.0, 3, 4), // Xs can be Int or Double
                              Seq(1.0, 2.0, 2.5, 2.75)),
-                           ("curve2", Seq((1.0, 2.0),
-                                          (2, 2.25),
+                           // can also handle list of xy pairs
+                           ("curve2", Seq((1.0, 2.0), // x can be Double
+                                          (2, 2.25),  // x can also be Int
                                           (3, 2.125),
                                           (4, 2.012)))))(
             view=true)
