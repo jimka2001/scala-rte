@@ -25,10 +25,10 @@ abstract class Labeler[Σ,L] {
   def member(s:Σ,lab:L):Boolean
   def combineLabels(l1:L,l2:L):L
   def equivLabels(a:L,b:L):Boolean = {a == b}
-  lazy val universe:L = ???
-  def intersectLabels(l1:L,l2:L):L = ???
-  def subtractLabels(l1:L,ls:Seq[L]):L = ???
-  def inhabited(l1:L):Option[Boolean] = ???
+  lazy val universe:L = throw new NotImplementedError(s"missing universe in $this")
+  def intersectLabels(l1:L,l2:L):L = throw new NotImplementedError(s"missing intersectLabels in $this")
+  def subtractLabels(l1:L,ls:Seq[L]):L = throw new NotImplementedError(s"missing subtractLabels in $this")
+  def inhabited(l1:L):Option[Boolean] = throw new NotImplementedError(s"missing inhabited in $this")
   def graphicalText():Seq[String] = Seq()
 
   def universal(label: L): Boolean = {
