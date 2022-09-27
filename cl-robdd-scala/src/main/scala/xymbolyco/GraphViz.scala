@@ -53,7 +53,8 @@ object GraphViz {
                          label:Option[String]=None,
                          showSink:Boolean=true,
                          dotFileCB:String=>Unit=(_=>()),
-                         givenLabels:Seq[L]=Seq()): String = {
+                         givenLabels:Seq[L]=Seq(),
+                         printLatex:Boolean=false): String = {
     val extendedLabel = (label,dfa.labeler.graphicalText()) match {
       case (_, Seq()) => label
       case (None, strings) => Some(strings.mkString("\\l"))
@@ -61,7 +62,8 @@ object GraphViz {
     }
     val png = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel,
                        showSink=showSink, dotFileCB=dotFileCB,
-                       givenLabels=givenLabels)
+                       givenLabels=givenLabels,
+                       printLatex=printLatex)
     openGraphicalFile(png)
   }
 
@@ -71,12 +73,14 @@ object GraphViz {
                           label:Option[String]=None,
                           showSink:Boolean=true,
                           dotFileCB:String=>Unit= _=>(),
-                          givenLabels:Seq[L]=Seq()): String = {
+                          givenLabels:Seq[L]=Seq(),
+                          printLatex:Boolean=false): String = {
     def toPng(pathname: String,
               title: String): String = {
       val stream = new java.io.FileOutputStream(new java.io.File(pathname))
       dfaToDot(dfa, stream, title, abbrev = abbrev,
-               showSink = showSink, givenLabels=givenLabels)
+               showSink = showSink, givenLabels=givenLabels,
+               printLatex=printLatex)
       stream.close()
       dotFileCB(pathname)
       pathname
@@ -113,7 +117,8 @@ object GraphViz {
                           title:String,
                           abbrev:Boolean,
                           showSink:Boolean,
-                          givenLabels:Seq[L]): Unit = {
+                          givenLabels:Seq[L],
+                          printLatex:Boolean=false): Unit = {
     val qarr = dfa.Q.toArray
     val sinkStateIds = dfa.findSinkStateIds().filter(id => id != dfa.q0.id)
     val usedLabels: Set[L] = for {q <- dfa.Q
@@ -197,6 +202,7 @@ object GraphViz {
 
     lazy val transitionLabelText: String = (for {(lab, (i, t)) <- labelMap.toSeq.sortBy(_._2._1)
                                                  if usedLabels.contains(lab)
+                                                 _ = if (printLatex) println(s"t$i => " + dfa.labeler.toLatex(lab))
                                                  multiLab = multiLineString(dfa.labeler.toDot(lab))
                                                  } yield s"\\l$i= $multiLab").mkString("", "", "\\l")
 

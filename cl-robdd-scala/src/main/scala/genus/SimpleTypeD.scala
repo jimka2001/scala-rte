@@ -29,6 +29,8 @@ import scala.collection.mutable
 abstract class SimpleTypeD { // SimpleTypeD
   def toMachineReadable():String = toString
   def toDot():String = toString
+  def toLatex():String = "[LaTeX? " + toString + "]"
+
   def ||(t: SimpleTypeD): SimpleTypeD = SOr(this, t).canonicalize(nf = Some(Dnf))
 
   def &&(t: SimpleTypeD): SimpleTypeD = SAnd(this, t).canonicalize(nf = Some(Dnf))
