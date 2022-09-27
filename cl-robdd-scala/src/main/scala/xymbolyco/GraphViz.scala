@@ -114,19 +114,23 @@ object GraphViz {
                           givenLabels:Seq[L]): Unit = {
     val qarr = dfa.Q.toArray
     val sinkStateIds = dfa.findSinkStateIds().filter(id => id != dfa.q0.id)
-    val labels: Set[L] = for {q <- dfa.Q
-                              if showSink || !sinkStateIds.contains(q.id)
-                              (dst, transitions) <- q.transitions.groupBy(_.destination)
-                              if showSink || !sinkStateIds.contains(dst.id)
-                              labels = transitions.map(_.label)
-                              label = labels.reduce(dfa.labeler.combineLabels)
-                              } yield label
-    // try to put SEmpty and STop at t0 and t1
+    val usedLabels: Set[L] = for {q <- dfa.Q
+                                  if showSink || !sinkStateIds.contains(q.id)
+                                  (dst, transitions) <- q.transitions.groupBy(_.destination)
+                                  if showSink || !sinkStateIds.contains(dst.id)
+                                  labels = transitions.map(_.label)
+                                  label = labels.reduce(dfa.labeler.combineLabels)
+                                  } yield label
+    // try to put SEmpty and STop at t0 and t1,
+    //   but respect givenLabels (which might be empty).
+    //   All the labels in givenLabels go at the beginning of the
+    //   list of orderedLabels.
     val orderedLabels: Seq[L] = locally {
-      val empty = labels.filter { lab => dfa.labeler.inhabited(lab).contains(false) }
-      val univ = (labels diff empty).filter { lab => dfa.labeler.universal(lab) }
-      val others = labels.diff(empty).diff(univ)
-      empty.toSeq ++ univ.toSeq ++ others.toSeq
+      val newLabels = usedLabels.toSeq diff givenLabels
+      val empty = newLabels.filter { lab => dfa.labeler.inhabited(lab).contains(false) }
+      val univ = (newLabels diff empty).filter { lab => dfa.labeler.universal(lab) }
+      val others = (newLabels diff empty diff univ)
+      givenLabels ++ empty ++ univ ++ others
     }
 
     val labelMap: Map[L, (Int, String)] = orderedLabels.zipWithIndex.map {
@@ -190,6 +194,7 @@ object GraphViz {
     }
 
     lazy val transitionLabelText: String = (for {(lab, (i, t)) <- labelMap.toSeq.sortBy(_._2._1)
+                                                 if usedLabels.contains(lab)
                                                  multiLab = multiLineString(lab.toString)
                                                  } yield s"\\l$i= $multiLab").mkString("", "", "\\l")
 
