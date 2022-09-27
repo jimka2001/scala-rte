@@ -22,11 +22,12 @@
 package padl
 
 import adjuvant.Adjuvant.filterFile
-import genus.SAtomic
+import genus.{SAtomic, SEmpty, STop, SimpleTypeD}
 import genus.Types.{evenType, oddType}
-import rte.{Cat, Or, Rte, Singleton, Star}
-import xymbolyco.GraphViz
-import xymbolyco.GraphViz.dfaView
+import rte.{Cat, Or, Permute, Plus, Rte, Singleton, Star}
+import xymbolyco.{GraphViz, Thompson}
+import xymbolyco.GraphViz.{dfaView, multiLineString}
+import xymbolyco.Minimize.minimize
 
 
 object Padl {
@@ -43,8 +44,38 @@ object Padl {
     val even = Singleton(evenType)
     val integer = Singleton(SAtomic(classOf[Int]))
     val rt1: Rte = Star(Cat(integer, str, even))
-    dfaView(rt1.toDfa(), abbrev = false, title = "rt1", showSink=false,
-            dotFileCB= str=>cpTo(str,"padl-example-1"))
+    val rt2: Rte = Star(Cat(integer, Plus(str), even))
+    val rt3: Rte = Permute(str,even,integer)
+
+    val givenLabels=Seq[SimpleTypeD](SEmpty,
+                                     STop,
+                                     SAtomic(classOf[Int]),
+                                     evenType,
+                                     SAtomic(classOf[String]))
+    dfaView(rt1.toDfa(),
+            abbrev = true,
+            title = "rt1",
+            label = Some(multiLineString(s"rt1=${rt1.toDot}",60)),
+            showSink = false,
+            dotFileCB = str => cpTo(str, "padl-example-1"),
+            givenLabels=givenLabels)
+    dfaView(minimize(Thompson.constructThompsonDfa(rt2,true)),
+            abbrev = true,
+            label = Some("Thompson " + multiLineString(s"rt2=${rt2.toDot}",
+                                                       60)),
+            title = "rt2",
+            showSink = false,
+            dotFileCB = str => cpTo(str, "padl-thompson-example-2"),
+            givenLabels=givenLabels)
+    dfaView(minimize(rt2.toDfa()),
+            abbrev = true,
+            title = "rt2",
+            label = Some("Brz min " + multiLineString(s"rt2=${rt2.toDot}",
+                                                      60)),
+            showSink = false,
+            dotFileCB = str => cpTo(str, "padl-example-2"),
+            givenLabels = givenLabels)
+
   }
 
   def main(argv: Array[String]): Unit = {
