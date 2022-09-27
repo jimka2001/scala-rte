@@ -47,7 +47,9 @@ object GraphViz {
     }
   }
 
-  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbrev:Boolean=false,
+  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E],
+                         title:String="",
+                         abbrev:Boolean=false,
                          label:Option[String]=None,
                          showSink:Boolean=true,
                          dotFileCB:String=>Unit=(_=>()),
