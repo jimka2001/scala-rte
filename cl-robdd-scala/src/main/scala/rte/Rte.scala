@@ -91,6 +91,7 @@ abstract class Rte {
     }
   }
 
+  def toDot():String = this.toString
   def toLaTeX():String
   def nullable:Boolean
   def firstTypes:Set[SimpleTypeD]

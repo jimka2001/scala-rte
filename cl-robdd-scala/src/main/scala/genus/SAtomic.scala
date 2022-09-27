@@ -46,9 +46,8 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     else
       shortName.drop(1)
   }
-  override def toString:String = {
-    "SAtomic:" + shortTypeName()
-  }
+  override def toString:String = "SAtomic:" + shortTypeName()
+  override def toDot():String = shortTypeName()
   override def toMachineReadable():String = toString
 
   override def typep(a: Any): Boolean = {

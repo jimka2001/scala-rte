@@ -30,7 +30,7 @@ abstract class Labeler[Σ,L] {
   def subtractLabels(l1:L,ls:Seq[L]):L = throw new NotImplementedError(s"missing subtractLabels in $this")
   def inhabited(l1:L):Option[Boolean] = throw new NotImplementedError(s"missing inhabited in $this")
   def graphicalText():Seq[String] = Seq()
-
+  def toDot(l1:L):String = l1.toString
   def universal(label: L): Boolean = {
     inhabited(subtractLabels(universe, Seq(label))) == Some(false)
   }
@@ -71,5 +71,9 @@ case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
       Seq("world-view=closed")
     else
       Seq("world-view=open")
+  }
+
+  override def toDot(lab:SimpleTypeD):String = {
+    lab.toDot()
   }
 }

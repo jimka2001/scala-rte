@@ -31,6 +31,7 @@ import adjuvant.Adjuvant.{findSimplifier, uniquify}
  */
 case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  SNot
   override def toString: String = tds.map(_.toString).mkString("SAnd(", ",", ")")
+  override def toDot(): String = tds.map(_.toDot()).mkString("SAnd(", ",", ")")
   override def toMachineReadable():String = tds.map(_.toMachineReadable()).mkString("SAnd(", ",", ")")
 
   override def create(tds:Seq[SimpleTypeD]):SimpleTypeD = SAnd.createAnd(tds)

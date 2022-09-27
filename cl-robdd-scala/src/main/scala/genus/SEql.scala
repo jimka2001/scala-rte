@@ -31,13 +31,17 @@ import genus.Types.cmpTypeDesignators
 case class SEql(a: (SimpleTypeD,Any)) extends SMemberImpl(Vector(a)) with TerminalType {
   override def toMachineReadable():String = toString
 
-  override def toString:String = {
+  override def toString: String = {
     s"SEql(${a._2} /* " +
       (a._1 match {
         case td@SAtomic(_) => td.shortTypeName()
         case _ => "???"
       }) +
-    "*/ )"
+      "*/ )"
+  }
+
+  override def toDot(): String = {
+    a._2.toString
   }
 
   override def typep(b: Any): Boolean = {

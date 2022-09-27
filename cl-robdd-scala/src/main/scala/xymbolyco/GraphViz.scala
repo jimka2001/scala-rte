@@ -140,7 +140,7 @@ object GraphViz {
         if (abbrev)
           lab -> (i, s"t$i")
         else
-          lab -> (i, lab.toString)
+          lab -> (i, dfa.labeler.toDot(lab))
     }.toMap
 
     def write(str: String): Unit = {
@@ -197,7 +197,7 @@ object GraphViz {
 
     lazy val transitionLabelText: String = (for {(lab, (i, t)) <- labelMap.toSeq.sortBy(_._2._1)
                                                  if usedLabels.contains(lab)
-                                                 multiLab = multiLineString(lab.toString)
+                                                 multiLab = multiLineString(dfa.labeler.toDot(lab))
                                                  } yield s"\\l$i= $multiLab").mkString("", "", "\\l")
 
     if (abbrev || title != "") {
