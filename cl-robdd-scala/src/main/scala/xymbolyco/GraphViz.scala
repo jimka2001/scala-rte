@@ -44,14 +44,16 @@ object GraphViz {
   def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbrev:Boolean=false,
                          label:Option[String]=None,
                          showSink:Boolean=true,
-                         dotFileCB:String=>Unit=(_=>())): String = {
+                         dotFileCB:String=>Unit=(_=>()),
+                         givenLabels:Seq[L]=Seq()): String = {
     val extendedLabel = (label,dfa.labeler.graphicalText()) match {
       case (_, Seq()) => label
       case (None, strings) => Some(strings.mkString("\\l"))
       case (Some(str),strings) => Some(str + "\\l" + strings.mkString("\\l"))
     }
     val png = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel,
-                       showSink=showSink, dotFileCB=dotFileCB)
+                       showSink=showSink, dotFileCB=dotFileCB,
+                       givenLabels=givenLabels)
     openGraphicalFile(png)
   }
 
@@ -60,11 +62,13 @@ object GraphViz {
                           abbrev:Boolean=true,
                           label:Option[String]=None,
                           showSink:Boolean=true,
-                          dotFileCB:String=>Unit= _=>()): String = {
+                          dotFileCB:String=>Unit= _=>(),
+                          givenLabels:Seq[L]=Seq()): String = {
     def toPng(pathname: String,
               title: String): String = {
       val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-      dfaToDot(dfa, stream, title, abbrev = abbrev, showSink = showSink)
+      dfaToDot(dfa, stream, title, abbrev = abbrev,
+               showSink = showSink, givenLabels=givenLabels)
       stream.close()
       dotFileCB(pathname)
       pathname
@@ -100,7 +104,8 @@ object GraphViz {
                           stream: OutputStream,
                           title:String,
                           abbrev:Boolean,
-                          showSink:Boolean): Unit = {
+                          showSink:Boolean,
+                          givenLabels:Seq[L]): Unit = {
     val qarr = dfa.Q.toArray
     val sinkStateIds = dfa.findSinkStateIds().filter(id => id != dfa.q0.id)
     val labels: Set[L] = for {q <- dfa.Q
