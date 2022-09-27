@@ -35,8 +35,14 @@ object GraphViz {
       val delimeters = Seq(',',')')
       val tab = "    "
       (maxLine to 1 by -1).find(i => delimeters.contains(str(i))) match {
-        case Some(k) => str.take(k+1) + "\\l" + tab + multiLineString(str.drop(k+1),maxLine)
-        case None => str
+        case Some(k) =>
+          val suffix = multiLineString(str.drop(k+1),maxLine)
+          if (suffix == "")
+            str
+          else
+            str.take(k + 1) + "\\l" + tab + suffix
+        case None =>
+          str
       }
     }
   }
