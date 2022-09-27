@@ -22,9 +22,9 @@
 package padl
 
 import adjuvant.Adjuvant.filterFile
-import genus.{SAtomic, SEmpty, STop, SimpleTypeD}
+import genus.{SAtomic, SEmpty, STop, SimpleTypeD, SAnd, SNot, SOr}
 import genus.Types.{evenType, oddType}
-import rte.{Cat, Or, Permute, Plus, Rte, Singleton, Star}
+import rte.{Cat, Or, Permute, Plus, Rte, Singleton, Star, And}
 import xymbolyco.{GraphViz, Thompson}
 import xymbolyco.GraphViz.{dfaView, multiLineString}
 import xymbolyco.Minimize.minimize
@@ -38,35 +38,45 @@ object Padl {
                keepIf= line=> !line.contains("labelloc=") && !line.contains("  label=") )
   }
   def example1():Unit = {
-    val str = Singleton(SAtomic(classOf[String]))
-    val num = Singleton(SAtomic(classOf[Number]))
+    val tyint = SAtomic(classOf[Int])
+    val tystr = SAtomic(classOf[String])
+    val tynum = SAtomic(classOf[Number])
+    val str = Singleton(tystr)
+    val num = Singleton(tynum)
     val odd = Singleton(oddType)
     val even = Singleton(evenType)
-    val integer = Singleton(SAtomic(classOf[Int]))
+    val integer = Singleton(tyint)
     val rt1: Rte = Star(Cat(integer, str, even))
     val rt2: Rte = Star(Cat(integer, Plus(str), even))
-    val rt3: Rte = Permute(str,even,integer)
-
+    val rt3: Rte = Star(Cat(integer, Plus(str), And(integer,even)))
     val givenLabels=Seq[SimpleTypeD](SEmpty,
                                      STop,
-                                     SAtomic(classOf[Int]),
+                                     tyint,
                                      evenType,
-                                     SAtomic(classOf[String]))
+                                     tystr,
+                                     SAnd(SNot(tyint),
+                                          SNot(tystr),
+                                          evenType),
+                                     SAnd(tystr,
+                                          evenType),
+                                     SOr(SAnd(tyint, SNot(evenType)),
+                                         SAnd(tystr, SNot(evenType))),
+                                     SAnd(tystr,SNot(evenType)),
+                                     SOr(SAnd(tyint,evenType),
+                                         SAnd(tystr,evenType)),
+                                     SOr(SNot(tyint),SNot(tystr),evenType),
+                                     SAnd(SNot(tystr),SNot(evenType)),
+                                     SAnd(tyint,evenType)
+                                     )
     dfaView(rt1.toDfa(),
-            abbrev = true,
+            abbrev = false,
             title = "rt1",
             label = Some(multiLineString(s"rt1=${rt1.toDot}",60)),
             showSink = false,
             dotFileCB = str => cpTo(str, "padl-example-1"),
-            givenLabels=givenLabels)
-    dfaView(minimize(Thompson.constructThompsonDfa(rt2,true)),
-            abbrev = true,
-            label = Some("Thompson " + multiLineString(s"rt2=${rt2.toDot}",
-                                                       60)),
-            title = "rt2",
-            showSink = false,
-            dotFileCB = str => cpTo(str, "padl-thompson-example-2"),
-            givenLabels=givenLabels)
+            givenLabels=givenLabels,
+            printLatex=true)
+
     dfaView(minimize(rt2.toDfa()),
             abbrev = true,
             title = "rt2",
@@ -74,7 +84,18 @@ object Padl {
                                                       60)),
             showSink = false,
             dotFileCB = str => cpTo(str, "padl-example-2"),
-            givenLabels = givenLabels)
+            givenLabels = givenLabels,
+            printLatex = true)
+
+    dfaView(minimize(rt3.toDfa()),
+            abbrev = true,
+            title = "rt3",
+            label = Some("Brz min " + multiLineString(s"rt3=${rt3.toDot}",
+                                                      60)),
+            showSink = false,
+            dotFileCB = str => cpTo(str, "padl-example-3"),
+            givenLabels = givenLabels,
+            printLatex = true)
 
   }
 
