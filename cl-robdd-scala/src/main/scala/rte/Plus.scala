@@ -23,6 +23,6 @@ package rte
 
 object Plus{
   def apply(rte:Rte):Rte = {
-    Or(rte,Star(rte))
+    Cat(rte,Star(rte))
   }
 }
