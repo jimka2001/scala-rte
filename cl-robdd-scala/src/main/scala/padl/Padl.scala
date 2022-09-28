@@ -47,7 +47,7 @@ object Padl {
     val even = Singleton(evenType)
     val integer = Singleton(tyint)
     val rt1: Rte = Star(Cat(integer, str, even))
-    val rt2: Rte = Star(Cat(integer, Plus(str), even))
+    val rt2: Rte = Star(Cat(integer, Star(str), even))
     val givenLabels=Seq[SimpleTypeD](SEmpty, // 0
                                      STop, // 1
                                      tyint, // 2
