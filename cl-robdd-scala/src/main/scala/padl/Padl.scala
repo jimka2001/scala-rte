@@ -48,26 +48,26 @@ object Padl {
     val integer = Singleton(tyint)
     val rt1: Rte = Star(Cat(integer, str, even))
     val rt2: Rte = Star(Cat(integer, Plus(str), even))
-    val rt3: Rte = Star(Cat(integer, Plus(str), And(integer,even)))
-    val givenLabels=Seq[SimpleTypeD](SEmpty,
-                                     STop,
-                                     tyint,
-                                     evenType,
-                                     tystr,
-                                     SAnd(SNot(tyint),
+    val givenLabels=Seq[SimpleTypeD](SEmpty, // 0
+                                     STop, // 1
+                                     tyint, // 2
+                                     tystr, // 3
+                                     evenType, // 4
+                                     SAnd(tystr, evenType), // 5
+                                     SAnd(SNot(tystr),evenType),// 6
+                                     SAnd(tystr,SNot(evenType)), // 7
+                                     SOr(SAnd(tyint, SNot(evenType)), // 8
+                                         SAnd(tystr, SNot(evenType))),
+                                     SAnd(SNot(tyint), // 9
                                           SNot(tystr),
                                           evenType),
-                                     SAnd(tystr,
-                                          evenType),
-                                     SOr(SAnd(tyint, SNot(evenType)),
-                                         SAnd(tystr, SNot(evenType))),
-                                     SAnd(tystr,SNot(evenType)),
-                                     SOr(SAnd(tyint,evenType),
+                                     SOr(SAnd(tyint,evenType), // 10
                                          SAnd(tystr,evenType)),
-                                     SOr(SNot(tyint),SNot(tystr),evenType),
-                                     SAnd(SNot(tystr),SNot(evenType)),
-                                     SAnd(tyint,evenType)
+                                     SAnd(SNot(tystr),SNot(evenType)),// 11
+                                     SNot(tyint), // 12
+                                     SAnd(SNot(tyint),SNot(tystr),SNot(evenType))//13
                                      )
+    println("-----------------------")
     dfaView(rt1.toDfa(),
             abbrev = false,
             title = "rt1",
@@ -76,7 +76,7 @@ object Padl {
             dotFileCB = str => cpTo(str, "padl-example-1"),
             givenLabels=givenLabels,
             printLatex=true)
-
+    println("-----------------------")
     dfaView(minimize(rt2.toDfa()),
             abbrev = true,
             title = "rt2",
@@ -86,16 +86,37 @@ object Padl {
             dotFileCB = str => cpTo(str, "padl-example-2"),
             givenLabels = givenLabels,
             printLatex = true)
-
-    dfaView(minimize(rt3.toDfa()),
+    println("-----------------------")
+    println("-----------------------")
+    dfaView(rt2.toDfa(),
             abbrev = true,
-            title = "rt3",
-            label = Some("Brz min " + multiLineString(s"rt3=${rt3.toDot}",
+            title = "rt2-not-min",
+            label = Some("Brz " + multiLineString(s"rt2=${rt2.toDot}",
                                                       60)),
-            showSink = false,
-            dotFileCB = str => cpTo(str, "padl-example-3"),
+            showSink = true,
+            dotFileCB = str => cpTo(str, "padl-not-min-example-2"),
             givenLabels = givenLabels,
             printLatex = true)
+    println("-----------------------")
+    dfaView(minimize(rt2.toDfa()),
+            abbrev = true,
+            title = "rt2",
+            label = Some("Brz with sink " + multiLineString(s"rt2=${rt2.toDot}",
+                                                      60)),
+            showSink = true,
+            dotFileCB = str => cpTo(str, "padl-sink-example-2"),
+            givenLabels = givenLabels,
+            printLatex = true)
+
+//    dfaView(minimize(rt3.toDfa()),
+//            abbrev = true,
+//            title = "rt3",
+//            label = Some("Brz min " + multiLineString(s"rt3=${rt3.toDot}",
+//                                                      60)),
+//            showSink = false,
+//            dotFileCB = str => cpTo(str, "padl-example-3"),
+//            givenLabels = givenLabels,
+//            printLatex = true)
 
   }
 
