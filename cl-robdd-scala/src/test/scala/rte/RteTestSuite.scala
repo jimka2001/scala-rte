@@ -56,8 +56,15 @@ class RteTestSuite extends MyFunSuite {
     Or(And(classOf[Integer],
            Not(SAtomic(classOf[Long]))),
        Not(SEql(44))).toLaTeX()
-  }
 
+    assert(And(classOf[Number],
+               Not(SAtomic(classOf[Int])),
+               Not(SEql(44))).toLaTeX()
+             == "(Number\\wedge \\overline{Integer}\\wedge \\overline{44})")
+    assert(Or(Singleton(SAtomic(classOf[String])),
+              Singleton(SMember(1,2,3))).toLaTeX()
+             == "(String \\vee \\{1 ,2 ,3\\})")
+  }
 
   test("operators") {
     for {depth <- 1 to 5

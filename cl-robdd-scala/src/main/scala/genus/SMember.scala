@@ -40,6 +40,9 @@ case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SMemberIm
     case (_, a: Any) => a.toString + " /* ??? */"
   }.mkString("SMember(", ", ", ")")
 
+  override def toLaTeX(): String = {
+    xs.map(pair => pair._2.toString).mkString("\\{"," ,","\\}")
+  }
   override def toMachineReadable = toString
 }
 

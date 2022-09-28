@@ -31,7 +31,7 @@ abstract class Labeler[Σ,L] {
   def inhabited(l1:L):Option[Boolean] = throw new NotImplementedError(s"missing inhabited in $this")
   def graphicalText():Seq[String] = Seq()
   def toDot(l1:L):String = l1.toString
-  def toLatex(l1:L):String = "unknown"
+  def toLaTeX(l1:L):String = "unknown"
   def universal(label: L): Boolean = {
     inhabited(subtractLabels(universe, Seq(label))) == Some(false)
   }
@@ -78,7 +78,7 @@ case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
     lab.toDot()
   }
 
-  override def toLatex(lab:SimpleTypeD):String= {
-    lab.toLatex()
+  override def toLaTeX(lab:SimpleTypeD):String= {
+    lab.toLaTeX()
   }
 }

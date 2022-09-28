@@ -33,7 +33,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
   override def toString: String = tds.map(_.toString).mkString("SAnd(", ",", ")")
   override def toDot(): String = tds.map(_.toDot()).mkString("SAnd(", ",", ")")
   override def toMachineReadable():String = tds.map(_.toMachineReadable()).mkString("SAnd(", ",", ")")
-  override def toLatex():String = tds.map(_.toLatex()).mkString("("," \\wedge ",")")
+  override def toLaTeX():String = tds.map(_.toLaTeX()).mkString("("," \\wedge ",")")
   override def create(tds:Seq[SimpleTypeD]):SimpleTypeD = SAnd.createAnd(tds)
   override def createDual(tds:Seq[SimpleTypeD]):SimpleTypeD = SOr.createOr(tds)
   override val unit:SimpleTypeD = STop

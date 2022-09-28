@@ -40,6 +40,9 @@ case class SEql(a: (SimpleTypeD,Any)) extends SMemberImpl(Vector(a)) with Termin
       "*/ )"
   }
 
+  override def toLaTeX(): String = {
+    a._2.toString
+  }
   override def toDot(): String = {
     a._2.toString
   }

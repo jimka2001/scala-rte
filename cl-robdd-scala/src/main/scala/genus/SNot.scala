@@ -32,7 +32,7 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
   override def toString:String = "!" + s.toString
   override def toDot():String = "!" + s.toDot()
   override def toMachineReadable():String = "SNot("+ s.toMachineReadable() + ")"
-  override def toLatex():String = "\\overline{"+s.toLatex()+"}"
+  override def toLaTeX():String = "\\overline{"+s.toLaTeX()+"}"
   override def typep(a: Any): Boolean = {
     !s.typep(a)
   }

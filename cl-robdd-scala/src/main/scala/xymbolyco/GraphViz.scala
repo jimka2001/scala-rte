@@ -202,7 +202,7 @@ object GraphViz {
 
     lazy val transitionLabelText: String = (for {(lab, (i, t)) <- labelMap.toSeq.sortBy(_._2._1)
                                                  if usedLabels.contains(lab)
-                                                 _ = if (printLatex) println(s"t$i => " + dfa.labeler.toLatex(lab))
+                                                 _ = if (printLatex) println(s"t$i => " + dfa.labeler.toLaTeX(lab))
                                                  multiLab = multiLineString(dfa.labeler.toDot(lab))
                                                  } yield s"\\l$i= $multiLab").mkString("", "", "\\l")
 
