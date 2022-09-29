@@ -22,10 +22,10 @@
 package padl
 
 import adjuvant.Adjuvant.{existingFile, filterFile}
-import genus.{SAnd, SAtomic, SEmpty, SNot, SOr, STop, SimpleTypeD}
+import genus.{SAnd, SAtomic, SEmpty, SNot, SOr, SSatisfies, STop, SimpleTypeD}
 import genus.Types.{evenType, oddType}
 import rte.{And, Cat, Or, Permute, Plus, Rte, Singleton, Star}
-import xymbolyco.{GraphViz, Thompson}
+import xymbolyco.{Dfa, GraphViz, Thompson}
 import xymbolyco.GraphViz.{dfaView, multiLineString}
 import xymbolyco.Minimize.minimize
 
@@ -68,6 +68,33 @@ object Padl {
                                      SNot(tyint), // 12
                                      SAnd(SNot(tyint), SNot(tystr), SNot(evenType)) //13
                                      )
+
+  def exampleCode():Unit = {
+    import rte.RteImplicits._
+    def isEven(x: Any): Boolean =
+      x match {
+        case y: Int => y % 2 == 0
+        case _ => false
+      }
+
+    val even = SSatisfies(isEven, "even")
+    val r_0 = Star(Cat(classOf[Integer], classOf[String], even))
+    val r_1 = Star(Cat(classOf[Integer], Star(classOf[String]), even))
+    val r_2 = Star(Cat(classOf[Integer], Plus(classOf[String]), even))
+
+    val dfa_0: Dfa[Any, SimpleTypeD, Boolean] = r_0.toDfa()
+    val dfa_1 = r_1.toDfa()
+    val dfa_2 = r_2.toDfa()
+
+    // returns Some(true)
+    val v0 = dfa_0.simulate(Seq(1,"hello",2))
+    // returns Some(true)
+    val v1 = dfa_1.simulate(Seq(1,"hello","world",2,
+                                3,4,
+                                5,"hello",6))
+    // returns None
+    val v2 = dfa_2.simulate(Seq(1.1, 1.2, 1.3))
+  }
 
   def example1(): Unit = {
 
