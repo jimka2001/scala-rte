@@ -31,7 +31,10 @@ import xymbolyco.Minimize.minimize
 
 
 object Padl {
-  val dotDir = "/Users/jnewton/Repos/research/dot/"
+  val dotDir:String = existingFile(Seq("/Users/jnewton/Repos/research/dot/",
+                                       "/Users/jimka/Repos/research/dot/"),
+                                   "dot-dir-not-found")
+
   def cpTo(fromName:String,baseName:String):Unit = {
     filterFile(fromName,
                dotDir + baseName + ".dot",
