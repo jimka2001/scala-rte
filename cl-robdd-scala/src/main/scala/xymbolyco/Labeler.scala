@@ -1,4 +1,4 @@
-// Copyright (c) 2021 EPITA Research and Development Laboratory
+// Copyright (c) 2021,22 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -34,6 +34,20 @@ abstract class Labeler[Σ,L] {
   def toLaTeX(l1:L):String = "unknown"
   def universal(label: L): Boolean = {
     inhabited(subtractLabels(universe, Seq(label))) == Some(false)
+  }
+
+  // compute a function to find the destination state of this state given an element
+  //    of the input sequence.
+  def successor[E](transitions:Set[Transition[Σ,L,E]]): Σ=>Option[State[Σ, L, E]] = {
+    // The easiest way to compute this function is simply return a function
+    // which iterates over the transitions, testing each one whether s is a
+    // member of the set corresponding to the label.  If such a transitions
+    // is found, return the destination part of the label, else return None
+    s:Σ =>
+      transitions
+        .find { case Transition(_, label, _) => member(s, label) }
+        .flatMap { case Transition(_, _, dest) => Some(dest)
+        }
   }
 }
 
@@ -87,5 +101,13 @@ case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
 
   override def toLaTeX(lab: SimpleTypeD): String = {
     lab.toLaTeX()
+  }
+
+  override def successor[E](transitions: Set[Transition[Any, SimpleTypeD, E]]
+                           ): Any => Option[State[Any, SimpleTypeD, E]] = {
+    // find all leaf-level types in the transitions
+    val leaves = transitions.flatMap{case Transition(_,td,_) => td.leafTypes()}
+    val itet = IfThenElseTree(leaves.toList,transitions)
+    a:Any => itet(a)
   }
 }

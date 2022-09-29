@@ -299,15 +299,15 @@ class DfaTestSuite extends MyFunSuite {
                    SMember(-1, 1))
       val t3 = STop
       Dfa(Qids = Set(0, 1, 2),
-              q0id = 0,
-              Fids = Set(2),
-              protoDelta = Set((0, t0, 0),
-                               (0, t1, 2),
-                               (0, t2, 1),
-                               (2, t3, 1),
-                               (1, t3, 1)),
-              labeler=GenusLabeler(),
-              fMap=Map(2 -> 4))
+          q0id = 0,
+          Fids = Set(2),
+          protoDelta = Set((0, t0, 0),
+                           (0, t1, 2),
+                           (0, t2, 1),
+                           (2, t3, 1),
+                           (1, t3, 1)),
+          labeler = GenusLabeler(),
+          fMap = Map(2 -> 4))
     }
     val dfa2 = locally{
       val t1 = SEql(-1)

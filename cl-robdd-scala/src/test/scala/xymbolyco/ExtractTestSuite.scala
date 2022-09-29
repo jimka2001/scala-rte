@@ -20,7 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package xymbolyco
-import org.scalatest.funsuite.AnyFunSuite
+
 import rte._
 import genus._
 import Extract._

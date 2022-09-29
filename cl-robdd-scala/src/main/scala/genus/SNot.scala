@@ -128,4 +128,9 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
       case _ => super.cmpToSameClassObj(td)  // throws an exception
     }
   }
+  override def leafTypes(): Set[SimpleTypeD] = s.leafTypes()
+
+  override def searchReplaceDown(search: SimpleTypeD, replace: SimpleTypeD): SimpleTypeD = {
+    SNot(s.searchReplace(search, replace))
+  }
 }
