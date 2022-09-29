@@ -110,17 +110,6 @@ object Padl {
             dotFileCB = str => cpTo(str, "padl-sink-example-2"),
             givenLabels = givenLabels,
             printLatex = true)
-
-//    dfaView(minimize(rt3.toDfa()),
-//            abbrev = true,
-//            title = "rt3",
-//            label = Some("Brz min " + multiLineString(s"rt3=${rt3.toDot}",
-//                                                      60)),
-//            showSink = false,
-//            dotFileCB = str => cpTo(str, "padl-example-3"),
-//            givenLabels = givenLabels,
-//            printLatex = true)
-
   }
 
   def main(argv: Array[String]): Unit = {

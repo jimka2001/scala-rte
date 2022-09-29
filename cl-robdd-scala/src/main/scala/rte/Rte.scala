@@ -164,7 +164,17 @@ abstract class Rte {
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       val fts = rt.firstTypes
       val wrts = Types.mdtd(fts)
-
+      //      println(s"rt=${rt.toLaTeX()}")
+      //      println(s"firsts=")
+      //      fts.map(s => println(s"  ${s.toLaTeX()}"))
+      //      println(s"mdtd=")
+      //      wrts.map{case (td,(f,d)) =>
+      //        println(s"  ${td.toLaTeX()}")
+      //        println(s"  factors")
+      //        f.map(td => println(s"    ${td.toLaTeX()}"))
+      //        println(s"  disjoints")
+      //        d.map(td => println(s"    ${td.toLaTeX()}"))
+      //      }
       wrts.map{case (td, (factors,disjoints)) => (td,
         // Here we call rt.derivative, but we pass along the correct-by-construction
         //   factors and disjoint types.  The Singleton:disjointDown method takes
