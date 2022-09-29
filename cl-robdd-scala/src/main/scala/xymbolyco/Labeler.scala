@@ -53,32 +53,39 @@ case class GenusBddLabeler() extends Labeler[Any,GenusBdd]() {
 
 import genus.SimpleTypeD
 case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
-  import genus._
-  def member(a:Any,rt:SimpleTypeD):Boolean = rt.typep(a)
-  def combineLabels(a:SimpleTypeD,b:SimpleTypeD):SimpleTypeD = {
-    SOr(a,b).canonicalize()
-  }
-  override lazy val universe:SimpleTypeD = STop
-  override def intersectLabels(l1:SimpleTypeD,l2:SimpleTypeD):SimpleTypeD = {
-    SAnd(l1,l2).canonicalize()
-  }
-  override def subtractLabels(l1:SimpleTypeD,ls:Seq[SimpleTypeD]):SimpleTypeD = {
-    SAnd(l1,SNot(SOr(ls : _*))).canonicalize()
-  }
-  override def inhabited(l1:SimpleTypeD):Option[Boolean] = l1.inhabited
 
-  override def graphicalText():Seq[String] = {
+  import genus._
+
+  def member(a: Any, rt: SimpleTypeD): Boolean = rt.typep(a)
+
+  def combineLabels(a: SimpleTypeD, b: SimpleTypeD): SimpleTypeD = {
+    SOr(a, b).canonicalize()
+  }
+
+  override lazy val universe: SimpleTypeD = STop
+
+  override def intersectLabels(l1: SimpleTypeD, l2: SimpleTypeD): SimpleTypeD = {
+    SAnd(l1, l2).canonicalize()
+  }
+
+  override def subtractLabels(l1: SimpleTypeD, ls: Seq[SimpleTypeD]): SimpleTypeD = {
+    SAnd(l1, SNot(SOr(ls: _*))).canonicalize()
+  }
+
+  override def inhabited(l1: SimpleTypeD): Option[Boolean] = l1.inhabited
+
+  override def graphicalText(): Seq[String] = {
     if (SAtomic.getWorldView() == ClosedWorldView)
       Seq("world-view=closed")
     else
       Seq("world-view=open")
   }
 
-  override def toDot(lab:SimpleTypeD):String = {
+  override def toDot(lab: SimpleTypeD): String = {
     lab.toDot()
   }
 
-  override def toLaTeX(lab:SimpleTypeD):String= {
+  override def toLaTeX(lab: SimpleTypeD): String = {
     lab.toLaTeX()
   }
 }
