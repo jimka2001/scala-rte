@@ -43,7 +43,7 @@ case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SMemberIm
   override def toLaTeX(): String = {
     xs.map(pair => pair._2.toString).mkString("\\{"," ,","\\}")
   }
-  override def toMachineReadable = toString
+  override def toMachineReadable() = toString
 }
 
 object SMember {
