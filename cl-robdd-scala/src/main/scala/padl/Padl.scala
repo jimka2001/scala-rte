@@ -52,7 +52,7 @@ object Padl {
   val givenLabels = Seq[SimpleTypeD](SEmpty, // 0
                                      STop, // 1
                                      tyint, // 2
-                                     tystr, // 3
+                                     SNot(tyint), // 3
                                      evenType, // 4
                                      SAnd(tystr, evenType), // 5
                                      SAnd(SNot(tystr), evenType), // 6
@@ -65,8 +65,7 @@ object Padl {
                                      SOr(SAnd(tyint, evenType), // 10
                                          SAnd(tystr, evenType)),
                                      SAnd(SNot(tystr), SNot(evenType)), // 11
-                                     SNot(tyint), // 12
-                                     SAnd(SNot(tyint), SNot(tystr), SNot(evenType)) //13
+                                     SAnd(SNot(tyint), SNot(tystr), SNot(evenType)) //12
                                      )
 
   def exampleCode():Unit = {
