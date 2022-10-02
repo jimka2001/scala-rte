@@ -28,10 +28,10 @@ object RteImplicits {
 
   import scala.language.implicitConversions
 
-  implicit def tdToTd(raw: SimpleTypeD): Singleton = {
+  implicit def tdToRte(raw: SimpleTypeD): Singleton = {
     Singleton(raw)
   }
-  implicit def classToTd(raw: Class[_]): Singleton = {
+  implicit def classToRte(raw: Class[_]): Singleton = {
     Singleton(genus.SAtomic(raw))
   }
 }
