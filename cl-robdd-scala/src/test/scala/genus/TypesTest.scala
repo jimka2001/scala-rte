@@ -275,5 +275,12 @@ class TypesTest extends MyFunSuite {
     val diff: SAnd = SAnd(dnf, SNot(td))
     assert(SAnd(dnf,SNot(td)).canonicalize() == SEmpty)
   }
+  test("genus implicits"){
+    import genus.GenusImplicits
+
+    assert(SOr(SAtomic(classOf[String]),
+               SAtomic(classOf[Int])) == SOr(classOf[String],classOf[Int]))
+
+  }
 }
 
