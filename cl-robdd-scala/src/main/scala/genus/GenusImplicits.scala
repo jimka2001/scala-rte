@@ -1,4 +1,4 @@
-// Copyright (c) 2021 EPITA Research and Development Laboratory
+// Copyright (c) 2023 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -20,18 +20,13 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-package rte
+package genus
 
-import genus.SimpleTypeD
-
-object RteImplicits {
+object GenusImplicits {
 
   import scala.language.implicitConversions
 
-  implicit def tdToRte(raw: SimpleTypeD): Singleton = {
-    Singleton(raw)
-  }
-  implicit def classToRte(raw: Class[_]): Singleton = {
-    Singleton(genus.SAtomic(raw))
+  implicit def classToTd(raw: Class[_]): SimpleTypeD = {
+    SAtomic(raw)
   }
 }
