@@ -68,6 +68,7 @@ object RandomType {
     //SInt, // removing these from the list because they trigger very long computation times
     //SDouble,
     SSatisfies(oddp,"oddp"),
+    SSatisfies(isEven, "even"),
     SMember(false,true),
     SMember("a", "b", "c"),
     SAtomic(classOf[lang.Number]),

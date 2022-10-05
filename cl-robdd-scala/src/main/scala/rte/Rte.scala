@@ -23,6 +23,7 @@ package rte
 
 import genus._
 import adjuvant.Adjuvant._
+import xymbolyco.Dfa
 
 import scala.annotation.tailrec
 
@@ -50,21 +51,45 @@ abstract class Rte {
       case i if i < 0 => throw new Error("^ operator does not work with negative numbers: $n")
     }
   }
+  // can this and that be proven to be equivalent?
+  def ~=(that:Rte):Boolean = {
+    isomorphic(that).contains(true)
+  }
 
-  // isomorphic
-  def ~=(that: Rte): Boolean = {
+  // Determine whether two Rtes are equivalent,
+  //   i.e., represent the same language.
+  //   Sometimes this is impossible because of transitions whose
+  //   satisfiability we cannot determine.
+  // To determine whether two Rtes are isomorphic we try several things:
+  //   1. are they syntactically equal
+  //   2. are they both And(...) or both Or(...) whose arguments are syntactically
+  //      equal but maybe in different orders
+  //   3. construct the Dfa of the XOR of the two Rtes,
+  //         and see if that Dfa has no final states.
+  //         As a last resort if it has final states, then there is still a chance
+  //         that those final states are not accessible because of the satisfiability
+  //         of the transitions.
+  //         So we call dfa.findSpanningPath(satisfiable), passing along the
+  //         value of satisfiable given to isomorphic(that,satisfiable).
+  //   If we can determine that the two Rtes accept the same language, then
+  //     return Some(true)
+  //   If we can determine that the two Rtes DO NOT accept the same language,
+  //     return Some(false)
+  //   If every path from q0 to a final state traverses at least one transition,(q,td,q')
+  //     for which td.inhabited == None, then return None.
+  def isomorphic(that:Rte):Option[Boolean] = {
     (this, that) match {
-      case (x, y) if x == y => true
+      case (x, y) if x == y => Some(true)
       // compare the arguments of And and Or in any order
-      case (Or(Seq(r1s@_*)), Or(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => true
-      case (And(Seq(r1s@_*)), And(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => true
+      case (Or(Seq(r1s@_*)), Or(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
+      case (And(Seq(r1s@_*)), And(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
       case (rt1, rt2) =>
         val dfa = Or(And(rt1, Not(rt2)),
                      And(rt2, Not(rt1))).canonicalize.toDfa()
-        (dfa.F.isEmpty // no final states
-          || dfa.findSpanningPath().isEmpty) // no path to a final state from q0
+        dfa.vacuous()
     }
   }
+
 
   def toLaTeX(): String
 
@@ -292,7 +317,7 @@ object Rte {
   }
 
   def randomSeq(depth: Int): Seq[Rte] = {
-    val maxCompoundSize = 2
+    val maxCompoundSize = 3
     (0 until maxCompoundSize).map { _ => randomRte(depth) }
   }
 

@@ -9,6 +9,7 @@ import rte.Cat.createCat
 import rte.{And, Cat, EmptySet, EmptyWord, Not, Or, Rte, Sigma, Singleton, Star}
 import rte.Or.createOr
 import xymbolyco.GraphViz.dfaView
+import gnuplot.GnuPlot.gnuPlot
 
 import scala.annotation.tailrec
 
@@ -569,7 +570,7 @@ object Thompson {
 
 object Profiling {
 
-  def check(pattern: Rte, r: Int, depth: Int): Map[String, Int] = {
+  def check(pattern: Rte, r: Int, depth: Int): Map[String, Dfa[Any, SimpleTypeD, Int]] = {
     val dfa_thompson = Thompson.constructThompsonDfa(pattern, 42)
 
     val dfa_trim_thompson = Minimize.trim(dfa_thompson)
@@ -577,26 +578,269 @@ object Profiling {
     val dfa_brzozowski = pattern.toDfa(42)
     val dfa_trim_brzozowski = Minimize.trim(dfa_brzozowski, true)
     val min_brzozowski = Minimize.minimize(dfa_trim_brzozowski)
+    val xor = Rte.dfaXor(min_thompson, min_brzozowski)
     val data = Map(
-      "thompson_size" -> dfa_trim_thompson.Q.size,
-      "thompson_min" -> min_thompson.Q.size,
-      "brzozowski_size" -> dfa_trim_brzozowski.Q.size,
-      "brzozowski_min" -> min_brzozowski.Q.size)
+      "dfa_thompson" -> dfa_thompson,
+      "dfa_trim_thompson" -> dfa_trim_thompson,
+      "min_thompson" -> min_thompson,
+      "dfa_brzozowski" -> dfa_brzozowski,
+      "dfa_trim_brzozowski" -> dfa_trim_brzozowski,
+      "min_brzozowski" -> min_brzozowski,
+      "xor" -> xor
+      )
 
     if (min_brzozowski.Q.size != min_thompson.Q.size) {
-      dfaView(dfa_thompson, "thompson", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
-      dfaView(dfa_trim_thompson, "trim-thompson", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
-      dfaView(min_thompson, "thompson-min", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
-      dfaView(dfa_brzozowski, "brzozowski", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
-      dfaView(dfa_trim_brzozowski, "trim-brzozowski", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
-      dfaView(min_brzozowski, "brzozowski-min", abbrev = true, label = Some(s"depth=$depth:$r " + pattern.toString))
 
-      dfaView(Rte.dfaXor(min_thompson, min_brzozowski),
-              title = "xor",
-              abbrev = true,
-              label = Some(s"depth=$depth:$r " + pattern.toString))
     }
     data
+  }
+  def statisticsTests(): Unit= {
+    val transitions = Array.fill(4)(Array.fill(4)(0))
+    val num_random_tests = 10000 * 3
+    for {depth <- 1 until 6
+         r <- 0 until num_random_tests
+         pattern = Rte.randomRte(depth)
+         canonicalizedPattern = pattern.canonicalize
+         } {
+      println((depth - 1) * num_random_tests + r)
+      //println(depth*num_random_tests + r)data("xor").vacuous().contains(true)
+      val data = check(pattern, r, depth)
+      val dataCanonicalize = check(canonicalizedPattern, r, depth)
+
+      var mylist = data("dfa_thompson").protoDelta.toList
+
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(0)(0) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(0)(1)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(0)(2) += 1
+        }
+      }
+      mylist = data("min_thompson").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(0)(3) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(0)(4)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(0)(5) += 1
+        }
+      }
+
+      mylist = data("dfa_brzozowski").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(1)(0) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(1)(1)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(1)(2) += 1
+        }
+      }
+      mylist = data("min_brzozowski").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(1)(3) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(1)(4)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(1)(5) += 1
+        }
+      }
+      mylist = dataCanonicalize("dfa_thompson").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(2)(0) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(2)(1)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(2)(2) += 1
+        }
+      }
+      mylist = dataCanonicalize("min_thompson").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(2)(3) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(2)(4)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(2)(5) += 1
+        }
+      }
+      mylist = dataCanonicalize("dfa_brzozowski").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(3)(0) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(3)(1)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(3)(2) += 1
+        }
+      }
+      mylist = dataCanonicalize("min_brzozowski").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(3)(3) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(3)(4)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(3)(5) += 1
+        }
+      }}
+    val myarray = Array("thompson","brzozowski","thompson canonicalize","brzozowski canonicalize")
+    val myarray2 = Array("not sure", "uninhabited","inhabited", "min not sure", "uninhabited", "min inhabited")
+    for(i<-transitions.indices)
+    {
+      println(myarray(i))
+      for(j<-transitions(i).indices)
+      {
+        println(myarray2(j))
+        println(transitions(i)(j))
+      }
+    }
+    //val myarray = Array.fill(6)(Array.fill(12)(0))
+  /*
+    val thompsonSize = Array.fill(5)(Array.fill(12)(0))
+    val thompsonSizeCanonicalize = Array.fill(5)(Array.fill(12)(0))
+    val brzSize = Array.fill(5)(Array.fill(12)(0))
+    val brzSizeCanonicalize = Array.fill(5)(Array.fill(12)(0))
+    // same size min, brz min bigger, same size, thompson min bigger, brz bigger, thompson bigger,
+    val counters = Array.fill(5)(Array.fill(6)(0))
+    val count = Array.fill(5)(Array(0))
+    val num_random_tests = 10000 * 3
+    for {depth <- 1 until 6
+         r <- 0 until num_random_tests
+         pattern = Rte.randomRte(depth)
+         canonicalizedPattern = pattern.canonicalize
+         } {
+      println((depth - 1) * num_random_tests + r)
+      //println(depth*num_random_tests + r)data("xor").vacuous().contains(true)
+      val data = check(pattern, r, depth)
+      val dataCanonicalize = check(canonicalizedPattern, r, depth)
+      println("built")
+      if (!data("dfa_thompson").vacuous().contains(true)) {
+        count(depth-1)(0) += 1
+        if (data("dfa_thompson").Q.size - data("min_thompson").Q.size < 12) {
+          thompsonSize(depth-1)(data("dfa_thompson").Q.size - data("min_thompson").Q.size) += 1
+        }
+        if (dataCanonicalize("dfa_thompson").Q.size - dataCanonicalize("min_thompson").Q.size < 12) {
+          thompsonSizeCanonicalize(depth-1)(dataCanonicalize("dfa_thompson").Q.size - dataCanonicalize("min_thompson").Q.size) += 1
+        }
+        if (data("dfa_brzozowski").Q.size - data("min_brzozowski").Q.size < 12) {
+          brzSize(depth-1)(data("dfa_brzozowski").Q.size - data("min_brzozowski").Q.size) += 1
+        }
+        if (dataCanonicalize("dfa_brzozowski").Q.size - dataCanonicalize("min_brzozowski").Q.size < 12) {
+          brzSizeCanonicalize(depth-1)(dataCanonicalize("dfa_brzozowski").Q.size - dataCanonicalize("min_brzozowski").Q.size) += 1
+        }
+        if(data("min_brzozowski").Q.size == data("min_thompson").Q.size)
+      {
+        counters(depth-1)(0)+=1
+      }
+      else if(data("min_brzozowski").Q.size > data("min_thompson").Q.size)
+      {
+        counters(depth-1)(1)+=1
+      }
+      else if(data("min_brzozowski").Q.size < data("min_thompson").Q.size)
+      {
+        counters(depth-1)(2)+=1
+      }
+
+      if(data("dfa_brzozowski").Q.size == data("dfa_thompson").Q.size)
+      {
+        counters(depth-1)(3)+=1
+      }
+      else if(data("dfa_brzozowski").Q.size > data("dfa_thompson").Q.size)
+      {
+        counters(depth-1)(4)+=1
+      }
+      else if(data("dfa_brzozowski").Q.size < data("dfa_thompson").Q.size)
+      {
+        counters(depth-1)(5)+=1
+      }
+       }
+    }
+
+    println("count = ")
+    for (i <- count.indices) {
+      println("depth = "+ (i+1))
+      for (j <- count(0).indices)
+        printf(count(i)(j) + " ")
+      println()
+    }
+    println("thompsonSize")
+    for (i <- thompsonSize.indices) {
+      println("depth = "+ (i+1))
+      for (j <- thompsonSize(0).indices)
+        printf(thompsonSize(i)(j) + " ")
+      println()
+    }
+    println("thompsonSizeCanonicalize")
+    for (i <- thompsonSizeCanonicalize.indices) {
+      println("depth =" + (i+1))
+      for (j <- thompsonSizeCanonicalize(0).indices)
+        printf(thompsonSizeCanonicalize(i)(j) + " ")
+      println()
+    }
+    println("brzSize")
+    for(i<-brzSize.indices) {
+      println("depth = "+ (i+1))
+      for(j<-brzSize(0).indices) {
+        printf(brzSize(i)(j)+" ")
+      }
+      println()
+    }
+    println("brzSizeCanonicalize")
+    for(i<-brzSizeCanonicalize.indices) {
+      println("depth = "+ (i+1))
+      for(j<-brzSizeCanonicalize(0).indices) {
+        printf(brzSizeCanonicalize(i)(j)+" ")
+      }
+      println()
+    }
+    println("counters")
+    for(i<-counters.indices) {
+      println("depth = "+ (i+1))
+      for(j<-counters(0).indices) {
+        printf(counters(i)(j)+" ")
+      }
+      println()
+    }
+*/
+
   }
 
   def main(argv: Array[String]): Unit = { // ("brz vs thomp") {
@@ -604,18 +848,40 @@ object Profiling {
     //  both the Thompson and Brzozowski automata, trim and minimize
     //  them both, and look for cases where the resulting size
     //  is different in terms of state count.
+    // same size min, brz min bigger, same size, thompson min bigger, brz bigger, thompson bigger,
 
-    val num_random_tests = 1000 * 3
+    val myarray = Array.fill(6)(0)
+
+    val num_random_tests = 10000 * 3
     for {depth <- 1 until 6
          r <- 0 until num_random_tests
          pattern = Rte.randomRte(depth)
+
          } {
+      println((depth-1)*num_random_tests+r)
+
       val data = check(pattern, r, depth)
-      assert(data("thompson_min") == data("brzozowski_min"),
+
+      assert(data("min_thompson").Q.size == data("min_brzozowski").Q.size,
         {
+          dfaView(data("dfa_thompson"), "thompson", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+          dfaView(data("dfa_brzozowski"), "brzozowski", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+          dfaView(data("dfa_trim_thompson"), "trim-thompson", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+          dfaView(data("dfa_trim_brzozowski"), "trim-brzozowski", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+          dfaView(data("min_thompson"), "thompson-min", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+          dfaView(data("min_brzozowski"), "brzozowski-min", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+
+          dfaView(data("xor") ,title = "xor",abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
           println(depth, data, pattern)
-          s"different minimized sizes ${data("thompson_min")} vs ${data("brzozowski_min")}"
+          s"different minimized sizes ${data("min_thompson")} vs ${data("min_brzozowski")}"
         })
     }
-  }
+    }
 }

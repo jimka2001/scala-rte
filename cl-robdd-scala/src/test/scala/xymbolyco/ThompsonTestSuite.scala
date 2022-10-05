@@ -473,7 +473,7 @@ class ThompsonTestSuite extends AnyFunSuite {
   test("Thompson/brz/Trait3") {
     import genus.RandomType.Trait3
     val data = Profiling.check(Singleton(SAtomic(classOf[Trait3])), 1, 1)
-    assert(data("thompson_min") == data("brzozowski_min"))
+    assert(data("xor").vacuous().contains(true))
   }
   test("discovered 463") {
     import genus.RandomType.{Trait3X, Abstract1X}
@@ -489,7 +489,7 @@ class ThompsonTestSuite extends AnyFunSuite {
                           Cat(Not(num), Or(a1x, num)))),
                   Star(stop))
     val data = Profiling.check(rte, 1, 1)
-    assert(data("thompson_min") == data("brzozowski_min"))
+    assert(data("xor").vacuous().contains(true))
   }
 
 
@@ -507,13 +507,13 @@ class ThompsonTestSuite extends AnyFunSuite {
                           Cat(Not(num), Or(a1x, num)))),
                   Star(stop))
     val data = Profiling.check(rte, 1, 1)
-    assert(data("thompson_min") == data("brzozowski_min"))
+    assert(data("xor").vacuous().contains(true))
   }
 
   test("discovered 463 b") {
     // we are calling this 1000 times because it WAS happening
     // that the test would pass sometimes and fail sometimes.
-    for {i <- 0 to 1000} discovered463b()
+    for {i <- 0 to 10} discovered463b()
   }
   test("discovered 479"){
     val rte:Rte = Cat(Singleton(SMember(4,5,6)),
@@ -526,7 +526,7 @@ class ThompsonTestSuite extends AnyFunSuite {
   test("discovered 480") {
     val rte: Rte = Cat(Or(Singleton(SAtomic(classOf[Number])), Singleton(SMember(4, 5, 6))))
     val data = Profiling.check(rte, 1, 1)
-    assert(data("thompson_min") == data("brzozowski_min"))
+    assert(data("xor").vacuous().contains(true))
   }
 
   test("discovered 481") {
@@ -536,7 +536,7 @@ class ThompsonTestSuite extends AnyFunSuite {
       val dfa = constructThompsonDfa(rte, 42)
       //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
       val data = Profiling.check(rte, 1, 1)
-      assert(data("thompson_min") == data("brzozowski_min"))
+      assert(data("xor").vacuous().contains(true))
     }
   }
   test("discovered 482") {
@@ -545,7 +545,7 @@ class ThompsonTestSuite extends AnyFunSuite {
       //val dfa = constructThompsonDfa(rte, 42)
       //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
       val data = Profiling.check(rte, 1, 1)
-      assert(data("thompson_min") == data("brzozowski_min"))
+      assert(data("xor").vacuous().contains(true))
     }
   }
 
@@ -556,7 +556,7 @@ class ThompsonTestSuite extends AnyFunSuite {
       //val dfa = constructThompsonDfa(rte, 42)
       //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
       val data = Profiling.check(rte, 1, 1)
-      assert(data("thompson_min") == data("brzozowski_min"))
+      assert(data("xor").vacuous().contains(true))
     }
   }
   test("discovered 484") {
@@ -566,7 +566,7 @@ class ThompsonTestSuite extends AnyFunSuite {
       //val dfa = constructThompsonDfa(rte, 42)
       //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
       val data = Profiling.check(rte, 1, 1)
-      assert(data("thompson_min") == data("brzozowski_min"))
+      assert(data("xor").vacuous().contains(true))
     }
   }
   test("discovered 485") {
@@ -576,7 +576,7 @@ class ThompsonTestSuite extends AnyFunSuite {
       //val dfa = constructThompsonDfa(rte, 42)
       //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
       val data = Profiling.check(rte, 1, 1)
-      assert(data("thompson_min") == data("brzozowski_min"))
+      assert(data("xor").vacuous().contains(true))
     }
   }
   test("discovered 486") {
@@ -586,7 +586,7 @@ class ThompsonTestSuite extends AnyFunSuite {
       //val dfa = constructThompsonDfa(rte, 42)
       //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
       val data = Profiling.check(rte, 1, 1)
-      assert(data("thompson_min") == data("brzozowski_min"))
+      assert(data("xor").vacuous().contains(true))
     }
   }
   test("discovered 487") {
@@ -595,7 +595,7 @@ class ThompsonTestSuite extends AnyFunSuite {
       //val dfa = constructThompsonDfa(rte, 42)
       //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
       val data = Profiling.check(rte, 1, 1)
-      assert(data("thompson_min") == data("brzozowski_min"))
+      assert(data("xor").vacuous().contains(true))
     }
   }
 }
