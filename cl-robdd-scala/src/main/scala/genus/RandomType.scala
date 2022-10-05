@@ -58,7 +58,7 @@ object RandomType {
 
   def oddp(a:Any):Boolean = {
     a match {
-      case a:Int => a % 2 == 1
+      case a:Int => a % 2 != 0 // warning! -5 % 2 = -1, not 1.
       case _ => false
     }
   }
