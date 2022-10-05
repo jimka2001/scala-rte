@@ -441,15 +441,7 @@ object sanityTest2 {
 }
 
 object sanityTest {
-
-  import genus.Types.evenType
-  import scala.language.implicitConversions
-  import rte.RteImplicits._
-
   def main(argv: Array[String]): Unit = {
-    //println(EmptyWord.isomorphic(Not(evenType)))
-    //println(Star(Cat(classOf[Int],Star(classOf[String]),evenType)).isomorphic(Not(evenType)))
-    println(Star(Cat(classOf[Int], Star(classOf[String]), evenType)) ~= Not(evenType))
   }
 }
 
