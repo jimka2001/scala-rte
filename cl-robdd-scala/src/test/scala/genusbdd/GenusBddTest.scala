@@ -22,8 +22,8 @@
 package genusbdd
 
 import bdd._
+import genus.RandomType._
 import genus._
-import genus.Types._
 
 
 import scala.collection.{Seq, mutable}

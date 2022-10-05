@@ -22,7 +22,7 @@
 package genus
 
 import adjuvant.Adjuvant.eql
-import genus.Types.cmpTypeDesignators
+import genus.RandomType.cmpTypeDesignators
 
 /** The equal type, a type which is equal to a given object.
  *

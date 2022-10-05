@@ -354,7 +354,7 @@ class ThompsonTestSuite extends AnyFunSuite {
   }
   test("discovered case 358") {
     import rte.Rte.dfaEquivalent
-    import genus.Types.oddType
+    import RandomType.oddType
     for {pattern <- Seq(Or(Singleton(oddType), Singleton(SMember(true, false)))
                         , Or(Singleton(oddType),
                              Singleton(SMember(1, 2, 3, 4)),

@@ -22,7 +22,7 @@
 
 package genus
 
-import genus.Types._
+import genus.RandomType._
 import genus.NormalForm._
 import org.scalatest.Assertion
 import org.scalatest.funsuite.AnyFunSuite
@@ -59,11 +59,11 @@ class GenusCanonicalize extends MyFunSuite {
                    SAtomic(B)))
 
     // IntersectionType(EqlType(42), AtomicType(Integer)) --> EqlType(42)
-    assert(SAnd(SEql(42), SAtomic(Types.Integer)).canonicalize()
+    assert(SAnd(SEql(42), SAtomic(RandomType.Integer)).canonicalize()
            == SEql(42))
 
     // IntersectionType(MemberType(42,43,"hello"), AtomicType(Integer)) --> MemberType(42,43)
-    assert(SAnd(SMember(42, 43, "hello"), SAtomic(Types.Integer)).canonicalize()
+    assert(SAnd(SMember(42, 43, "hello"), SAtomic(RandomType.Integer)).canonicalize()
            == SMember(42, 43))
 
     // IntersectionType(A,TopType,B) ==> IntersectionType(A,B)
@@ -72,32 +72,32 @@ class GenusCanonicalize extends MyFunSuite {
   }
   test("and canonicalize 2") {
     assert(SMember("1", "2", "3", "4").typep("2"))
-    assert(SAtomic(Types.String).typep("2"))
+    assert(SAtomic(RandomType.String).typep("2"))
     assert(SNot(SMember("1", "2", "3", "4")).typep("5"))
-    assert(SAnd(SAtomic(Types.String), SMember("1", "2", "3", "4")).typep("2"))
+    assert(SAnd(SAtomic(RandomType.String), SMember("1", "2", "3", "4")).typep("2"))
     // (and Int (not (member 1 2)) (not (member 3 4)))
     //  --> (and Int (not (member 1 2 3 4)))
 
 
-    assert(SAnd(SAtomic(Types.String),SNot(SMember("1","2","3","4"))).canonicalizeOnce()
-           != SAtomic(Types.String))
+    assert(SAnd(SAtomic(RandomType.String),SNot(SMember("1","2","3","4"))).canonicalizeOnce()
+           != SAtomic(RandomType.String))
 
-    val td1 = SAnd(SAtomic(Types.String),
+    val td1 = SAnd(SAtomic(RandomType.String),
                    SNot(SMember("1", "2")),
                    SNot(SMember("3", "4")))
 
     assert(td1.canonicalize()
-             == SAnd(SAtomic(Types.String),
+             == SAnd(SAtomic(RandomType.String),
                      SNot(SMember("1", "2", "3", "4"))),
            s"\nlhs= " + td1.canonicalize() +
-             "\nrhs" + SAnd(SAtomic(Types.String),
+             "\nrhs" + SAnd(SAtomic(RandomType.String),
                             SNot(SMember("1", "2", "3", "4"))
                             )
            )
-    assert(SAnd(SAtomic(Types.String),
+    assert(SAnd(SAtomic(RandomType.String),
                 SNot(SMember("1", 2)),
                 SNot(SMember("3", 4))).canonicalize()
-           == SAnd(SAtomic(Types.String),
+           == SAnd(SAtomic(RandomType.String),
                    SNot(SMember("1", "3"))
                    )
            )
@@ -163,10 +163,10 @@ class GenusCanonicalize extends MyFunSuite {
              == SOr(SAtomic(A),
                     SMember(1, 2, 3, 4, 5)))
     // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
-    assert(SOr(SAtomic(Types.String),
+    assert(SOr(SAtomic(RandomType.String),
                SMember(1, 2, "hello"),
                SMember(2, 3, 4, "world")).canonicalize()
-           == SOr(SAtomic(Types.String),
+           == SOr(SAtomic(RandomType.String),
                   SMember(1, 2, 3, 4)
                   ))
     // (or (or A B) (or C D)) --> (or A B C D)
@@ -582,10 +582,10 @@ class GenusCanonicalize extends MyFunSuite {
                     SMember(1, 2, 3, 4, 5)))
   }
   test("combo conversion13"){
-    assert(SAnd(SAtomic(Types.String),
+    assert(SAnd(SAtomic(RandomType.String),
                 SNot(SMember("1", "2")),
                 SNot(SMember("3", "4"))).conversion13()
-             == SAnd(SAtomic(Types.String),
+             == SAnd(SAtomic(RandomType.String),
                      SNot(SMember("1", "2", "3", "4"))
                      ))
   }

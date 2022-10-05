@@ -22,7 +22,6 @@
 
 package genus
 
-import Types._
 import NormalForm._
 import adjuvant.Adjuvant.eql
 

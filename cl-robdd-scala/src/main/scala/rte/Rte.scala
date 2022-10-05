@@ -175,7 +175,7 @@ abstract class Rte {
     import adjuvant.Adjuvant.traceGraph
     def edges(rt: Rte): Seq[(SimpleTypeD, Rte)] = {
       val fts = rt.firstTypes
-      val wrts = Types.mdtd(fts)
+      val wrts = RandomType.mdtd(fts)
 
       wrts.map { case (td, (factors, disjoints)) => (td,
         // Here we call rt.derivative, but we pass along the correct-by-construction
@@ -195,7 +195,7 @@ abstract class Rte {
                                                          "  derivatives() reported: " + e.msg).mkString("\n"),
                                                rte = this,
                                                firstTypes = rt.firstTypes,
-                                               mdtd = Types.mdtd(rt.firstTypes)
+                                               mdtd = RandomType.mdtd(rt.firstTypes)
                                                )
         })
       }.toSeq
@@ -324,9 +324,8 @@ object Rte {
     case _ => false
   }
 
-  def randomSeq(depth: Int): Seq[Rte] = {
-    val maxCompoundSize = 3
-    (0 until maxCompoundSize).map { _ => randomRte(depth) }
+  def randomSeq(depth: Int, length : Int): Seq[Rte] = {
+    (0 until length).map { _ => randomRte(depth) }
   }
 
   def rteCase[E](seq: Seq[(Rte, E)]): xymbolyco.Dfa[Any, SimpleTypeD, E] = {
@@ -432,9 +431,9 @@ object Rte {
       () => rteVector(random.nextInt(rteVector.length)),
       () => Not(randomRte(depth - 1)),
       () => Star(randomRte(depth - 1)),
-      () => And(randomSeq(depth - 1)),
-      () => Cat(randomSeq(depth - 1)),
-      () => Or(randomSeq(depth - 1)),
+      () => And(randomSeq(depth - 1,2)),
+      () => Cat(randomSeq(depth - 1,random.nextInt(2)+2)),
+      () => Or(randomSeq(depth - 1,random.nextInt(3)+2)),
       () => Singleton(RandomType.randomType(0))
       )
     if (depth <= 0)

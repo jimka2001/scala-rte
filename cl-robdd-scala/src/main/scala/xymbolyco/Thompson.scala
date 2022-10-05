@@ -2,14 +2,14 @@ package xymbolyco
 
 import adjuvant.Accumulators.{makeCounter, withSetCollector}
 import adjuvant.Adjuvant.{fixedPoint, traceGraph, uniquify}
-import genus.Types.mdtd
+import genus.RandomType.mdtd
 import genus.{SAnd, SNot, SOr, STop, SimpleTypeD}
 import rte.And.createAnd
 import rte.Cat.createCat
 import rte.{And, Cat, EmptySet, EmptyWord, Not, Or, Rte, Sigma, Singleton, Star}
 import rte.Or.createOr
 import xymbolyco.GraphViz.dfaView
-import gnuplot.GnuPlot.gnuPlot
+//import gnuplot.GnuPlot.gnuPlot
 
 import scala.annotation.tailrec
 
@@ -732,115 +732,6 @@ object Profiling {
         println(transitions(i)(j))
       }
     }
-    //val myarray = Array.fill(6)(Array.fill(12)(0))
-  /*
-    val thompsonSize = Array.fill(5)(Array.fill(12)(0))
-    val thompsonSizeCanonicalize = Array.fill(5)(Array.fill(12)(0))
-    val brzSize = Array.fill(5)(Array.fill(12)(0))
-    val brzSizeCanonicalize = Array.fill(5)(Array.fill(12)(0))
-    // same size min, brz min bigger, same size, thompson min bigger, brz bigger, thompson bigger,
-    val counters = Array.fill(5)(Array.fill(6)(0))
-    val count = Array.fill(5)(Array(0))
-    val num_random_tests = 10000 * 3
-    for {depth <- 1 until 6
-         r <- 0 until num_random_tests
-         pattern = Rte.randomRte(depth)
-         canonicalizedPattern = pattern.canonicalize
-         } {
-      println((depth - 1) * num_random_tests + r)
-      //println(depth*num_random_tests + r)data("xor").vacuous().contains(true)
-      val data = check(pattern, r, depth)
-      val dataCanonicalize = check(canonicalizedPattern, r, depth)
-      println("built")
-      if (!data("dfa_thompson").vacuous().contains(true)) {
-        count(depth-1)(0) += 1
-        if (data("dfa_thompson").Q.size - data("min_thompson").Q.size < 12) {
-          thompsonSize(depth-1)(data("dfa_thompson").Q.size - data("min_thompson").Q.size) += 1
-        }
-        if (dataCanonicalize("dfa_thompson").Q.size - dataCanonicalize("min_thompson").Q.size < 12) {
-          thompsonSizeCanonicalize(depth-1)(dataCanonicalize("dfa_thompson").Q.size - dataCanonicalize("min_thompson").Q.size) += 1
-        }
-        if (data("dfa_brzozowski").Q.size - data("min_brzozowski").Q.size < 12) {
-          brzSize(depth-1)(data("dfa_brzozowski").Q.size - data("min_brzozowski").Q.size) += 1
-        }
-        if (dataCanonicalize("dfa_brzozowski").Q.size - dataCanonicalize("min_brzozowski").Q.size < 12) {
-          brzSizeCanonicalize(depth-1)(dataCanonicalize("dfa_brzozowski").Q.size - dataCanonicalize("min_brzozowski").Q.size) += 1
-        }
-        if(data("min_brzozowski").Q.size == data("min_thompson").Q.size)
-      {
-        counters(depth-1)(0)+=1
-      }
-      else if(data("min_brzozowski").Q.size > data("min_thompson").Q.size)
-      {
-        counters(depth-1)(1)+=1
-      }
-      else if(data("min_brzozowski").Q.size < data("min_thompson").Q.size)
-      {
-        counters(depth-1)(2)+=1
-      }
-
-      if(data("dfa_brzozowski").Q.size == data("dfa_thompson").Q.size)
-      {
-        counters(depth-1)(3)+=1
-      }
-      else if(data("dfa_brzozowski").Q.size > data("dfa_thompson").Q.size)
-      {
-        counters(depth-1)(4)+=1
-      }
-      else if(data("dfa_brzozowski").Q.size < data("dfa_thompson").Q.size)
-      {
-        counters(depth-1)(5)+=1
-      }
-       }
-    }
-
-    println("count = ")
-    for (i <- count.indices) {
-      println("depth = "+ (i+1))
-      for (j <- count(0).indices)
-        printf(count(i)(j) + " ")
-      println()
-    }
-    println("thompsonSize")
-    for (i <- thompsonSize.indices) {
-      println("depth = "+ (i+1))
-      for (j <- thompsonSize(0).indices)
-        printf(thompsonSize(i)(j) + " ")
-      println()
-    }
-    println("thompsonSizeCanonicalize")
-    for (i <- thompsonSizeCanonicalize.indices) {
-      println("depth =" + (i+1))
-      for (j <- thompsonSizeCanonicalize(0).indices)
-        printf(thompsonSizeCanonicalize(i)(j) + " ")
-      println()
-    }
-    println("brzSize")
-    for(i<-brzSize.indices) {
-      println("depth = "+ (i+1))
-      for(j<-brzSize(0).indices) {
-        printf(brzSize(i)(j)+" ")
-      }
-      println()
-    }
-    println("brzSizeCanonicalize")
-    for(i<-brzSizeCanonicalize.indices) {
-      println("depth = "+ (i+1))
-      for(j<-brzSizeCanonicalize(0).indices) {
-        printf(brzSizeCanonicalize(i)(j)+" ")
-      }
-      println()
-    }
-    println("counters")
-    for(i<-counters.indices) {
-      println("depth = "+ (i+1))
-      for(j<-counters(0).indices) {
-        printf(counters(i)(j)+" ")
-      }
-      println()
-    }
-*/
-
   }
 
   def main(argv: Array[String]): Unit = { // ("brz vs thomp") {

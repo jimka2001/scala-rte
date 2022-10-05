@@ -281,7 +281,7 @@ class RteTestSuite extends MyFunSuite {
     }
   }
   test("isomorphic"){
-    import genus.Types.evenType
+    import RandomType.evenType
     import scala.language.implicitConversions
     import rte.RteImplicits._
 
