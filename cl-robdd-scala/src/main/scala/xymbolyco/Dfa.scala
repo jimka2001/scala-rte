@@ -160,6 +160,12 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     else
       Some(false)
   }
+
+  def findSinkStateIds():Set[Int] = {
+    for{ q <- Q
+         if q.isSinkState
+         } yield q.id
+  }
 }
 
 object Dfa {

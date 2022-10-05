@@ -34,15 +34,31 @@ class DfaTestSuite extends MyFunSuite {
   class StringLabelerT1 extends Labeler[String,Set[String]] {
     def member(x:String,s:Set[String]):Boolean = s.contains(x)
     def combineLabels(a:Set[String],b:Set[String]):Set[String] = a.union(b)
+    override def universal(a:Set[String]):Boolean = false
+
+    override def inhabited(a: Set[String]): Option[Boolean] = {
+      Some(a.nonEmpty)
+    }
   }
   class IntLabelerT1 extends Labeler[Int,Set[Int]] {
     def member(x:Int,s:Set[Int]):Boolean = s.contains(x)
     def combineLabels(a:Set[Int],b:Set[Int]):Set[Int] = a.union(b)
+    override def universal(a:Set[Int]):Boolean = false
+    override def inhabited(a: Set[Int]): Option[Boolean] = {
+      Some(a.nonEmpty)
+    }
   }
 
   class BddLabelerT2 extends Labeler[Int,Bdd] {
     def member(x:Int,b:Bdd):Boolean = ???
     def combineLabels(a:Bdd,b:Bdd):Bdd = Or(a, b)
+    override lazy val universe:Bdd = BddTrue
+    override def subtractLabels(a:Bdd,others:Seq[Bdd]):Bdd = {
+      bdd.AndNot.apply(a::others.toList)
+    }
+    override def inhabited(a:Bdd):Option[Boolean] = {
+      Some(a != BddFalse)
+    }
   }
 
   test("build bdd dfa") {
@@ -312,6 +328,7 @@ class DfaTestSuite extends MyFunSuite {
                          )
     assert(s.Fids.size >= 2)
   }
+
   test("sxp 2"){
     import genus._
     val dfa1 = locally {

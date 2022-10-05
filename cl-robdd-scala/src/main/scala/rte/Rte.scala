@@ -25,6 +25,7 @@ import genus._
 import adjuvant.Adjuvant._
 import xymbolyco.Dfa
 
+
 import scala.annotation.tailrec
 
 //noinspection RedundantDefaultArgument
@@ -78,15 +79,22 @@ abstract class Rte {
   //   If every path from q0 to a final state traverses at least one transition,(q,td,q')
   //     for which td.inhabited == None, then return None.
   def isomorphic(that:Rte):Option[Boolean] = {
-    (this, that) match {
-      case (x, y) if x == y => Some(true)
-      // compare the arguments of And and Or in any order
-      case (Or(Seq(r1s@_*)), Or(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
-      case (And(Seq(r1s@_*)), And(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
-      case (rt1, rt2) =>
-        val dfa = Or(And(rt1, Not(rt2)),
-                     And(rt2, Not(rt1))).canonicalize.toDfa()
-        dfa.vacuous()
+    (this,that) match {
+      case (x,y) if x == y => Some(true)
+        // compare the arguments of And and Or in any order
+      case (Or(Seq(r1s@_*)),Or(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
+      case (And(Seq(r1s@_*)),And(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
+      case (rt1,rt2) =>
+        val dfa = Or(And(rt1,Not(rt2)),
+          And(rt2,Not(rt1))).canonicalize.toDfa()
+        if (dfa.F.isEmpty) // no final states
+          Some(true)
+        else if (dfa.findSpanningPath(Seq(Some(true))).nonEmpty) // exists satisfiable path to a final state
+          Some(false)
+        else if (dfa.findSpanningPath(Seq(None,Some(true))).nonEmpty) // exists semi-satisfiable path to a final state
+          None
+        else
+          Some(false)
     }
   }
 
@@ -451,7 +459,6 @@ object sanityTest2 {
 
 object sanityTest {
   def main(argv: Array[String]): Unit = {
-
   }
 }
 

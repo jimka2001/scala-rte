@@ -1,4 +1,4 @@
-// Copyright (c) 2021 EPITA Research and Development Laboratory
+// Copyright (c) 2019 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -18,21 +18,37 @@
 // LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
 
-package rte
+package adjuvant
 
-import genus.SimpleTypeD
+import adjuvant.GnuPlot._
 
-object RteImplicits {
+import scala.io.Source
 
-  import scala.language.implicitConversions
-
-  implicit def tdToRte(raw: SimpleTypeD): Rte = {
-    Singleton(raw)
-  }
-  implicit def classToRte(raw: Class[_]): Rte = {
-
-    Singleton(genus.SAtomic(raw))
+class GnuPlotSuite extends MyFunSuite {
+  
+  test("test 1"){
+    var calledCB = false
+    val comment = "this is a test"
+    def gnuFileCB(fname:String):Unit = {
+      println(s"fname=$fname")
+      val lines = Source.fromFile(fname).getLines().toList
+      assert(lines.size > 0)
+      assert(lines.find(s => s.contains(comment)).nonEmpty)
+      calledCB = true
+    }
+    gnuPlot(dataToPlot = Seq(("curve1",
+                               Seq(1.0, 2.0, 3, 4),
+                               Seq(1.0, 2.0, 2.5, 2.75)),
+                             ("curve2", Seq((1.0, 2.0),
+                                            (2, 2.25),
+                                            (3, 2.125),
+                                            (4, 2.012)))))(
+      gnuFileCB = gnuFileCB,
+      comment = comment,
+      view = false)
+    assert(calledCB)
   }
 }
+
+

@@ -24,7 +24,7 @@ package bdd
 
 object ReducePerf {
 
-  import gnuplot.GnuPlot.gnuPlot
+  import adjuvant.GnuPlot.gnuPlot
 
   // returns the average amount of time of evaluating block
   // after evaluating block repetitions number of times.

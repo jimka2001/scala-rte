@@ -26,7 +26,7 @@ package ifl
 
 import adjuvant.Adjuvant
 import adjuvant.Adjuvant.{copyFile, directoryExists, filterFile}
-import gnuplot.GnuPlot.gnuPlot
+import adjuvant.GnuPlot.gnuPlot
 import graphcolor.MapColoring.timeColorizeGraphs
 import spire.math.Rational
 import treereduce.RationalFoldTest.rationalFoldTest
@@ -158,7 +158,7 @@ object Ifl2022 {
   }
 
   def floatSums(n:Int=50000):Unit = {
-    import gnuplot.GnuPlot.gnuPlot
+    import adjuvant.GnuPlot.gnuPlot
 
 
     val rawData = for{k<- indices(1.1, List(100),n)

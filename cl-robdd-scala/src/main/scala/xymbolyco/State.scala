@@ -38,6 +38,22 @@ class State[Σ,L,E](dfa:Dfa[Σ,L,E], val id:Int) {
       }
   }
 
+  // determine whether this state is a sink state, which means
+  //  1) it is not a final state
+  //  2) it has at least one transitions
+  //  3) all of its transitions (normally only one) has a universal label
+  //        e.g., STop
+  //  4) all of its transitions (normally only one) is a self loop.
+  lazy val isSinkState:Boolean = {
+    !dfa.F.contains(this) &&
+      transitions.nonEmpty &&
+      transitions.forall { case Transition(src, label, dst) =>
+        this == src &&
+          this == dst &&
+          dfa.labeler.universe == label
+      }
+  }
+
   override def toString:String = {
     s"q:$id"
   }

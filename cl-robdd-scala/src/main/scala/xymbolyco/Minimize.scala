@@ -176,8 +176,9 @@ object Minimize {
   //   It may be that unnecessary transitions are added in the case that
   //   some state is locally complete, but we cannot determine it to be so.
   def complete[Σ,L,E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    lazy val sinkId = dfa.Qids.maxOption match {
-      case Some(m) => m + 1
+    lazy val sinkId = (dfa.findSinkStateIds().toList,dfa.Qids.maxOption) match {
+      case (m::_,_) => m
+      case (_,Some(m)) => m + 1
       case _ => 0
     }
     val labeler = dfa.labeler
@@ -221,8 +222,8 @@ object Minimize {
     // This function does some consistency checking and prints
     // errors, raises exceptions, displays results if duplicate
     // transitions are found.
-    def reportInconsistent[L](edgeSeq: Seq[(L, (Int, Int), (L, L))]
-                             ):Seq[(L, (Int, Int), (L, L))] = {
+    def reportInconsistent(edgeSeq: Seq[(L, (Int, Int), (L, L))]
+                          ):Seq[(L, (Int, Int), (L, L))] = {
       val countDuplicates = edgeSeq.size - edgeSeq.map(_._1).distinct.size
       if (countDuplicates > 0) {
         for {trans <- edgeSeq

@@ -42,18 +42,33 @@ object GraphViz {
   }
 
   def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbrev:Boolean=false,
-                        label:Option[String]=None): String = {
+                         label:Option[String]=None,
+                         showSink:Boolean=true,
+                         dotFileCB:String=>Unit=(_=>())): String = {
     val extendedLabel = (label,dfa.labeler.graphicalText()) match {
       case (_, Seq()) => label
       case (None, strings) => Some(strings.mkString("\\l"))
       case (Some(str),strings) => Some(str + "\\l" + strings.mkString("\\l"))
     }
-    val png = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel)
+    val png = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel,
+                       showSink=showSink, dotFileCB=dotFileCB)
     openGraphicalFile(png)
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], title:String, abbrev:Boolean,
-                          label:Option[String]=None): String = {
+  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],
+                          title:String,
+                          abbrev:Boolean=true,
+                          label:Option[String]=None,
+                          showSink:Boolean=true,
+                          dotFileCB:String=>Unit= _=>()): String = {
+    def toPng(pathname: String,
+              title: String): String = {
+      val stream = new java.io.FileOutputStream(new java.io.File(pathname))
+      dfaToDot(dfa, stream, title, abbrev = abbrev, showSink = showSink)
+      stream.close()
+      dotFileCB(pathname)
+      pathname
+    }
     val prefix = if (title == "")
       "dfa"
     else
@@ -68,7 +83,7 @@ object GraphViz {
       case None => title
       case Some(lab) => s"$title\\l-- $lab"
     }
-    dfaToPng(dfa, dotPath, longTitle, abbrev=abbrev)
+    toPng(dotPath, longTitle)
     locally {
       import sys.process._
       Seq("dot", "-Tplain", dotPath, "-o", altPath).! // write file containing coordinates
@@ -81,48 +96,59 @@ object GraphViz {
     pngPath
   }
 
-  def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E], pathname: String, title:String, abbrev:Boolean): String = {
-    val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-    dfaToDot(dfa, stream, title, abbrev = abbrev)
-    stream.close()
-    pathname
-  }
+  def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],
+                          stream: OutputStream,
+                          title:String,
+                          abbrev:Boolean,
+                          showSink:Boolean): Unit = {
+    val qarr = dfa.Q.toArray
+    val sinkStateIds = dfa.findSinkStateIds().filter(id => id != dfa.q0.id)
+    val labels: Set[L] = for {q <- dfa.Q
+                              if showSink || !sinkStateIds.contains(q.id)
+                              (dst, transitions) <- q.transitions.groupBy(_.destination)
+                              if showSink || !sinkStateIds.contains(dst.id)
+                              labels = transitions.map(_.label)
+                              label = labels.reduce(dfa.labeler.combineLabels)
+                              } yield label
+    // try to put SEmpty and STop at t0 and t1
+    val orderedLabels: Seq[L] = locally {
+      val empty = labels.filter { lab => dfa.labeler.inhabited(lab).contains(false) }
+      val univ = (labels diff empty).filter { lab => dfa.labeler.universal(lab) }
+      val others = labels.diff(empty).diff(univ)
+      empty.toSeq ++ univ.toSeq ++ others.toSeq
+    }
 
-  def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E], stream: OutputStream, title:String, abbrev:Boolean): Unit = {
-    val qarr=dfa.Q.toArray
-    val labels: Set[L] = dfa.protoDelta.map(_._2)
-    /*val labels:Set[L] = for { q <- dfa.Q
-                               (_,transitions) <- q.transitions.groupBy(_.destination)
-                               labels = transitions.map(_.label)
-                               label = labels.reduce(dfa.labeler.combineLabels)
-                              } yield label*/
-    val labelMap:Map[L,String] = labels.toSeq.zipWithIndex.map{ case (lab,i:Int) =>
-      // TODO if abbreviateTransitions is true, need to create a label in the .dot
-      //   file indicating the mapping from abbrev to actual label
-      if (abbrev)
-        lab -> s"t$i"
-      else
-        lab -> lab.toString
+    val labelMap: Map[L, (Int, String)] = orderedLabels.zipWithIndex.map {
+      case (lab, i: Int) =>
+        if (abbrev)
+          lab -> (i, s"t$i")
+        else
+          lab -> (i, lab.toString)
     }.toMap
+
     def write(str: String): Unit = {
       for {c <- str} {
         stream.write(c.toByte)
       }
     }
-    def arrow(from:Int,to:Int,label:String):Unit = {
+
+    def arrow(from: Int, to: Int, label: String): Unit = {
       write(s"$from -> $to")
-      if(label != "")
+      if (label != "")
         write(s""" [label="$label"]""")
       write("\n")
     }
-    def drawState(q:State[Sigma,L,E]):Unit = {
+
+    def drawState(q: State[Sigma, L, E]): Unit = {
       write(s"""${qarr.indexOf(q)} [label="${q.id}"]\n""")
       for {
         (destination, transitions) <- q.transitions.groupBy(_.destination)
+        if showSink || !sinkStateIds.contains(destination.id)
         labels = transitions.map(_.label)
         label = labels.reduce(dfa.labeler.combineLabels)
-      } arrow(qarr.indexOf(q), qarr.indexOf(destination), labelMap(label))
+      } arrow(qarr.indexOf(q), qarr.indexOf(destination), labelMap(label)._2)
     }
+
     write("digraph G {\n")
     // header
     write("  fontname=courier;\n")
@@ -138,7 +164,7 @@ object GraphViz {
 
     // final states F
     write(s"// ${dfa.F.size} final states\n")
-    for{q <- dfa.F}{
+    for {q <- dfa.F} {
       val i = qarr.indexOf(q)
       write(s"""F$i [label="", style=invis, width=0]""")
       write("\n")
@@ -147,17 +173,21 @@ object GraphViz {
       write(";\n")
     }
     write(s"// all ${dfa.Q.size} states\n")
-    dfa.Q.foreach{drawState}
+    dfa.Q.foreach { q =>
+      if (showSink || !sinkStateIds.contains(q.id))
+        drawState(q)
+    }
 
-    lazy val transitionLabelText:String = (for{(lab,i) <- labels.toSeq.zipWithIndex
-                                               multiLab = multiLineString(lab.toString)
-                                               } yield s"\\lt$i= $multiLab").mkString("","","\\l")
+    lazy val transitionLabelText: String = (for {(lab, (i, t)) <- labelMap.toSeq.sortBy(_._2._1)
+                                                 multiLab = multiLineString(lab.toString)
+                                                 } yield s"\\l$i= $multiLab").mkString("", "", "\\l")
 
-    if(abbrev || title != ""){
-      write( """  labelloc="t";""")
-      write("label=\"")
+    if (abbrev || title != "") {
+      write("""  labelloc="t";""")
+      write("\n  label=\"")
       write(title)
-      write(transitionLabelText)
+      if (abbrev)
+        write(transitionLabelText)
       write("\"\n")
     }
 
