@@ -434,7 +434,8 @@ object Rte {
       () => And(randomSeq(depth - 1,2)),
       () => Cat(randomSeq(depth - 1,random.nextInt(2)+2)),
       () => Or(randomSeq(depth - 1,random.nextInt(3)+2)),
-      () => Singleton(RandomType.randomType(0))
+      () => Singleton(RandomType.randomType(0)),
+      () => Singleton(RandomType.randomType(depth-1))
       )
     if (depth <= 0)
       Singleton(RandomType.randomType(0))

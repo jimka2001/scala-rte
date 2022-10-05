@@ -595,7 +595,7 @@ object Profiling {
     data
   }
   def statisticsTests(): Unit= {
-    val transitions = Array.fill(4)(Array.fill(4)(0))
+    val transitions = Array.fill(4)(Array.fill(6)(0))
     val num_random_tests = 10000 * 3
     for {depth <- 1 until 6
          r <- 0 until num_random_tests
