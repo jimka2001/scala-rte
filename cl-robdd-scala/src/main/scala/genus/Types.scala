@@ -213,7 +213,7 @@ object Types {
 
   def isOdd(x: Any): Boolean = {
     x match {
-      case y: Int => scala.math.abs(y % 2) == 1
+      case y: Int => scala.math.abs(y % 2) != 0 // because e.g., -5 % 2 = -1, rather than 1
       case _ => false
     }
   }

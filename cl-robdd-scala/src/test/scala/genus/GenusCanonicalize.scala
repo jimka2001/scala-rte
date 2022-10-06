@@ -663,7 +663,7 @@ class GenusCanonicalize extends MyFunSuite {
 
   test("combo conversion17"){
     val odd = SSatisfies((a:Any) => a match {
-      case a:Int => a%2 == 1
+      case a:Int => a%2 != 0 // because e.g., -5 % 2 = -1, rather than 1
       case _ => false
     }, "odd")
     val even = SSatisfies((a:Any) => a match {
