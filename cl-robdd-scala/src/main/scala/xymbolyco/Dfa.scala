@@ -111,6 +111,48 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     }
   }
 
+  type Path = List[State[Σ,L,E]]
+
+  def findSpanningPathX():Option[Either[Path,Path]] = {
+    def splitTransitions(transitions:List[Transition[Σ,L,E]]):(List[Transition[Σ,L,E]],List[Transition[Σ,L,E]]) = {
+      val grouped = transitions.groupBy{case Transition(_, label, _) => labeler.inhabited(label)}
+      Tuple2(grouped.getOrElse(Some(true),List()),
+             grouped.getOrElse(None,List()))
+    }
+    def nonLooping(tr:Transition[Σ,L,E],path:Path):Boolean = {
+      val Transition(_,_,dst) = tr
+      !path.contains(dst)
+    }
+    def sortTransitions(transitions:List[Transition[Σ,L,E]]):List[Transition[Σ,L,E]] = {
+      val (fs,nonfs) = transitions.partition{case Transition(_,_,dst) => F.contains(dst)}
+      fs ++ nonfs
+    }
+    def recur(goodPaths:List[Path],
+              badPaths:List[Path]):Option[Either[Path,Path]] = {
+      (goodPaths,badPaths) match {
+        case (Nil,Nil) => None
+        case ((p@(s::_))::_, _) if F.contains(s)=> Some(Right(p))
+        case ((p@(s::ss))::ps, _) =>
+          val (goods, bads) = splitTransitions(s.transitions
+                                                 .filter { tr => nonLooping(tr, p) }
+                                                 .toList
+                                               )
+          val newGoodPaths = for{Transition(_,_,dst) <- sortTransitions(goods)} yield  dst::p
+          val newBadPaths = for{Transition(_, _, dst) <- sortTransitions(bads)} yield  dst::p
+          recur(newGoodPaths ++ ps,
+                newBadPaths ++ badPaths)
+        case (Nil,(p@(s::_))::_) if F.contains(s)=> Some(Left(p))
+        case (Nil, (p@(s::ss))::ps) =>
+          val bads = s.transitions
+            .filter { tr => nonLooping(tr, p) }
+            .toList
+          val newBadPaths = for{Transition(_, _, dst) <- sortTransitions(bads)} yield  dst::p
+          recur(Nil, newBadPaths ++ badPaths)
+      }
+    }
+    recur(List(List(q0)),List())
+  }
+
   // if possible, returns a sequence of States which lead from q0 to a
   // final state.
   //   if satisfiable = Some(true), then we only traverse transitions which are
