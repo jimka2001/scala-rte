@@ -24,6 +24,7 @@ package rte
 import genus._
 import adjuvant.Adjuvant._
 
+
 import scala.annotation.tailrec
 
 //noinspection RedundantDefaultArgument
@@ -440,8 +441,7 @@ object sanityTest2 {
 }
 
 object sanityTest {
-  def main(argv: Array[String]):Unit = {
-
+  def main(argv: Array[String]): Unit = {
   }
 }
 
