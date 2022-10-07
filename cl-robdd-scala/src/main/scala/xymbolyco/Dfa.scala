@@ -88,6 +88,11 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     }
   }
 
+  // take a path which is a list of states (assumed to be states
+  //   that follow some computation path from q0 to some final
+  //   state), and return a list of labels corresponding to the
+  //   transitions from one state to the next along the path.
+  //   The list of labels is length 1 fewer than the list of states.
   def pathToLabels(path:Path):List[L] = {
       path.tails.flatMap {
         case q1 :: q2 :: _ =>
@@ -113,7 +118,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     val maybePath:Option[Path] = spanningPath match {
       case None => None
       case Some(Right(path)) => Some(path)
-      case Some(Left(path)) if !requireSatisfiable => Some(path)
+      case Some(Left(thunk)) if !requireSatisfiable => thunk()
       case _ => None
     }
 
@@ -121,7 +126,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   }
 
   type Path = List[State[Σ,L,E]]
-  lazy val spanningPath: Option[Either[Path, Path]] = findSpanningPath()
+  lazy val spanningPath: Option[Either[() => Option[Path], Path]] = findSpanningPath()
 
   // Try to identify a sequence of States which lead from q0 to a
   // final state.  There are several possible things that can happen.
@@ -135,7 +140,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //   4) there is a path, but it passes through a transition which
   //        is not satisfiable
   //        return None
-  private def findSpanningPath():Option[Either[Path,Path]] = {
+  private def findSpanningPath():Option[Either[()=>Option[Path],Path]] = {
     def splitTransitions(transitions:List[Transition[Σ,L,E]]):(List[Transition[Σ,L,E]],List[Transition[Σ,L,E]]) = {
       val grouped = transitions.groupBy{case Transition(_, label, _) => labeler.inhabited(label)}
       Tuple2(grouped.getOrElse(Some(true),List()),
@@ -150,8 +155,22 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       fs ++ nonfs
     }
     @tailrec
-    def recur(goodPaths:List[Path],
-              badPaths:List[Path]):Option[Either[Path,Path]] = {
+    def badRecur(badPaths:List[Path]):Option[Path] = {
+      badPaths match {
+        case Nil => None
+        case Nil :: _ => throw new Error(s"empty path not supported")
+        case (p@s :: _) :: _ if F.contains(s) => Some(p)
+        case (p@s :: _) :: _ =>
+          val bads = s.transitions
+            .filter { tr => nonLooping(tr, p) }
+            .toList
+          val newBadPaths = for {Transition(_, _, dst) <- sortTransitions(bads)} yield dst :: p
+          badRecur(newBadPaths ++ badPaths)
+      }
+    }
+    @tailrec
+    def goodRecur(goodPaths:List[Path],
+              badPaths:List[Path]):Option[Either[()=>Option[Path],Path]] = {
       (goodPaths,badPaths) match {
         case (Nil,Nil) => None
         case (Nil::_,_) => throw new Error(s"empty path not supported")
@@ -163,19 +182,12 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
                                                )
           val newGoodPaths = for{Transition(_,_,dst) <- sortTransitions(goods)} yield  dst::p
           val newBadPaths = for{Transition(_, _, dst) <- sortTransitions(bads)} yield  dst::p
-          recur(newGoodPaths ++ ps,
+          goodRecur(newGoodPaths ++ ps,
                 newBadPaths ++ badPaths)
-        case (Nil,Nil::_) => throw new Error(s"empty path not supported")
-        case (Nil,(p@s::_)::_) if F.contains(s)=> Some(Left(p))
-        case (Nil, (p@s::ss)::ps) =>
-          val bads = s.transitions
-            .filter { tr => nonLooping(tr, p) }
-            .toList
-          val newBadPaths = for{Transition(_, _, dst) <- sortTransitions(bads)} yield  dst::p
-          recur(Nil, newBadPaths ++ badPaths)
+        case (Nil, _) => Some(Left(() => badRecur(badPaths)))
       }
     }
-    recur(List(List(q0)),List())
+    goodRecur(List(List(q0)),List())
   }
 
   def simulate(seq: Seq[Σ]): Option[E] = {
