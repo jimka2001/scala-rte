@@ -121,7 +121,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   }
 
   type Path = List[State[Σ,L,E]]
-  lazy val spanningPath = findSpanningPath()
+  lazy val spanningPath: Option[Either[Path, Path]] = findSpanningPath()
 
   // Try to identify a sequence of States which lead from q0 to a
   // final state.  There are several possible things that can happen.
