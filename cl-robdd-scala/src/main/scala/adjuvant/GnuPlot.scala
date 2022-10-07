@@ -1,14 +1,11 @@
 package adjuvant
 
-import adjuvant.Adjuvant.makeTmpFileName
+import adjuvant.Adjuvant.{existingFile, makeTmpFileName}
 
 object GnuPlot {
 
-  val gnuPlotPath: String = List("/opt/local/bin/gnuplot", "/usr/local/bin/gnuplot").find { fName =>
-    import java.nio.file.{Files, Paths}
-
-    Files.exists(Paths.get(fName))
-  }.getOrElse("gnuplot")
+  val gnuPlotPath: String = existingFile(Seq("/opt/local/bin/gnuplot", "/usr/local/bin/gnuplot"),
+                                         "gnuplot")
 
   def writeCsv(dataToPlot: Seq[(String, Seq[Double], Seq[Double])],
                xAxisLabel: String,

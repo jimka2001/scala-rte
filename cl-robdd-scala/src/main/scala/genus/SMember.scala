@@ -34,6 +34,15 @@ case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SMemberIm
     case (td: SAtomic, a: Any) => a.toString + " /* " + td.shortTypeName() + "*/"
     case (_, a: Any) => a.toString + " /* ??? */"
   }.mkString("SMember(", ", ", ")")
+
+  override def toDot(): String = xs.map {
+    case (td: SAtomic, a: Any) => a.toString
+    case (_, a: Any) => a.toString + " /* ??? */"
+  }.mkString("SMember(", ", ", ")")
+
+  override def toLaTeX(): String = {
+    xs.map(pair => pair._2.toString).mkString("\\{"," ,","\\}")
+  }
   override def toMachineReadable() = toString
 }
 

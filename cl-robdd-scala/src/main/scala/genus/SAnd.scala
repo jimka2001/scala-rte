@@ -31,8 +31,9 @@ import adjuvant.Adjuvant.{findSimplifier, uniquify}
  */
 case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  SNot
   override def toString: String = tds.map(_.toString).mkString("SAnd(", ",", ")")
+  override def toDot(): String = tds.map(_.toDot()).mkString("SAnd(", ",", ")")
   override def toMachineReadable():String = tds.map(_.toMachineReadable()).mkString("SAnd(", ",", ")")
-
+  override def toLaTeX():String = tds.map(_.toLaTeX()).mkString("("," \\wedge ",")")
   override def create(tds:Seq[SimpleTypeD]):SimpleTypeD = SAnd.createAnd(tds)
   override def createDual(tds:Seq[SimpleTypeD]):SimpleTypeD = SOr.createOr(tds)
   override val unit:SimpleTypeD = STop
@@ -70,6 +71,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
       Some(false)
     } else if (tds.toSet.subsets(2).map(_.toList).exists{
       case List(t1,t2) => t1.disjoint(t2).contains(true)
+      case _ => throw new Error(s"expecting List of length 2")
     }) {
       Some(false)
     } else if (tds.size > 1 && tds.forall{
@@ -97,6 +99,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
       Some(tds.toSet.subsets(2).map(_.toList).forall {
         case List(t1: SimpleTypeD, t2: SimpleTypeD) =>
           t1.disjoint(t2).contains(false)
+        case _ => throw new Error(s"expecting List 2 type designators")
       })
     } else if (dnf != this && inhabitedDnf.nonEmpty) {
       inhabitedDnf

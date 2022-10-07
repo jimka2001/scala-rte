@@ -374,4 +374,15 @@ object Adjuvant {
     else
       s"$ns ns"
   }
+
+  // Given a sequence of strings designating files (or directories)
+  //   find the first one in the sequence which corresponds to an existing
+  //   file or directory in the file system.  Otherwise the default
+  //   is returned.
+  def existingFile(fNames:Seq[String],default:String):String = {
+    import java.nio.file.{Files, Paths}
+    fNames.find { fName =>
+      Files.exists(Paths.get(fName))
+    }.getOrElse(default)
+  }
 }

@@ -80,4 +80,8 @@ abstract class SMemberImpl(val xs:Vector[(SimpleTypeD,Any)]) extends SimpleTypeD
       case _ => super.cmpToSameClassObj(t)  // throws an exception
     }
   }
+
+  override def leafTypes(): Set[SimpleTypeD] = {
+    xs.map { case (_, a) => SEql(a) }.toSet
+  }
 }

@@ -35,23 +35,35 @@ object GraphViz {
       val delimeters = Seq(',',')')
       val tab = "    "
       (maxLine to 1 by -1).find(i => delimeters.contains(str(i))) match {
-        case Some(k) => str.take(k+1) + "\\l" + tab + multiLineString(str.drop(k+1),maxLine)
-        case None => str
+        case Some(k) =>
+          val suffix = multiLineString(str.drop(k+1),maxLine)
+          if (suffix == "")
+            str
+          else
+            str.take(k + 1) + "\\l" + tab + suffix
+        case None =>
+          str
       }
     }
   }
 
-  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E], title:String="", abbrev:Boolean=false,
+  def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E],
+                         title:String="",
+                         abbrev:Boolean=false,
                          label:Option[String]=None,
                          showSink:Boolean=true,
-                         dotFileCB:String=>Unit=(_=>())): String = {
+                         dotFileCB:String=>Unit=(_=>()),
+                         givenLabels:Seq[L]=Seq(),
+                         printLatex:Boolean=false): String = {
     val extendedLabel = (label,dfa.labeler.graphicalText()) match {
       case (_, Seq()) => label
       case (None, strings) => Some(strings.mkString("\\l"))
       case (Some(str),strings) => Some(str + "\\l" + strings.mkString("\\l"))
     }
     val png = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel,
-                       showSink=showSink, dotFileCB=dotFileCB)
+                       showSink=showSink, dotFileCB=dotFileCB,
+                       givenLabels=givenLabels,
+                       printLatex=printLatex)
     openGraphicalFile(png)
   }
 
@@ -60,11 +72,15 @@ object GraphViz {
                           abbrev:Boolean=true,
                           label:Option[String]=None,
                           showSink:Boolean=true,
-                          dotFileCB:String=>Unit= _=>()): String = {
+                          dotFileCB:String=>Unit= _=>(),
+                          givenLabels:Seq[L]=Seq(),
+                          printLatex:Boolean=false): String = {
     def toPng(pathname: String,
               title: String): String = {
       val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-      dfaToDot(dfa, stream, title, abbrev = abbrev, showSink = showSink)
+      dfaToDot(dfa, stream, title, abbrev = abbrev,
+               showSink = showSink, givenLabels=givenLabels,
+               printLatex=printLatex)
       stream.close()
       dotFileCB(pathname)
       pathname
@@ -100,22 +116,28 @@ object GraphViz {
                           stream: OutputStream,
                           title:String,
                           abbrev:Boolean,
-                          showSink:Boolean): Unit = {
+                          showSink:Boolean,
+                          givenLabels:Seq[L],
+                          printLatex:Boolean=false): Unit = {
     val qarr = dfa.Q.toArray
     val sinkStateIds = dfa.findSinkStateIds().filter(id => id != dfa.q0.id)
-    val labels: Set[L] = for {q <- dfa.Q
-                              if showSink || !sinkStateIds.contains(q.id)
-                              (dst, transitions) <- q.transitions.groupBy(_.destination)
-                              if showSink || !sinkStateIds.contains(dst.id)
-                              labels = transitions.map(_.label)
-                              label = labels.reduce(dfa.labeler.combineLabels)
-                              } yield label
-    // try to put SEmpty and STop at t0 and t1
+    val usedLabels: Set[L] = for {q <- dfa.Q
+                                  if showSink || !sinkStateIds.contains(q.id)
+                                  (dst, transitions) <- q.transitions.groupBy(_.destination)
+                                  if showSink || !sinkStateIds.contains(dst.id)
+                                  labels = transitions.map(_.label)
+                                  label = labels.reduce(dfa.labeler.combineLabels)
+                                  } yield label
+    // try to put SEmpty and STop at t0 and t1,
+    //   but respect givenLabels (which might be empty).
+    //   All the labels in givenLabels go at the beginning of the
+    //   list of orderedLabels.
     val orderedLabels: Seq[L] = locally {
-      val empty = labels.filter { lab => dfa.labeler.inhabited(lab).contains(false) }
-      val univ = (labels diff empty).filter { lab => dfa.labeler.universal(lab) }
-      val others = labels.diff(empty).diff(univ)
-      empty.toSeq ++ univ.toSeq ++ others.toSeq
+      val newLabels = usedLabels.toSeq diff givenLabels
+      val empty = newLabels.filter { lab => dfa.labeler.inhabited(lab).contains(false) }
+      val univ = (newLabels diff empty).filter { lab => dfa.labeler.universal(lab) }
+      val others = (newLabels diff empty diff univ)
+      givenLabels ++ empty ++ univ ++ others
     }
 
     val labelMap: Map[L, (Int, String)] = orderedLabels.zipWithIndex.map {
@@ -123,7 +145,7 @@ object GraphViz {
         if (abbrev)
           lab -> (i, s"t$i")
         else
-          lab -> (i, lab.toString)
+          lab -> (i, dfa.labeler.toDot(lab))
     }.toMap
 
     def write(str: String): Unit = {
@@ -179,7 +201,9 @@ object GraphViz {
     }
 
     lazy val transitionLabelText: String = (for {(lab, (i, t)) <- labelMap.toSeq.sortBy(_._2._1)
-                                                 multiLab = multiLineString(lab.toString)
+                                                 if usedLabels.contains(lab)
+                                                 _ = if (printLatex) println(s"t$i => " + dfa.labeler.toLaTeX(lab))
+                                                 multiLab = multiLineString(dfa.labeler.toDot(lab))
                                                  } yield s"\\l$i= $multiLab").mkString("", "", "\\l")
 
     if (abbrev || title != "") {
