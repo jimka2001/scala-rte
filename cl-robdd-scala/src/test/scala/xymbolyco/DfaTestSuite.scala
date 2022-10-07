@@ -168,6 +168,25 @@ class DfaTestSuite extends MyFunSuite {
     assert(dfa.exitValue(dfa.idToState(7)) == "clause-3")
   }
 
+  test("simulate set dfa") {
+    val dfa = Dfa[Int, Set[Int], Int](Set(0,1,2,3),
+                                         0,
+                                         Set(1,2),
+                                         Set((0, Set(1), 1),
+                                             (0, Set(2), 2),
+                                             (2, Set(1,2), 3),
+                                             (1, Set(0), 0)
+                                             ),
+                                         new IntLabelerT1,
+                                         Map(1 -> 42,
+                                             2 -> 43))
+    assert(dfa.simulate(Seq[Int]()) == None)
+    assert(dfa.simulate(Seq(1)) == Some(42))
+    assert(dfa.simulate(Seq(2)) == Some(43))
+    assert(dfa.simulate(Seq(1,0,2)) == Some(43))
+    assert(dfa.simulate(Seq(1,0,2,0)) == None)
+  }
+
   test("minimize dfa") {
 
     val t1 = Set("a1") // fixnum
