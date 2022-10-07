@@ -109,24 +109,33 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //   if satisfiable = Seq(Some(true),None), then we also traverse transitions for which
   //          we get None from label.inhabited(label) meaning that we don't know for sure
   //          that the label is satisfiable.
-  def findTrace(satisfiable:Seq[Option[Boolean]]=Seq(Some(true))):Option[Seq[L]] = {
-    findSpanningPath().map{states =>
-      states.toList.tails.flatMap{
-        case q1::q2::_ =>
-          val Some(Transition(_,label,_)) = q1.transitions.find{
-            case Transition(_,label,dst)
-              if dst == q2 && satisfiable.contains(labeler.inhabited(label)) => true
-            case _ => false
-          }
-          List(label)
-        case _ => Nil
-      }.toSeq
+  def findTrace(requireSatisfiable:Boolean=true):Option[List[L]] = {
+    val maybePath:Option[Path] = spanningPath match {
+      case None => None
+      case Some(Right(path)) => Some(path)
+      case Some(Left(path)) if !requireSatisfiable => Some(path)
+      case _ => None
     }
+
+    maybePath.map(path => pathToLabels(path))
   }
 
   type Path = List[State[Σ,L,E]]
+  lazy val spanningPath = findSpanningPath()
 
-  def findSpanningPathX():Option[Either[Path,Path]] = {
+  // Try to identify a sequence of States which lead from q0 to a
+  // final state.  There are several possible things that can happen.
+  //   1) there is no path from q0 to a final state,
+  //        return None
+  //   2) there is such path for which all transitions are satisfiable
+  //        return Right(path)
+  //   3) there is such a path, but it passes through at least one
+  //        semi-satisfiable transition
+  //        return Left(path)
+  //   4) there is a path, but it passes through a transition which
+  //        is not satisfiable
+  //        return None
+  private def findSpanningPath():Option[Either[Path,Path]] = {
     def splitTransitions(transitions:List[Transition[Σ,L,E]]):(List[Transition[Σ,L,E]],List[Transition[Σ,L,E]]) = {
       val grouped = transitions.groupBy{case Transition(_, label, _) => labeler.inhabited(label)}
       Tuple2(grouped.getOrElse(Some(true),List()),
@@ -140,12 +149,15 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       val (fs,nonfs) = transitions.partition{case Transition(_,_,dst) => F.contains(dst)}
       fs ++ nonfs
     }
+    @tailrec
     def recur(goodPaths:List[Path],
               badPaths:List[Path]):Option[Either[Path,Path]] = {
       (goodPaths,badPaths) match {
         case (Nil,Nil) => None
-        case ((p@(s::_))::_, _) if F.contains(s)=> Some(Right(p))
-        case ((p@(s::ss))::ps, _) =>
+        case (List(Nil),_) => throw new Error(s"empty path not supported")
+        case (_,List(Nil)) => throw new Error(s"empty path not supported")
+        case ((p@s::_)::_, _) if F.contains(s)=> Some(Right(p))
+        case ((p@s::_)::ps, _) =>
           val (goods, bads) = splitTransitions(s.transitions
                                                  .filter { tr => nonLooping(tr, p) }
                                                  .toList
@@ -154,8 +166,8 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
           val newBadPaths = for{Transition(_, _, dst) <- sortTransitions(bads)} yield  dst::p
           recur(newGoodPaths ++ ps,
                 newBadPaths ++ badPaths)
-        case (Nil,(p@(s::_))::_) if F.contains(s)=> Some(Left(p))
-        case (Nil, (p@(s::ss))::ps) =>
+        case (Nil,(p@s::_)::_) if F.contains(s)=> Some(Left(p))
+        case (Nil, (p@s::ss)::ps) =>
           val bads = s.transitions
             .filter { tr => nonLooping(tr, p) }
             .toList
@@ -166,39 +178,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     recur(List(List(q0)),List())
   }
 
-  // if possible, returns a sequence of States which lead from q0 to a
-  // final state.
-  //   if satisfiable = Some(true), then we only traverse transitions which are
-  //      definitely satisfiable, i.e., the labeler.inhabited(label) function returns Some(true)
-  //          as opposed to None for dont-know whether it is satisfiable
-  //   if satisfiable = None, then we also traverse transitions for which
-  //          we get None from label.inhabited(label) meaning that we don't know for sure
-  //          that the label is satisfiable.
-  def findSpanningPath(satisfiable:Seq[Option[Boolean]]=Seq(Some(true))):Option[Seq[State[Σ,L,E]]] = {
-    def augment(paths: Seq[List[State[Σ, L, E]]]): Seq[List[State[Σ, L, E]]] = {
-      paths.flatMap {
-        case s :: ss => for {Transition(_, label, dst) <- s.transitions
-                             if s != dst && !ss.contains(dst)
-                             if satisfiable.contains(labeler.inhabited(label))
-                             } yield dst :: s :: ss
-        case _ => Nil // unused but silences compiler warning
-      }
-    }
-    @tailrec
-    def recur(paths:Seq[List[State[Σ, L, E]]]): Option[Seq[State[Σ, L, E]]] = {
-      lazy val found = paths.collectFirst{
-        case p@s::_ if F.contains(s) => p
-      }
-      if (paths.isEmpty)
-        None
-      else if (found.nonEmpty)
-        found.map(_.reverse)
-      else
-        recur(augment(paths))
-    }
-    recur(Seq(List(q0)))
-  }
-
+  // TODO add test for simulate
   def simulate(seq: Seq[Σ]): Option[E] = {
     for {
       d <- findReachableFinal(seq)
@@ -211,12 +191,11 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       Some(true)
     else if (F.isEmpty)
       Some(true)
-    else if (findSpanningPath(Seq(Some(true))).isEmpty)
-      Some(true)
-    else if (findSpanningPath(Seq(Some(true),None)).isEmpty)
-      None
-    else
-      Some(false)
+    else spanningPath match {
+      case None => Some(true)
+      case Some(Right(_)) => Some(false)
+      case Some(Left (_)) => None
+    }
   }
 
   def findSinkStateIds():Set[Int] = {
