@@ -23,7 +23,7 @@ package genus
 
 import Types._
 import NormalForm._
-import adjuvant.Adjuvant.{findSimplifier, uniquify, diff, eql}
+import adjuvant.Adjuvant.{findSimplifier, uniquify, eql}
 
 // The purpose of this class, SCombination, is to serve as a superclass
 // of both SAnd and SOr, as there is quite a bit of common code between
@@ -144,7 +144,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         // A+B+C -> A+B+C
         val toRemove = td1.tds.collectFirst {
           case td@SNot(n) if duals.exists {
-            case td2: SCombination if dualCombination(td2) => td2.tds == searchReplace(td1.tds, td, Seq(n))
+            case td2: SCombination if dualCombination(td2) => td2.tds == adjuvant.Adjuvant.searchReplace(td1.tds, td, Seq(n))
           } => td
         } // Some(!B) or None
         toRemove match {
@@ -449,5 +449,14 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       case None => this
       case Some(td) => createDual(td.tds.map(y => create(tds.map(x => if (x == td) y else x))))
     }
+  }
+
+
+  override def leafTypes(): Set[SimpleTypeD] = {
+    tds.toSet.flatMap((td:SimpleTypeD) => td.leafTypes())
+  }
+
+  override def searchReplaceDown(search: SimpleTypeD, replace: SimpleTypeD): SimpleTypeD = {
+    create(tds.map(td => td.searchReplace(search, replace)))
   }
 }

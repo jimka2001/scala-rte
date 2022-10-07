@@ -30,8 +30,9 @@ import NormalForm._
  */
 case class SNot(s: SimpleTypeD) extends SimpleTypeD {
   override def toString:String = "!" + s.toString
+  override def toDot():String = "!" + s.toDot()
   override def toMachineReadable():String = "SNot("+ s.toMachineReadable() + ")"
-
+  override def toLaTeX():String = "\\overline{"+s.toLaTeX()+"}"
   override def typep(a: Any): Boolean = {
     !s.typep(a)
   }
@@ -126,5 +127,10 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
       case SNot(td2) => cmpTypeDesignators(s, td2)
       case _ => super.cmpToSameClassObj(td)  // throws an exception
     }
+  }
+  override def leafTypes(): Set[SimpleTypeD] = s.leafTypes()
+
+  override def searchReplaceDown(search: SimpleTypeD, replace: SimpleTypeD): SimpleTypeD = {
+    SNot(s.searchReplace(search, replace))
   }
 }

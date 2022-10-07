@@ -23,11 +23,11 @@ package rte
 import genus._
 
 case class Singleton(td:SimpleTypeD) extends Rte {
-  override def toLaTeX(): String = td.toString
+  override def toLaTeX(): String = td.toLaTeX()
   override def toMachineReadable():String = "Singleton(" + td.toMachineReadable() + ")"
 
   override def toString: String = toMachineReadable() //"<" + td.toString + ">"
-
+  override def toDot():String = td.toDot()
   def nullable: Boolean = false
 
   def firstTypes: Set[SimpleTypeD] = Set(td)

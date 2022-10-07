@@ -28,6 +28,8 @@ import scala.collection.mutable
 /** A general type of our type system. */
 abstract class SimpleTypeD { // SimpleTypeD
   def toMachineReadable():String = toString
+  def toDot():String = toString
+  def toLaTeX():String = "[LaTeX? " + toString + "]"
 
   def ||(t: SimpleTypeD): SimpleTypeD = SOr(this, t).canonicalize(nf = Some(Dnf))
 
@@ -240,5 +242,17 @@ abstract class SimpleTypeD { // SimpleTypeD
       Some(true)
     else
       None
+  }
+  def leafTypes(): Set[SimpleTypeD] = Set[SimpleTypeD](this)
+
+  def searchReplace(search:SimpleTypeD,replace:SimpleTypeD):SimpleTypeD = {
+    if (this == search)
+      replace
+    else
+      searchReplaceDown(search,replace)
+  }
+
+  def searchReplaceDown(search: SimpleTypeD, replace: SimpleTypeD): SimpleTypeD = {
+    this
   }
 }

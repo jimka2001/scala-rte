@@ -29,13 +29,12 @@ class State[Σ,L,E](dfa:Dfa[Σ,L,E], val id:Int) {
   //     value of an input sequence.
   def delta(label:L):State[Σ,L,E] = dfa.delta(this,label)
 
+  lazy val successorFunction: Σ=>Option[State[Σ,L,E]] = dfa.labeler.successor[E](transitions)
+
   // find the destination state of this state given an element
   //    of the input sequence.
   def successor(s:Σ):Option[State[Σ,L,E]] = {
-    transitions
-      .find{case Transition(_,label,_) => dfa.labeler.member(s,label) }
-      .flatMap{case Transition(_,_,dest) => Some(dest)
-      }
+    successorFunction(s)
   }
 
   // determine whether this state is a sink state, which means

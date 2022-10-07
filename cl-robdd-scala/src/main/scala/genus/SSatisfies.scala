@@ -29,6 +29,7 @@ case class SSatisfies(f   : Any => Boolean, printable:String) extends SimpleType
   override def typep(a: Any): Boolean = f(a)
 
   override def toString: String = printable + "?"
+  override def toLaTeX():String = toString
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = super.disjointDown(t)
 

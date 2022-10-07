@@ -1,4 +1,4 @@
-// Copyright (c) 2021 EPITA Research and Development Laboratory
+// Copyright (c) 2021,22 EPITA Research and Development Laboratory
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation
@@ -30,9 +30,24 @@ abstract class Labeler[Σ,L] {
   def subtractLabels(l1:L,ls:Seq[L]):L = throw new NotImplementedError(s"missing subtractLabels in $this")
   def inhabited(l1:L):Option[Boolean] = throw new NotImplementedError(s"missing inhabited in $this")
   def graphicalText():Seq[String] = Seq()
-
+  def toDot(l1:L):String = l1.toString
+  def toLaTeX(l1:L):String = "unknown"
   def universal(label: L): Boolean = {
     inhabited(subtractLabels(universe, Seq(label))) == Some(false)
+  }
+
+  // compute a function to find the destination state of this state given an element
+  //    of the input sequence.
+  def successor[E](transitions:Set[Transition[Σ,L,E]]): Σ=>Option[State[Σ, L, E]] = {
+    // The easiest way to compute this function is simply return a function
+    // which iterates over the transitions, testing each one whether s is a
+    // member of the set corresponding to the label.  If such a transitions
+    // is found, return the destination part of the label, else return None
+    s:Σ =>
+      transitions
+        .find { case Transition(_, label, _) => member(s, label) }
+        .flatMap { case Transition(_, _, dest) => Some(dest)
+        }
   }
 }
 
@@ -52,24 +67,47 @@ case class GenusBddLabeler() extends Labeler[Any,GenusBdd]() {
 
 import genus.SimpleTypeD
 case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
-  import genus._
-  def member(a:Any,rt:SimpleTypeD):Boolean = rt.typep(a)
-  def combineLabels(a:SimpleTypeD,b:SimpleTypeD):SimpleTypeD = {
-    SOr(a,b).canonicalize()
-  }
-  override lazy val universe:SimpleTypeD = STop
-  override def intersectLabels(l1:SimpleTypeD,l2:SimpleTypeD):SimpleTypeD = {
-    SAnd(l1,l2).canonicalize()
-  }
-  override def subtractLabels(l1:SimpleTypeD,ls:Seq[SimpleTypeD]):SimpleTypeD = {
-    SAnd(l1,SNot(SOr(ls : _*))).canonicalize()
-  }
-  override def inhabited(l1:SimpleTypeD):Option[Boolean] = l1.inhabited
 
-  override def graphicalText():Seq[String] = {
+  import genus._
+
+  def member(a: Any, rt: SimpleTypeD): Boolean = rt.typep(a)
+
+  def combineLabels(a: SimpleTypeD, b: SimpleTypeD): SimpleTypeD = {
+    SOr(a, b).canonicalize()
+  }
+
+  override lazy val universe: SimpleTypeD = STop
+
+  override def intersectLabels(l1: SimpleTypeD, l2: SimpleTypeD): SimpleTypeD = {
+    SAnd(l1, l2).canonicalize()
+  }
+
+  override def subtractLabels(l1: SimpleTypeD, ls: Seq[SimpleTypeD]): SimpleTypeD = {
+    SAnd(l1, SNot(SOr(ls: _*))).canonicalize()
+  }
+
+  override def inhabited(l1: SimpleTypeD): Option[Boolean] = l1.inhabited
+
+  override def graphicalText(): Seq[String] = {
     if (SAtomic.getWorldView() == ClosedWorldView)
       Seq("world-view=closed")
     else
       Seq("world-view=open")
+  }
+
+  override def toDot(lab: SimpleTypeD): String = {
+    lab.toDot()
+  }
+
+  override def toLaTeX(lab: SimpleTypeD): String = {
+    lab.toLaTeX()
+  }
+
+  override def successor[E](transitions: Set[Transition[Any, SimpleTypeD, E]]
+                           ): Any => Option[State[Any, SimpleTypeD, E]] = {
+    // find all leaf-level types in the transitions
+    val leaves = transitions.flatMap{case Transition(_,td,_) => td.leafTypes()}
+    val itet = IfThenElseTree(leaves.toList,transitions)
+    a:Any => itet(a)
   }
 }
