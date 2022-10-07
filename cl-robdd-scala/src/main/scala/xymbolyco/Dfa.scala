@@ -178,7 +178,6 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     recur(List(List(q0)),List())
   }
 
-  // TODO add test for simulate
   def simulate(seq: Seq[Σ]): Option[E] = {
     for {
       d <- findReachableFinal(seq)
