@@ -154,8 +154,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
               badPaths:List[Path]):Option[Either[Path,Path]] = {
       (goodPaths,badPaths) match {
         case (Nil,Nil) => None
-        case (List(Nil),_) => throw new Error(s"empty path not supported")
-        case (_,List(Nil)) => throw new Error(s"empty path not supported")
+        case (Nil::_,_) => throw new Error(s"empty path not supported")
         case ((p@s::_)::_, _) if F.contains(s)=> Some(Right(p))
         case ((p@s::_)::ps, _) =>
           val (goods, bads) = splitTransitions(s.transitions
@@ -166,6 +165,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
           val newBadPaths = for{Transition(_, _, dst) <- sortTransitions(bads)} yield  dst::p
           recur(newGoodPaths ++ ps,
                 newBadPaths ++ badPaths)
+        case (Nil,Nil::_) => throw new Error(s"empty path not supported")
         case (Nil,(p@s::_)::_) if F.contains(s)=> Some(Left(p))
         case (Nil, (p@s::ss)::ps) =>
           val bads = s.transitions
