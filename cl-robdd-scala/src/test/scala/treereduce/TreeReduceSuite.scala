@@ -133,7 +133,7 @@ class TreeReduceSuite extends MyFunSuite {
     import treereduce.TreeReducible._
 
     val zero = Rational(0,1)
-    for {r <- List(10, 20, 40, 75, 100, 200, 400, 750, 1000, 2000, 4000, 7500)} {
+    for {r <- List(10, 20, 40, 75, 100, 200, 400, 750, 1000, 2000, 4000)} {
       val piercedInterval = (-r to -1) ++ (1 to r)
       time(s"$r  treeMapReduce", {
         val sum = piercedInterval.treeMapReduce(Rational(0, 1))(Rational(1, _), _ + _)
