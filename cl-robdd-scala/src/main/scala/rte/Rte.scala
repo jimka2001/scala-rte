@@ -83,12 +83,11 @@ abstract class Rte {
           And(rt2,Not(rt1))).canonicalize.toDfa()
         if (dfa.F.isEmpty) // no final states
           Some(true)
-        else if (dfa.findSpanningPath(Seq(Some(true))).nonEmpty) // exists satisfiable path to a final state
-          Some(false)
-        else if (dfa.findSpanningPath(Seq(None,Some(true))).nonEmpty) // exists semi-satisfiable path to a final state
-          None
-        else
-          Some(false)
+        else dfa.spanningPath match {
+          case None => Some(true)
+          case Some(Right(_)) => Some(false)// exists satisfiable path to a final state
+          case _ => None // exists semi-satisfiable path to a final state
+        }
     }
   }
 
