@@ -140,23 +140,23 @@ class DfaTestSuite extends MyFunSuite {
     val t9 = Set(9) // symbol
 
     val dfa = Dfa[Int, Set[Int], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
-                                             0,
-                                             Set(4, 5, 6, 7),
-                                             Set((0, t1, 1),
-                                                 (0, t4, 2),
-                                                 (0, t9, 8), // mergable
-                                                 (0, t4, 8), // mergable
-                                                 (1, t6, 4),
-                                                 (1, t1, 5),
-                                                 (1, t7, 6),
-                                                 (2, t3, 7),
-                                                 (8, t7, 6),
-                                                 (8, t2, 7)),
-                                             new IntLabelerT1,
-                                             Map(4 -> "clause-2",
-                                                 5 -> "clause-1",
-                                                 6 -> "clause-3",
-                                                 7 -> "clause-3"))
+                                         0,
+                                         Set(4, 5, 6, 7),
+                                         Set((0, t1, 1),
+                                             (0, t4, 2),
+                                             (0, t9, 8), // mergable
+                                             (0, t4, 8), // mergable
+                                             (1, t6, 4),
+                                             (1, t1, 5),
+                                             (1, t7, 6),
+                                             (2, t3, 7),
+                                             (8, t7, 6),
+                                             (8, t2, 7)),
+                                         new IntLabelerT1,
+                                         Map(4 -> "clause-2",
+                                             5 -> "clause-1",
+                                             6 -> "clause-3",
+                                             7 -> "clause-3"))
     assert(dfa.F.size == 4)
     assert(dfa.q0.id == 0)
     assert(dfa.F.map(_.id) == Set(4, 5, 6, 7))
@@ -166,6 +166,25 @@ class DfaTestSuite extends MyFunSuite {
     assert(dfa.exitValue(dfa.idToState(6)) == "clause-3")
     assert(dfa.exitValue(dfa.idToState(4)) == "clause-2")
     assert(dfa.exitValue(dfa.idToState(7)) == "clause-3")
+  }
+
+  test("simulate set dfa") {
+    val dfa = Dfa[Int, Set[Int], Int](Set(0,1,2,3),
+                                         0,
+                                         Set(1,2),
+                                         Set((0, Set(1), 1),
+                                             (0, Set(2), 2),
+                                             (2, Set(1,2), 3),
+                                             (1, Set(0), 0)
+                                             ),
+                                         new IntLabelerT1,
+                                         Map(1 -> 42,
+                                             2 -> 43))
+    assert(dfa.simulate(Seq[Int]()) == None)
+    assert(dfa.simulate(Seq(1)) == Some(42))
+    assert(dfa.simulate(Seq(2)) == Some(43))
+    assert(dfa.simulate(Seq(1,0,2)) == Some(43))
+    assert(dfa.simulate(Seq(1,0,2,0)) == None)
   }
 
   test("minimize dfa") {
