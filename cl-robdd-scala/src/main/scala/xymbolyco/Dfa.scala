@@ -88,7 +88,20 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     }
   }
 
-  // find some sequence of objects of labels leading
+  def pathToLabels(path:Path):List[L] = {
+      path.tails.flatMap {
+        case q1 :: q2 :: _ =>
+          val Some(Transition(_, label, _)) = q1.transitions.find {
+            case Transition(_, _, dst)
+              if dst == q2  => true
+            case _ => false
+          }
+          List(label)
+        case _ => List()
+      }.toList
+  }
+
+  // find some sequence of labels of objects leading
   // from q0 to a final state.
   //   if satisfiable = Seq(Some(true)), then we only traverse transitions which are
   //      definitely satisfiable, i.e., the labeler.inhabited(label) function returns Some(true)
