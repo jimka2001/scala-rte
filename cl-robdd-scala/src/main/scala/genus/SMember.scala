@@ -34,7 +34,7 @@ case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SMemberIm
     case (td: SAtomic, a: Any) => a.toString + " /* " + td.shortTypeName() + "*/"
     case (_, a: Any) => a.toString + " /* ??? */"
   }.mkString("SMember(", ", ", ")")
-  override def toMachineReadable = toString
+  override def toMachineReadable() = toString
 }
 
 object SMember {
