@@ -125,8 +125,75 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     maybePath.map(path => pathToLabels(path))
   }
 
-  type Path = List[State[Σ,L,E]]
-  lazy val spanningPath: Option[Either[() => Option[Path], Path]] = findSpanningPath()
+  type Path = List[State[Σ, L, E]]
+  type MaybePath = Option[Either[() => Option[Path], Path]]
+  lazy val spanningPath: MaybePath = findSpanningPath()
+
+  // TODO, rename this function.  The fact that it uses Bellman Ford,
+  //    is irrelevant at the call site, and if it is rewritten to use
+  //    a different graph search, e.g., Dijkstra, that should not force
+  //    the name to change.
+  // Compute a Map from exit-value to MaybePath which denotes the shortest path
+  //   from q0 to a final state with that exit value.
+  def findBFSpanningPath():Map[E,MaybePath] = {
+    import adjuvant.BellmanFord._
+    import scala.Double.PositiveInfinity
+    val numStates:Double = 2 * Q.size.toDouble
+    val states = Q.toSeq
+    // We use the Bellman Ford shortest path algorithm to find the shortest
+    //    path from q0 to each final state.  We do this by associating weights
+    //    to each edge.  A satisfiable transition, has weight=1.  A uninhabited
+    //    transition has weight = infinity.
+    //    A indeterminate state has weight = 2*number-of-states.  Why?  Because
+    //    if there is a path going only though satisfiable transitions, then it
+    //    at most uses every state, thus has a length of num-states - 1.
+    //    This means Bellman Ford will always prefer satisfiable paths to
+    //    indeterminate paths.
+    val (d,p) = shortestPath(states,
+                             q0,
+                             for{q<-states
+                                 Transition(src,lab,dst) <- q.transitions
+                                 edge <- labeler.inhabited(lab) match {
+                                   case None => Some(((src,dst),numStates)) // indeterminate
+                                   case Some(true) => Some(((src,dst),1.0)) // satisfiable
+                                   case Some(false) => None // non-satisfiable
+                                 }} yield edge)
+
+    def maybePath(q:State[Σ, L, E]):(Int,MaybePath) = {
+      if (d(q) < numStates) // satisfiable path
+        q.id -> Some(Right(reconstructPath[State[Σ, L, E]](p, q)))
+      else if (d(q) == PositiveInfinity) // not-satisfiable
+        q.id -> None
+      else
+        q.id -> Some(Left(() => Some(reconstructPath(p, q)))) // non determinate
+    }
+
+    // m is the map from final state to shortest path for that state
+    val m:Map[Int,MaybePath] = F.map(maybePath).toMap
+
+    def bestPath(pairs:Seq[MaybePath]):MaybePath = {
+      pairs.reduce { (acc, path) =>
+        (acc, path) match {
+          case (Some(Right(_)), _) => acc
+          case (_,Some(Right(_))) => path
+          case (Some(Left(_)),_) => acc
+          case (_,Some(Left(_))) => path
+          case _ => None
+        }
+      }
+    }
+
+    // m maps final state to shortest path, we need to map exit-value
+    // to shortest path.  In the case that 2 (or more) final states
+    // have the same exit value, we need to select the best path of
+    // the paths for those final states.
+    val x = for {(e,pairs) <- fMap.groupBy(_._2)
+                 paths = pairs.map{case (f,_) => m(f)}
+                 best = bestPath(paths.toSeq)
+                 } yield e -> best
+
+    x.toMap // scala says this .toMap is unnecessary, but hte compiler requires it
+  }
 
   // Try to identify a sequence of States which lead from q0 to a
   // final state.  There are several possible things that can happen.
@@ -140,7 +207,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //   4) there is a path, but it passes through a transition which
   //        is not satisfiable
   //        return None
-  private def findSpanningPath():Option[Either[()=>Option[Path],Path]] = {
+  private def findSpanningPath():MaybePath = {
     def splitTransitions(transitions:List[Transition[Σ,L,E]]):(List[Transition[Σ,L,E]],List[Transition[Σ,L,E]]) = {
       val grouped = transitions.groupBy{case Transition(_, label, _) => labeler.inhabited(label)}
       Tuple2(grouped.getOrElse(Some(true),List()),
@@ -170,7 +237,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     }
     @tailrec
     def goodRecur(goodPaths:List[Path],
-              badPaths:List[Path]):Option[Either[()=>Option[Path],Path]] = {
+              badPaths:List[Path]):MaybePath = {
       (goodPaths,badPaths) match {
         case (Nil,Nil) => None
         case (Nil::_,_) => throw new Error(s"empty path not supported")
