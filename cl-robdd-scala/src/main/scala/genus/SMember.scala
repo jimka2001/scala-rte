@@ -22,7 +22,7 @@
 
 package genus
 
-import genus.Types.createMember
+import genus.RandomType.createMember
 
 /** The member type is an exhaustive type, all object composing it are
  * given at construction time.

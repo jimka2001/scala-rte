@@ -21,7 +21,7 @@
 
 package genus
 
-import Types._
+import RandomType._
 import adjuvant.MyFunSuite
 import org.scalatest.funsuite.AnyFunSuite
 

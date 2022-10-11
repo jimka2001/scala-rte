@@ -1,22 +1,22 @@
 package xymbolyco
 
-
 import adjuvant.Accumulators.{makeCounter, withSetCollector}
 import adjuvant.Adjuvant.{fixedPoint, traceGraph, uniquify}
-import genus.Types.mdtd
+import genus.RandomType.mdtd
 import genus.{SAnd, SNot, SOr, STop, SimpleTypeD}
 import rte.And.createAnd
 import rte.Cat.createCat
 import rte.{And, Cat, EmptySet, EmptyWord, Not, Or, Rte, Sigma, Singleton, Star}
 import rte.Or.createOr
 import xymbolyco.GraphViz.dfaView
+//import gnuplot.GnuPlot.gnuPlot
 
 import scala.annotation.tailrec
 
 object Thompson {
   private val count = makeCounter()
 
-  def makeNewState[V,L](in:V, outs:Seq[V], transitions:Seq[(V,L,V)], count:()=>V):V = {
+  def makeNewState[V, L](in: V, outs: Seq[V], transitions: Seq[(V, L, V)], count: () => V): V = {
 
     @tailrec
     def recur(): V = {
@@ -29,19 +29,20 @@ object Thompson {
         recur()
       else
         q
-      }
+    }
+
     recur()
   }
 
-  def constructEpsilonFreeTransitions(rte: Rte): (Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
-    val (in:Int, out:Int, transitions:Seq[(Int, Option[SimpleTypeD], Int)]) = constructTransitions(rte)
-    removeEpsilonTransitions(in,out,transitions)
+  def constructEpsilonFreeTransitions(rte: Rte): (Int, Seq[Int], Seq[(Int, SimpleTypeD, Int)]) = {
+    val (in: Int, out: Int, transitions: Seq[(Int, Option[SimpleTypeD], Int)]) = constructTransitions(rte)
+    removeEpsilonTransitions(in, out, transitions)
   }
 
-  def constructDeterminizedTransitions(rte:Rte): (Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
-    val (in2,outs2,clean) = constructEpsilonFreeTransitions(rte)
+  def constructDeterminizedTransitions(rte: Rte): (Int, Seq[Int], Seq[(Int, SimpleTypeD, Int)]) = {
+    val (in2, outs2, clean) = constructEpsilonFreeTransitions(rte)
     val completed = complete(in2, outs2, clean)
-    determinize(in2,outs2,completed)
+    determinize(in2, outs2, completed)
   }
 
   // start with a given vertex of a graph (yet to be determined).
@@ -51,22 +52,22 @@ object Thompson {
   //      to determine the final/accepting states.
   //  Return a pair (sequence-of-final-states,
   //                 sequence-of-transitions of the form (vertex,label,vertex)
-  def traceTransitionGraph[V](q0:V,
-                              edges: V=>Seq[(SimpleTypeD,V)],
-                              isFinal:V=>Boolean):(Seq[V],Seq[(V,SimpleTypeD,V)]) = {
-    val (qs,transitions) = traceGraph[V,SimpleTypeD](q0,edges)
+  def traceTransitionGraph[V](q0: V,
+                              edges: V => Seq[(SimpleTypeD, V)],
+                              isFinal: V => Boolean): (Seq[V], Seq[(V, SimpleTypeD, V)]) = {
+    val (qs, transitions) = traceGraph[V, SimpleTypeD](q0, edges)
     (qs.filter(isFinal),
-      for{(x,pairs) <- qs.zip(transitions)
-          (label, y) <- pairs
-          } yield (x, label, qs(y)))
+      for {(x, pairs) <- qs.zip(transitions)
+           (label, y) <- pairs
+           } yield (x, label, qs(y)))
   }
 
-  def constructVarArgsTransitions(operands:Seq[Rte],
-                                  id:Rte,
-                                  binOp:(Rte,Rte)=>Rte,
-                                  varArgsOp:Seq[Rte]=>Rte,
-                                  continuation:(Rte,Rte)=>(Int,Int,Seq[(Int,Option[SimpleTypeD],Int)])
-                                 ): (Int,Int,Seq[(Int,Option[SimpleTypeD],Int)]) = {
+  def constructVarArgsTransitions(operands: Seq[Rte],
+                                  id: Rte,
+                                  binOp: (Rte, Rte) => Rte,
+                                  varArgsOp: Seq[Rte] => Rte,
+                                  continuation: (Rte, Rte) => (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)])
+                                 ): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
     operands match {
       case Seq() => constructTransitions(id)
       case Seq(r) => constructTransitions(r)
@@ -105,10 +106,10 @@ object Thompson {
       case Star(rte) =>
         val (inInner, outInner, transitions) = constructTransitions(rte)
         (in, out, transitions ++
-                  Seq((in, None, inInner),
-                      (outInner, None, out),
-                      (in, None, out),
-                      (outInner, None, inInner)))
+          Seq((in, None, inInner),
+              (outInner, None, out),
+              (in, None, out),
+              (outInner, None, inInner)))
       // Handle Or(...)
       // Or might have 0 or more rts, we need to handle 4 cases.
       case Or(rtes) =>
@@ -120,11 +121,11 @@ object Thompson {
                                       val (or1In, or1Out, transitions1) = constructTransitions(rte1)
                                       val (or2In, or2Out, transitions2) = constructTransitions(rte2)
                                       (in, out, transitions1 ++
-                                                transitions2 ++
-                                                Seq((in, None, or1In),
-                                                    (in, None, or2In),
-                                                    (or1Out, None, out),
-                                                    (or2Out, None, out)))
+                                        transitions2 ++
+                                        Seq((in, None, or1In),
+                                            (in, None, or2In),
+                                            (or1Out, None, out),
+                                            (or2Out, None, out)))
                                     }
                                     )
 
@@ -139,8 +140,8 @@ object Thompson {
                                       val (cat1In, cat1Out, transitions1) = constructTransitions(rte1)
                                       val (cat2In, cat2Out, transitions2) = constructTransitions(rte2)
                                       (cat1In, cat2Out, transitions1 ++
-                                                        transitions2 ++
-                                                        Seq((cat1Out, None, cat2In)))
+                                        transitions2 ++
+                                        Seq((cat1Out, None, cat2In)))
                                     }
                                     )
 
@@ -165,18 +166,18 @@ object Thompson {
   //   into a single output, having epsilon transitions from the previous outputs
   //   to a single new output.   That output is the confluence (hence the name of the function)
   //   of the old output.   All the old outputs flow via epsilon transition into the new output.
-  def confluxify(in:Int,
-                 outs:Seq[Int],
-                 transitions:Seq[(Int,SimpleTypeD,Int)]
-                ):(Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
-    val ini = makeNewState(in,outs,transitions,count)
-    val fin = makeNewState(in,outs,transitions,count)
+  def confluxify(in: Int,
+                 outs: Seq[Int],
+                 transitions: Seq[(Int, SimpleTypeD, Int)]
+                ): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
+    val ini = makeNewState(in, outs, transitions, count)
+    val fin = makeNewState(in, outs, transitions, count)
 
-    val wrapped:Seq[(Int, Option[SimpleTypeD], Int)] = transitions.map{case (x,td,y) => (x,Some(td),y)}
-    val prefix:Seq[(Int, Option[SimpleTypeD], Int)] = (ini, None, in) +: outs.map(f => (f, None, fin))
+    val wrapped: Seq[(Int, Option[SimpleTypeD], Int)] = transitions.map { case (x, td, y) => (x, Some(td), y) }
+    val prefix: Seq[(Int, Option[SimpleTypeD], Int)] = (ini, None, in) +: outs.map(f => (f, None, fin))
     (ini,
       fin,
-      prefix ++  wrapped)
+      prefix ++ wrapped)
   }
 
   // Construct an epsilon-NFA representing the complement (NOT) of the given Rte.
@@ -184,10 +185,10 @@ object Thompson {
   // swapping final with non-final states, and confluxifying the result,
   // thus creating an epsilon-NFA with a single input and single output.
   def constructTransitionsNot(rte: Rte): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
-    val (in,outs, determinized) = constructDeterminizedTransitions(rte)
+    val (in, outs, determinized) = constructDeterminizedTransitions(rte)
     val inverted = invertFinals(outs, determinized)
 
-    confluxify(in,inverted,determinized)
+    confluxify(in, inverted, determinized)
   }
 
   // Transform a sequence of transitions (either deterministic or otherwise)
@@ -196,18 +197,18 @@ object Thompson {
   // whether the transitions are already locally complete, an additional transition
   // is added with is the complement of the existing transitions.  This may be
   // empty but if it is empty, .inhabited returns None (dont-know).
-  def complete(in:Int,
-               outs:Seq[Int],
-               clean:Seq[(Int,SimpleTypeD,Int)]
-              ):Seq[(Int,SimpleTypeD,Int)] = {
+  def complete(in: Int,
+               outs: Seq[Int],
+               clean: Seq[(Int, SimpleTypeD, Int)]
+              ): Seq[(Int, SimpleTypeD, Int)] = {
     val allStates = findAllStates(clean)
-    lazy val sink = makeNewState(in,outs,clean,count)
+    lazy val sink = makeNewState(in, outs, clean, count)
     val grouped = clean.groupBy(_._1)
 
-    val completingTransitions = allStates.flatMap{ q =>
+    val completingTransitions = allStates.flatMap { q =>
       grouped.get(q) match {
         // for states with no exiting transitions
-        case None => Some((q,STop,sink))
+        case None => Some((q, STop, sink))
         // for states with some exiting transitions, find the complement of their union
         case Some(transitions) =>
           val tds = transitions.map(_._2)
@@ -217,32 +218,32 @@ object Thompson {
           if (remaining.inhabited.contains(false))
             None
           else
-            Some((q,remaining,sink))
+            Some((q, remaining, sink))
       }
     }
     if (clean.isEmpty)
-      Seq((in,STop,sink),
-          (sink,STop,sink))
+      Seq((in, STop, sink),
+          (sink, STop, sink))
     else if (completingTransitions.isEmpty)
       clean
     else
-      clean ++ completingTransitions ++ Seq((sink,STop,sink))
+      clean ++ completingTransitions ++ Seq((sink, STop, sink))
   }
 
   // Return the set of states which are not final states.
-  def invertFinals(outs:Seq[Int], completed:Seq[(Int,SimpleTypeD,Int)]):Seq[Int] = {
-    findAllStates(completed).filter(q => ! outs.contains(q)).toSeq
+  def invertFinals(outs: Seq[Int], completed: Seq[(Int, SimpleTypeD, Int)]): Seq[Int] = {
+    findAllStates(completed).filter(q => !outs.contains(q)).toSeq
   }
 
-  def constructTransitionsAnd(rte1:Rte,rte2:Rte): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
+  def constructTransitionsAnd(rte1: Rte, rte2: Rte): (Int, Int, Seq[(Int, Option[SimpleTypeD], Int)]) = {
     // The Thompson construction does not have a case for AND.
     // So what we do here is take the two arguments of AND
     // and perform a synchronized cross product on the two results.
-    val (and1in,and1outs,transitions1) = constructEpsilonFreeTransitions(rte1)
-    val (and2in,and2outs,transitions2) = constructEpsilonFreeTransitions(rte2)
+    val (and1in, and1outs, transitions1) = constructEpsilonFreeTransitions(rte1)
+    val (and2in, and2outs, transitions2) = constructEpsilonFreeTransitions(rte2)
     val (sxpIn, sxpOuts, sxpTransitions) = sxp(and1in, and1outs, transitions1,
                                                and2in, and2outs, transitions2,
-                                               (a:Boolean,b:Boolean) => a && b)
+                                               (a: Boolean, b: Boolean) => a && b)
     val (renumIn, renumOuts, renumTransitions) = renumberTransitions(sxpIn,
                                                                      sxpOuts,
                                                                      sxpTransitions,
@@ -257,16 +258,16 @@ object Thompson {
   // a transition is provably unsatisfiable, the transition is omitted.
   // However if the transition is provably satisfiable or dont-know, then
   // the transition is included.
-  def sxp(in1:Int, outs1:Seq[Int], transitions1:Seq[(Int,SimpleTypeD,Int)],
-          in2:Int, outs2:Seq[Int], transitions2:Seq[(Int,SimpleTypeD,Int)],
-          arbitrate:(Boolean,Boolean)=>Boolean
-         ):((Int,Int), Seq[(Int,Int)], Seq[((Int,Int),SimpleTypeD,(Int,Int))]) = {
+  def sxp(in1: Int, outs1: Seq[Int], transitions1: Seq[(Int, SimpleTypeD, Int)],
+          in2: Int, outs2: Seq[Int], transitions2: Seq[(Int, SimpleTypeD, Int)],
+          arbitrate: (Boolean, Boolean) => Boolean
+         ): ((Int, Int), Seq[(Int, Int)], Seq[((Int, Int), SimpleTypeD, (Int, Int))]) = {
     import adjuvant.Accumulators.withCollector
     val grouped1 = transitions1.groupBy(_._1)
     val grouped2 = transitions2.groupBy(_._1)
 
-    def stateTransitions(qq:(Int,Int)):Seq[(SimpleTypeD,(Int,Int))] = {
-      val (q1,q2) = qq
+    def stateTransitions(qq: (Int, Int)): Seq[(SimpleTypeD, (Int, Int))] = {
+      val (q1, q2) = qq
       withCollector[(SimpleTypeD, (Int, Int))](
         collect => for {trs1 <- grouped1.get(q1)
                         trs2 <- grouped2.get(q2)
@@ -277,70 +278,70 @@ object Thompson {
                         } collect((td.canonicalize(), (y1, y2))))
     }
 
-    val inX = (in1,in2)
-    val (finalsX,transitionsX) =
-      traceTransitionGraph[(Int,Int)](inX,
-                                      stateTransitions,
-      {case (x,y) => arbitrate(outs1.contains(x),outs2.contains(y))})
+    val inX = (in1, in2)
+    val (finalsX, transitionsX) =
+      traceTransitionGraph[(Int, Int)](inX,
+                                       stateTransitions,
+        { case (x, y) => arbitrate(outs1.contains(x), outs2.contains(y)) })
 
     (inX, finalsX, transitionsX)
   }
 
   // remove non-accessible transitions, and non-accessible final states
-  def accessible(in:Int,
-                 outs:Seq[Int],
-                 transitions:Seq[(Int,SimpleTypeD,Int)]
-                ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
-    val grouped = transitions.groupMap(_._1){case (_,td,y) => (td,y)}
-    val (accessibleOuts,accessibleTransitions) = traceTransitionGraph[Int](in,
-                                                                         q => grouped.getOrElse(q,Seq()),
-                                                                         q => outs.contains(q))
-    (in,accessibleOuts,accessibleTransitions)
+  def accessible(in: Int,
+                 outs: Seq[Int],
+                 transitions: Seq[(Int, SimpleTypeD, Int)]
+                ): (Int, Seq[Int], Seq[(Int, SimpleTypeD, Int)]) = {
+    val grouped = transitions.groupMap(_._1) { case (_, td, y) => (td, y) }
+    val (accessibleOuts, accessibleTransitions) = traceTransitionGraph[Int](in,
+                                                                            q => grouped.getOrElse(q, Seq()),
+                                                                            q => outs.contains(q))
+    (in, accessibleOuts, accessibleTransitions)
   }
 
-  def coaccessible(in:Int,
-                   outs:Seq[Int],
-                   transitions:Seq[(Int,SimpleTypeD,Int)]
-                  ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
-    val proxy = makeNewState(in, outs, transitions,count)
-    val augmentedTransitions = transitions ++ outs.map(q => (q,STop,proxy))
-    val grouped = augmentedTransitions.groupMap(_._3){case (x,td,_) => (td,x)}
+  def coaccessible(in: Int,
+                   outs: Seq[Int],
+                   transitions: Seq[(Int, SimpleTypeD, Int)]
+                  ): (Int, Seq[Int], Seq[(Int, SimpleTypeD, Int)]) = {
+    val proxy = makeNewState(in, outs, transitions, count)
+    val augmentedTransitions = transitions ++ outs.map(q => (q, STop, proxy))
+    val grouped = augmentedTransitions.groupMap(_._3) { case (x, td, _) => (td, x) }
     // we now compute the coaccessible transitions, but each transition is reversed (z,td,x)
-    val (coaccessibleOuts,reversedTransitions) = traceTransitionGraph[Int](proxy,
-                                                                         q => grouped.getOrElse(q,Seq()),
-                                                                         q => q == in)
-    val coaccessibleTransitions = for{(y,td,x) <- reversedTransitions
-                                      if y != proxy } yield (x,td,y)
-    (in,outs,coaccessibleTransitions)
+    val (coaccessibleOuts, reversedTransitions) = traceTransitionGraph[Int](proxy,
+                                                                            q => grouped.getOrElse(q, Seq()),
+                                                                            q => q == in)
+    val coaccessibleTransitions = for {(y, td, x) <- reversedTransitions
+                                       if y != proxy} yield (x, td, y)
+    (in, outs, coaccessibleTransitions)
   }
 
   // remove transitions which are not accessible and are not coaccessible.
   // This doesn't change the input state, but some final states may be lost.
-  def trim(in:Int,
-           finals:Seq[Int],
-           transitions:Seq[(Int,SimpleTypeD,Int)]
-          ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
-    val (aIn, aFinals, aTransitions) = accessible(in,finals,transitions)
-    coaccessible(aIn,aFinals,aTransitions)
+  def trim(in: Int,
+           finals: Seq[Int],
+           transitions: Seq[(Int, SimpleTypeD, Int)]
+          ): (Int, Seq[Int], Seq[(Int, SimpleTypeD, Int)]) = {
+    val (aIn, aFinals, aTransitions) = accessible(in, finals, transitions)
+    coaccessible(aIn, aFinals, aTransitions)
   }
 
   // Given a description of a non-deterministic FA, with epsilon transitions
   // already removed, use a graph-tracing algorithm to compute the reachable
   // states in the determinized automaton.
-  def determinize(in:Int,
-                  finals:Seq[Int],
-                  transitions: Seq[(Int,SimpleTypeD,Int)]
-                 ): (Int, Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
+  def determinize(in: Int,
+                  finals: Seq[Int],
+                  transitions: Seq[(Int, SimpleTypeD, Int)]
+                 ): (Int, Seq[Int], Seq[(Int, SimpleTypeD, Int)]) = {
     val grouped: Map[Int, Seq[(Int, SimpleTypeD, Int)]] = transitions.groupBy(_._1)
 
-    def expandOneState(qs: Set[Int]): Seq[(SimpleTypeD,Set[Int])] = {
+    def expandOneState(qs: Set[Int]): Seq[(SimpleTypeD, Set[Int])] = {
       // Given a set of states, find all the SimpleTypeD which are labels of
       //   transitions leaving any of those states.
-      val tds:Set[SimpleTypeD] = withSetCollector(collect =>
-                                                    for {q: Int <- qs
-                                                         trs <- grouped.get(q)
-                                                         (_, td, _) <- trs
-                                                         } collect(td))
+      val tds: Set[SimpleTypeD] = withSetCollector(collect =>
+                                                     for {q: Int <- qs
+                                                          trs <- grouped.get(q)
+                                                          (_, td, _) <- trs
+                                                          } collect(td))
       // The set tds of SimpleTypeD might contain some non-disjoint types.
       //   So we call compute the minimum disjoint type decomposition (mdtd)
       //   and create one transition per type per type from this decomposition.
@@ -349,77 +350,79 @@ object Thompson {
       //   step 2. for { (td,pairs) ...} compute the seq of next states corresponding
       //      to each type.
       //      The pair returned from step 2 is exactly what is needed by traceGraph
-      val tr2 = withSetCollector[(SimpleTypeD,Int)](collect =>
-                         for { (td, (factors, _)) <- mdtd(tds)
-                               q <- qs
-                               trs <- grouped.get(q)
-                               (_, td1, y ) <- trs
-                               if factors.contains(td1)
-                               } collect((td,y)))
+      val tr2 = withSetCollector[(SimpleTypeD, Int)](collect =>
+                                                       for {(td, (factors, _)) <- mdtd(tds)
+                                                            q <- qs
+                                                            trs <- grouped.get(q)
+                                                            (_, td1, y) <- trs
+                                                            if factors.contains(td1)
+                                                            } collect((td, y)))
       for {(td, pairs) <- tr2.groupBy(_._1).toSeq
            nextStates = pairs.map(_._2)
-           } yield (td,nextStates)
+           } yield (td, nextStates)
     }
 
     val inX = Set(in)
-    val (expandedFinals,expandedTransitions) =
+    val (expandedFinals, expandedTransitions) =
       traceTransitionGraph[Set[Int]](inX,
                                      expandOneState,
                                      qs => finals.exists(f => qs.contains(f)))
     // we now have transitions which map Set[Int] to Set[Int]
     //   where each state (Set[Int]) represents 1 state.  We must
     //   now replace each Set[Int] with a corresponding Int.
-    renumberTransitions(inX,expandedFinals,expandedTransitions,count)
+    renumberTransitions(inX, expandedFinals, expandedTransitions, count)
   }
 
   // We have transitions in some form other than DFA_TRANSITION, and we
   //  need to convert to that form.  So we assign a new Int value to each (x,_,y)
   //  in the transitions, and return a translated copy of transitions, as well
   //  as updated value of in and outs.
-  def renumberTransitions[T](in:T,
-                             outs:Seq[T],
-                             transitions:Seq[(T,SimpleTypeD,T)],
-                             count: ()=>Int,
-                            ):(Int,Seq[Int],Seq[(Int,SimpleTypeD,Int)]) = {
-    val mapping:Map[T,Int] = (
-      Seq(in) ++ outs ++ transitions.flatMap{ case (xx,_,yy) => List(xx,yy)})
+  def renumberTransitions[T](in: T,
+                             outs: Seq[T],
+                             transitions: Seq[(T, SimpleTypeD, T)],
+                             count: () => Int,
+                            ): (Int, Seq[Int], Seq[(Int, SimpleTypeD, Int)]) = {
+    val mapping: Map[T, Int] = (
+      Seq(in) ++ outs ++ transitions.flatMap { case (xx, _, yy) => List(xx, yy) })
       .distinct
       .map(qq => qq -> count())
       .toMap
 
     (mapping(in),
       outs.map(mapping),
-      transitions.map{case (xx,td,yy) => (mapping(xx),td,mapping(yy))})
+      transitions.map { case (xx, td, yy) => (mapping(xx), td, mapping(yy)) })
   }
 
   // Given a sequence of transitions, compute and return the set
   // of states mentioned therein.
-  def findAllStates[V,L](transitions:Seq[(V,L,V)]):Set[V]={
+  def findAllStates[V, L](transitions: Seq[(V, L, V)]): Set[V] = {
     (for {(x, _, y) <- transitions
           z <- Seq(x, y)} yield z).toSet
   }
+
   // given a Dfa, and a Map[Int,Int], return a new Dfa will all the states
   //   mapped by the mapping.
   // states not mentioned in the mapping are filtered out.
   def reNumber[L](in: Int,
-               out: Seq[Int],
-               transitions: Seq[(Int, L, Int)],
-               rename: Map[Int,Int]): (Int, Seq[Int], Seq[(Int, L, Int)]) = {
+                  out: Seq[Int],
+                  transitions: Seq[(Int, L, Int)],
+                  rename: Map[Int, Int]): (Int, Seq[Int], Seq[(Int, L, Int)]) = {
     assert(rename.contains(in))
     val out2 = out.filter(q => rename.contains(q))
     val transitions2 = transitions.filter(tr => rename.contains(tr._1) && rename.contains(tr._3))
     (rename(in),
       out2.map(rename),
-      transitions2.map(tr => (rename(tr._1),tr._2, rename(tr._3))))
+      transitions2.map(tr => (rename(tr._1), tr._2, rename(tr._3))))
   }
 
   def canonicalizeDfa[L](in: Int,
                          out: Seq[Int],
                          transitions: Seq[(Int, L, Int)],
                          cmp: (L, L) => Boolean): (Int, Seq[Int], Seq[(Int, L, Int)]) = {
-    def cmpTransitions(tr1:(Int,L,Int),tr2:(Int,L,Int)):Boolean = {
+    def cmpTransitions(tr1: (Int, L, Int), tr2: (Int, L, Int)): Boolean = {
       cmp(tr1._2, tr2._2)
     }
+
     def generateCanonMap(toDo: List[Int],
                          done: Set[Int],
                          mapping: Map[Int, Int],
@@ -458,10 +461,11 @@ object Thompson {
   def removeEpsilonTransitions(in: Int,
                                out: Int,
                                transitions: Seq[(Int, Option[SimpleTypeD], Int)]
-                              ): (Int, Seq[Int], Seq[(Int,SimpleTypeD,Int)]) = {
+                              ): (Int, Seq[Int], Seq[(Int, SimpleTypeD, Int)]) = {
     val epsilonTransitions = transitions.collect { case (x, None, y) => (x, y) }.toSet
-    val normalTransitions = transitions.collect { case (x, Some(tr), y) => (x,tr,y) }
+    val normalTransitions = transitions.collect { case (x, Some(tr), y) => (x, tr, y) }
     val allStates: Seq[Int] = findAllStates(transitions).toSeq
+
     def reachableFrom(q: Int): Set[Int] = {
       for {(x, y) <- epsilonTransitions
            if x == q} yield y
@@ -488,7 +492,7 @@ object Thompson {
                       if remainingStates.contains(q) || q == in
                       if closure.contains(out)
                       } yield q
-    trim(in,finals,updatedTransitions)
+    trim(in, finals, updatedTransitions)
   }
 
   // Given a sequence and an Rte,
@@ -496,23 +500,23 @@ object Thompson {
   //    but don't determinize.
   //    return None, if the sequence does not match the expression
   //    else return Some(exitValue)
-  def simulate[E](sequence:Seq[Any],
-                  exitValue:E,
-                  rte:Rte
-                 ):Option[E] = {
+  def simulate[E](sequence: Seq[Any],
+                  exitValue: E,
+                  rte: Rte
+                 ): Option[E] = {
     val (in, outs, transitions) = constructEpsilonFreeTransitions(rte)
-    simulate(sequence,exitValue,
+    simulate(sequence, exitValue,
              in, outs, transitions)
   }
 
   // trace a computation through a non-deterministic finite state machine
   // given in terms of in, outs, and transitions.
-  def simulate[E](sequence:Seq[Any],
-                  exitValue:E,
-                  in:Int,
-                  outs:Seq[Int],
-                  transitions:Seq[(Int,SimpleTypeD,Int)]
-                 ):Option[E] = {
+  def simulate[E](sequence: Seq[Any],
+                  exitValue: E,
+                  in: Int,
+                  outs: Seq[Int],
+                  transitions: Seq[(Int, SimpleTypeD, Int)]
+                 ): Option[E] = {
     //import cats._
     import cats.syntax.all._
     val groups = transitions.groupBy(_._1)
@@ -525,16 +529,16 @@ object Thompson {
     //  sequence, in which case foldM aborts and returns None, or 2: it reaches
     //  the end of the sequence and returns a (possibly empty) set of states
     //  reached, in which case it returns Some(that-set).
-    sequence.foldM[Option,Set[Int]](Set(in)){
-      (qs:Set[Int],v:Any) =>
+    sequence.foldM[Option, Set[Int]](Set(in)) {
+      (qs: Set[Int], v: Any) =>
         if (qs.isEmpty)
         // no next state, but not finished with the sequence, just abort the foldM
           None
         else
           Some(for {q <- qs
-                     (_, td, y) <- groups.getOrElse(q,Seq())
-                     if td.typep(v)
-                     } yield y)
+                    (_, td, y) <- groups.getOrElse(q, Seq())
+                    if td.typep(v)
+                    } yield y)
     } match {
       //  Finally, given this set of states reached, we examine them to
       //  determine whether at least one of them is a final state.  If not,
@@ -551,11 +555,10 @@ object Thompson {
   // Construct a deterministic finite automaton, instance of Dfa[Any,SimpleTypeD,E]
   // given an Rte, using the Thompson construction algorithm which has been
   // extended to handle Not and And.
-  def constructThompsonDfa[E](rte:Rte, exitValue:E):Dfa[Any,SimpleTypeD,E] = {
+  def constructThompsonDfa[E](rte: Rte, exitValue: E): Dfa[Any, SimpleTypeD, E] = {
     val (in0, outs0, determinized0) = constructDeterminizedTransitions(rte)
-    val (in, outs, determinized) = renumberTransitions(in0, outs0, determinized0, makeCounter(0,1))
-    val fmap = outs.map{i => i -> exitValue}.toMap
-
+    val (in, outs, determinized) = renumberTransitions(in0, outs0, determinized0, makeCounter(0, 1))
+    val fmap = outs.map { i => i -> exitValue }.toMap
     Dfa(Qids = findAllStates(determinized)+in,
         q0id = in,
         Fids = outs.toSet,
@@ -566,59 +569,210 @@ object Thompson {
 }
 
 object Profiling {
-  import GraphViz.multiLineString
-  def check(pattern:Rte,r:Int,depth:Int):Map[String,Int] = {
+
+  def check(pattern: Rte, r: Int, depth: Int): Map[String, Dfa[Any, SimpleTypeD, Int]] = {
     val dfa_thompson = Thompson.constructThompsonDfa(pattern, 42)
 
     val dfa_trim_thompson = Minimize.trim(dfa_thompson)
     val min_thompson = Minimize.minimize(dfa_trim_thompson)
     val dfa_brzozowski = pattern.toDfa(42)
-    val dfa_trim_brzozowski = Minimize.trim(dfa_brzozowski)
+    val dfa_trim_brzozowski = Minimize.trim(dfa_brzozowski, true)
     val min_brzozowski = Minimize.minimize(dfa_trim_brzozowski)
+    val xor = Rte.dfaXor(min_thompson, min_brzozowski)
     val data = Map(
-      "thompson_size" -> dfa_trim_thompson.Q.size,
-      "thompson_min" -> min_thompson.Q.size,
-      "brzozowski_size" -> dfa_trim_brzozowski.Q.size,
-      "brzozowski_min" -> min_brzozowski.Q.size)
-    if (min_brzozowski.Q.size != min_thompson.Q.size) {
-      dfaView(dfa_thompson, "thompson", abbrev = true,
-              label = Some(s"depth=$depth:$r " + multiLineString(pattern.toString)))
-      dfaView(dfa_trim_thompson, "trim-thompson", abbrev = true,
-              label = Some(s"depth=$depth:$r " + multiLineString(pattern.toString)))
-      dfaView(min_thompson, "thompson-min", abbrev = true,
-              label = Some(s"depth=$depth:$r " + multiLineString(pattern.toString)))
-      dfaView(dfa_brzozowski, "brzozowski", abbrev = true,
-              label = Some(s"depth=$depth:$r " + multiLineString(pattern.toString)))
-      dfaView(dfa_trim_brzozowski, "trim-brzozowski", abbrev = true,
-              label = Some(s"depth=$depth:$r " + multiLineString(pattern.toString)))
-      dfaView(min_brzozowski, "brzozowski-min", abbrev = true,
-              label = Some(s"depth=$depth:$r " + multiLineString(pattern.toString)))
+      "dfa_thompson" -> dfa_thompson,
+      "dfa_trim_thompson" -> dfa_trim_thompson,
+      "min_thompson" -> min_thompson,
+      "dfa_brzozowski" -> dfa_brzozowski,
+      "dfa_trim_brzozowski" -> dfa_trim_brzozowski,
+      "min_brzozowski" -> min_brzozowski,
+      "xor" -> xor
+      )
 
-      dfaView(Rte.dfaXor(min_thompson, min_brzozowski),
-              title = "xor",
-              abbrev = true,
-              label = Some(s"depth=$depth:$r " + multiLineString(pattern.toString)))
+    if (min_brzozowski.Q.size != min_thompson.Q.size) {
+
     }
     data
   }
+  def statisticsTests(): Unit= {
+    val transitions = Array.fill(4)(Array.fill(6)(0))
+    val num_random_tests = 10000 * 3
+    for {depth <- 1 until 6
+         r <- 0 until num_random_tests
+         pattern = Rte.randomRte(depth)
+         canonicalizedPattern = pattern.canonicalize
+         } {
+      println((depth - 1) * num_random_tests + r)
+      //println(depth*num_random_tests + r)data("xor").vacuous().contains(true)
+      val data = check(pattern, r, depth)
+      val dataCanonicalize = check(canonicalizedPattern, r, depth)
 
-  def main(argv:Array[String]) : Unit = { // ("brz vs thomp") {
+      var mylist = data("dfa_thompson").protoDelta.toList
+
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(0)(0) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(0)(1)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(0)(2) += 1
+        }
+      }
+      mylist = data("min_thompson").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(0)(3) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(0)(4)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(0)(5) += 1
+        }
+      }
+
+      mylist = data("dfa_brzozowski").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(1)(0) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(1)(1)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(1)(2) += 1
+        }
+      }
+      mylist = data("min_brzozowski").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(1)(3) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(1)(4)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(1)(5) += 1
+        }
+      }
+      mylist = dataCanonicalize("dfa_thompson").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(2)(0) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(2)(1)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(2)(2) += 1
+        }
+      }
+      mylist = dataCanonicalize("min_thompson").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(2)(3) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(2)(4)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(2)(5) += 1
+        }
+      }
+      mylist = dataCanonicalize("dfa_brzozowski").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(3)(0) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(3)(1)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(3)(2) += 1
+        }
+      }
+      mylist = dataCanonicalize("min_brzozowski").protoDelta.toList
+      for (i <- mylist.indices) {
+        val temp = mylist(i)._2.inhabited
+        if (temp.isEmpty){
+          transitions(3)(3) += 1
+        }
+        else if (temp.contains(false))
+        {
+          transitions(3)(4)+=1
+        }
+        else if (temp.contains(true)) {
+          transitions(3)(5) += 1
+        }
+      }}
+    val myarray = Array("thompson","brzozowski","thompson canonicalize","brzozowski canonicalize")
+    val myarray2 = Array("not sure", "uninhabited","inhabited", "min not sure", "uninhabited", "min inhabited")
+    for(i<-transitions.indices)
+    {
+      println(myarray(i))
+      for(j<-transitions(i).indices)
+      {
+        println(myarray2(j))
+        println(transitions(i)(j))
+      }
+    }
+  }
+
+  def main(argv: Array[String]): Unit = { // ("brz vs thomp") {
     // here we generate some random Rte patterns, then construct
     //  both the Thompson and Brzozowski automata, trim and minimize
     //  them both, and look for cases where the resulting size
     //  is different in terms of state count.
+    // same size min, brz min bigger, same size, thompson min bigger, brz bigger, thompson bigger,
 
-    val num_random_tests = 1000*3
+    val myarray = Array.fill(6)(0)
+
+    val num_random_tests = 10000 * 3
     for {depth <- 1 until 6
          r <- 0 until num_random_tests
          pattern = Rte.randomRte(depth)
+
          } {
-      val data = check(pattern,r,depth)
-      assert(data("thompson_min") == data("brzozowski_min"),
+      println((depth-1)*num_random_tests+r)
+
+      val data = check(pattern, r, depth)
+
+      assert(data("min_thompson").Q.size == data("min_brzozowski").Q.size,
         {
+          dfaView(data("dfa_thompson"), "thompson", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+          dfaView(data("dfa_brzozowski"), "brzozowski", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+          dfaView(data("dfa_trim_thompson"), "trim-thompson", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+          dfaView(data("dfa_trim_brzozowski"), "trim-brzozowski", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+          dfaView(data("min_thompson"), "thompson-min", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+          dfaView(data("min_brzozowski"), "brzozowski-min", abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
+
+          dfaView(data("xor") ,title = "xor",abbrev = true,
+                  label = Some(s"depth=$depth:$r " + pattern.toString))
           println(depth, data, pattern)
-          s"different minimized sizes ${data("thompson_min")} vs ${data("brzozowski_min")}"
+          s"different minimized sizes ${data("min_thompson")} vs ${data("min_brzozowski")}"
         })
     }
-  }
+    }
 }

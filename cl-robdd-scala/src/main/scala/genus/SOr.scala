@@ -21,7 +21,7 @@
 
 package genus
 
-import Types._
+import RandomType._
 import NormalForm._
 import adjuvant.Adjuvant.{findSimplifier, uniquify}
 

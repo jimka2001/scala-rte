@@ -22,7 +22,7 @@
 
 package genus
 
-import Types._
+import RandomType._
 import java.lang
 import RandomType.randomType
 

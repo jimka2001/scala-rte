@@ -21,7 +21,7 @@
 
 package genusbdd
 import genus._
-import genus.Types._
+import genus.RandomType._
 import bdd._
 import scala.collection._
 import NormalForm._

@@ -22,7 +22,7 @@
 
 package genus
 
-import Types._
+import RandomType._
 import adjuvant.MyFunSuite
 import genus.RandomType.interestingValues
 import org.scalatest.funsuite.AnyFunSuite

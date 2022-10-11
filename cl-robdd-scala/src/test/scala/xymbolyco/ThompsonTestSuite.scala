@@ -21,16 +21,14 @@
 
 package xymbolyco
 
-import adjuvant.MyFunSuite
 import genus.RandomType.Abstract1
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import rte._
-import xymbolyco.Minimize.minimize
 import xymbolyco.Thompson._
 
 
-class ThompsonTestSuite  extends MyFunSuite {
+class ThompsonTestSuite extends AnyFunSuite {
   val num_random_tests: Int = 1000
 
   test("remove epsilon transitions 1") {
@@ -38,7 +36,7 @@ class ThompsonTestSuite  extends MyFunSuite {
     assert(removeEpsilonTransitions(0, 1,
                                     Seq((0, None, 1),
                                         (0, Some(t1), 1)))
-           == (0, Seq(0, 1), Seq((0, t1, 1))))
+             == (0, Seq(0, 1), Seq((0, t1, 1))))
   }
   test("remove epsilon transitions 2") {
     val a: SimpleTypeD = SAtomic(classOf[String])
@@ -48,9 +46,9 @@ class ThompsonTestSuite  extends MyFunSuite {
                                                               (0, Some(a), 1),
                                                               (1, Some(b), 2)))
     assert((in, out.toSet, transitions.toSet) ==
-           (0, Set(1, 2), Set((0, a, 1),
-                              (1, b, 2)
-                              )))
+             (0, Set(1, 2), Set((0, a, 1),
+                                (1, b, 2)
+                                )))
   }
   test("remove epsilon transitions 3") {
     val a: SimpleTypeD = SAtomic(classOf[String])
@@ -60,9 +58,9 @@ class ThompsonTestSuite  extends MyFunSuite {
                                                               (0, Some(a), 1),
                                                               (1, Some(b), 2)))
     assert((in, out.toSet, transitions.toSet) ==
-           (0, Set(2), Set((0, b, 2),
-                           (0, a, 1),
-                           (1, b, 2))))
+             (0, Set(2), Set((0, b, 2),
+                             (0, a, 1),
+                             (1, b, 2))))
   }
   test("remove epsilon transitions 4") {
     val ts: SimpleTypeD = SAtomic(classOf[String])
@@ -73,11 +71,11 @@ class ThompsonTestSuite  extends MyFunSuite {
                                                               (1, Some(ti), 2),
                                                               (1, Some(ti), 1)))
     assert((in, out.toSet, transitions.toSet) ==
-           (0, Set(2), Set((0, ts, 1),
-                           (0, ti, 1),
-                           (0, ti, 2),
-                           (1, ti, 1),
-                           (1, ti, 2))))
+             (0, Set(2), Set((0, ts, 1),
+                             (0, ti, 1),
+                             (0, ti, 2),
+                             (1, ti, 1),
+                             (1, ti, 2))))
   }
   test("remove epsilon transitions 5") {
     val ts: SimpleTypeD = SAtomic(classOf[String])
@@ -88,10 +86,10 @@ class ThompsonTestSuite  extends MyFunSuite {
                                                               (1, Some(ti), 2),
                                                               (1, Some(ts), 1)))
     assert((in, out.toSet, transitions.toSet) ==
-           (0, Set(2), Set((0, ts, 1),
-                           (0, ti, 2),
-                           (1, ts, 1),
-                           (1, ti, 2))))
+             (0, Set(2), Set((0, ts, 1),
+                             (0, ti, 2),
+                             (1, ts, 1),
+                             (1, ti, 2))))
   }
   test("remove epsilon transitions 6") {
     val ts: SimpleTypeD = SAtomic(classOf[String])
@@ -102,10 +100,10 @@ class ThompsonTestSuite  extends MyFunSuite {
                                                               (1, Some(ti), 2),
                                                               (1, Some(ti), 1)))
     assert((in, out.toSet, transitions.toSet) ==
-           (0, Set(1, 2), Set((0, ts, 1),
-                              (1, ti, 1),
-                              (1, ti, 2)
-                              )))
+             (0, Set(1, 2), Set((0, ts, 1),
+                                (1, ti, 1),
+                                (1, ti, 2)
+                                )))
   }
   test("remove epsilon transitions 7") {
     val ts: SimpleTypeD = SAtomic(classOf[String])
@@ -116,10 +114,10 @@ class ThompsonTestSuite  extends MyFunSuite {
                                                               (1, Some(ti), 2),
                                                               (1, Some(ts), 1)))
     assert((in, out.toSet, transitions.toSet) ==
-           (0, Set(1, 2), Set((0, ts, 1),
-                              (1, ts, 1),
-                              (1, ti, 2)
-                              )))
+             (0, Set(1, 2), Set((0, ts, 1),
+                                (1, ts, 1),
+                                (1, ti, 2)
+                                )))
   }
 
   test("complete 1") {
@@ -340,7 +338,7 @@ class ThompsonTestSuite  extends MyFunSuite {
          dfa_thompson = try {
            constructThompsonDfa(pattern, 42)
          } catch {
-           case e: Throwable =>
+           case e =>
              println(s"could not construct thompson dfa")
              println(s"   problem with pattern=$pattern")
              throw e
@@ -356,11 +354,11 @@ class ThompsonTestSuite  extends MyFunSuite {
   }
   test("discovered case 358") {
     import rte.Rte.dfaEquivalent
-    import genus.Types.oddType
+    import RandomType.oddType
     for {pattern <- Seq(Or(Singleton(oddType), Singleton(SMember(true, false)))
                         , Or(Singleton(oddType),
-                           Singleton(SMember(1,2,3,4)),
-                           Singleton(SMember(false,true)))
+                             Singleton(SMember(1, 2, 3, 4)),
+                             Singleton(SMember(false, true)))
                         )
          dfa_thompson = constructThompsonDfa(pattern, 42)
          dfa_brzozowski = pattern.toDfa(42)
@@ -368,7 +366,7 @@ class ThompsonTestSuite  extends MyFunSuite {
       assert(dfaEquivalent(dfa_brzozowski, dfa_thompson) != Some(false),
              s"disagreement on pattern=$pattern")
   }
-
+  /*
   test("randomCreate") {
     import rte.Rte.dfaEquivalent
     for {depth <- 0 until 3
@@ -388,6 +386,7 @@ class ThompsonTestSuite  extends MyFunSuite {
       assert(dfaEquivalent(dfa_brzozowski, dfa_thompson) != Some(false),
              s"disagreement on pattern=$pattern")
   }
+*/
   test("simulate") {
     val ti: Rte = Singleton(SAtomic(classOf[Int]))
     val ts: Rte = Singleton(SAtomic(classOf[String]))
@@ -443,8 +442,8 @@ class ThompsonTestSuite  extends MyFunSuite {
                                     (1, STop, 98),
                                     ))
   }
-  test("canonicalize"){
-    def cmp(a:Char,b:Char):Boolean = {
+  test("canonicalize") {
+    def cmp(a: Char, b: Char): Boolean = {
       a < b
     }
 
@@ -455,18 +454,18 @@ class ThompsonTestSuite  extends MyFunSuite {
              == (0, Seq(1, 2), Seq((0, 'a', 1), (0, 'c', 3), (0, 'b', 2))))
 
 
-    assert(canonicalizeDfa(7, Seq(1), Seq((7,'a',6), (7,'b',5),
+    assert(canonicalizeDfa(7, Seq(1), Seq((7, 'a', 6), (7, 'b', 5),
                                           (6, 'a', 2), (6, 'b', 3),
                                           (5, 'a', 3), (5, 'b', 4),
-                                          (2,'b',6),
-                                          (3,'b',1)
+                                          (2, 'b', 6),
+                                          (3, 'b', 1)
                                           ),
                            cmp)
-           == (0, Seq(6), Seq((0,'a',1),(0,'b',2),
-                              (1,'a',3), (1,'b',4),
-                              (2,'a',4), (2,'b',5),
-                              (3,'b',1),
-                              (4,'b',6)
+             == (0, Seq(6), Seq((0, 'a', 1), (0, 'b', 2),
+                                (1, 'a', 3), (1, 'b', 4),
+                                (2, 'a', 4), (2, 'b', 5),
+                                (3, 'b', 1),
+                                (4, 'b', 6)
                                 )))
 
   }
@@ -474,7 +473,7 @@ class ThompsonTestSuite  extends MyFunSuite {
   test("Thompson/brz/Trait3") {
     import genus.RandomType.Trait3
     val data = Profiling.check(Singleton(SAtomic(classOf[Trait3])), 1, 1)
-    assert(data("thompson_min") == data("brzozowski_min"))
+    assert(data("xor").vacuous().contains(true))
   }
   test("discovered 463") {
     import genus.RandomType.{Trait3X, Abstract1X}
@@ -490,8 +489,9 @@ class ThompsonTestSuite  extends MyFunSuite {
                           Cat(Not(num), Or(a1x, num)))),
                   Star(stop))
     val data = Profiling.check(rte, 1, 1)
-    assert(data("thompson_min") == data("brzozowski_min"))
+    assert(data("xor").vacuous().contains(true))
   }
+
 
   def discovered463b() = {
 
@@ -507,19 +507,95 @@ class ThompsonTestSuite  extends MyFunSuite {
                           Cat(Not(num), Or(a1x, num)))),
                   Star(stop))
     val data = Profiling.check(rte, 1, 1)
-    assert(data("thompson_min") == data("brzozowski_min"))
+    assert(data("xor").vacuous().contains(true))
   }
 
   test("discovered 463 b") {
     // we are calling this 1000 times because it WAS happening
     // that the test would pass sometimes and fail sometimes.
-    for{_ <- 0 to 1000} discovered463b()
+    for {i <- 0 to 10} discovered463b()
   }
   test("discovered 479"){
     val rte:Rte = Cat(Singleton(SMember(4,5,6)),
                       Singleton(SAtomic(classOf[Abstract1])))
+
     val dfa = constructThompsonDfa(rte, 42)
     val trim_dfa = Minimize.trim(dfa)
     assert(trim_dfa.Q.size == 1, "trimming created the wrong sized dfa")
+  }
+  test("discovered 480") {
+    val rte: Rte = Cat(Or(Singleton(SAtomic(classOf[Number])), Singleton(SMember(4, 5, 6))))
+    val data = Profiling.check(rte, 1, 1)
+    assert(data("xor").vacuous().contains(true))
+  }
+
+  test("discovered 481") {
+    for (i <- Range(0, 10)) {
+      val rte: Rte = Cat(Star(Or(Cat(Singleton(SEql(1)), Singleton(SMember("a", "b", "c"))),
+                                 Star(Singleton(SAtomic(classOf[Boolean]))), Not(Singleton(SMember(true, false))))))
+      val dfa = constructThompsonDfa(rte, 42)
+      //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
+      val data = Profiling.check(rte, 1, 1)
+      assert(data("xor").vacuous().contains(true))
+    }
+  }
+  test("discovered 482") {
+    for (i <- Range(0, 10)) {
+      val rte: Rte = Or(Not(Singleton(SEql(false))), Or(Singleton(SEql(0))), Singleton(SAtomic(classOf[Boolean])))
+      //val dfa = constructThompsonDfa(rte, 42)
+      //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
+      val data = Profiling.check(rte, 1, 1)
+      assert(data("xor").vacuous().contains(true))
+    }
+  }
+
+  test("discovered 483") {
+    for (i <- Range(0, 10)) {
+      val rte: Rte = Cat(Star(Or(Cat(Singleton(SEql(1)), Singleton(SMember("a", "b", "c"))),
+                                 Star(Singleton(SAtomic(classOf[Boolean]))), Not(Singleton(SMember(true, false))))))
+      //val dfa = constructThompsonDfa(rte, 42)
+      //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
+      val data = Profiling.check(rte, 1, 1)
+      assert(data("xor").vacuous().contains(true))
+    }
+  }
+  test("discovered 484") {
+    for (i <- Range(0, 10)) {
+      val rte: Rte = Or(And(Singleton(SMember(1, 2, 3, 4)), Star(Singleton(SSatisfies(RandomType.oddp, "oddp")))),
+                        Not(Star(Singleton(SEql(false)))))
+      //val dfa = constructThompsonDfa(rte, 42)
+      //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
+      val data = Profiling.check(rte, 1, 1)
+      assert(data("xor").vacuous().contains(true))
+    }
+  }
+  test("discovered 485") {
+    for (i <- Range(0, 10)) {
+      val rte: Rte = Cat(Cat(Singleton(STop), Star(Singleton(STop))), Or(Cat(Singleton(SMember("a", "b", "c")),
+                                                                             Singleton(SAtomic(classOf[Trait2])), Or(Singleton(SAtomic(classOf[Number])), Singleton(SMember(1, 2, 3, 4))))))
+      //val dfa = constructThompsonDfa(rte, 42)
+      //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
+      val data = Profiling.check(rte, 1, 1)
+      assert(data("xor").vacuous().contains(true))
+    }
+  }
+  test("discovered 486") {
+    for (i <- Range(0, 10)) {
+      val rte: Rte = Cat(Or(Singleton(SAtomic(classOf[Trait1])), Singleton(SSatisfies(RandomType.oddp, "oddp"))),
+                         Cat(Star(Singleton(SMember(1, 2, 3, 4)))), Singleton(SEmpty))
+      //val dfa = constructThompsonDfa(rte, 42)
+      //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
+      val data = Profiling.check(rte, 1, 1)
+      assert(data("xor").vacuous().contains(true))
+    }
+  }
+  test("discovered 487") {
+    for (i <- Range(0, 10)) {
+      val rte: Rte = Star(Or(Singleton(SMember(false, true)),Singleton(SEql(0))))
+      //val dfa = constructThompsonDfa(rte, 42)
+      //dfaView(dfa, "thompson", abbrev = true, label = Some(s"depth=" + rte.toString))
+      val data = Profiling.check(rte, 1, 1)
+      assert(data("xor").vacuous().contains(true))
+    }
   }
 }
