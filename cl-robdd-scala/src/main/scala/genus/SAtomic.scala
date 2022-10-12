@@ -78,9 +78,12 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
     if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
-    else if (wv == ClosedWorldView)
+    else if (wv == ClosedWorldView) {
+      // TODO, I think this check is not necessary, the factor function returns SEmpty in this case
+      //   can replace with Some(true)
+      assert(SAtomic.existsInstantiatableSubclass(ct))
       Some(SAtomic.existsInstantiatableSubclass(ct))
-    else
+    } else
       Some(true)
   }
 
@@ -227,7 +230,11 @@ object SAtomic {
     else if (ct == classOf[Boolean]) SAtomic(classOf[java.lang.Boolean])
     else if (ct == classOf[Any]) STop
     else if (ct == classOf[Int]) SAtomic(classOf[Integer])
-    else knownSAtomics.getOrElseUpdate((getWorldView(),ct), new SAtomic(ct))
+    else if (getWorldView == ClosedWorldView && !existsInstantiatableSubclass(ct)) SEmpty
+    else knownSAtomics.getOrElseUpdate((getWorldView(),ct), {
+      println(s"creating new SAtomic($ct) ${getWorldView()}")
+      new SAtomic(ct)
+    })
   }
 
   import scala.util.DynamicVariable
