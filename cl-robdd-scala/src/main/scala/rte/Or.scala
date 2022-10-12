@@ -58,7 +58,7 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
   override def toLaTeX(): String = "(" + operands.map(_.toLaTeX()).mkString(" \\vee ") + ")"
 
   override def toString: String = operands.map(_.toString).mkString("Or(", ",", ")")
-  override def toDot:String = operands.map(_.toDot()).mkString("Or(", ",", ")")
+  override def toDot():String = operands.map(_.toDot()).mkString("Or(", ",", ")")
   def nullable: Boolean = operands.exists {
     _.nullable
   }
