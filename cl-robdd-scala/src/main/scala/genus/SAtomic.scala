@@ -248,14 +248,23 @@ object SAtomic {
   //   may be loaded at run-time.  Thus, for example, it is NOT considered that
   //   two given traits are disjoint.
   def withOpenWorldView[T](code: =>T):T = {
-    worldView.withValue(OpenWorldView){code}
+    withWorldView(OpenWorldView,code)
   }
 
   // evaluate a piece of code in a dynamic context where it is considers that classes
   //   may NOT be loaded at run-time.  Thus, for example, it is considered that
   //   two given traits are disjoint if there exists no common instantiable subclass.
   def withClosedWorldView[T](code: =>T):T = {
-    worldView.withValue(ClosedWorldView){code}
+    withWorldView(ClosedWorldView,code)
+  }
+
+  // evaluate a piece of code in a dynamic context where it is considers that classes
+  //   may NOT be loaded at run-time, or MAY be loaded at run-time, depending
+  //   on the wv argument.
+  def withWorldView[T](wv: WorldView, code: => T): T = {
+    worldView.withValue(wv) {
+      code
+    }
   }
 
   def instantiatableSubclasses(cl: Class[_]): Array[Class[_]] = {
