@@ -33,6 +33,7 @@ import scala.collection.mutable
 case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   //if (ct != classOf[Nothing] && ! SAtomic.existsInstantiatableSubclass(ct))
   //  println(s"WARNING: SAtomic($ct) is equivalent to SEmpty")
+  val wv = SAtomic.getWorldView()
   def shortTypeName():String = {
     val fullName = if (ct.getName.startsWith("java.lang."))
       ct.getName.drop(10)
@@ -72,9 +73,12 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   }
 
   override protected def inhabitedDown: Some[Boolean] = { // TODO, should this be Option[Boolean]
+    assert(wv == SAtomic.getWorldView(),
+           s"object $this was created with $wv but is being used with ${SAtomic.getWorldView()}")
+
     if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
-    else if (SAtomic.getWorldView() == ClosedWorldView)
+    else if (wv == ClosedWorldView)
       Some(SAtomic.existsInstantiatableSubclass(ct))
     else
       Some(true)
@@ -92,7 +96,9 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
       case SEmpty => Some(true)
       // TODO, do we know that t is inhabited? if not, do we need to check for it?
       case STop => Some(false) // STop is only disjoint with SEmpty, but this != SEmpty
-      case SAtomic(tp) =>
+      case that@SAtomic(tp) =>
+        assert(wv == that.wv,
+               "disjointDown called on object of opposing world views")
         if (inhabited.contains(false))
           Some(true)
         else if (tp == ct)
@@ -117,7 +123,9 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
       s match {
         case SEmpty => this.inhabited.map(!_)
         case STop => Some(true)
-        case SAtomic(tp) =>
+        case that@SAtomic(tp) =>
+          assert(wv == that.wv,
+                 "subtypepDown called on object of opposing world views")
           if (s.inhabited.contains(false))
             subtypep(SEmpty)
           else {
