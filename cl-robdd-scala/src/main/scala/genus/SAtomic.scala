@@ -98,7 +98,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
       case STop => Some(false) // STop is only disjoint with SEmpty, but this != SEmpty
       case that@SAtomic(tp) =>
         assert(wv == that.wv,
-               "disjointDown called on object of opposing world views")
+               s"disjointDown called on object of opposing world views: $this vs $that")
         if (inhabited.contains(false))
           Some(true)
         else if (tp == ct)
@@ -125,7 +125,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
         case STop => Some(true)
         case that@SAtomic(tp) =>
           assert(wv == that.wv,
-                 "subtypepDown called on object of opposing world views")
+                 s"subtypepDown called on object of opposing world views: $this vs $that")
           if (s.inhabited.contains(false))
             subtypep(SEmpty)
           else {
