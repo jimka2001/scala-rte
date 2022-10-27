@@ -61,8 +61,8 @@ object TeamDays {
   val dotDir = existingFile(Seq("/Users/jnewton/Repos/research/dot/"),
                             "/tmp/")
   def genExpr2SampleDfa(): Unit = {
-    val rte: Rte = Cat(classOf[Minus],
-                       //Star(classOf[Minus]),
+    val rte: Rte = Cat(//classOf[Minus],
+                       Star(classOf[Minus]),
                        Star(Or(classOf[Str],
                                And(classOf[Expr], Not(classOf[Minus])),
                                classOf[Binary])),
@@ -115,10 +115,21 @@ object TeamDays {
   }
 
   def main(argv: Array[String]): Unit = {
+    // DEMO
+    // 1
     //genSimpleSampleDfa()
+
+    // 2
     //genExprSampleDfa()
+
+    // 3
     //genExpr2SampleDfa()
+
+    // 4
     //genSampleDfa()
-    genDistinguishFinalDfa()
+
+
+
+    //genDistinguishFinalDfa()
   }
 }
