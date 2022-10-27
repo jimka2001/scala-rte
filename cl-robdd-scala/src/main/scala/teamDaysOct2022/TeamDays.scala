@@ -71,8 +71,8 @@ object TeamDays {
     val dfa = rte.toDfa()
 
     dfaView(dfa, abbrev = true, title = "expr", showSink = false,
-            dotFileCB= (fn:String) => {
-              copyFile(fn,dotDir + "team-days-oct-2022-expr.dot")
+            dotFileCB = (fn: String) => {
+              copyFile(fn, dotDir + "team-days-oct-2022-expr.dot")
             })
   }
   
@@ -96,10 +96,29 @@ object TeamDays {
     dfaView(dfa3, abbrev = true, title = "xor")
   }
 
+  def genDistinguishFinalDfa() = {
+    val rte1: Rte = Cat(classOf[String],
+                        Star(classOf[Int]),
+                        classOf[Boolean])
+    val rte2: Rte = Cat(classOf[String],
+                        Star(classOf[Int]),
+                        classOf[String])
+
+    val dfa1 = rte1.toDfa(exitValue = 42)
+    val dfa2 = rte2.toDfa(exitValue = 13)
+
+    val dfa3 = Rte.dfaUnion(dfa1, dfa2)
+    dfaView(dfa3, abbrev = true, title = "distinguishable-output",
+            dotFileCB = (fn: String) => {
+              copyFile(fn, dotDir + "team-days-oct-2022-distinguishable-output.dot")
+            })
+  }
+
   def main(argv: Array[String]): Unit = {
     //genSimpleSampleDfa()
     //genExprSampleDfa()
-    genExpr2SampleDfa()
+    //genExpr2SampleDfa()
     //genSampleDfa()
+    genDistinguishFinalDfa()
   }
 }
