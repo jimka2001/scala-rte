@@ -397,6 +397,8 @@ object Rte {
     dfa
   }
 
+  // TODO it really seems this could be done in xymbolyco, do we really
+  //    need Rte for this?
   def dfaXor[E](dfa1:xymbolyco.Dfa[Any,SimpleTypeD,E],
                 dfa2:xymbolyco.Dfa[Any,SimpleTypeD,E]):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
     import xymbolyco.Minimize.sxp
