@@ -23,6 +23,7 @@ package teamDaysOct2022
 
 import rte._
 import RteImplicits._
+import adjuvant.Adjuvant.{copyFile, existingFile}
 import genus.SMember
 import genus.Types.evenType
 import xymbolyco.GraphViz.dfaView
@@ -57,6 +58,8 @@ object TeamDays {
     dfaView(dfa1, abbrev = true, title = "expr", showSink = false)
   }
 
+  val dotDir = existingFile(Seq("/Users/jnewton/Repos/research/dot/"),
+                            "/tmp/")
   def genExpr2SampleDfa(): Unit = {
     val rte: Rte = Cat(classOf[Minus],
                        //Star(classOf[Minus]),
@@ -67,7 +70,10 @@ object TeamDays {
 
     val dfa = rte.toDfa()
 
-    dfaView(dfa, abbrev = true, title = "expr", showSink = false)
+    dfaView(dfa, abbrev = true, title = "expr", showSink = false,
+            dotFileCB= (fn:String) => {
+              copyFile(fn,dotDir + "team-days-oct-2022-expr.dot")
+            })
   }
   
   def genSampleDfa(): Unit = {
@@ -88,7 +94,6 @@ object TeamDays {
 
     val dfa3 = Rte.dfaXor(dfa1, dfa2)
     dfaView(dfa3, abbrev = true, title = "xor")
-
   }
 
   def main(argv: Array[String]): Unit = {
