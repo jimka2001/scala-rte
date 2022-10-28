@@ -27,6 +27,7 @@ import adjuvant.Adjuvant.{copyFile, existingFile}
 import genus.SMember
 import genus.Types.evenType
 import xymbolyco.GraphViz.dfaView
+import xymbolyco.Minimize
 
 
 
@@ -40,18 +41,20 @@ object TeamDays {
     dfaView(dfa1, abbrev = true, title = "dfa", showSink = false)
   }
 
-  abstract class Expr
-  abstract class Binary extends Expr
-  final class Plus extends Binary
-  final class Minus extends Binary
-  abstract class Const extends Expr
-  final class Num extends Const
-  final class Str extends Const
+  abstract class JExpr
+
+  abstract class JBinary extends JExpr
+  final class JPlus extends JBinary
+  final class JMinus extends JBinary
+
+  abstract class JConst extends JExpr
+  final class JNum extends JConst
+  final class JStr extends JConst
 
   def genExprSampleDfa(): Unit = {
-    val rte: Rte = Cat(classOf[Expr],
-                       Star(classOf[Binary]),
-                       classOf[Str])
+    val rte: Rte = Cat(classOf[JExpr],
+                       Star(classOf[JBinary]),
+                       classOf[JStr])
 
     val dfa1 = rte.toDfa()
 
@@ -61,12 +64,12 @@ object TeamDays {
   val dotDir = existingFile(Seq("/Users/jnewton/Repos/research/dot/"),
                             "/tmp/")
   def genExpr2SampleDfa(): Unit = {
-    val rte: Rte = Cat(//classOf[Minus],
-                       Star(classOf[Minus]),
-                       Star(Or(classOf[Str],
-                               And(classOf[Expr], Not(classOf[Minus])),
-                               classOf[Binary])),
-                       classOf[Binary])
+    val rte: Rte = Cat( classOf[JMinus],
+                        //Star(classOf[JMinus]),
+                        Star(Or(classOf[JStr],
+                                And(classOf[JExpr], Not(classOf[JMinus])),
+                                classOf[JBinary])),
+                        classOf[JBinary])
 
     val dfa = rte.toDfa()
 
@@ -94,6 +97,8 @@ object TeamDays {
 
     val dfa3 = Rte.dfaXor(dfa1, dfa2)
     dfaView(dfa3, abbrev = true, title = "xor")
+
+    dfaView(Minimize.minimize(dfa3), abbrev = true, title = "minimized")
   }
 
   def genDistinguishFinalDfa() = {
