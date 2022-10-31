@@ -572,7 +572,6 @@ object Profiling {
 
   def check(pattern: Rte, r: Int, depth: Int): Map[String, Dfa[Any, SimpleTypeD, Int]] = {
     val dfa_thompson = Thompson.constructThompsonDfa(pattern, 42)
-
     val dfa_trim_thompson = Minimize.trim(dfa_thompson)
     val min_thompson = Minimize.minimize(dfa_trim_thompson)
     val dfa_brzozowski = pattern.toDfa(42)
@@ -588,148 +587,54 @@ object Profiling {
       "min_brzozowski" -> min_brzozowski,
       "xor" -> xor
       )
-
     if (min_brzozowski.Q.size != min_thompson.Q.size) {
-
     }
     data
   }
   def statisticsTests(): Unit= {
-    val transitions = Array.fill(4)(Array.fill(6)(0))
-    val num_random_tests = 10000 * 3
+    val myseq = Seq((true,"Brz",true,"indeterminate"),(true,"Brz",true,"satisfiable"),(true,"Brz",true,"unsatisfiable"),
+                    (true,"Brz",false,"indeterminate"),(true,"Brz",false,"satisfiable"),(true,"Brz",false,"unsatisfiable"),
+                    (false,"Brz",true,"indeterminate"),(false,"Brz",true,"satisfiable"),(false,"Brz",true,"unsatisfiable"),
+                    (false,"Brz",false,"indeterminate"),(false,"Brz",false,"satisfiable"),(false,"Brz",false,"unsatisfiable"),
+                    (true,"Thompson",true,"indeterminate"),(true,"Thompson",true,"satisfiable"),(true,"Thompson",true,"unsatisfiable"),
+                    (true,"Thompson",false,"indeterminate"),(true,"Thompson",false,"satisfiable"),(true,"Thompson",false,"unsatisfiable"),
+                    (false,"Thompson",true,"indeterminate"),(false,"Thompson",true,"satisfiable"),(false,"Thompson",true,"unsatisfiable"),
+                    (false,"Thompson",false,"indeterminate"),(false,"Thompson",false,"satisfiable"),(false,"Thompson",false,"unsatisfiable"))
+    var mymap = myseq.zip(Array.fill(24)(0)).toMap
+    val num_random_tests = 1000
     for {depth <- 1 until 6
          r <- 0 until num_random_tests
          pattern = Rte.randomRte(depth)
-         canonicalizedPattern = pattern.canonicalize
          } {
-      println((depth - 1) * num_random_tests + r)
-      //println(depth*num_random_tests + r)data("xor").vacuous().contains(true)
-      val data = check(pattern, r, depth)
-      val dataCanonicalize = check(canonicalizedPattern, r, depth)
-
-      var mylist = data("dfa_thompson").protoDelta.toList
-
-      for (i <- mylist.indices) {
-        val temp = mylist(i)._2.inhabited
-        if (temp.isEmpty){
-          transitions(0)(0) += 1
-        }
-        else if (temp.contains(false))
-        {
-          transitions(0)(1)+=1
-        }
-        else if (temp.contains(true)) {
-          transitions(0)(2) += 1
-        }
-      }
-      mylist = data("min_thompson").protoDelta.toList
-      for (i <- mylist.indices) {
-        val temp = mylist(i)._2.inhabited
-        if (temp.isEmpty){
-          transitions(0)(3) += 1
-        }
-        else if (temp.contains(false))
-        {
-          transitions(0)(4)+=1
-        }
-        else if (temp.contains(true)) {
-          transitions(0)(5) += 1
-        }
-      }
-
-      mylist = data("dfa_brzozowski").protoDelta.toList
-      for (i <- mylist.indices) {
-        val temp = mylist(i)._2.inhabited
-        if (temp.isEmpty){
-          transitions(1)(0) += 1
-        }
-        else if (temp.contains(false))
-        {
-          transitions(1)(1)+=1
-        }
-        else if (temp.contains(true)) {
-          transitions(1)(2) += 1
-        }
-      }
-      mylist = data("min_brzozowski").protoDelta.toList
-      for (i <- mylist.indices) {
-        val temp = mylist(i)._2.inhabited
-        if (temp.isEmpty){
-          transitions(1)(3) += 1
-        }
-        else if (temp.contains(false))
-        {
-          transitions(1)(4)+=1
-        }
-        else if (temp.contains(true)) {
-          transitions(1)(5) += 1
-        }
-      }
-      mylist = dataCanonicalize("dfa_thompson").protoDelta.toList
-      for (i <- mylist.indices) {
-        val temp = mylist(i)._2.inhabited
-        if (temp.isEmpty){
-          transitions(2)(0) += 1
-        }
-        else if (temp.contains(false))
-        {
-          transitions(2)(1)+=1
-        }
-        else if (temp.contains(true)) {
-          transitions(2)(2) += 1
-        }
-      }
-      mylist = dataCanonicalize("min_thompson").protoDelta.toList
-      for (i <- mylist.indices) {
-        val temp = mylist(i)._2.inhabited
-        if (temp.isEmpty){
-          transitions(2)(3) += 1
-        }
-        else if (temp.contains(false))
-        {
-          transitions(2)(4)+=1
-        }
-        else if (temp.contains(true)) {
-          transitions(2)(5) += 1
-        }
-      }
-      mylist = dataCanonicalize("dfa_brzozowski").protoDelta.toList
-      for (i <- mylist.indices) {
-        val temp = mylist(i)._2.inhabited
-        if (temp.isEmpty){
-          transitions(3)(0) += 1
-        }
-        else if (temp.contains(false))
-        {
-          transitions(3)(1)+=1
-        }
-        else if (temp.contains(true)) {
-          transitions(3)(2) += 1
-        }
-      }
-      mylist = dataCanonicalize("min_brzozowski").protoDelta.toList
-      for (i <- mylist.indices) {
-        val temp = mylist(i)._2.inhabited
-        if (temp.isEmpty){
-          transitions(3)(3) += 1
-        }
-        else if (temp.contains(false))
-        {
-          transitions(3)(4)+=1
-        }
-        else if (temp.contains(true)) {
-          transitions(3)(5) += 1
-        }
-      }}
-    val myarray = Array("thompson","brzozowski","thompson canonicalize","brzozowski canonicalize")
-    val myarray2 = Array("not sure", "uninhabited","inhabited", "min not sure", "uninhabited", "min inhabited")
-    for(i<-transitions.indices)
-    {
-      println(myarray(i))
-      for(j<-transitions(i).indices)
+          val temp = RTEStatistics(pattern).numberOfTransitions
+          val temp2 = for{x <-myseq}
+            yield
+              {
+                (x,temp(x)+mymap(x))
+              }
+          mymap = temp2.toMap
+    }
+    println(mymap)
+  }
+  def statTest(rte :Rte): Unit= {
+    val transitions = Array.fill(4)(Array.fill(6)(0))
+    val array: Array[Array[Int]] = Statistics.RTEstats(rte).array
+      for(i<-Range(0,4))
       {
-        println(myarray2(j))
-        println(transitions(i)(j))
+        for(j<-Range(0,6))
+        {
+          transitions(i)(j)+=array(i)(j)
+        }
+      }
+    val myarray = Array("thompson","brzozowski","thompson canonicalize","brzozowski canonicalize")
+    val myarray2 = Array("indeterminate", "uninhabited","inhabited", "min indeterminate", "min uninhabited", "min inhabited")
+    for(i<-transitions.indices) {
+      println()
+      printf(myarray(i)+" ")
+      for (j <- transitions(i).indices) {
+        printf(myarray2(j)+" ")
+        val num = transitions(i)(j)
+        printf(s"$num " )
       }
     }
   }
@@ -740,21 +645,18 @@ object Profiling {
     //  them both, and look for cases where the resulting size
     //  is different in terms of state count.
     // same size min, brz min bigger, same size, thompson min bigger, brz bigger, thompson bigger,
-
-    val myarray = Array.fill(6)(0)
-
     val num_random_tests = 10000 * 3
     for {depth <- 1 until 6
          r <- 0 until num_random_tests
          pattern = Rte.randomRte(depth)
-
          } {
       println((depth-1)*num_random_tests+r)
-
+      println(pattern.toMachineReadable())
       val data = check(pattern, r, depth)
-
-      assert(data("min_thompson").Q.size == data("min_brzozowski").Q.size,
+      if(data("min_thompson").Q.size == data("min_brzozowski").Q.size)
         {
+          println("notsamesize")
+
           dfaView(data("dfa_thompson"), "thompson", abbrev = true,
                   label = Some(s"depth=$depth:$r " + pattern.toString))
           dfaView(data("dfa_brzozowski"), "brzozowski", abbrev = true,
@@ -767,12 +669,11 @@ object Profiling {
                   label = Some(s"depth=$depth:$r " + pattern.toString))
           dfaView(data("min_brzozowski"), "brzozowski-min", abbrev = true,
                   label = Some(s"depth=$depth:$r " + pattern.toString))
-
           dfaView(data("xor") ,title = "xor",abbrev = true,
                   label = Some(s"depth=$depth:$r " + pattern.toString))
           println(depth, data, pattern)
           s"different minimized sizes ${data("min_thompson")} vs ${data("min_brzozowski")}"
-        })
+        }
     }
     }
 }

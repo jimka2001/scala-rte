@@ -29,59 +29,8 @@ import NormalForm._
 import scala.runtime.BoxedUnit
 
 object RandomType {
-  // the following classes have no instantiatable subclass
-  trait Trait1
-  trait Trait2
-  trait Trait3 extends Trait2
-  abstract class Abstract1
-  abstract class Abstract2 extends Trait3
 
-  sealed abstract class ADT_abstr
-  class ADT1 extends ADT_abstr
-  class ADT2 extends ADT_abstr
-  class ADT3 extends ADT_abstr
-
-
-  trait Trait1X
-  trait Trait2X // has subclass Trait3X which has subclass Abstract2X
-  trait Trait3X extends Trait2X // has subclass Abstract2X
-  abstract class Abstract1X // has subclass Class1X
-  abstract class Abstract2X extends Trait3X
-  class Class1X extends Abstract1X
-  class Class2X extends Abstract2X
-
-  // allow implicit conversions from c:Class[_] to AtomicType(c)
-  //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)
-  //    classOf[A] && classOf[B]
-  implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
-
-  def oddp(a:Any):Boolean = {
-    a match {
-      case a:Int => a % 2 != 0 // warning! -5 % 2 = -1, not 1.
-      case _ => false
-    }
-  }
   val oddType: SSatisfies = SSatisfies(oddp, "odd")
-  def evenp(a:Any):Boolean = {
-    a match {
-      case a:Int => a % 2 == 0
-      case _ => false
-    }
-  }
-  def isPrime(x: Any): Boolean = {
-    @scala.annotation.tailrec
-    def go(k: Int, y: Int): Boolean = {
-      if (k > scala.math.sqrt(y)) true
-      else if (y % k == 0) false
-      else go(k + 1, y)
-    }
-
-    x match {
-      case y: Int => go(2, y)
-      case _ => false
-    }
-  }
-
   val primeType: SSatisfies = SSatisfies(isPrime)
   val evenType: SSatisfies = SSatisfies(evenp, "even")
   val Any: Class[Any] = classOf[Any]
@@ -98,9 +47,12 @@ object RandomType {
   val AnyVal: Class[AnyVal] = classOf[AnyVal]
   val Numeric: Class[Number] = classOf[lang.Number]
 
+  // allow implicit conversions from c:Class[_] to AtomicType(c)
+  //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)
+  //    classOf[A] && classOf[B]
+  implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
   val anyType: SimpleTypeD = SAtomic(Any)
   val nothingType: SimpleTypeD = SAtomic(Nothing)
-
   val intType: SimpleTypeD = SAtomic(Int)
   val intJavaType: SimpleTypeD = SAtomic(Integer)
   val doubleJavaType: SimpleTypeD = SAtomic(Double)
@@ -111,14 +63,10 @@ object RandomType {
   val charJavaType: SimpleTypeD = SAtomic(Char)
   val anyRefType: SimpleTypeD = SAtomic(AnyRef)
   val numericType: SimpleTypeD = SAtomic(Numeric)
-
   val atomicTypesSeq: Seq[SimpleTypeD] =
     Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanType, unitRuntimeType,
         charJavaType, anyRefType, numericType)
-
-
-
-  val interestingTypes:Vector[SimpleTypeD] = Vector(
+  val interestingTypes: Vector[SimpleTypeD] = Vector(
     STop,
     SEmpty,
     SMember(1, 2, 3, 4),
@@ -130,9 +78,9 @@ object RandomType {
     SEql(false),
     //SInt, // removing these from the list because they trigger very long computation times
     //SDouble,
-    SSatisfies(oddp,"oddp"),
+    SSatisfies(oddp, "oddp"),
     SSatisfies(evenp, "even"),
-    SMember(false,true),
+    SMember(false, true),
     SMember("a", "b", "c"),
     SAtomic(classOf[lang.Number]),
     SAtomic(classOf[String]),
@@ -155,22 +103,80 @@ object RandomType {
     SOr(SAtomic(classOf[ADT1]), SAtomic(classOf[ADT2]), SAtomic(classOf[ADT3])),
     SAtomic(classOf[ADT_abstr])
     )
-  val interestingValues:Vector[Any] = Vector(
+  val interestingValues: Vector[Any] = Vector(
     -1, -1, 0, 1, 2, 3, 4, 5, 6,
     1L, 0L, -1L, 1000L, 1000000L, // these values causes problems reported in issue #7
-    3.14,2.17,-math.sqrt(2),
+    3.14, 2.17, -math.sqrt(2),
     3.14d, 2.17d,
     3.14f, 2.17f,
     'a', 'b', 'c',
-    true,false,
+    true, false,
     "a", "b", "c", "d", "",
     new Class1X,
     new Class2X
-  )
+    )
+  val atomicp: SimpleTypeD => Boolean = {
+    case SAtomic(_) => true
+    case _ => false
+  }
+  val eqlp: SimpleTypeD => Boolean = {
+    case SEql(_) => true
+    case _ => false
+  }
+  val memberp: SimpleTypeD => Boolean = {
+    case SMember(_) => true
+    case SEql(_) => true
+    case _ => false
+  }
+  val andp: SimpleTypeD => Boolean = {
+    case SAnd(_*) => true
+    case _ => false
+  }
+  val orp: SimpleTypeD => Boolean = {
+    case SOr(_*) => true
+    case _ => false
+  }
+  val combop: SimpleTypeD => Boolean = {
+    case SOr(_*) => true
+    case SAnd(_*) => true
+    case _ => false
+  }
+  val notp: SimpleTypeD => Boolean = {
+    case SNot(_) => true
+    case _ => false
+  }
 
-  def randomType(depth:Int, filter:SimpleTypeD=>Boolean):SimpleTypeD = {
+  def oddp(a: Any): Boolean = {
+    a match {
+      case a: Int => a % 2 != 0 // warning! -5 % 2 = -1, not 1.
+      case _ => false
+    }
+  }
+
+  def evenp(a: Any): Boolean = {
+    a match {
+      case a: Int => a % 2 == 0
+      case _ => false
+    }
+  }
+
+  def isPrime(x: Any): Boolean = {
+    @scala.annotation.tailrec
+    def go(k: Int, y: Int): Boolean = {
+      if (k > scala.math.sqrt(y)) true
+      else if (y % k == 0) false
+      else go(k + 1, y)
+    }
+
+    x match {
+      case y: Int => go(2, y)
+      case _ => false
+    }
+  }
+
+  def randomType(depth: Int, filter: SimpleTypeD => Boolean): SimpleTypeD = {
     @tailrec
-    def recur():SimpleTypeD = {
+    def recur(): SimpleTypeD = {
       val td = randomType(depth)
       if (filter(td))
         td
@@ -178,17 +184,18 @@ object RandomType {
         recur()
       }
     }
+
     recur()
   }
 
-  def randomType(depth:Int):SimpleTypeD = {
+  def randomType(depth: Int): SimpleTypeD = {
     val random = new scala.util.Random
     val maxCompoundSize = 2
-    val generators:Seq[()=>SimpleTypeD] = Vector(
+    val generators: Seq[() => SimpleTypeD] = Vector(
       () => SNot(randomType(depth - 1)),
       // always at least one argument of SAnd and SOr
-      () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*),
-      () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*)
+      () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1) }: _*),
+      () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1) }: _*)
       )
     if (depth <= 0)
       interestingTypes(random.nextInt(interestingTypes.length))
@@ -198,7 +205,7 @@ object RandomType {
     }
   }
 
-  def sanityTest():Unit = {
+  def sanityTest(): Unit = {
     val a = 2
     val t = SAtomic(classOf[Int])
 
@@ -221,17 +228,17 @@ object RandomType {
                   SAtomic(classOf[Trait2]))
     println(t1)
     println(t2)
-    println(t2.canonicalize(nf=Some(Dnf)))
+    println(t2.canonicalize(nf = Some(Dnf)))
     println(t1.canonicalize())
-    println(t1.canonicalize(nf=Some(Dnf)))
-    println(SNot(t1).canonicalize(nf=Some(Dnf)))
-    (0 to 10). foreach { i =>
+    println(t1.canonicalize(nf = Some(Dnf)))
+    println(SNot(t1).canonicalize(nf = Some(Dnf)))
+    (0 to 10).foreach { i =>
       val t = randomType(6)
       println(s"$i:" + t)
       println("   " + t.canonicalize())
     }
 
-    println(t1 || t2 )
+    println(t1 || t2)
     println(t1 && t2)
     println(t1 ^^ t2)
     println(t1 - t2)
@@ -287,6 +294,7 @@ object RandomType {
 
     recur(Map(STop -> (Set(STop), Set(SEmpty))), (tds - STop).toList.sortBy(_.toString))
   }
+
   def createMemberFromPairs(xs: Seq[(SimpleTypeD, Any)]): SimpleTypeD = {
     createMember(xs.map(_._2))
   }
@@ -312,36 +320,7 @@ object RandomType {
       case vec => new SMember(vec.toVector)
     }
   }
-  val atomicp: SimpleTypeD => Boolean = {
-    case SAtomic(_) => true
-    case _ => false
-  }
-  val eqlp: SimpleTypeD => Boolean = {
-    case SEql(_) => true
-    case _ => false
-  }
-  val memberp: SimpleTypeD => Boolean = {
-    case SMember(_) => true
-    case SEql(_) => true
-    case _ => false
-  }
-  val andp: SimpleTypeD => Boolean = {
-    case SAnd(_*) => true
-    case _ => false
-  }
-  val orp: SimpleTypeD => Boolean = {
-    case SOr(_*) => true
-    case _ => false
-  }
-  val combop: SimpleTypeD => Boolean = {
-    case SOr(_*) => true
-    case SAnd(_*) => true
-    case _ => false
-  }
-  val notp: SimpleTypeD => Boolean = {
-    case SNot(_) => true
-    case _ => false
-  }
+
   def compareSequence(tds1: Seq[SimpleTypeD], tds2: Seq[SimpleTypeD]): Boolean = {
     @tailrec
     def comp(as: List[SimpleTypeD], bs: List[SimpleTypeD]): Boolean = {
@@ -375,6 +354,7 @@ object RandomType {
       a.getClass.getName < b.getClass.getName
     }
   }
+
   def main(args: Array[String]): Unit = {
     case class Box(value: Any)
     println(SAtomic(classOf[scala.runtime.RichInt]).typep(1))
@@ -390,4 +370,37 @@ object RandomType {
     println(classOf[java.lang.Object].isInstance(1))
 
   }
+
+  // the following classes have no instantiatable subclass
+  trait Trait1
+
+  trait Trait2
+
+  trait Trait3 extends Trait2
+
+  trait Trait1X
+
+  trait Trait2X // has subclass Trait3X which has subclass Abstract2X
+
+  trait Trait3X extends Trait2X // has subclass Abstract2X
+
+  sealed abstract class ADT_abstr
+
+  abstract class Abstract1
+
+  abstract class Abstract2 extends Trait3
+
+  abstract class Abstract1X // has subclass Class1X
+
+  abstract class Abstract2X extends Trait3X
+
+  class ADT1 extends ADT_abstr
+
+  class ADT2 extends ADT_abstr
+
+  class ADT3 extends ADT_abstr
+
+  class Class1X extends Abstract1X
+
+  class Class2X extends Abstract2X
 }
