@@ -42,118 +42,128 @@ object Statistics {
   // then the thompson built sigma DFA after the RTE has been canonicalized
   // then the brzozowski built sigma DFA after the RTE has been canonicalized
   def RTEstats(rte: Rte): Array[Array[Int]] = {
-    val transitions = Array.fill(4)(Array.fill(6)(0))
+    // val transitions = Array.fill(4)(Array.fill(6)(0))
     val rtecanonicalized = rte.canonicalize
     val data = check(rte, 1, 1)
     val dataCanonicalize = check(rtecanonicalized, 1, 1)
 
-    var mylist = data("dfa_thompson").protoDelta.toList
-
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(0)(0) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(0)(1) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(0)(2) += 1
-      }
-    }
-    mylist = data("min_thompson").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(0)(3) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(0)(4) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(0)(5) += 1
-      }
+    for{(f,k1,k2) <- Array((data, "dfa_thompson", "min_thompson"),
+                           (data, "dfa_brzozowski", "min_brzozowski"),
+                           (dataCanonicalize, "dfa_thompson", "min_thompson"),
+                           (dataCanonicalize, "dfa_brzozowski", "min_brzozowski"))
+        d1 = f(k1).protoDelta.toList.groupBy(tr => tr._2.inhabited).withDefaultValue(List())
+        d2 = f(k2).protoDelta.toList.groupBy(tr => tr._2.inhabited).withDefaultValue(List())
+        } yield {
+      Array(d1(None).size, d1(Some(false)).size, d1(Some(true)).size,
+            d2(None).size, d2(Some(false)).size, d2(Some(true)).size)
     }
 
-    mylist = data("dfa_brzozowski").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(1)(0) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(1)(1) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(1)(2) += 1
-      }
-    }
-    mylist = data("min_brzozowski").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(1)(3) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(1)(4) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(1)(5) += 1
-      }
-    }
-    mylist = dataCanonicalize("dfa_thompson").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(2)(0) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(2)(1) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(2)(2) += 1
-      }
-    }
-    mylist = dataCanonicalize("min_thompson").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(2)(3) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(2)(4) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(2)(5) += 1
-      }
-    }
-    mylist = dataCanonicalize("dfa_brzozowski").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(3)(0) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(3)(1) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(3)(2) += 1
-      }
-    }
-    mylist = dataCanonicalize("min_brzozowski").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(3)(3) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(3)(4) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(3)(5) += 1
-      }
-    }
-    transitions
+//    var mylist = data("dfa_thompson").protoDelta.toList
+//    for (i <- mylist.indices) {
+//      val temp = mylist(i)._2.inhabited
+//      if (temp.isEmpty) {
+//        transitions(0)(0) += 1
+//      }
+//      else if (temp.contains(false)) {
+//        transitions(0)(1) += 1
+//      }
+//      else if (temp.contains(true)) {
+//        transitions(0)(2) += 1
+//      }
+//    }
+//    mylist = data("min_thompson").protoDelta.toList
+//    for (i <- mylist.indices) {
+//      val temp = mylist(i)._2.inhabited
+//      if (temp.isEmpty) {
+//        transitions(0)(3) += 1
+//      }
+//      else if (temp.contains(false)) {
+//        transitions(0)(4) += 1
+//      }
+//      else if (temp.contains(true)) {
+//        transitions(0)(5) += 1
+//      }
+//    }
+//
+//    mylist = data("dfa_brzozowski").protoDelta.toList
+//    for (i <- mylist.indices) {
+//      val temp = mylist(i)._2.inhabited
+//      if (temp.isEmpty) {
+//        transitions(1)(0) += 1
+//      }
+//      else if (temp.contains(false)) {
+//        transitions(1)(1) += 1
+//      }
+//      else if (temp.contains(true)) {
+//        transitions(1)(2) += 1
+//      }
+//    }
+//    mylist = data("min_brzozowski").protoDelta.toList
+//    for (i <- mylist.indices) {
+//      val temp = mylist(i)._2.inhabited
+//      if (temp.isEmpty) {
+//        transitions(1)(3) += 1
+//      }
+//      else if (temp.contains(false)) {
+//        transitions(1)(4) += 1
+//      }
+//      else if (temp.contains(true)) {
+//        transitions(1)(5) += 1
+//      }
+//    }
+//    mylist = dataCanonicalize("dfa_thompson").protoDelta.toList
+//    for (i <- mylist.indices) {
+//      val temp = mylist(i)._2.inhabited
+//      if (temp.isEmpty) {
+//        transitions(2)(0) += 1
+//      }
+//      else if (temp.contains(false)) {
+//        transitions(2)(1) += 1
+//      }
+//      else if (temp.contains(true)) {
+//        transitions(2)(2) += 1
+//      }
+//    }
+//    mylist = dataCanonicalize("min_thompson").protoDelta.toList
+//    for (i <- mylist.indices) {
+//      val temp = mylist(i)._2.inhabited
+//      if (temp.isEmpty) {
+//        transitions(2)(3) += 1
+//      }
+//      else if (temp.contains(false)) {
+//        transitions(2)(4) += 1
+//      }
+//      else if (temp.contains(true)) {
+//        transitions(2)(5) += 1
+//      }
+//    }
+//    mylist = dataCanonicalize("dfa_brzozowski").protoDelta.toList
+//    for (i <- mylist.indices) {
+//      val temp = mylist(i)._2.inhabited
+//      if (temp.isEmpty) {
+//        transitions(3)(0) += 1
+//      }
+//      else if (temp.contains(false)) {
+//        transitions(3)(1) += 1
+//      }
+//      else if (temp.contains(true)) {
+//        transitions(3)(2) += 1
+//      }
+//    }
+//    mylist = dataCanonicalize("min_brzozowski").protoDelta.toList
+//    for (i <- mylist.indices) {
+//      val temp = mylist(i)._2.inhabited
+//      if (temp.isEmpty) {
+//        transitions(3)(3) += 1
+//      }
+//      else if (temp.contains(false)) {
+//        transitions(3)(4) += 1
+//      }
+//      else if (temp.contains(true)) {
+//        transitions(3)(5) += 1
+//      }
+//    }
+//    transitions
   }
 
 }
