@@ -176,7 +176,21 @@ object RandomType {
     println(classOf[String] || classOf[Integer])
   }
 
-  def main(args: Array[String]): Unit = {
+  def test179() = {
+    import genus.SAtomic.{withClosedWorldView, withOpenWorldView}
+
+    class A
+    trait B
+    trait C
+    class D extends A with B with C
+    withClosedWorldView {
+      val rte = SAnd(classOf[D], SNot(SAnd( classOf[B], classOf[C])))
+
+      println("xxxxxx -> " + rte.inhabited)
+    }
+  }
+
+  def test192() = {
     case class Box(value: Any)
     println(SAtomic(classOf[scala.runtime.RichInt]).typep(1))
     println(SAtomic(classOf[Int]).typep(Box(1).value))
@@ -189,6 +203,12 @@ object RandomType {
     println(1.isInstanceOf[Any])
     println(classOf[Any].isInstance(1))
     println(classOf[java.lang.Object].isInstance(1))
+  }
+
+  def main(args: Array[String]): Unit = {
+
+    test179()
+    //test192()
 
   }
 }
