@@ -232,7 +232,7 @@ object SAtomic {
     else if (ct == classOf[Boolean]) SAtomic(classOf[java.lang.Boolean])
     else if (ct == classOf[Any]) STop
     else if (ct == classOf[Int]) SAtomic(classOf[Integer])
-    else if (getWorldView == ClosedWorldView && !existsInstantiatableSubclass(ct)) SEmpty
+    else if (getWorldView() == ClosedWorldView && !existsInstantiatableSubclass(ct)) SEmpty
     else knownSAtomics.getOrElseUpdate((getWorldView(),ct), {
       new SAtomic(ct)
     })
