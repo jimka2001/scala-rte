@@ -55,7 +55,7 @@ object RandomType {
       case _ => false
     }
   }
-  val interestingTypes:Vector[SimpleTypeD] = Vector(
+  def interestingTypes():Vector[SimpleTypeD] = Vector(
     STop,
     SEmpty,
     SMember(1, 2, 3, 4),
@@ -126,9 +126,10 @@ object RandomType {
       () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*),
       () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*)
       )
-    if (depth <= 0)
-      interestingTypes(random.nextInt(interestingTypes.length))
-    else {
+    if (depth <= 0) {
+      val items = interestingTypes()
+      items(random.nextInt(items.length))
+    } else {
       val g = generators(random.nextInt(generators.length))
       g()
     }
