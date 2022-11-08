@@ -214,9 +214,11 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     }
   }
 }
-sealed abstract class WorldView
-object ClosedWorldView extends WorldView
-object OpenWorldView extends WorldView
+sealed abstract class WorldView(openness:String){
+  override def toString = s"$openness-world-view"
+}
+object ClosedWorldView extends WorldView("closed")
+object OpenWorldView extends WorldView("open")
 
 /** The AtomicType object, implementing an apply method in order to
  * deal with EmptyType and TopType construction.
