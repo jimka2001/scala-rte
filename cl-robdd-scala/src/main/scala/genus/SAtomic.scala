@@ -128,7 +128,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
         case STop => Some(true)
         case that@SAtomic(tp) =>
           assert(wv == that.wv,
-                 s"subtypepDown called on object of opposing world views: $this vs $that")
+                 s"subtypepDown called on objects of opposing world views: $this vs $that")
           if (s.inhabited.contains(false))
             subtypep(SEmpty)
           else {
