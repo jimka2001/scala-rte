@@ -234,7 +234,6 @@ object SAtomic {
     else if (ct == classOf[Int]) SAtomic(classOf[Integer])
     else if (getWorldView == ClosedWorldView && !existsInstantiatableSubclass(ct)) SEmpty
     else knownSAtomics.getOrElseUpdate((getWorldView(),ct), {
-      println(s"creating new SAtomic($ct) ${getWorldView()}")
       new SAtomic(ct)
     })
   }
