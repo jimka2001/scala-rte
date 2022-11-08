@@ -184,23 +184,27 @@ object Types {
   val AnyVal: Class[AnyVal] = classOf[AnyVal]
   val Numeric: Class[Number] = classOf[lang.Number]
 
-  val anyType: SimpleTypeD = SAtomic(Any)
-  val nothingType: SimpleTypeD = SAtomic(Nothing)
+  // The following definitions are defined as functions rather than
+  //   simply as values, because the SAtomic constructor caches
+  //   objects depending on the world view.
+  def anyType(): SimpleTypeD = SAtomic(Any)
+  def nothingType(): SimpleTypeD = SAtomic(Nothing)
 
-  val intType: SimpleTypeD = SAtomic(Int)
-  val intJavaType: SimpleTypeD = SAtomic(Integer)
-  val doubleJavaType: SimpleTypeD = SAtomic(Double)
-  val stringType: SimpleTypeD = SAtomic(String)
-  val listAnyType: SimpleTypeD = SAtomic(ListAny)
-  val booleanType: SimpleTypeD = SAtomic(Boolean)
-  val unitRuntimeType: SimpleTypeD = SAtomic(Unit)
-  val charJavaType: SimpleTypeD = SAtomic(Char)
-  val anyRefType: SimpleTypeD = SAtomic(AnyRef)
-  val numericType: SimpleTypeD = SAtomic(Numeric)
+  def intType(): SimpleTypeD = SAtomic(Int)
+  def intJavaType(): SimpleTypeD = SAtomic(Integer)
+  def doubleJavaType(): SimpleTypeD = SAtomic(Double)
+  def stringType(): SimpleTypeD = SAtomic(String)
+  def listAnyType(): SimpleTypeD = SAtomic(ListAny)
+  def booleanType(): SimpleTypeD = SAtomic(Boolean)
+  def unitRuntimeType(): SimpleTypeD = SAtomic(Unit)
+  def charJavaType(): SimpleTypeD = SAtomic(Char)
+  def anyRefType(): SimpleTypeD = SAtomic(AnyRef)
+  def numericType(): SimpleTypeD = SAtomic(Numeric)
 
-  val atomicTypesSeq: Seq[SimpleTypeD] =
-    Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanType, unitRuntimeType,
-        charJavaType, anyRefType, numericType)
+  def atomicTypesSeq(): Seq[SimpleTypeD] =
+    Seq(intType(), intJavaType(), doubleJavaType(), stringType(),
+        listAnyType(), booleanType(), unitRuntimeType(),
+        charJavaType(), anyRefType(), numericType())
 
   def isEven(x: Any): Boolean = {
     x match {
