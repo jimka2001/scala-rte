@@ -129,14 +129,14 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   type MaybePath = Option[Either[() => Option[Path], Path]]
   lazy val spanningPath: MaybePath = findSpanningPath()
 
-  // TODO, rename this function.  The fact that it uses Bellman Ford,
-  //    is irrelevant at the call site, and if it is rewritten to use
-  //    a different graph search, e.g., Dijkstra, that should not force
-  //    the name to change.
-  // Compute a Map from exit-value to MaybePath which denotes the shortest path
+  // Compute a Map from exit-value to (Path,Option[Boolean])) which denotes the shortest path
   //   from q0 to a final state with that exit value.
-  def findBFSpanningPath():Map[E,MaybePath] = {
-    import adjuvant.BellmanFord._
+  //   if the Option[Boolean] is Some(true) then the path passes through only satisfiable
+  //       transitions, i.e., transitions for which the label is satisfiable
+  //   If the Option[Boolean] is None, then the path passes through at least one
+  //       indeterminate transitions, i.e., the label.inhabited returned None, dont-know.
+  def findSpanningPathMap():Map[E,(Option[Boolean],Path)] = {
+    import adjuvant.BellmanFord.{shortestPath,reconstructPath}
     import scala.Double.PositiveInfinity
     val numStates:Double = 2 * Q.size.toDouble
     val states = Q.toSeq
@@ -159,26 +159,26 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
                                    case Some(false) => None // non-satisfiable
                                  }} yield edge)
 
-    def maybePath(q:State[Σ, L, E]):(Int,MaybePath) = {
+    def maybePath(q:State[Σ, L, E]):(Int,(Option[Boolean],Path)) = {
       if (d(q) < numStates) // satisfiable path
-        q.id -> Some(Right(reconstructPath[State[Σ, L, E]](p, q)))
+        q.id -> (Some(true),reconstructPath[State[Σ, L, E]](p, q))
       else if (d(q) == PositiveInfinity) // not-satisfiable
-        q.id -> None
+        q.id -> (Some(false),List())
       else
-        q.id -> Some(Left(() => Some(reconstructPath(p, q)))) // non determinate
+        q.id -> (None,reconstructPath(p, q)) // non determinate
     }
 
     // m is the map from final state to shortest path for that state
-    val m:Map[Int,MaybePath] = F.map(maybePath).toMap
+    val m:Map[Int,(Option[Boolean],Path)] = F.map(maybePath).toMap
 
-    def bestPath(pairs:Seq[MaybePath]):MaybePath = {
-      pairs.reduce { (acc, path) =>
+    def bestPath(pairs:Seq[(Option[Boolean],Path)]):(Option[Boolean],Path) = {
+      pairs.fold((Some(false),List())) { (acc, path) =>
         (acc, path) match {
-          case (Some(Right(_)), _) => acc
-          case (_,Some(Right(_))) => path
-          case (Some(Left(_)),_) => acc
-          case (_,Some(Left(_))) => path
-          case _ => None
+          case ((Some(true),_), _) => acc
+          case (_,(Some(true),_)) => path
+          case ((None,_),_) => acc
+          case (_,(None,_)) => path
+          case _ => acc
         }
       }
     }
@@ -187,12 +187,10 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     // to shortest path.  In the case that 2 (or more) final states
     // have the same exit value, we need to select the best path of
     // the paths for those final states.
-    val x = for {(e,pairs) <- fMap.groupBy(_._2)
-                 paths = pairs.map{case (f,_) => m(f)}
-                 best = bestPath(paths.toSeq)
-                 } yield e -> best
-
-    x.toMap // scala says this .toMap is unnecessary, but hte compiler requires it
+    val x: Map[E, (Option[Boolean], Path)] = for {(e,fs) <- fMap.groupMap(_._2)(_._1)
+                                                  best = bestPath(fs.map(m).toSeq)
+                                                  } yield e -> best
+    x
   }
 
   // Try to identify a sequence of States which lead from q0 to a
