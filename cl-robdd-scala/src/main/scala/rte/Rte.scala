@@ -133,6 +133,7 @@ abstract class Rte {
                             }
                           })
   }
+
   def canonicalizeDebug(n:Int):Rte = {
     canonicalizeDebug(n,(_:Rte,_:Rte)=>())
   }
@@ -150,6 +151,7 @@ abstract class Rte {
     }
     raw
   }
+
   def derivativeDown(wrt:SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte
 
   // Computes a pair of Vectors: (Vector[Rte], Vector[Seq[(SimpleTypeD,Int)]])
@@ -202,7 +204,6 @@ abstract class Rte {
   }
 
   import xymbolyco.Dfa
-
 
   def toDfa[E](exitValue:E=true):Dfa[Any,SimpleTypeD,E] = {
     //println(s"toDfa: $this")
@@ -260,9 +261,11 @@ object Rte {
   def Member(xs: Any*):Rte = {
     Singleton(SMember(xs : _*))
   }
+
   def Eql(x: Any):Rte = {
     Singleton(SEql(x))
   }
+
   def Atomic(ct: Class[_]):Rte = {
     Singleton(SAtomic(ct))
   }
@@ -351,7 +354,6 @@ object Rte {
     funnyFold[(Rte,E),xymbolyco.Dfa[Any,SimpleTypeD,E]](disjoint,f,dfaUnion)
   }
 
-
   // Compute the intersection of two given types (SimpleTypeD) for the purpose
   // of creating a label on a Dfa transition.  So we return None if the resulting
   // label (is proved to be) is an empty type, and Some(SimpleTypeD) otherwise.
@@ -374,6 +376,7 @@ object Rte {
       case (None,Some(b)) => Some(b)
     }
   }
+
   // returns Some(true), Some(false), or None
   // Some(true) => the Dfas are provably equivalent, i.e., they both accept the
   //   same language
@@ -382,7 +385,7 @@ object Rte {
   //   because it contains a transition which is not known to be inhabited.
   def dfaEquivalent[E](dfa1:xymbolyco.Dfa[Any,SimpleTypeD,E],
                        dfa2:xymbolyco.Dfa[Any,SimpleTypeD,E]):Option[Boolean] = {
-    Rte.dfaXor(dfa1,dfa2).vacuous()
+    dfaXor(dfa1,dfa2).vacuous()
   }
 
   def dfaUnion[E](dfa1:xymbolyco.Dfa[Any,SimpleTypeD,E],
@@ -408,9 +411,11 @@ object Rte {
                                      )
     dfa
   }
+
   def sortAlphabetically(seq:Seq[Rte]):Seq[Rte] = {
     seq.sortBy(_.toString)
   }
+
   def randomRte(depth: Int): Rte = {
     import scala.util.Random
     val random = new Random
