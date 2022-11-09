@@ -88,6 +88,11 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     }
   }
 
+  // take a path which is a list of states (assumed to be states
+  //   that follow some computation path from q0 to some final
+  //   state), and return a list of labels corresponding to the
+  //   transitions from one state to the next along the path.
+  //   The list of labels is length 1 fewer than the list of states.
   def pathToLabels(path:Path):List[L] = {
       path.tails.flatMap {
         case q1 :: q2 :: _ =>
@@ -113,15 +118,80 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     val maybePath:Option[Path] = spanningPath match {
       case None => None
       case Some(Right(path)) => Some(path)
-      case Some(Left(path)) if !requireSatisfiable => Some(path)
+      case Some(Left(thunk)) if !requireSatisfiable => thunk()
       case _ => None
     }
 
     maybePath.map(path => pathToLabels(path))
   }
 
-  type Path = List[State[Σ,L,E]]
-  lazy val spanningPath: Option[Either[Path, Path]] = findSpanningPath()
+  type Path = List[State[Σ, L, E]]
+  type MaybePath = Option[Either[() => Option[Path], Path]]
+  lazy val spanningPath: MaybePath = findSpanningPath()
+
+  // Compute a Map from exit-value to (Path,Option[Boolean])) which denotes the shortest path
+  //   from q0 to a final state with that exit value.
+  //   if the Option[Boolean] is Some(true) then the path passes through only satisfiable
+  //       transitions, i.e., transitions for which the label is satisfiable
+  //   If the Option[Boolean] is None, then the path passes through at least one
+  //       indeterminate transitions, i.e., the label.inhabited returned None, dont-know.
+  def findSpanningPathMap():Map[E,(Option[Boolean],Path)] = {
+    import adjuvant.BellmanFord.{shortestPath,reconstructPath}
+    import scala.Double.PositiveInfinity
+    val numStates:Double = 2 * Q.size.toDouble
+    val states = Q.toSeq
+    // We use the Bellman Ford shortest path algorithm to find the shortest
+    //    path from q0 to each final state.  We do this by associating weights
+    //    to each edge.  A satisfiable transition, has weight=1.  A uninhabited
+    //    transition has weight = infinity.
+    //    A indeterminate state has weight = 2*number-of-states.  Why?  Because
+    //    if there is a path going only though satisfiable transitions, then it
+    //    at most uses every state, thus has a length of num-states - 1.
+    //    This means Bellman Ford will always prefer satisfiable paths to
+    //    indeterminate paths.
+    val (d,p) = shortestPath(states,
+                             q0,
+                             for{q<-states
+                                 Transition(src,lab,dst) <- q.transitions
+                                 edge <- labeler.inhabited(lab) match {
+                                   case None => Some(((src,dst),numStates)) // indeterminate
+                                   case Some(true) => Some(((src,dst),1.0)) // satisfiable
+                                   case Some(false) => None // non-satisfiable
+                                 }} yield edge)
+
+    def maybePath(q:State[Σ, L, E]):(Int,(Option[Boolean],Path)) = {
+      if (d(q) < numStates) // satisfiable path
+        q.id -> (Some(true),reconstructPath[State[Σ, L, E]](p, q))
+      else if (d(q) == PositiveInfinity) // not-satisfiable
+        q.id -> (Some(false),List())
+      else
+        q.id -> (None,reconstructPath(p, q)) // non determinate
+    }
+
+    // m is the map from final state to shortest path for that state
+    val m:Map[Int,(Option[Boolean],Path)] = F.map(maybePath).toMap
+
+    def bestPath(pairs:Seq[(Option[Boolean],Path)]):(Option[Boolean],Path) = {
+      pairs.fold((Some(false),List())) { (acc, path) =>
+        (acc, path) match {
+          case ((Some(true),_), _) => acc
+          case (_,(Some(true),_)) => path
+          case ((None,_),_) => acc
+          case (_,(None,_)) => path
+          case _ => acc
+        }
+      }
+    }
+
+    // m maps final state to shortest path, we need to map exit-value
+    // to shortest path.  In the case that 2 (or more) final states
+    // have the same exit value, we need to select the best path of
+    // the paths for those final states.
+    val x: Map[E, (Option[Boolean], Path)] = for {(e,fs) <- fMap.groupMap(_._2)(_._1)
+                                                  best = bestPath(fs.map(m).toSeq)
+                                                  } yield e -> best
+    x
+  }
 
   // Try to identify a sequence of States which lead from q0 to a
   // final state.  There are several possible things that can happen.
@@ -135,7 +205,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //   4) there is a path, but it passes through a transition which
   //        is not satisfiable
   //        return None
-  private def findSpanningPath():Option[Either[Path,Path]] = {
+  private def findSpanningPath():MaybePath = {
     def splitTransitions(transitions:List[Transition[Σ,L,E]]):(List[Transition[Σ,L,E]],List[Transition[Σ,L,E]]) = {
       val grouped = transitions.groupBy{case Transition(_, label, _) => labeler.inhabited(label)}
       Tuple2(grouped.getOrElse(Some(true),List()),
@@ -150,8 +220,22 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       fs ++ nonfs
     }
     @tailrec
-    def recur(goodPaths:List[Path],
-              badPaths:List[Path]):Option[Either[Path,Path]] = {
+    def badRecur(badPaths:List[Path]):Option[Path] = {
+      badPaths match {
+        case Nil => None
+        case Nil :: _ => throw new Error(s"empty path not supported")
+        case (p@s :: _) :: _ if F.contains(s) => Some(p)
+        case (p@s :: _) :: _ =>
+          val bads = s.transitions
+            .filter { tr => nonLooping(tr, p) }
+            .toList
+          val newBadPaths = for {Transition(_, _, dst) <- sortTransitions(bads)} yield dst :: p
+          badRecur(newBadPaths ++ badPaths)
+      }
+    }
+    @tailrec
+    def goodRecur(goodPaths:List[Path],
+              badPaths:List[Path]):MaybePath = {
       (goodPaths,badPaths) match {
         case (Nil,Nil) => None
         case (Nil::_,_) => throw new Error(s"empty path not supported")
@@ -163,19 +247,12 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
                                                )
           val newGoodPaths = for{Transition(_,_,dst) <- sortTransitions(goods)} yield  dst::p
           val newBadPaths = for{Transition(_, _, dst) <- sortTransitions(bads)} yield  dst::p
-          recur(newGoodPaths ++ ps,
+          goodRecur(newGoodPaths ++ ps,
                 newBadPaths ++ badPaths)
-        case (Nil,Nil::_) => throw new Error(s"empty path not supported")
-        case (Nil,(p@s::_)::_) if F.contains(s)=> Some(Left(p))
-        case (Nil, (p@s::ss)::ps) =>
-          val bads = s.transitions
-            .filter { tr => nonLooping(tr, p) }
-            .toList
-          val newBadPaths = for{Transition(_, _, dst) <- sortTransitions(bads)} yield  dst::p
-          recur(Nil, newBadPaths ++ badPaths)
+        case (Nil, _) => Some(Left(() => badRecur(badPaths)))
       }
     }
-    recur(List(List(q0)),List())
+    goodRecur(List(List(q0)),List())
   }
 
   def simulate(seq: Seq[Σ]): Option[E] = {
@@ -226,6 +303,45 @@ object Dfa {
     val merged = mergeParallel[Σ, L](labeler,protoDelta.toSeq)
     new Dfa[Σ, L, E](Qids, q0id, Fids, merged, labeler, fMap)
   }
+
+  def combineFmap[E](e1: Option[E], e2: Option[E]): Option[E] = {
+    (e1, e2) match {
+      case (None, None) => None
+      case (Some(b), Some(c)) if c == b => Some(b)
+      case (Some(b), Some(c)) =>
+        println(s"combineFmap: warning loosing value $c, using $b")
+        Some(b) // f-value of dfa1 has precedence over dfa2
+      case (Some(b), None) => Some(b)
+      case (None, Some(b)) => Some(b)
+    }
+  }
+
+  def dfaXor[Σ,L,E](dfa1: xymbolyco.Dfa[Σ, L, E],
+                    dfa2: xymbolyco.Dfa[Σ, L, E]): xymbolyco.Dfa[Σ, L, E] = {
+    Minimize.sxp[Σ, L, E](dfa1, dfa2,
+                          (a: Boolean, b: Boolean) => (a && !b) || (!a && b), // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+                          combineFmap //:(E,E)=>E
+                          )
+  }
+
+  def dfaUnion[Σ,L,E](dfa1: xymbolyco.Dfa[Σ, L, E],
+                  dfa2: xymbolyco.Dfa[Σ, L, E]): xymbolyco.Dfa[Σ, L, E] = {
+    Minimize.sxp[Σ, L, E](dfa1, dfa2,
+                          (a: Boolean, b: Boolean) => a || b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+                          combineFmap //:(E,E)=>E
+                          )
+  }
+
+  // returns Some(true), Some(false), or None
+  // Some(true) => the Dfas are provably equivalent, i.e., they both accept the
+  //   same language
+  // Some(false) => The Dfas are provably not equivalent.
+  // None => It cannot be proven whether the Dfas are equivalent.  For example
+  //   because it contains a transition which is not known to be inhabited.
+  def dfaEquivalent[Σ,L,E](dfa1: xymbolyco.Dfa[Σ, L, E],
+                           dfa2: xymbolyco.Dfa[Σ, L, E]): Option[Boolean] = {
+    dfaXor(dfa1, dfa2).vacuous()
+  }
 }
 
 object TestMe {
@@ -248,6 +364,5 @@ object TestMe {
 
     GraphViz.dfaView(rt2.toDfa(),abbrev=false,title="rt2")
     GraphViz.dfaView(empty.toDfa(),abbrev=true,title="empty")
-
   }
 }

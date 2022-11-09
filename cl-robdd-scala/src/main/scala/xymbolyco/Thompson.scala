@@ -594,7 +594,7 @@ object Profiling {
       dfaView(min_brzozowski, "brzozowski-min", abbrev = true,
               label = Some(s"depth=$depth:$r " + multiLineString(pattern.toString)))
 
-      dfaView(Rte.dfaXor(min_thompson, min_brzozowski),
+      dfaView(Dfa.dfaXor(min_thompson, min_brzozowski),
               title = "xor",
               abbrev = true,
               label = Some(s"depth=$depth:$r " + multiLineString(pattern.toString)))

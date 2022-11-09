@@ -328,7 +328,6 @@ class ThompsonTestSuite  extends MyFunSuite {
       assert(dfa.simulate(Seq()) == Some(42), s"failed to match empty sequence: $pattern")
   }
   test("equivalence check") {
-    import rte.Rte.dfaEquivalent
     val t2x: Rte = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
     val Σ = Sigma
     val ε = EmptyWord
@@ -350,12 +349,12 @@ class ThompsonTestSuite  extends MyFunSuite {
       //GraphViz.dfaView(dfa_brzozowski,title="brzozowski",abbrev=true)
       //GraphViz.dfaView(dfa_thompson,title="thompson",abbrev=true)
       // equivalent might return None or Some(true), but need to fail if returns Some(false)
-      assert(dfaEquivalent(dfa_brzozowski, dfa_thompson) != Some(false),
+      assert(xymbolyco.Dfa.dfaEquivalent(dfa_brzozowski, dfa_thompson) != Some(false),
              s"disagreement on pattern=$pattern")
     }
   }
   test("discovered case 358") {
-    import rte.Rte.dfaEquivalent
+    import xymbolyco.Dfa.dfaEquivalent
     import genus.Types.oddType
     for {pattern <- Seq(Or(Singleton(oddType), Singleton(SMember(true, false)))
                         , Or(Singleton(oddType),
@@ -370,7 +369,7 @@ class ThompsonTestSuite  extends MyFunSuite {
   }
 
   test("randomCreate") {
-    import rte.Rte.dfaEquivalent
+    import xymbolyco.Dfa.dfaEquivalent
     for {depth <- 0 until 3
          _ <- 0 until num_random_tests * 10
          pattern = Rte.randomRte(depth)

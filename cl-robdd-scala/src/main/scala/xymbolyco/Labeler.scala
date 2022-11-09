@@ -35,6 +35,18 @@ abstract class Labeler[Σ,L] {
   def universal(label: L): Boolean = {
     inhabited(subtractLabels(universe, Seq(label))) == Some(false)
   }
+  // The sxp function creates a cartesian product of two Dfas.
+  // In doing so it needs to 'intersect' labels.   This function,
+  // maybeIntersectLabels, returns None if the resulting label means
+  // the transitions should be omitted because it is unsatisfiable,
+  // otherwise Some(L) is returned indicating the intersected label.
+  def maybeIntersectLabels(l1:L,l2:L):Option[L] = {
+    val l3:L = intersectLabels(l1,l2)
+    inhabited(l3) match {
+      case Some(false) => None
+      case _ => Some(l3)
+    }
+  }
 
   // compute a function to find the destination state of this state given an element
   //    of the input sequence.

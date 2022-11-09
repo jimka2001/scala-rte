@@ -156,12 +156,16 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
         .collect{case Singleton(mi:SMemberImpl) => mi.xs }
         .reduceOption(setOperation) match {
         case None => one
+        // TODO need code to verify Seq[(SimpleTypeD,Any)]
+        //     because pattern matcher does not verify.
         case Some(memberOperands:Seq[(SimpleTypeD,Any)]) => Singleton(Types.createMemberFromPairs(memberOperands))
       }
       val newNotMember:Rte = notMembers
         .collect{case Not(Singleton(mi:SMemberImpl)) => mi.xs }
         .reduceOption(setDualOperation) match {
         case None => one
+        // TODO need code to verify Seq[(SimpleTypeD,Any)]
+        //     because pattern matcher does not verify.
         case Some(notMemberOperands:Seq[(SimpleTypeD,Any)]) => Not(Singleton(Types.createMemberFromPairs(notMemberOperands)))
       }
       // careful to put the SMember back in the place of the first

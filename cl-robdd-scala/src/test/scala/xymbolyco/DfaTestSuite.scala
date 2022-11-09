@@ -339,11 +339,9 @@ class DfaTestSuite extends MyFunSuite {
               fMap=Map(2 -> 3)
               )
     }
-    import rte.Rte.{combineFmap,intersectLabels}
     val s = Minimize.sxp(trim(dfa1),trim(dfa2),
-                         intersectLabels,
                          (a:Boolean,b:Boolean) => a || b,
-                         combineFmap[Int]
+                         Dfa.combineFmap[Int]
                          )
     assert(s.Fids.size >= 2)
   }
@@ -369,11 +367,9 @@ class DfaTestSuite extends MyFunSuite {
               fMap=Map(1 -> 20)
               )
     }
-    import rte.Rte.{combineFmap,intersectLabels}
     val s = Minimize.sxp(dfa1,dfa2,
-                         intersectLabels,
                          (a:Boolean,b:Boolean) => a || b,
-                         combineFmap[Int]
+                         Dfa.combineFmap[Int]
                          )
     assert(s.Fids.size >= 2)
     s.simulate(Seq(-1)).contains(10)
