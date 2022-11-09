@@ -118,7 +118,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     val maybePath:Option[Path] = spanningPath match {
       case None => None
       case Some(Right(path)) => Some(path)
-      case Some(Left(thunk)) if !requireSatisfiable => thunk()
+      case Some(Left(path)) if !requireSatisfiable => Some(path)
       case _ => None
     }
 
@@ -126,7 +126,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   }
 
   type Path = List[State[Σ, L, E]]
-  type MaybePath = Option[Either[() => Option[Path], Path]]
+  type MaybePath = Option[Either[Path, Path]]
   lazy val spanningPath: MaybePath = findSpanningPath()
 
   // Compute a Map from exit-value to (Path,Option[Boolean])) which denotes the shortest path
@@ -206,53 +206,14 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //        is not satisfiable
   //        return None
   private def findSpanningPath():MaybePath = {
-    def splitTransitions(transitions:List[Transition[Σ,L,E]]):(List[Transition[Σ,L,E]],List[Transition[Σ,L,E]]) = {
-      val grouped = transitions.groupBy{case Transition(_, label, _) => labeler.inhabited(label)}
-      Tuple2(grouped.getOrElse(Some(true),List()),
-             grouped.getOrElse(None,List()))
-    }
-    def nonLooping(tr:Transition[Σ,L,E],path:Path):Boolean = {
-      val Transition(_,_,dst) = tr
-      !path.contains(dst)
-    }
-    def sortTransitions(transitions:List[Transition[Σ,L,E]]):List[Transition[Σ,L,E]] = {
-      val (fs,nonfs) = transitions.partition{case Transition(_,_,dst) => F.contains(dst)}
-      fs ++ nonfs
-    }
-    @tailrec
-    def badRecur(badPaths:List[Path]):Option[Path] = {
-      badPaths match {
-        case Nil => None
-        case Nil :: _ => throw new Error(s"empty path not supported")
-        case (p@s :: _) :: _ if F.contains(s) => Some(p)
-        case (p@s :: _) :: _ =>
-          val bads = s.transitions
-            .filter { tr => nonLooping(tr, p) }
-            .toList
-          val newBadPaths = for {Transition(_, _, dst) <- sortTransitions(bads)} yield dst :: p
-          badRecur(newBadPaths ++ badPaths)
+    val m: Map[E, (Option[Boolean], Path)] = findSpanningPathMap()
+    m.collectFirst{case item@(_,(Some(true),_)) => item} match {
+      case Some((_,(_,path))) => Some(Right(path))
+      case None => m.collectFirst{case item@(_,(None,_)) => item} match {
+        case Some((_,(_,path))) => Some(Left(path))
+        case _ => None
       }
     }
-    @tailrec
-    def goodRecur(goodPaths:List[Path],
-              badPaths:List[Path]):MaybePath = {
-      (goodPaths,badPaths) match {
-        case (Nil,Nil) => None
-        case (Nil::_,_) => throw new Error(s"empty path not supported")
-        case ((p@s::_)::_, _) if F.contains(s)=> Some(Right(p))
-        case ((p@s::_)::ps, _) =>
-          val (goods, bads) = splitTransitions(s.transitions
-                                                 .filter { tr => nonLooping(tr, p) }
-                                                 .toList
-                                               )
-          val newGoodPaths = for{Transition(_,_,dst) <- sortTransitions(goods)} yield  dst::p
-          val newBadPaths = for{Transition(_, _, dst) <- sortTransitions(bads)} yield  dst::p
-          goodRecur(newGoodPaths ++ ps,
-                newBadPaths ++ badPaths)
-        case (Nil, _) => Some(Left(() => badRecur(badPaths)))
-      }
-    }
-    goodRecur(List(List(q0)),List())
   }
 
   def simulate(seq: Seq[Σ]): Option[E] = {

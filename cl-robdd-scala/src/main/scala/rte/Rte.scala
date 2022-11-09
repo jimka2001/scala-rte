@@ -355,16 +355,16 @@ object Rte {
     funnyFold[(Rte,E),xymbolyco.Dfa[Any,SimpleTypeD,E]](disjoint,f,dfaUnion)
   }
 
-  // Compute the intersection of two given types (SimpleTypeD) for the purpose
-  // of creating a label on a Dfa transition.  So we return None if the resulting
-  // label (is proved to be) is an empty type, and Some(SimpleTypeD) otherwise.
-  def intersectLabels(td1:SimpleTypeD,td2:SimpleTypeD):Option[SimpleTypeD] = {
-    val comb = SAnd(td1,td2).canonicalize()
-    comb.inhabited match {
-      case Some(false) => None
-      case _ => Some(comb)
-    }
-  }
+//  // Compute the intersection of two given types (SimpleTypeD) for the purpose
+//  // of creating a label on a Dfa transition.  So we return None if the resulting
+//  // label (is proved to be) is an empty type, and Some(SimpleTypeD) otherwise.
+//  def intersectLabels(td1:SimpleTypeD,td2:SimpleTypeD):Option[SimpleTypeD] = {
+//    val comb = SAnd(td1,td2).canonicalize()
+//    comb.inhabited match {
+//      case Some(false) => None
+//      case _ => Some(comb)
+//    }
+//  }
 
   def sortAlphabetically(seq:Seq[Rte]):Seq[Rte] = {
     seq.sortBy(_.toString)
