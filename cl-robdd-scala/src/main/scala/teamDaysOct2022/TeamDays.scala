@@ -95,7 +95,7 @@ object TeamDays {
     dfaView(dfa1, abbrev = true, title = "dfa1")
     dfaView(dfa2, abbrev = true, title = "dfa2")
 
-    val dfa3 = Rte.dfaXor(dfa1, dfa2)
+    val dfa3 = xymbolyco.Dfa.dfaXor(dfa1, dfa2)
     dfaView(dfa3, abbrev = true, title = "xor")
 
     dfaView(Minimize.minimize(dfa3), abbrev = true, title = "minimized")
@@ -112,7 +112,7 @@ object TeamDays {
     val dfa1 = rte1.toDfa(exitValue = 42)
     val dfa2 = rte2.toDfa(exitValue = 13)
 
-    val dfa3 = Rte.dfaUnion(dfa1, dfa2)
+    val dfa3 = xymbolyco.Dfa.dfaUnion(dfa1, dfa2)
     dfaView(dfa3, abbrev = true, title = "distinguishable-output",
             dotFileCB = (fn: String) => {
               copyFile(fn, dotDir + "team-days-oct-2022-distinguishable-output.dot")
