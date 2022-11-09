@@ -297,4 +297,18 @@ class RteTestSuite extends MyFunSuite {
     assert((Star(Cat(classOf[Int], Star(classOf[String]), evenType)) ~= Not(evenType))
              == false)
   }
+
+  test("spanning paths"){
+    import xymbolyco.Dfa.dfaUnion
+    for{n <- 0 to 10
+        rte1 = Rte.randomRte(4)
+        rte2 = Rte.randomRte(4)
+        rte3 = Rte.randomRte(4)
+        dfa1 = Cat(rte1,Star(rte2),Not(rte2),rte3).toDfa(1)
+        dfa2 = Cat(rte2,Star(rte3),Not(rte3),rte1).toDfa(2)
+        dfa3 = Cat(rte3,Star(rte1),Not(rte1),rte2).toDfa(3)
+        dfa4 = dfaUnion(dfaUnion(dfa1,dfa2),dfa3)
+        } println(dfa4.findSpanningPathMap())
+  }
+
 }
