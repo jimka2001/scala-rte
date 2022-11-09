@@ -207,13 +207,11 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //        return None
   private def findSpanningPath():MaybePath = {
     val m: Map[E, (Option[Boolean], Path)] = findSpanningPathMap()
-    m.collectFirst{case item@(_,(Some(true),_)) => item} match {
-      case Some((_,(_,path))) => Some(Right(path))
-      case None => m.collectFirst{case item@(_,(None,_)) => item} match {
-        case Some((_,(_,path))) => Some(Left(path))
-        case _ => None
-      }
-    }
+
+    lazy val foundTrue = m.collectFirst{case (_,(Some(true),path)) => Right(path)}
+    lazy val foundNone = m.collectFirst{case (_,(None,path)) => Left(path)}
+
+    foundTrue.orElse(foundNone)
   }
 
   def simulate(seq: Seq[Σ]): Option[E] = {
