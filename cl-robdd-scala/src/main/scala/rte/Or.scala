@@ -26,6 +26,9 @@ import genus._
 
 case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
   override def toMachineReadable(): String = operands.map(_.toMachineReadable()).mkString("Or(", ",", ")")
+  override def toString: String = operands.map(_.toString).mkString("Or(", ",", ")")
+  override def toDot(): String = operands.map(_.toDot()).mkString("Or(", ",", ")")
+  override def toLaTeX():String = operands.map(_.toLaTeX()).mkString("(", "\\vee ", ")")
 
   val zero:Rte = Rte.sigmaStar
   val one:Rte = EmptySet
@@ -55,10 +58,6 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
   def setDualOperation(a:Seq[Any],b:Seq[Any]):Seq[Any] = a.filter(x => b.contains(x)) // intersection
   def setOperation(a:Seq[Any],b:Seq[Any]):Seq[Any] = a ++ b.diff(a) // union
 
-  override def toLaTeX(): String = "(" + operands.map(_.toLaTeX()).mkString(" \\vee ") + ")"
-
-  override def toString: String = operands.map(_.toString).mkString("Or(", ",", ")")
-  override def toDot():String = operands.map(_.toDot()).mkString("Or(", ",", ")")
   def nullable: Boolean = operands.exists {
     _.nullable
   }

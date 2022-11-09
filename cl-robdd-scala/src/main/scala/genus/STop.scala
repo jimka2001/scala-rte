@@ -26,6 +26,9 @@ package genus
 object STop extends SimpleTypeD with TerminalType {
   override def toString = "STop"
   override def toLaTeX():String = "\\Sigma"
+  override def toDot():String = "STop"
+  override def toMachineReadable():String = "STop"
+
   override def typep(a: Any): Boolean = true
 
   override protected def inhabitedDown: Some[Boolean] = Some(true)

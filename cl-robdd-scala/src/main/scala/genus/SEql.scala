@@ -29,7 +29,6 @@ import genus.Types.cmpTypeDesignators
  * @param a the object defining the type
  */
 case class SEql(a: (SimpleTypeD,Any)) extends SMemberImpl(Vector(a)) with TerminalType {
-  override def toMachineReadable():String = toString
 
   override def toString: String = {
     s"SEql(${a._2} /* " +
@@ -39,6 +38,7 @@ case class SEql(a: (SimpleTypeD,Any)) extends SMemberImpl(Vector(a)) with Termin
       }) +
       "*/ )"
   }
+  override def toMachineReadable():String = s"Eql(" + a._1.toString +")"
 
   override def toLaTeX(): String = {
     a._2.toString

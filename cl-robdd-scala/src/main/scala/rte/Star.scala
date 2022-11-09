@@ -26,9 +26,8 @@ import genus._
 
 case class Star(operand:Rte) extends Rte {
   override def toLaTeX(): String = "(" ++ operand.toLaTeX() ++ ")^{*}"
-  override def toDot():String = "(" ++ operand.toDot() ++ ")^{*}"
+  override def toDot():String = "Star(" ++ operand.toDot() ++ ")"
   override def toMachineReadable():String = "Star(" + operand.toMachineReadable() + ")"
-
   override def toString: String = "Star(" + operand.toString + ")"
 
   def nullable: Boolean = true
