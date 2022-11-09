@@ -328,6 +328,7 @@ object Rte {
   }
 
   def rteCase[E](seq:Seq[(Rte,E)]):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
+    import xymbolyco.Dfa.dfaUnion
     @tailrec
     def excludePrevious(remaining:List[(Rte,E)], previous:List[Rte], acc:List[(Rte,E)]):Seq[(Rte,E)] = {
       remaining match {
@@ -363,53 +364,6 @@ object Rte {
       case Some(false) => None
       case _ => Some(comb)
     }
-  }
-
-  def combineFmap[E](e1:Option[E],e2:Option[E]):Option[E] = {
-    (e1,e2) match {
-      case (None,None) => None
-      case (Some(b),Some(c)) if c == b => Some(b)
-      case (Some(b),Some(c)) =>
-        println(s"combineFmap: warning loosing value $c, using $b")
-        Some(b) // f-value of dfa1 has precedence over dfa2
-      case (Some(b),None) => Some(b)
-      case (None,Some(b)) => Some(b)
-    }
-  }
-
-  // returns Some(true), Some(false), or None
-  // Some(true) => the Dfas are provably equivalent, i.e., they both accept the
-  //   same language
-  // Some(false) => The Dfas are provably not equivalent.
-  // None => It cannot be proven whether the Dfas are equivalent.  For example
-  //   because it contains a transition which is not known to be inhabited.
-  def dfaEquivalent[E](dfa1:xymbolyco.Dfa[Any,SimpleTypeD,E],
-                       dfa2:xymbolyco.Dfa[Any,SimpleTypeD,E]):Option[Boolean] = {
-    dfaXor(dfa1,dfa2).vacuous()
-  }
-
-  def dfaUnion[E](dfa1:xymbolyco.Dfa[Any,SimpleTypeD,E],
-                  dfa2:xymbolyco.Dfa[Any,SimpleTypeD,E]):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
-    import xymbolyco.Minimize.sxp
-
-    val dfa = sxp[Any,SimpleTypeD,E](dfa1,dfa2,
-                                     intersectLabels, // (L,L)=>Option[L],
-                                     (a:Boolean,b:Boolean) => a || b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
-                                     combineFmap //:(E,E)=>E
-                                     )
-    dfa
-  }
-
-  def dfaXor[E](dfa1:xymbolyco.Dfa[Any,SimpleTypeD,E],
-                dfa2:xymbolyco.Dfa[Any,SimpleTypeD,E]):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
-    import xymbolyco.Minimize.sxp
-
-    val dfa = sxp[Any,SimpleTypeD,E](dfa1,dfa2,
-                                     intersectLabels, // (L,L)=>Option[L],
-                                     (a:Boolean,b:Boolean) => (a && !b) || (!a && b), // arbitrateFinal:(Boolean,Boolean)=>Boolean,
-                                     combineFmap //:(E,E)=>E
-                                     )
-    dfa
   }
 
   def sortAlphabetically(seq:Seq[Rte]):Seq[Rte] = {

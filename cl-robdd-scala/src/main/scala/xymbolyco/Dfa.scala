@@ -303,6 +303,45 @@ object Dfa {
     val merged = mergeParallel[Σ, L](labeler,protoDelta.toSeq)
     new Dfa[Σ, L, E](Qids, q0id, Fids, merged, labeler, fMap)
   }
+
+  def combineFmap[E](e1: Option[E], e2: Option[E]): Option[E] = {
+    (e1, e2) match {
+      case (None, None) => None
+      case (Some(b), Some(c)) if c == b => Some(b)
+      case (Some(b), Some(c)) =>
+        println(s"combineFmap: warning loosing value $c, using $b")
+        Some(b) // f-value of dfa1 has precedence over dfa2
+      case (Some(b), None) => Some(b)
+      case (None, Some(b)) => Some(b)
+    }
+  }
+
+  def dfaXor[Σ,L,E](dfa1: xymbolyco.Dfa[Σ, L, E],
+                    dfa2: xymbolyco.Dfa[Σ, L, E]): xymbolyco.Dfa[Σ, L, E] = {
+    Minimize.sxp[Σ, L, E](dfa1, dfa2,
+                          (a: Boolean, b: Boolean) => (a && !b) || (!a && b), // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+                          combineFmap //:(E,E)=>E
+                          )
+  }
+
+  def dfaUnion[Σ,L,E](dfa1: xymbolyco.Dfa[Σ, L, E],
+                  dfa2: xymbolyco.Dfa[Σ, L, E]): xymbolyco.Dfa[Σ, L, E] = {
+    Minimize.sxp[Σ, L, E](dfa1, dfa2,
+                          (a: Boolean, b: Boolean) => a || b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+                          combineFmap //:(E,E)=>E
+                          )
+  }
+
+  // returns Some(true), Some(false), or None
+  // Some(true) => the Dfas are provably equivalent, i.e., they both accept the
+  //   same language
+  // Some(false) => The Dfas are provably not equivalent.
+  // None => It cannot be proven whether the Dfas are equivalent.  For example
+  //   because it contains a transition which is not known to be inhabited.
+  def dfaEquivalent[Σ,L,E](dfa1: xymbolyco.Dfa[Σ, L, E],
+                           dfa2: xymbolyco.Dfa[Σ, L, E]): Option[Boolean] = {
+    dfaXor(dfa1, dfa2).vacuous()
+  }
 }
 
 object TestMe {
@@ -325,6 +364,5 @@ object TestMe {
 
     GraphViz.dfaView(rt2.toDfa(),abbrev=false,title="rt2")
     GraphViz.dfaView(empty.toDfa(),abbrev=true,title="empty")
-
   }
 }
