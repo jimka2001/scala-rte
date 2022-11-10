@@ -75,6 +75,7 @@ object Assignment {
         case (x :: xs, y :: _) if x < y => loop(xs, falses, (v + subscript(x, List())) :: literals)
         case (x :: _, y :: ys) if x > y => loop(trues, ys, ("\u00AC" + v + subscript(y, List())) :: literals)
         case (x :: _, y :: _) if x == y => sys.error(s"trues=$trues and falses=$falses contain the same literal=$x")
+        case _ => throw new NotImplementedError(s"invalid data: trues=$trues, falses=$falses")
       }
 
     loop(trues, falses, List())

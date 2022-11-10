@@ -99,6 +99,7 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
       operands.find(Rte.isOr) match {
         case Some(x@Or(Seq(rs@_*))) =>
           Or.createOr(rs.map { r => And.createAnd(searchReplace(operands, x, r)) })
+        case _ => throw new NotImplementedError(s"invalid this: $this")
       }
     else
       this

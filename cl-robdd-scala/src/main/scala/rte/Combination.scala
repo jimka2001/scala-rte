@@ -156,17 +156,25 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
         .collect{case Singleton(mi:SMemberImpl) => mi.xs }
         .reduceOption(setOperation) match {
         case None => one
-        // TODO need code to verify Seq[(SimpleTypeD,Any)]
-        //     because pattern matcher does not verify.
-        case Some(memberOperands:Seq[(SimpleTypeD,Any)]) => Singleton(Types.createMemberFromPairs(memberOperands))
+        case Some(pairs:Seq[_]) => {
+          val memberOperands = pairs.collect{
+            case (p1:SimpleTypeD,p2:Any) => (p1,p2)
+            case pair => throw new NotImplementedError(s"invalid data: this=$this, pair=$pair")
+          }
+          Singleton(Types.createMemberFromPairs(memberOperands))
+        }
       }
       val newNotMember:Rte = notMembers
         .collect{case Not(Singleton(mi:SMemberImpl)) => mi.xs }
         .reduceOption(setDualOperation) match {
         case None => one
-        // TODO need code to verify Seq[(SimpleTypeD,Any)]
-        //     because pattern matcher does not verify.
-        case Some(notMemberOperands:Seq[(SimpleTypeD,Any)]) => Not(Singleton(Types.createMemberFromPairs(notMemberOperands)))
+        case Some(pairs:Seq[_]) => {
+          val notMemberOperands = pairs.collect{
+            case (p1:SimpleTypeD, p2:Any) => (p1,p2)
+            case pair => throw new NotImplementedError(s"invalid data: this=$this, pair=$pair")
+          }
+          Not(Singleton(Types.createMemberFromPairs(notMemberOperands)))
+        }
       }
       // careful to put the SMember back in the place of the first
       //   this is accomplished by replacing every SMember/SEql with the one we derive here

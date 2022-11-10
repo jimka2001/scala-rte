@@ -164,6 +164,7 @@ class QmVec() {
           case _ =>
             RemoveAdd.nil
         }
+      case Some(_) => throw new NotImplementedError(s"invalid data: $maybeClb, in ${hash.get(posCount - 1)}")
     }
   }
 
@@ -304,6 +305,7 @@ object QmVec {
       case (c1 :: c1s, c2 :: c2s) if c1 == c2 => clauseLess(c1s, c2s)
       case (c1 :: _, c2 :: _) if equalAbs(c1, c2) => c1 < c2
       case (c1 :: _, c2 :: _) => absLess(c1, c2)
+      case (_,_) => throw new NotImplementedError(s"invalid data: clause1=$clause1, clause2=$clause2")
     }
   }
 

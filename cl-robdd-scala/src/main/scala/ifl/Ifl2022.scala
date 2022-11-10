@@ -69,6 +69,7 @@ object Ifl2022 {
     data match {
       case a :: as if a > n => as.reverse
       case a :: _ => indices(scale, (a * scale).round.toInt :: data,n)
+      case _ => throw new NotImplementedError(s"invalid data: $data")
     }
   }
 
