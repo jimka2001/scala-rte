@@ -366,6 +366,7 @@ object Rte {
 //    }
 //  }
 
+  // Sort the sequence alphabetically according to toString
   def sortAlphabetically(seq:Seq[Rte]):Seq[Rte] = {
     seq.sortBy(_.toString)
   }
