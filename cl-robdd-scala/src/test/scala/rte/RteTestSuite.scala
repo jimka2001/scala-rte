@@ -63,7 +63,7 @@ class RteTestSuite extends MyFunSuite {
              == "(Number\\wedge \\overline{Integer}\\wedge \\overline{44})")
     assert(Or(Singleton(SAtomic(classOf[String])),
               Singleton(SMember(1,2,3))).toLaTeX()
-             == "(String \\vee \\{1 ,2 ,3\\})")
+             == "(String\\vee \\{1 ,2 ,3\\})")
   }
 
   test("operators") {
