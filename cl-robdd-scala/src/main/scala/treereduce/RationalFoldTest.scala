@@ -33,7 +33,7 @@ object RationalFoldTest {
   def time1[R](block: => R):Double = {
     val t0 = System.nanoTime()
     block
-    System.nanoTime() - t0
+    (System.nanoTime() - t0).toDouble
   }
 
   def time[R](repetitions: Int, name: String, block: => R): Double = {

@@ -26,6 +26,8 @@ case class Not(operand:Rte) extends Rte {
   override def toLaTeX():String = "\\overline{" ++  operand.toLaTeX() ++ "}"
   override def toDot():String = "!" + operand.toDot()
   override def toMachineReadable():String = "Not(" + operand.toMachineReadable() + ")"
+  override def toString = "!" + operand.toString
+
   def nullable:Boolean = ! operand.nullable
   def firstTypes:Set[SimpleTypeD] = operand.firstTypes
 

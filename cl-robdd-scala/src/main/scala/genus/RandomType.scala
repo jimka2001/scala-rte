@@ -67,6 +67,14 @@ object RandomType {
     Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanType, unitRuntimeType,
         charJavaType, anyRefType, numericType)
   val interestingTypes: Vector[SimpleTypeD] = Vector(
+
+  def oddp(a:Any):Boolean = {
+    a match {
+      case a:Int => a % 2 != 0 // because e.g., -5 % 2 = -1, rather than 1
+      case _ => false
+    }
+  }
+  def interestingTypes():Vector[SimpleTypeD] = Vector(
     STop,
     SEmpty,
     SMember(1, 2, 3, 4),
@@ -184,7 +192,6 @@ object RandomType {
         recur()
       }
     }
-
     recur()
   }
 
@@ -197,9 +204,10 @@ object RandomType {
       () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1) }: _*),
       () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1) }: _*)
       )
-    if (depth <= 0)
-      interestingTypes(random.nextInt(interestingTypes.length))
-    else {
+    if (depth <= 0) {
+      val items = interestingTypes()
+      items(random.nextInt(items.length))
+    } else {
       val g = generators(random.nextInt(generators.length))
       g()
     }
@@ -247,115 +255,21 @@ object RandomType {
     println(classOf[String] || classOf[Integer])
   }
 
-  // Given a set of type designators, return a newly computed Seq of triples:
-  //    (td:SimpleTypeD,factors:List[SimpleTypeD],disjoints:List[SimpleTypeD])
-  // indicating type designators which implement the Maximal Disjoint Type Decomposition.
-  // I.e., the computed list (the list of all the td components) designates a set all of whose
-  // elements are mutually disjoint.
-  // Two values of td, i.e., x and y, have the property that if x and y
-  // are disjoint, and if z in in the given set, tds, of type designators
-  // then either x is disjoint from z or x is a subclass of z, but never does
-  // x partially overlap z.  Consequently, if some of the given type designators
-  // in tds are partially overlapping, then some td in the return value is a subtype
-  // of multiple type designators from tds.
-  def mdtd(tds: Set[SimpleTypeD]): Map[SimpleTypeD, (Set[SimpleTypeD], Set[SimpleTypeD])] = {
-    type S = SimpleTypeD // local type def just to simplify the following type declarations
-    @tailrec
-    def recur(decomposition: Map[S, (Set[S], Set[S])], tds: List[S]): Map[S, (Set[S], Set[S])] = {
-      if (tds.isEmpty)
-        decomposition
-      else {
-        val u = tds.head // take any element from the given type set, does not matter which
-        val n = SNot(u)
-        val nc = n.canonicalize(Some(NormalForm.Dnf))
+  def test179() = {
+    import genus.SAtomic.{withClosedWorldView, withOpenWorldView}
 
-        def f(pair: (S, (Set[S], Set[S]))): Map[S, (Set[S], Set[S])] = {
-          val (td1, (factors, disjoints)) = pair
-          lazy val a = SAnd(u, td1).canonicalize(Some(NormalForm.Dnf))
-          lazy val b = SAnd(nc, td1).canonicalize(Some(NormalForm.Dnf))
-          if (u.disjoint(td1).contains(true))
-            Map(td1 -> (factors + n, disjoints + u))
-          else if (n.disjoint(td1).contains(true))
-            Map(td1 -> (factors + u, disjoints + n))
-          // we omit the expensive inhabited check unless u.disjoint(td1) == dont-know
-          else if (u.disjoint(td1).isEmpty && a.inhabited.contains(false))
-            Map(td1 -> (factors + n, disjoints + u))
-          // we omit the expensive inhabited check unless n.disjoint(td1) == dont-know
-          else if (n.disjoint(td1).isEmpty && b.inhabited.contains(false))
-            Map(td1 -> (factors + u, disjoints + n))
-          else
-            Map(a -> (factors + u, disjoints + n),
-                b -> (factors + n, disjoints + u))
-        }
+    class A
+    trait B
+    trait C
+    class D extends A with B with C
+    withClosedWorldView {
+      val rte = SAnd(classOf[D], SNot(SAnd( classOf[B], classOf[C])))
 
-        recur(decomposition.flatMap(f), tds.tail)
-      }
-    }
-
-    recur(Map(STop -> (Set(STop), Set(SEmpty))), (tds - STop).toList.sortBy(_.toString))
-  }
-
-  def createMemberFromPairs(xs: Seq[(SimpleTypeD, Any)]): SimpleTypeD = {
-    createMember(xs.map(_._2))
-  }
-
-  def createMember(xs: Seq[Any]): SimpleTypeD = {
-    xs.toList match {
-      case (_, _) :: _ => throw new Exception(s"warning createMember called with pairs: $xs")
-      case _ => ()
-    }
-
-    def cmp(a: (SimpleTypeD, Any), b: (SimpleTypeD, Any)): Boolean = {
-      if (a == b)
-        false
-      else if (a._1 != b._1)
-        cmpTypeDesignators(a._1, b._1)
-      else
-        a._2.toString < b._2.toString
-    }
-
-    xs.map(x => (SAtomic(x.getClass), x)).distinct.sortWith(cmp) match {
-      case Seq() => SEmpty
-      case Seq(a) => SEql(a)
-      case vec => new SMember(vec.toVector)
+      println("xxxxxx -> " + rte.inhabited)
     }
   }
 
-  def compareSequence(tds1: Seq[SimpleTypeD], tds2: Seq[SimpleTypeD]): Boolean = {
-    @tailrec
-    def comp(as: List[SimpleTypeD], bs: List[SimpleTypeD]): Boolean = {
-      (as, bs) match {
-        case (Nil, Nil) => throw new Exception(s"not expecting equal sequences $tds1, $tds2")
-        case (Nil, _) => true
-        case (_, Nil) => false
-        case (a :: as, b :: bs) =>
-          if (a == b)
-            comp(as, bs)
-          else
-            cmpTypeDesignators(a, b)
-      }
-    }
-
-    comp(tds1.toList, tds2.toList)
-  }
-
-  /* compare two objects in a way compatible with sortWith.
- This function implements a strictly-less-than, thus it
- returns false on equal elements.
- */
-  def cmpTypeDesignators(a: SimpleTypeD, b: SimpleTypeD): Boolean = {
-    if (a == b)
-      false
-    else if (a.getClass eq b.getClass) {
-      a.cmpToSameClassObj(b)
-    }
-    else {
-      // just compare the class printed values alphabetically
-      a.getClass.getName < b.getClass.getName
-    }
-  }
-
-  def main(args: Array[String]): Unit = {
+  def test192() = {
     case class Box(value: Any)
     println(SAtomic(classOf[scala.runtime.RichInt]).typep(1))
     println(SAtomic(classOf[Int]).typep(Box(1).value))
@@ -368,6 +282,12 @@ object RandomType {
     println(1.isInstanceOf[Any])
     println(classOf[Any].isInstance(1))
     println(classOf[java.lang.Object].isInstance(1))
+  }
+
+  def main(args: Array[String]): Unit = {
+
+    test179()
+    //test192()
 
   }
 

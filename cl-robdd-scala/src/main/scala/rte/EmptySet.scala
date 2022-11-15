@@ -25,8 +25,9 @@ import genus._
 
 object EmptySet extends Rte {
   override def toLaTeX(): String = "\\emptyset "
-
   override def toString: String = "EmptySet"// "∅"
+  override def toMachineReadable():String = "EmptySet"
+  override def toDot():String = "EmptySet"
 
   def nullable: Boolean = false
 

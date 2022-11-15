@@ -441,10 +441,16 @@ class AndTestSuite extends MyFunSuite {
   }
 
   test("and conversion5"){
-    assert(And(Singleton(SEql(2)),Singleton(SEql(1))).conversionC5()
-             == And(Singleton(SEql(1)),Singleton(SEql(2))))
-    assert(And(Singleton(SEql(1)),Singleton(SEql(2))).conversionC5()
-             == And(Singleton(SEql(1)),Singleton(SEql(2))))
+    assert(And(Singleton(SEql(2)),
+               Singleton(SEql(1))).conversionC5()
+             == And(Singleton(SEql(1)),
+                    Singleton(SEql(2))),
+           "line 445")
+    assert(And(Singleton(SEql(1)),
+               Singleton(SEql(2))).conversionC5()
+             == And(Singleton(SEql(1)),
+                    Singleton(SEql(2))),
+           "line 447")
   }
 
   test("and conversion6"){

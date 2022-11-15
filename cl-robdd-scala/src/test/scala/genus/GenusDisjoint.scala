@@ -23,7 +23,6 @@ package genus
 
 import RandomType._
 import adjuvant.MyFunSuite
-import org.scalatest.funsuite.AnyFunSuite
 
 class GenusDisjoint extends MyFunSuite {
 
@@ -62,15 +61,15 @@ class GenusDisjoint extends MyFunSuite {
     }
   }
   test("disjoint EmptyType") {
-    assert(atomicTypesSeq.forall(_.disjoint(SEmpty).contains(true)))
-    assert(atomicTypesSeq.forall(SEmpty.disjoint(_).contains(true)))
+    assert(atomicTypesSeq().forall(_.disjoint(SEmpty).contains(true)))
+    assert(atomicTypesSeq().forall(SEmpty.disjoint(_).contains(true)))
     assert(SEmpty.disjoint(SEmpty).contains(true))
     assert(SEmpty.disjoint(STop).contains(true))
   }
 
   test("disjoint SuperType") {
-    assert(atomicTypesSeq.forall(STop.disjoint(_).contains(false)))
-    assert(atomicTypesSeq.forall(_.disjoint(STop).contains(false)))
+    assert(atomicTypesSeq().forall(STop.disjoint(_).contains(false)))
+    assert(atomicTypesSeq().forall(_.disjoint(STop).contains(false)))
     assert(STop.disjoint(SEmpty).contains(true))
     assert(STop.disjoint(STop).contains(false))
   }
@@ -80,12 +79,12 @@ class GenusDisjoint extends MyFunSuite {
       val numericType = SAtomic(classOf[java.lang.Number])
 
       assert(!numericType.disjoint(numericType).getOrElse(true))
-      assert(!numericType.disjoint(intJavaType).getOrElse(true))
-      assert(!numericType.disjoint(doubleJavaType).getOrElse(true))
-      assert(!intJavaType.disjoint(numericType).getOrElse(true))
-      assert(!doubleJavaType.disjoint(numericType).getOrElse(true))
-      assert(numericType.disjoint(stringType).getOrElse(true))
-      assert(stringType.disjoint(numericType).getOrElse(true))
+      assert(!numericType.disjoint(intJavaType()).getOrElse(true))
+      assert(!numericType.disjoint(doubleJavaType()).getOrElse(true))
+      assert(!intJavaType().disjoint(numericType).getOrElse(true))
+      assert(!doubleJavaType().disjoint(numericType).getOrElse(true))
+      assert(numericType.disjoint(stringType()).getOrElse(true))
+      assert(stringType().disjoint(numericType).getOrElse(true))
     }
   }
 
@@ -95,12 +94,12 @@ class GenusDisjoint extends MyFunSuite {
 
     assert(m1.disjoint(m2).getOrElse(false))
     assert(m2.disjoint(m1).getOrElse(false))
-    assert(! m1.disjoint(intJavaType).getOrElse(true))
-    assert(m1.disjoint(stringType).getOrElse(false))
-    assert(! m2.disjoint(intJavaType).getOrElse(true))
-    assert(! m2.disjoint(stringType).getOrElse(true))
-    assert(! intJavaType.disjoint(m2).getOrElse(true))
-    assert(! stringType.disjoint(m2).getOrElse(true))
+    assert(! m1.disjoint(intJavaType()).getOrElse(true))
+    assert(m1.disjoint(stringType()).getOrElse(false))
+    assert(! m2.disjoint(intJavaType()).getOrElse(true))
+    assert(! m2.disjoint(stringType()).getOrElse(true))
+    assert(! intJavaType().disjoint(m2).getOrElse(true))
+    assert(! stringType().disjoint(m2).getOrElse(true))
   }
 
   test("disjoint union") {
@@ -132,8 +131,8 @@ class GenusDisjoint extends MyFunSuite {
   }
 
   test("disjoint unknown") {
-    SOr(intJavaType, stringType).disjoint(SOr(charJavaType, booleanType))
-    SAnd(SOr(intJavaType, doubleJavaType), stringType).disjoint(stringType)
+    SOr(intJavaType(), stringType()).disjoint(SOr(charJavaType(), booleanType()))
+    SAnd(SOr(intJavaType(), doubleJavaType()), stringType()).disjoint(stringType())
   }
   class Test1
   class Test2 extends Test1

@@ -215,18 +215,27 @@ object GnuPlot {
                                 view = view)
     // convert dataToPlot to the form Seq[(String,Seq[Double],Seq[Double])]
     val curves = dataToPlot.map{
-      case (label:String,xys:Seq[(Any,Double)]) => Tuple3(label,xys.map {
-        case (x:Double,_) => x
-        case (x:Int,_) => x.toDouble
-        case data => throw new NotImplementedError(s"invalid data: $data, in $dataToPlot")
-      } ,xys.map(_._2))
-      case (label:String,xs:Seq[Any],ys:Seq[Double]) =>
-        Tuple3(label,
-               xs.map{
-                 case x:Double => x
-                 case x:Int => x.toDouble
-                 case data => throw new NotImplementedError(s"invalid data: $data, in $dataToPlot")
-               },ys)
+      case (label:String, xys:Seq[_]) => {
+        val pairs = xys.collect{case xy@(x:Any,y:Double) => x match {
+          case x:Int => (x.toDouble,y)
+          case x:Double => (x,y)
+          case _ => throw new NotImplementedError(s"invalid data: $xys, in $dataToPlot")
+        }}
+        Tuple3(label, pairs.map(_._1), pairs.map(_._2))
+      }
+      case (label: String, xs1: Seq[_], ys1: Seq[_]) => {
+        val xs = xs1.collect {
+          case x: Double => x
+          case x: Int => x.toDouble
+          case _ => throw new NotImplementedError(s"invalid data: $xs1, in $dataToPlot")
+        }
+        val ys = ys1.collect {
+          case y: Double => y
+          case y: Int => y.toDouble
+          case _ => throw new NotImplementedError(s"invalid data: $ys1, in $dataToPlot")
+        }
+        Tuple3(label,xs,ys)
+      }
       case data => throw new NotImplementedError(s"invalid data: $data, in $dataToPlot")
     }
     gpd.plot(dataToPlot=curves)

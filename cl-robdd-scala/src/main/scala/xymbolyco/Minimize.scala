@@ -213,7 +213,6 @@ object Minimize {
   //  states accessible from the initial state.
   def sxp[Σ, L, E](dfa1:Dfa[Σ, L, E],
                    dfa2:Dfa[Σ, L, E],
-                   combineLabels:(L,L)=>Option[L],
                    arbitrateFinal:(Boolean,Boolean)=>Boolean,
                    combineFmap:(Option[E],Option[E])=>Option[E]):Dfa[Σ, L, E] = {
 
@@ -256,7 +255,7 @@ object Minimize {
       val x2 = grouped2.getOrElse(q2id,Set.empty)
       val edges = for { (_,lab1,dst1) <- x1
                         (_,lab2,dst2) <- x2
-                        lab <- combineLabels(lab1,lab2)
+                        lab <- dfa1.labeler.maybeIntersectLabels(lab1,lab2)
                         } yield (lab,(dst1,dst2),(lab1,lab2))
 
       reportInconsistent(edges.toSeq).map{tr => (tr._1,tr._2)}

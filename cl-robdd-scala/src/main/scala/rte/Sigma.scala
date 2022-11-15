@@ -25,6 +25,9 @@ import genus._
 object Sigma extends Rte {
   override def toLaTeX():String = "\\Sigma{}"
   override def toString:String = "Sigma" //"Σ"
+  override def toMachineReadable():String = "Sigma"
+  override def toDot():String = "Sigma"
+
   def nullable:Boolean = false
   def firstTypes:Set[SimpleTypeD] = Set(STop)
   def inhabited:Option[Boolean] = Some(true)

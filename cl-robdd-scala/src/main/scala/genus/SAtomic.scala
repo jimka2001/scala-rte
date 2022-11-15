@@ -33,6 +33,7 @@ import scala.collection.mutable
 case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   //if (ct != classOf[Nothing] && ! SAtomic.existsInstantiatableSubclass(ct))
   //  println(s"WARNING: SAtomic($ct) is equivalent to SEmpty")
+  val wv = SAtomic.getWorldView()
   def shortTypeName():String = {
     val fullName = if (ct.getName.startsWith("java.lang."))
       ct.getName.drop(10)
@@ -72,11 +73,17 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   }
 
   override protected def inhabitedDown: Some[Boolean] = { // TODO, should this be Option[Boolean]
+    assert(wv == SAtomic.getWorldView(),
+           s"object $this was created with $wv but is being used with ${SAtomic.getWorldView()}")
+
     if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
-    else if (SAtomic.getWorldView() == ClosedWorldView)
+    else if (wv == ClosedWorldView) {
+      // TODO, I think this check is not necessary, the factor function returns SEmpty in this case
+      //   can replace with Some(true)
+      assert(SAtomic.existsInstantiatableSubclass(ct))
       Some(SAtomic.existsInstantiatableSubclass(ct))
-    else
+    } else
       Some(true)
   }
 
@@ -85,14 +92,16 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     import genus.RandomType.booleanType
     import genus.SMember.trueOrFalse
     lazy val dd = trueOrFalse.disjoint(t)
-    if (this == booleanType && ! dd.isEmpty) {
+    if (this == booleanType() && ! dd.isEmpty) {
       dd
     }
     else t match {
       case SEmpty => Some(true)
       // TODO, do we know that t is inhabited? if not, do we need to check for it?
       case STop => Some(false) // STop is only disjoint with SEmpty, but this != SEmpty
-      case SAtomic(tp) =>
+      case that@SAtomic(tp) =>
+        assert(wv == that.wv,
+               s"disjointDown called on object of opposing world views: $this vs $that")
         if (inhabited.contains(false))
           Some(true)
         else if (tp == ct)
@@ -117,7 +126,9 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
       s match {
         case SEmpty => this.inhabited.map(!_)
         case STop => Some(true)
-        case SAtomic(tp) =>
+        case that@SAtomic(tp) =>
+          assert(wv == that.wv,
+                 s"subtypepDown called on objects of opposing world views: $this vs $that")
           if (s.inhabited.contains(false))
             subtypep(SEmpty)
           else {
@@ -203,9 +214,11 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     }
   }
 }
-sealed abstract class WorldView
-object ClosedWorldView extends WorldView
-object OpenWorldView extends WorldView
+sealed abstract class WorldView(openness:String){
+  override def toString = s"$openness-world-view"
+}
+object ClosedWorldView extends WorldView("closed")
+object OpenWorldView extends WorldView("open")
 
 /** The AtomicType object, implementing an apply method in order to
  * deal with EmptyType and TopType construction.
@@ -219,7 +232,10 @@ object SAtomic {
     else if (ct == classOf[Boolean]) SAtomic(classOf[java.lang.Boolean])
     else if (ct == classOf[Any]) STop
     else if (ct == classOf[Int]) SAtomic(classOf[Integer])
-    else knownSAtomics.getOrElseUpdate((getWorldView(),ct), new SAtomic(ct))
+    else if (getWorldView() == ClosedWorldView && !existsInstantiatableSubclass(ct)) SEmpty
+    else knownSAtomics.getOrElseUpdate((getWorldView(),ct), {
+      new SAtomic(ct)
+    })
   }
 
   import scala.util.DynamicVariable
@@ -240,14 +256,23 @@ object SAtomic {
   //   may be loaded at run-time.  Thus, for example, it is NOT considered that
   //   two given traits are disjoint.
   def withOpenWorldView[T](code: =>T):T = {
-    worldView.withValue(OpenWorldView){code}
+    withWorldView(OpenWorldView,code)
   }
 
   // evaluate a piece of code in a dynamic context where it is considers that classes
   //   may NOT be loaded at run-time.  Thus, for example, it is considered that
   //   two given traits are disjoint if there exists no common instantiable subclass.
   def withClosedWorldView[T](code: =>T):T = {
-    worldView.withValue(ClosedWorldView){code}
+    withWorldView(ClosedWorldView,code)
+  }
+
+  // evaluate a piece of code in a dynamic context where it is considers that classes
+  //   may NOT be loaded at run-time, or MAY be loaded at run-time, depending
+  //   on the wv argument.
+  def withWorldView[T](wv: WorldView, code: => T): T = {
+    worldView.withValue(wv) {
+      code
+    }
   }
 
   def instantiatableSubclasses(cl: Class[_]): Array[Class[_]] = {
@@ -312,41 +337,4 @@ object SAtomic {
   import org.reflections.Reflections
 
   val reflections = new Reflections()
-}
-
-object sanityCheck {
-  import org.reflections.util.ConfigurationBuilder
-
-  // it is suggested to use ConfigurationBuilder rather than empty argument
-  // list, but this doesn't seem to work.
-  // https://github.com/ronmamo/reflections/issues/324#issuecomment-1246432941
-  //val reflect = new org.reflections.Reflections(new ConfigurationBuilder())
-  val reflect = new org.reflections.Reflections()
-
-  def main(argv:Array[String]):Unit = {
-    describeSubclasses(classOf[java.lang.Number])
-    makeNumber()
-    describeSubclasses(classOf[List[Any]])
-    describeSubclasses(List(1,2,3).getClass)
-  }
-  def describeSubclasses(cl:Class[_]):Unit = {
-    import java.lang.reflect.Modifier
-    // getSubTypesOf does not realize that a type is a subtype of itself
-    val subs:List[Class[_]] = cl :: reflect.getSubTypesOf(cl).toArray.toList.collect {
-      case c: Class[_] => c
-    }
-    println(s"--------- subclasses of $cl")
-    println("   superclass is " + cl.getSuperclass)
-    for{ (sub,i) <- subs.zipWithIndex
-         } println( s"$i: $sub is " + Modifier.toString(sub.getModifiers))
-  }
-  def makeNumber():Unit = {
-    class MyNumber extends Number {
-      def doubleValue():Double = 0.0
-      def longValue():Long = 0
-      def intValue():Int = 0
-      def floatValue():Float = 0.0F
-    }
-    new MyNumber
-  }
 }

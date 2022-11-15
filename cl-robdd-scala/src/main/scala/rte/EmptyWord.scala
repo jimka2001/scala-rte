@@ -25,6 +25,9 @@ import genus._
 object EmptyWord extends Rte {
   override def toLaTeX():String = "\\varepsilon "
   override def toString:String = "EmptyWord" //"ε"
+  override def toDot():String = "EmptyWord"
+  override def toMachineReadable():String = "EmptyWord"
+
   def nullable:Boolean = true
   def firstTypes:Set[SimpleTypeD] = Set.empty
   def inhabited:Option[Boolean] = Some(true)

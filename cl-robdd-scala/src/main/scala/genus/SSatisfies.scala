@@ -30,6 +30,8 @@ case class SSatisfies(f   : Any => Boolean, printable:String) extends SimpleType
 
   override def toString: String = printable + "?"
   override def toLaTeX():String = toString
+  override def toMachineReadable():String = s"SSatisfies($printable)"
+  override def toDot(): String = toString
 
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = super.disjointDown(t)
 

@@ -25,8 +25,10 @@ package genus
 /** The empty type, subtype of all types. */
 object SEmpty extends SimpleTypeD with TerminalType {
   override def toString = "SEmpty"
-
+  override def toDot():String = "SEmpty"
   override def toLaTeX():String = "\\emptyset"
+  override def toMachineReadable():String = "SEmpty"
+
   override def typep(a: Any): Boolean = false
 
   override protected def inhabitedDown: Some[Boolean] = Some(false)

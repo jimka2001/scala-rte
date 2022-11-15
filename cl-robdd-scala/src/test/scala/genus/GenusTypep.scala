@@ -37,49 +37,49 @@ class GenusTypep extends MyFunSuite {
     val newSuper = SAtomic(classOf[Any])
 
     assert(SEmpty == newEmpty)
-    assert(SEmpty == nothingType)
+    assert(SEmpty == nothingType())
     assert(STop == newSuper)
-    assert(STop == anyType)
+    assert(STop == anyType())
   }
 
   test("typep of any") {
-    assert(anyType.typep("test"))
-    assert(anyType.typep(42))
-    assert(anyType.typep(-1.5))
-    assert(anyType.typep(List(1, 2, 3)))
-    assert(anyType.typep(classOf[Any]))
+    assert(anyType().typep("test"))
+    assert(anyType().typep(42))
+    assert(anyType().typep(-1.5))
+    assert(anyType().typep(List(1, 2, 3)))
+    assert(anyType().typep(classOf[Any]))
   }
 
   test("typep of nothing") {
-    assert(! nothingType.typep("test"))
-    assert(! nothingType.typep(42))
-    assert(! nothingType.typep(-1.5))
-    assert(! nothingType.typep(List(1, 2, 3)))
-    assert(! nothingType.typep(classOf[Any]))
+    assert(! nothingType().typep("test"))
+    assert(! nothingType().typep(42))
+    assert(! nothingType().typep(-1.5))
+    assert(! nothingType().typep(List(1, 2, 3)))
+    assert(! nothingType().typep(classOf[Any]))
   }
 
   test("typep of java int") {
-    assert(intJavaType.typep(42))
-    assert(! intJavaType.typep("test"))
+    assert(intJavaType().typep(42))
+    assert(! intJavaType().typep("test"))
   }
 
   test("typep of string") {
-    assert(stringType.typep("test"))
-    assert(! stringType.typep(42))
+    assert(stringType().typep("test"))
+    assert(! stringType().typep(42))
   }
 
   test("typep of list int") {
-    assert(listAnyType.typep(List(1, 2, 3)))
+    assert(listAnyType().typep(List(1, 2, 3)))
     // Because of type erasure
-    assert(listAnyType.typep(List[Double](1.1, 0.42)))
-    assert(listAnyType.typep(List[Any]("test", 2, "coucou")))
+    assert(listAnyType().typep(List[Double](1.1, 0.42)))
+    assert(listAnyType().typep(List[Any]("test", 2, "coucou")))
   }
 
   test("typep of a UnionType") {
-    val unionIntType = SOr(intJavaType, intType)
-    val unionAnyString = SOr(stringType, anyType, nothingType)
-    val unionStringUnitBoolean = SOr(stringType, unitRuntimeType, booleanType)
-    val unionCharInt = SOr(charJavaType, intJavaType)
+    val unionIntType = SOr(intJavaType(), intType())
+    val unionAnyString = SOr(stringType(), anyType(), nothingType())
+    val unionStringUnitBoolean = SOr(stringType(), unitRuntimeType(), booleanType())
+    val unionCharInt = SOr(charJavaType(), intJavaType())
 
     val x: Unit = {}
 
@@ -99,11 +99,11 @@ class GenusTypep extends MyFunSuite {
   }
 
   test("typep of an IntersectionType") {
-    val interAnyRefList = SAnd(anyRefType, listAnyType)
-    val interIntStringUnit = SAnd(intJavaType, stringType, unitRuntimeType)
-    val interAnyRefListNothing = SAnd(anyRefType, listAnyType, nothingType)
-    val interStringAny = SAnd(stringType, anyType)
-    val interNumericJavaInt = SAnd(numericType, intJavaType)
+    val interAnyRefList = SAnd(anyRefType(), listAnyType())
+    val interIntStringUnit = SAnd(intJavaType(), stringType(), unitRuntimeType())
+    val interAnyRefListNothing = SAnd(anyRefType(), listAnyType(), nothingType())
+    val interStringAny = SAnd(stringType(), anyType())
+    val interNumericJavaInt = SAnd(numericType(), intJavaType())
 
     val javaString: java.lang.String = "coucou"
 
@@ -119,7 +119,7 @@ class GenusTypep extends MyFunSuite {
   }
 
   test("typep EqlType and Union") {
-    val t = SOr(stringType, SEql(42))
+    val t = SOr(stringType(), SEql(42))
 
     assert(t.typep("test"))
     assert(t.typep(42))
