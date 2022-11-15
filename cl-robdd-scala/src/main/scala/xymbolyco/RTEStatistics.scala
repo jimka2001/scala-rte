@@ -1,3 +1,24 @@
+// Copyright (©) 2021 EPITA Research and Development Laboratory
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software,
+// and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 package xymbolyco
 
 import genus.{SAtomic, SimpleTypeD}
@@ -5,13 +26,13 @@ import javax.management.openmbean.SimpleType
 import rte._
 import xymbolyco.Profiling.check
 import adjuvant.GnuPlot._
+import xymbolyco.Extract.dfaToRte
 
-case class RTEStatistics(
-                          rte: Rte
-                        ) {
-
+case class RTEStatistics(rte: Rte) {
+//object countains a map of the transitions
   lazy val numberOfTransitions: Map[(Boolean, String, Boolean, String), Int] = createMap(rte)
-
+//function that creates the map to be returned
+  // in the for loop each of the DFAs are being built in turn and the transitions are being counted in a way that the DFAs do not need to be built twice.
   def createMap[Σ, L, E](rte_raw: Rte): Map[(Boolean, String, Boolean, String), Int] = {
     val list = for {(can, rte) <- Seq((false, rte_raw), (true, rte_raw.canonicalize))
                     (constr, dfa_tmp) <- Seq(("Thompson", Thompson.constructThompsonDfa(rte, true))
@@ -32,131 +53,6 @@ case class RTEStatistics(
   }
 }
 
-object Statistics {
-  //this function fills up an Array of Arrays of Integers, which count transitions
-  //each subarray will count transitions and divide them into 6 categories
-  //sigma DFA non minimised : undecidable, unsatisfiable, satisfiable
-  //sigma DFA minimised : undecidable, unsatisfiable, satisfiable
-  //each top level array will be for different types of DFAs
-  // first off the thompson built sigma DFA, then the brzozowski built sigma DFA
-  // then the thompson built sigma DFA after the RTE has been canonicalized
-  // then the brzozowski built sigma DFA after the RTE has been canonicalized
-  def RTEstats(rte: Rte): Array[Array[Int]] = {
-    val transitions = Array.fill(4)(Array.fill(6)(0))
-    val rtecanonicalized = rte.canonicalize
-    val data = check(rte, 1, 1)
-    val dataCanonicalize = check(rtecanonicalized, 1, 1)
-
-    var mylist = data("dfa_thompson").protoDelta.toList
-
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(0)(0) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(0)(1) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(0)(2) += 1
-      }
-    }
-    mylist = data("min_thompson").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(0)(3) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(0)(4) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(0)(5) += 1
-      }
-    }
-
-    mylist = data("dfa_brzozowski").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(1)(0) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(1)(1) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(1)(2) += 1
-      }
-    }
-    mylist = data("min_brzozowski").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(1)(3) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(1)(4) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(1)(5) += 1
-      }
-    }
-    mylist = dataCanonicalize("dfa_thompson").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(2)(0) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(2)(1) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(2)(2) += 1
-      }
-    }
-    mylist = dataCanonicalize("min_thompson").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(2)(3) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(2)(4) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(2)(5) += 1
-      }
-    }
-    mylist = dataCanonicalize("dfa_brzozowski").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(3)(0) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(3)(1) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(3)(2) += 1
-      }
-    }
-    mylist = dataCanonicalize("min_brzozowski").protoDelta.toList
-    for (i <- mylist.indices) {
-      val temp = mylist(i)._2.inhabited
-      if (temp.isEmpty) {
-        transitions(3)(3) += 1
-      }
-      else if (temp.contains(false)) {
-        transitions(3)(4) += 1
-      }
-      else if (temp.contains(true)) {
-        transitions(3)(5) += 1
-      }
-    }
-    transitions
-  }
-
-}
 
 object mystats {
   //creates a GNUPLOT for a given type of DFA ( brzmin,brz,thmp,thmp min) can also work with any function of the form
@@ -173,7 +69,7 @@ object mystats {
       }
       //converting map to sequence of doubles, then adding the sequence of doubles to curve sequence
       val mytempseq: Seq[(Double, Double)] = data.toSeq.sorted
-      myseq :+= ("Depth :".concat(j.toString), mytempseq)
+      myseq :+= ("Depth :".concat((j+1).toString), mytempseq)
     }
     //build graph with each curve
     gnuPlot(myseq)(Set("png"), "", "", "Number of States per Sigma-DFA",
@@ -223,5 +119,65 @@ object mystats {
 
   def thmpmin(rte: Rte): Double = {
     Minimize.minimize(Minimize.trim(Thompson.constructThompsonDfa(rte, 42))).Q.size
+  }
+  def statisticSizePerRndDFASize(number: Int = 30000,  minsize :Int = 5, maxsize:Int = 20, sizevar : Int = 5,typeDepth: Int = 1, f: Rte => Double = brz): Unit = {
+    //sequence that will contain all curves
+    val r = scala.util.Random
+    var myseq: Seq[(String, Seq[(Double, Double)])] = Seq()
+    for (i <- Range(minsize/sizevar,1+(maxsize/sizevar))) {
+      //using a map to count DFAs (creating couples of size->count, incrementing at each DFA
+      val mymap: Map[Double, Double] = Map().withDefaultValue(0)
+      val data = Range(0, number).foldLeft(mymap) { (acc, x) =>
+        println(x)
+        val value = ((i*sizevar)/16)+2
+        val fins = r.nextInt(3)
+        val dfa = RandomDFAGautier.RandomDFA(i*sizevar,fins,2,1,42,typeDepth,None)
+        val rte = dfaToRte(dfa,42)(42)
+        val fr = f(rte)
+        acc + (fr -> (acc(fr) + 1))
+      }
+      //converting map to sequence of doubles, then adding the sequence of doubles to curve sequence
+      val mytempseq: Seq[(Double, Double)] = data.toSeq.sorted
+      myseq :+= ("Random DFA Size :".concat((i*sizevar).toString), mytempseq)
+    }
+    //build graph with each curve
+    gnuPlot(myseq)(Set("png"), "", "", "Number of States per Sigma-DFA from a random DFA",
+                   false, "Proportion of sigma DFAs", false,
+                   false, "DFAsizeperdepth", "linespoints",
+                   "horizontal bmargin", _ => (), false, false)
+  }
+  def statisticSizePerDFAfromRandomDFA(num: Int = 30000, minsize :Int = 5, maxsize:Int = 20, sizevar : Int = 5 ): Unit = {
+    //sequence that will contain all the curves
+    val now = System.nanoTime()
+    val r = scala.util.Random
+    var myseq: Seq[(String, Seq[(Double, Double)])] = Seq()
+    //seq of strings to name the curves
+    val fnames = Seq("thompson", "thompson_min", "brzozowski", "brzozowski min")
+    //seq of functions to create each curve
+    val myfuncseq: Seq[Rte => Double] = Seq(thmp, thmpmin, brz, brzmin)
+    for (i <- Range(0, 4)) {
+      val f = myfuncseq(i)
+      //builds map of double->double, rte, counts all values
+      val mymap: Map[Double, Double] = Map().withDefaultValue(0)
+      val data = Range(minsize/sizevar,1+(maxsize/sizevar)).foldLeft(mymap) { (acc, x) =>
+        println(x)
+        val fins = r.nextInt(3)
+        val dfa = RandomDFAGautier.RandomDFA(i*sizevar,fins,2,1,42,1,None)
+        val rte = dfaToRte(dfa,42)(42)
+        val fr = f(rte)
+        acc + (fr -> (acc(fr) + 1))
+      }
+      //adds curve to sequence of curves
+      myseq :+= (fnames(i), data.toSeq.sorted)
+    }
+    //creates gnuplot
+    gnuPlot(myseq)(Set("png"), title = "", comment = "", xAxisLabel = "Number of States per Sigma-DFA from a Random DFA",
+                   xLog = true, yAxisLabel = "Proportion of sigma DFAs", yLog = true,
+                   grid = false, outputFileBaseName = "DFAsizeperdepth", plotWith = "linespoints",
+                   key = "horizontal bmargin", _ => (), verbose = false, view = false)
+  }
+  def main(argv: Array[String]):Unit=
+  {
+    mystats.statisticSizePerRndDFASize(4,5,10,5,1,mystats.brz)
   }
 }

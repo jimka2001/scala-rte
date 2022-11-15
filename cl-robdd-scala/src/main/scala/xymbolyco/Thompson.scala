@@ -578,7 +578,7 @@ object Profiling {
     val dfa_trim_brzozowski = Minimize.trim(dfa_brzozowski, true)
     val min_brzozowski = Minimize.minimize(dfa_trim_brzozowski)
     val xor = Rte.dfaXor(min_thompson, min_brzozowski)
-    val data = Map(
+    Map(
       "dfa_thompson" -> dfa_thompson,
       "dfa_trim_thompson" -> dfa_trim_thompson,
       "min_thompson" -> min_thompson,
@@ -587,11 +587,14 @@ object Profiling {
       "min_brzozowski" -> min_brzozowski,
       "xor" -> xor
       )
-    if (min_brzozowski.Q.size != min_thompson.Q.size) {
-    }
-    data
   }
-  def statisticsTests(): Unit= {
+  //builds a map of type of transition and how many transitions of those there are
+  // the map takes a tuple of 4 arguments
+  // (if the rte has been canonicalized before building the dfa, the type of dfa that is being built ( thompson or brzozowski),
+  // if the dfa should be minimised, and if the transition is satisfiable, unsatisfiable, or if the satifisability cannot be determined)
+  // after being built the map can be printed if the argument "print" is set to true, and then returned
+  def statisticsTests(num_random_tests :Int = 30000, depth : Int = 6, print : Boolean = false): Map[(Boolean, String, Boolean, String), Int]= {
+    //sequence for all the type of transitions that we want to count
     val myseq = Seq((true,"Brz",true,"indeterminate"),(true,"Brz",true,"satisfiable"),(true,"Brz",true,"unsatisfiable"),
                     (true,"Brz",false,"indeterminate"),(true,"Brz",false,"satisfiable"),(true,"Brz",false,"unsatisfiable"),
                     (false,"Brz",true,"indeterminate"),(false,"Brz",true,"satisfiable"),(false,"Brz",true,"unsatisfiable"),
@@ -600,12 +603,15 @@ object Profiling {
                     (true,"Thompson",false,"indeterminate"),(true,"Thompson",false,"satisfiable"),(true,"Thompson",false,"unsatisfiable"),
                     (false,"Thompson",true,"indeterminate"),(false,"Thompson",true,"satisfiable"),(false,"Thompson",true,"unsatisfiable"),
                     (false,"Thompson",false,"indeterminate"),(false,"Thompson",false,"satisfiable"),(false,"Thompson",false,"unsatisfiable"))
+    //transforms it into a map that we can increment
     var mymap = myseq.zip(Array.fill(24)(0)).toMap
-    val num_random_tests = 1000
-    for {depth <- 1 until 6
+    //builds random RTEs, counts it's transitions with another function
+    // each time an rte is created, the dfas are built, transitions are counted and then added to the map that already has been created
+    for {depth <- 1 until depth
          r <- 0 until num_random_tests
          pattern = Rte.randomRte(depth)
          } {
+      //builds an object, during which's construction the number of transitions are counted
           val temp = RTEStatistics(pattern).numberOfTransitions
           val temp2 = for{x <-myseq}
             yield
@@ -614,29 +620,10 @@ object Profiling {
               }
           mymap = temp2.toMap
     }
+    if(print){
     println(mymap)
-  }
-  def statTest(rte :Rte): Unit= {
-    val transitions = Array.fill(4)(Array.fill(6)(0))
-    val array: Array[Array[Int]] = Statistics.RTEstats(rte).array
-      for(i<-Range(0,4))
-      {
-        for(j<-Range(0,6))
-        {
-          transitions(i)(j)+=array(i)(j)
-        }
-      }
-    val myarray = Array("thompson","brzozowski","thompson canonicalize","brzozowski canonicalize")
-    val myarray2 = Array("indeterminate", "uninhabited","inhabited", "min indeterminate", "min uninhabited", "min inhabited")
-    for(i<-transitions.indices) {
-      println()
-      printf(myarray(i)+" ")
-      for (j <- transitions(i).indices) {
-        printf(myarray2(j)+" ")
-        val num = transitions(i)(j)
-        printf(s"$num " )
-      }
     }
+    mymap
   }
 
   def main(argv: Array[String]): Unit = { // ("brz vs thomp") {
@@ -653,7 +640,7 @@ object Profiling {
       println((depth-1)*num_random_tests+r)
       println(pattern.toMachineReadable())
       val data = check(pattern, r, depth)
-      if(data("min_thompson").Q.size == data("min_brzozowski").Q.size)
+      if(data("min_thompson").Q.size != data("min_brzozowski").Q.size)
         {
           println("notsamesize")
 

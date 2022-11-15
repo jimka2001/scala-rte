@@ -29,6 +29,7 @@ object Minimize {
   import adjuvant.Adjuvant._
 
   //trust accessible will be true for brzozowski constructions as it does not have unsatisfiable or unaccesible states
+  // removing
   def trim[Σ, L, E](dfa: Dfa[Σ, L, E], trustAccessible: Boolean = false): Dfa[Σ, L, E] = {
     if (!trustAccessible) {
       removeNonCoAccessible(removeNonAccessible(dfa))
@@ -90,6 +91,45 @@ object Minimize {
     }
   }
 
+  def minimize[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    val PiMinimized = findHopcroftPartition(dfa)
+
+    // associate each element of PiMinimized with a new id
+    // attempt to correlate the old state.id with the new
+    def minState(eqvClass: Set[State[Σ, L, E]]): Int = {
+      eqvClass.map(_.id).reduce((a: Int, b: Int) => a.min(b))
+    }
+
+    val ids: Map[Set[State[Σ, L, E]], Int] = PiMinimized.map { eqvClass => eqvClass -> minState(eqvClass) }.toMap
+
+    def eqvClassOf(s: State[Σ, L, E]): Set[State[Σ, L, E]] = {
+      PiMinimized.find(eqvClass => eqvClass.contains(s)).get
+    }
+
+    def newId(s: State[Σ, L, E]): Int = {
+      ids(eqvClassOf(s))
+    }
+
+    //val ids: Array[Set[State[Σ,L,E]]] = PiMinimized.toArray
+    val newIds = ids.values.toSet
+    val newQ0: Int = newId(dfa.q0)
+    val newFids = PiMinimized.filter(eqv => dfa.F.exists(q => eqv.contains(q))).map(ids)
+
+    val newProtoDelta = for {
+      q <- dfa.Q
+      tr <- q.transitions
+    } yield (newId(tr.source), tr.label, newId(tr.destination))
+
+    val newFmap = for {
+      (eqv, id) <- ids
+      if newFids.contains(id)
+      q = eqv.head
+    } yield id -> dfa.exitValue(q)
+
+    // return a newly constructed Dfa extracted from the Hopcroft partition minimization
+    Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
+  }
+
   def findHopcroftPartition[Σ, L, E](dfa: Dfa[Σ, L, E]): Set[Set[State[Σ, L, E]]] = {
     type STATE = State[Σ, L, E]
     type EQVCLASS = Set[STATE]
@@ -129,45 +169,6 @@ object Minimize {
     }
 
     fixedPoint(Pi0, refine, partitionEqual)
-  }
-
-  def minimize[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    val PiMinimized = findHopcroftPartition(dfa)
-
-    // associate each element of PiMinimized with a new id
-    // attempt to correlate the old state.id with the new
-    def minState(eqvClass: Set[State[Σ, L, E]]): Int = {
-      eqvClass.map(_.id).reduce((a: Int, b: Int) => a.min(b))
-    }
-
-    val ids: Map[Set[State[Σ, L, E]], Int] = PiMinimized.map { eqvClass => eqvClass -> minState(eqvClass) }.toMap
-
-    def eqvClassOf(s: State[Σ, L, E]): Set[State[Σ, L, E]] = {
-      PiMinimized.find(eqvClass => eqvClass.contains(s)).get
-    }
-
-    def newId(s: State[Σ, L, E]): Int = {
-      ids(eqvClassOf(s))
-    }
-
-    //val ids: Array[Set[State[Σ,L,E]]] = PiMinimized.toArray
-    val newIds = ids.values.toSet
-    val newQ0: Int = newId(dfa.q0)
-    val newFids = PiMinimized.filter(eqv => dfa.F.exists(q => eqv.contains(q))).map(ids)
-
-    val newProtoDelta = for {
-      q <- dfa.Q
-      tr <- q.transitions
-    } yield (newId(tr.source), tr.label, newId(tr.destination))
-
-    val newFmap = for {
-      (eqv, id) <- ids
-      if newFids.contains(id)
-      q = eqv.head
-    } yield id -> dfa.exitValue(q)
-
-    // return a newly constructed Dfa extracted from the Hopcroft partition minimization
-    Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
   }
 
   // Construct a new Dfa which is complete, i.e., for each state q
