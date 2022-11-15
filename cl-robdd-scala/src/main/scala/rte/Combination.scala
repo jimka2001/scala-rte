@@ -161,7 +161,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
             case (p1:SimpleTypeD,p2:Any) => (p1,p2)
             case pair => throw new NotImplementedError(s"invalid data: this=$this, pair=$pair")
           }
-          Singleton(Types.createMemberFromPairs(memberOperands))
+          Singleton(RandomType.createMemberFromPairs(memberOperands))
         }
       }
       val newNotMember:Rte = notMembers
@@ -173,7 +173,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
             case (p1:SimpleTypeD, p2:Any) => (p1,p2)
             case pair => throw new NotImplementedError(s"invalid data: this=$this, pair=$pair")
           }
-          Not(Singleton(Types.createMemberFromPairs(notMemberOperands)))
+          Not(Singleton(RandomType.createMemberFromPairs(notMemberOperands)))
         }
       }
       // careful to put the SMember back in the place of the first

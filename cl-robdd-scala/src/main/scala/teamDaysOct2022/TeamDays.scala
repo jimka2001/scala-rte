@@ -25,7 +25,7 @@ import rte._
 import RteImplicits._
 import adjuvant.Adjuvant.{copyFile, existingFile}
 import genus.SMember
-import genus.Types.evenType
+import genus.RandomType._
 import xymbolyco.GraphViz.dfaView
 import xymbolyco.Minimize
 
