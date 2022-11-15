@@ -30,6 +30,36 @@ import scala.runtime.BoxedUnit
 
 object RandomType {
 
+  trait Trait1
+
+  trait Trait2
+
+  trait Trait3 extends Trait2
+
+  abstract class Abstract1
+
+  abstract class Abstract2 extends Trait3
+
+  sealed abstract class ADT_abstr
+
+  class ADT1 extends ADT_abstr
+
+  class ADT2 extends ADT_abstr
+
+  class ADT3 extends ADT_abstr
+
+
+  trait Trait1X
+
+  trait Trait2X // has subclass Trait3X which has subclass Abstract2X
+  trait Trait3X extends Trait2X // has subclass Abstract2X
+  abstract class Abstract1X // has subclass Class1X
+  abstract class Abstract2X extends Trait3X
+
+  class Class1X extends Abstract1X
+
+  class Class2X extends Abstract2X
+
   val oddType: SSatisfies = SSatisfies(oddp, "odd")
   val primeType: SSatisfies = SSatisfies(isPrime)
   val evenType: SSatisfies = SSatisfies(evenp, "even")
@@ -66,24 +96,6 @@ object RandomType {
   val atomicTypesSeq: Seq[SimpleTypeD] =
     Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanType, unitRuntimeType,
         charJavaType, anyRefType, numericType)
-
-  trait Trait1X
-
-  trait Trait2X // has subclass Trait3X which has subclass Abstract2X
-  trait Trait3X extends Trait2X // has subclass Abstract2X
-  abstract class Abstract1X // has subclass Class1X
-  abstract class Abstract2X extends Trait3X
-
-  class Class1X extends Abstract1X
-
-  class Class2X extends Abstract2X
-
-  def oddp(a:Any):Boolean = {
-    a match {
-      case a:Int => a % 2 != 0 // because e.g., -5 % 2 = -1, rather than 1
-      case _ => false
-    }
-  }
   def interestingTypes():Vector[SimpleTypeD] = Vector(
     STop,
     SEmpty,
@@ -215,7 +227,7 @@ object RandomType {
       () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1) }: _*)
       )
     if (depth <= 0)
-      interestingTypes(random.nextInt(interestingTypes.length))
+      interestingTypes()(random.nextInt(interestingTypes.length))
     else {
       val g = generators(random.nextInt(generators.length))
       g()

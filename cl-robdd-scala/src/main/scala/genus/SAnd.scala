@@ -164,7 +164,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     //  ==> SMember(42,44)
     tds.find(memberp) match {
       case Some(m:SMemberImpl) =>
-        createMemberFromPairs(m.xs.filter{case (_:SimpleTypeD,b:Any) => typep(b)})
+        RandomType.createMemberFromPairs(m.xs.filter { case (_: SimpleTypeD, b: Any) => typep(b) })
       case _ => this
     }
   }

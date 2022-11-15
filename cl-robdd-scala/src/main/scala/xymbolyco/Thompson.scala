@@ -2,7 +2,6 @@ package xymbolyco
 
 import adjuvant.Accumulators.{makeCounter, withSetCollector}
 import adjuvant.Adjuvant.{fixedPoint, traceGraph, uniquify}
-import genus.RandomType.mdtd
 import genus.{SAnd, SNot, SOr, STop, SimpleTypeD}
 import rte.And.createAnd
 import rte.Cat.createCat
@@ -577,7 +576,7 @@ object Profiling {
     val dfa_brzozowski = pattern.toDfa(42)
     val dfa_trim_brzozowski = Minimize.trim(dfa_brzozowski, true)
     val min_brzozowski = Minimize.minimize(dfa_trim_brzozowski)
-    val xor = Rte.dfaXor(min_thompson, min_brzozowski)
+    val xor = Dfa.dfaXor(min_thompson, min_brzozowski)
     Map(
       "dfa_thompson" -> dfa_thompson,
       "dfa_trim_thompson" -> dfa_trim_thompson,

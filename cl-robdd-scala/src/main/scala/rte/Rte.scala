@@ -65,6 +65,7 @@ abstract class Rte {
   //   1. are they syntactically equal
   //   2. are they both And(...) or both Or(...) whose arguments are syntactically
   //      equal but maybe in different orders
+  //      equal but maybe in different orders
   //   3. construct the Dfa of the XOR of the two Rtes,
   //         and see if that Dfa has no final states.
   //         As a last resort if it has final states, then there is still a chance
