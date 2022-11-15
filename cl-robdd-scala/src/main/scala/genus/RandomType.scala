@@ -66,7 +66,17 @@ object RandomType {
   val atomicTypesSeq: Seq[SimpleTypeD] =
     Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanType, unitRuntimeType,
         charJavaType, anyRefType, numericType)
-  val interestingTypes: Vector[SimpleTypeD] = Vector(
+
+  trait Trait1X
+
+  trait Trait2X // has subclass Trait3X which has subclass Abstract2X
+  trait Trait3X extends Trait2X // has subclass Abstract2X
+  abstract class Abstract1X // has subclass Class1X
+  abstract class Abstract2X extends Trait3X
+
+  class Class1X extends Abstract1X
+
+  class Class2X extends Abstract2X
 
   def oddp(a:Any):Boolean = {
     a match {
@@ -204,10 +214,9 @@ object RandomType {
       () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1) }: _*),
       () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1) }: _*)
       )
-    if (depth <= 0) {
-      val items = interestingTypes()
-      items(random.nextInt(items.length))
-    } else {
+    if (depth <= 0)
+      interestingTypes(random.nextInt(interestingTypes.length))
+    else {
       val g = generators(random.nextInt(generators.length))
       g()
     }
@@ -255,21 +264,7 @@ object RandomType {
     println(classOf[String] || classOf[Integer])
   }
 
-  def test179() = {
-    import genus.SAtomic.{withClosedWorldView, withOpenWorldView}
-
-    class A
-    trait B
-    trait C
-    class D extends A with B with C
-    withClosedWorldView {
-      val rte = SAnd(classOf[D], SNot(SAnd( classOf[B], classOf[C])))
-
-      println("xxxxxx -> " + rte.inhabited)
-    }
-  }
-
-  def test192() = {
+  def main(args: Array[String]): Unit = {
     case class Box(value: Any)
     println(SAtomic(classOf[scala.runtime.RichInt]).typep(1))
     println(SAtomic(classOf[Int]).typep(Box(1).value))
@@ -282,45 +277,6 @@ object RandomType {
     println(1.isInstanceOf[Any])
     println(classOf[Any].isInstance(1))
     println(classOf[java.lang.Object].isInstance(1))
-  }
-
-  def main(args: Array[String]): Unit = {
-
-    test179()
-    //test192()
 
   }
-
-  // the following classes have no instantiatable subclass
-  trait Trait1
-
-  trait Trait2
-
-  trait Trait3 extends Trait2
-
-  trait Trait1X
-
-  trait Trait2X // has subclass Trait3X which has subclass Abstract2X
-
-  trait Trait3X extends Trait2X // has subclass Abstract2X
-
-  sealed abstract class ADT_abstr
-
-  abstract class Abstract1
-
-  abstract class Abstract2 extends Trait3
-
-  abstract class Abstract1X // has subclass Class1X
-
-  abstract class Abstract2X extends Trait3X
-
-  class ADT1 extends ADT_abstr
-
-  class ADT2 extends ADT_abstr
-
-  class ADT3 extends ADT_abstr
-
-  class Class1X extends Abstract1X
-
-  class Class2X extends Abstract2X
 }
