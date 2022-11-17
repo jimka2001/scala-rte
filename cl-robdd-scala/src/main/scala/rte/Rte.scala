@@ -341,9 +341,14 @@ object Rte {
       }
     }
 
-    def funnyFold[X,Y](seq:Seq[X],f:X=>Y,g:(Y,Y)=>Y):Y = {
+    def funnyFold[X,Y](seq:Seq[X],
+                       f:X=>Y,
+                       g:(Y,Y,(E,E)=>E)=>Y):Y = {
       assert(seq.nonEmpty)
-      seq.tail.foldLeft(f(seq.head))((acc,x) => g(acc,f(x)))
+      def arbitrate(a:E,b:E):E = a
+      seq.tail.foldLeft(f(seq.head))((acc,x) => g(acc,
+                                                  f(x),
+                                                  xymbolyco.Dfa.defaultArbitrate))
     }
     def f(pair:(Rte,E)):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
       val (rte,e) = pair

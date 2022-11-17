@@ -339,10 +339,8 @@ class DfaTestSuite extends MyFunSuite {
               fMap=Map(2 -> 3)
               )
     }
-    val s = Minimize.sxp(trim(dfa1),trim(dfa2),
-                         (a:Boolean,b:Boolean) => a || b,
-                         Dfa.combineFmap[Int]
-                         )
+    val s = Minimize.sxp[Any,SimpleTypeD,Int](trim(dfa1),trim(dfa2),
+                         (a:Boolean,b:Boolean) => (a || b))
     assert(s.Fids.size >= 2)
   }
 
@@ -368,9 +366,7 @@ class DfaTestSuite extends MyFunSuite {
               )
     }
     val s = Minimize.sxp(dfa1,dfa2,
-                         (a:Boolean,b:Boolean) => a || b,
-                         Dfa.combineFmap[Int]
-                         )
+                         (a:Boolean,b:Boolean) => a || b)
     assert(s.Fids.size >= 2)
     s.simulate(Seq(-1)).contains(10)
     s.simulate(Seq(-2)).contains(20)
