@@ -31,6 +31,11 @@ import scala.runtime.BoxedUnit
 
 object RandomType {
 
+  // The following definitions are defined as functions rather than
+  //   simply as values, because the SAtomic constructor caches
+  //   objects depending on the world view.
+
+
   // the following classes have no instantiatable subclass
   trait Trait1
   trait Trait2
@@ -102,24 +107,34 @@ object RandomType {
   val AnyVal: Class[AnyVal] = classOf[AnyVal]
   val Numeric: Class[Number] = classOf[lang.Number]
 
-  val anyType: SimpleTypeD = SAtomic(Any)
-  val nothingType: SimpleTypeD = SAtomic(Nothing)
+  def anyType(): SimpleTypeD = SAtomic(Any)
 
-  val intType: SimpleTypeD = SAtomic(Int)
-  val intJavaType: SimpleTypeD = SAtomic(Integer)
-  val doubleJavaType: SimpleTypeD = SAtomic(Double)
-  val stringType: SimpleTypeD = SAtomic(String)
-  val listAnyType: SimpleTypeD = SAtomic(ListAny)
-  val booleanType: SimpleTypeD = SAtomic(Boolean)
-  val unitRuntimeType: SimpleTypeD = SAtomic(Unit)
-  val charJavaType: SimpleTypeD = SAtomic(Char)
-  val anyRefType: SimpleTypeD = SAtomic(AnyRef)
-  val numericType: SimpleTypeD = SAtomic(Numeric)
+  def nothingType(): SimpleTypeD = SAtomic(Nothing)
 
-  val atomicTypesSeq: Seq[SimpleTypeD] =
-    Seq(intType, intJavaType, doubleJavaType, stringType, listAnyType, booleanType, unitRuntimeType,
-        charJavaType, anyRefType, numericType)
+  def intType(): SimpleTypeD = SAtomic(Int)
 
+  def intJavaType(): SimpleTypeD = SAtomic(Integer)
+
+  def doubleJavaType(): SimpleTypeD = SAtomic(Double)
+
+  def stringType(): SimpleTypeD = SAtomic(String)
+
+  def listAnyType(): SimpleTypeD = SAtomic(ListAny)
+
+  def booleanType(): SimpleTypeD = SAtomic(Boolean)
+
+  def unitRuntimeType(): SimpleTypeD = SAtomic(Unit)
+
+  def charJavaType(): SimpleTypeD = SAtomic(Char)
+
+  def anyRefType(): SimpleTypeD = SAtomic(AnyRef)
+
+  def numericType(): SimpleTypeD = SAtomic(Numeric)
+
+  def atomicTypesSeq(): Seq[SimpleTypeD] =
+    Seq(intType(), intJavaType(), doubleJavaType(), stringType(),
+        listAnyType(), booleanType(), unitRuntimeType(),
+        charJavaType(), anyRefType(), numericType())
 
   val interestingTypes: Vector[SimpleTypeD] = Vector(
     STop,

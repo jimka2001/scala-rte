@@ -355,7 +355,7 @@ class ThompsonTestSuite  extends MyFunSuite {
   }
   test("discovered case 358") {
     import xymbolyco.Dfa.dfaEquivalent
-    import genus.Types.oddType
+    import genus.RandomType.oddType
     for {pattern <- Seq(Or(Singleton(oddType), Singleton(SMember(true, false)))
                         , Or(Singleton(oddType),
                            Singleton(SMember(1,2,3,4)),

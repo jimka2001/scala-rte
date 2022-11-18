@@ -234,9 +234,9 @@ object Minimize {
         }
         GraphViz.dfaView(dfa1, abbrev = true, title = "sxp dfa1")
         GraphViz.dfaView(dfa2, abbrev = true, title = "sxp dfa2")
-        assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
-               s"$countDuplicates duplicate transition(s) found in \n"
-                 + edgeSeq.map(_.toString).mkString(": ", "\n: ", ""))
+        /*     assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
+                    s"$countDuplicates duplicate transition(s) found in \n"
+                      + edgeSeq.map(_.toString).mkString(": ", "\n: ", ""))*/
       }
       edgeSeq
     }

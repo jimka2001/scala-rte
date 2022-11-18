@@ -22,39 +22,64 @@
 package xymbolyco
 import genus.SimpleTypeD
 import xymbolyco._
-
+import adjuvant.BellmanFord._
+import scala.Double.PositiveInfinity
 
 object  DFAIso {
 
-      def isIsomorphiclocal(dfa: Dfa[Any,SimpleTypeD,Int],dfa2: Dfa[Any,SimpleTypeD,Int]):Some[Boolean]=
-      {
-        Some(true)
-      }
-      def isIsomorphic(dfa: Dfa[Any, SimpleTypeD,Int], dfa2:  Dfa[Any,SimpleTypeD,Int]): Some[Boolean]=
-        {
-          var fvals = dfa.fMap.toList.map(a=> a._2).toSet
-          if(dfa2.fMap.toList.map(a=>a._2).toSet!=fvals)
-          {
-            return Some(false)
-          }
+  def edgecost(size: Int, label: SimpleTypeD): Double = {
+    if (label.inhabited.isEmpty) {
+      size * 2
+    }
+    else if (label.inhabited.contains(false)) {
+      PositiveInfinity
+    }
+    else {
+      1
+    }
+  }
 
-          var head = fvals.head
-          var res = Some(true)
-          while(!res.contains(false)&& fvals.nonEmpty)
-          {// TODO change FIDS to only contain the finals that are of the exit value
-            val temp = isIsomorphiclocal(Dfa(dfa.Qids,dfa.q0id,dfa.Fids,dfa.protoDelta,dfa.labeler,dfa.fMap.filter(_._2 ==head)),
-                                    Dfa(dfa2.Qids,dfa2.q0id,dfa2.Fids,dfa2.protoDelta,dfa2.labeler,dfa2.fMap.filter(_._2==head)))
-            if(res.contains(Some(true)))
-            {
-              res = temp
-            }
-            else if(!temp.contains(Some(true)))
-            {
-              res = temp
-            }
-            fvals = fvals.tail
-            head = fvals.head
-          }
-          res
+  //create set of exit values
+  // create XOR of the dfas
+  // check if there is a path to one of the final states for each exit value
+  // return a map of exit value -> option(boolean)
+  def isIsomorphic(dfa: Dfa[Any, SimpleTypeD, Int], dfa2: Dfa[Any, SimpleTypeD, Int]): (Option[Boolean], Map[Any, Option[Boolean]]) =
+      {
+        var resmap: Map[Any, Option[Boolean]] = Map()
+        var res: Option[Boolean] = Some(true)
+        val fvals: Set[Int] = dfa.fMap.toList.map(a => a._2).toSet
+        val fvals2: Set[Int] = dfa2.fMap.toList.map(a => a._2).toSet
+        val fint = fvals union fvals2
+        for (i <- fvals) {
+          resmap += (i -> Some(true))
         }
+        for (i <- fint)
+        {
+          if (!fvals.contains(i) || !fvals2.contains(i)) {
+            resmap += (i -> Some(false))
+            res = Some(false)
+          }
+        }
+        val xor = Dfa.dfaXor(dfa, dfa2)
+        val edges: Set[((Int, Int), Double)] = for {edge <- xor.protoDelta
+                                                    newedge = ((edge._1, edge._3), edgecost(xor.Q.size, edge._2))
+                                                    } yield newedge
+        val xormap = Dijkstra(xor.Qids.toSeq, xor.q0id, edges.toSeq)
+        val x: Map[Int, Double] = xormap._1
+        for (i <- xor.fMap.keys) {
+          if (x(i) < xor.Q.size.toDouble) {
+            resmap += (xor.fMap(i) -> Some(false))
+            res = Some(false)
+          }
+          else if (xormap._1(i) < PositiveInfinity) {
+            if (resmap(xor.fMap(i)).contains(true)) {
+              resmap += (i -> None)
+              if (res.contains(true)) {
+                res = None
+              }
+            }
+          }
+        }
+        (res, resmap)
+      }
 }
