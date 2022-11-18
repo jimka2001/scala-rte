@@ -260,31 +260,38 @@ object Dfa {
     new Dfa[Σ, L, E](Qids, q0id, Fids, merged, labeler, fMap)
   }
 
-  def combineFmap[E](e1: Option[E], e2: Option[E]): Option[E] = {
+  def combineFmap[E](e1: Option[E],
+                     e2: Option[E],
+                     arbitrate:(E,E)=>E = defaultArbitrate[E] _): Option[E] = {
     (e1, e2) match {
       case (None, None) => None
       case (Some(b), Some(c)) if c == b => Some(b)
-      case (Some(b), Some(c)) =>
-        println(s"combineFmap: warning loosing value $c, using $b")
-        Some(b) // f-value of dfa1 has precedence over dfa2
+      case (Some(b), Some(c)) => Some(arbitrate(b,c))
       case (Some(b), None) => Some(b)
       case (None, Some(b)) => Some(b)
     }
   }
 
+  def defaultArbitrate[E](b:E, c:E):E = {
+    println(s"combineFmap: warning loosing value $c, using $b")
+    b // f-value of dfa1 has precedence over dfa2
+  }
+
   def dfaXor[Σ,L,E](dfa1: xymbolyco.Dfa[Σ, L, E],
-                    dfa2: xymbolyco.Dfa[Σ, L, E]): xymbolyco.Dfa[Σ, L, E] = {
+                    dfa2: xymbolyco.Dfa[Σ, L, E],
+                    arbitrate: (E,E)=>E = defaultArbitrate[E] _): xymbolyco.Dfa[Σ, L, E] = {
     Minimize.sxp[Σ, L, E](dfa1, dfa2,
                           (a: Boolean, b: Boolean) => (a && !b) || (!a && b), // arbitrateFinal:(Boolean,Boolean)=>Boolean,
-                          combineFmap //:(E,E)=>E
+                          combineFmap(_,_,arbitrate)
                           )
   }
 
   def dfaUnion[Σ,L,E](dfa1: xymbolyco.Dfa[Σ, L, E],
-                  dfa2: xymbolyco.Dfa[Σ, L, E]): xymbolyco.Dfa[Σ, L, E] = {
+                      dfa2: xymbolyco.Dfa[Σ, L, E],
+                      arbitrate: (E,E)=>E = defaultArbitrate[E] _): xymbolyco.Dfa[Σ, L, E] = {
     Minimize.sxp[Σ, L, E](dfa1, dfa2,
                           (a: Boolean, b: Boolean) => a || b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
-                          combineFmap //:(E,E)=>E
+                          combineFmap(_,_,arbitrate)
                           )
   }
 
