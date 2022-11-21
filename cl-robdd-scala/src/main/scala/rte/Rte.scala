@@ -23,7 +23,7 @@ package rte
 
 import genus._
 import adjuvant.Adjuvant._
-
+import xymbolyco.Dfa
 
 import scala.annotation.tailrec
 
@@ -338,9 +338,9 @@ object Rte {
       }
     }
 
-    def funnyFold[X, Y](seq: Seq[X], f: X => Y, g: (Y, Y) => Y): Y = {
+    def funnyFold[X, Y, Z](seq: Seq[X], f: X => Y, g: (Y, Y, (Z, Z) => Z) => Y): Y = {
       assert(seq.nonEmpty)
-      seq.tail.foldLeft(f(seq.head))((acc, x) => g(acc, f(x)))
+      seq.tail.foldLeft(f(seq.head))((acc, x) => g(acc, f(x), Dfa.defaultArbitrate))
     }
 
     def f(pair: (Rte, E)): xymbolyco.Dfa[Any, SimpleTypeD, E] = {
@@ -351,7 +351,7 @@ object Rte {
     }
 
     val disjoint: Seq[(Rte, E)] = excludePrevious(seq.toList, List(), List())
-    funnyFold[(Rte, E), xymbolyco.Dfa[Any, SimpleTypeD, E]](disjoint, f, dfaUnion)
+    funnyFold[(Rte, E), xymbolyco.Dfa[Any, SimpleTypeD, E], E](disjoint, f, dfaUnion)
   }
 
 //  // Compute the intersection of two given types (SimpleTypeD) for the purpose

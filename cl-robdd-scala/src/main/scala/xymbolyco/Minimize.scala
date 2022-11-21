@@ -214,7 +214,7 @@ object Minimize {
   def sxp[Σ, L, E](dfa1:Dfa[Σ, L, E],
                    dfa2:Dfa[Σ, L, E],
                    arbitrateFinal:(Boolean,Boolean)=>Boolean,
-                   combineFmap:(Option[E], Option[E])=>Option[E] = (e1:Option[E], e2:Option[E]) => Dfa.combineFmap[E](e1,e2)):Dfa[Σ, L, E] = {
+                   combineFmap: (Option[E], Option[E]) => Option[E]): Dfa[Σ, L, E] = {
 
     val grouped1 = complete(dfa1).protoDelta.groupBy(_._1)
     val grouped2 = complete(dfa2).protoDelta.groupBy(_._1)
@@ -234,9 +234,9 @@ object Minimize {
         }
         GraphViz.dfaView(dfa1, abbrev = true, title = "sxp dfa1")
         GraphViz.dfaView(dfa2, abbrev = true, title = "sxp dfa2")
-        /*     assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
-                    s"$countDuplicates duplicate transition(s) found in \n"
-                      + edgeSeq.map(_.toString).mkString(": ", "\n: ", ""))*/
+        assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
+               s"$countDuplicates duplicate transition(s) found in \n"
+                 + edgeSeq.map(_.toString).mkString(": ", "\n: ", ""))
       }
       edgeSeq
     }

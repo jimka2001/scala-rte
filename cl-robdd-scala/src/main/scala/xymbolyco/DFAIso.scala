@@ -26,7 +26,7 @@ import adjuvant.BellmanFord._
 import scala.Double.PositiveInfinity
 
 object  DFAIso {
-
+  // calculate the cost of each edge depending on if the label is inhabited or not
   def edgecost(size: Int, label: SimpleTypeD): Double = {
     if (label.inhabited.isEmpty) {
       size * 2
@@ -52,13 +52,6 @@ object  DFAIso {
         val fint = fvals union fvals2
         for (i <- fvals) {
           resmap += (i -> Some(true))
-        }
-        for (i <- fint)
-        {
-          if (!fvals.contains(i) || !fvals2.contains(i)) {
-            resmap += (i -> Some(false))
-            res = Some(false)
-          }
         }
         val xor = Dfa.dfaXor(dfa, dfa2)
         val edges: Set[((Int, Int), Double)] = for {edge <- xor.protoDelta
