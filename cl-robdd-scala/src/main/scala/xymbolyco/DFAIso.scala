@@ -84,4 +84,37 @@ object  DFAIso {
         //return both
         (res, resmap)
       }
+
+  // old version in case the new one has a bug
+  def isIsomorphic2(dfa: Dfa[Any, SimpleTypeD, Int], dfa2: Dfa[Any, SimpleTypeD, Int]): (Option[Boolean], Map[Any, Option[Boolean]]) = {
+    var resmap: Map[Any, Option[Boolean]] = Map()
+    var res: Option[Boolean] = Some(true)
+    val fvals: Set[Int] = dfa.fMap.toList.map(a => a._2).toSet
+    val fvals2: Set[Int] = dfa2.fMap.toList.map(a => a._2).toSet
+    val fint = fvals union fvals2
+    for (i <- fvals) {
+      resmap += (i -> Some(true))
+    }
+    val xor = Dfa.dfaXor(dfa, dfa2)
+    val edges: Set[((Int, Int), Double)] = for {edge <- xor.protoDelta
+                                                newedge = ((edge._1, edge._3), edgecost(xor.Q.size, edge._2))
+                                                } yield newedge
+    val xormap = Dijkstra(xor.Qids.toSeq, xor.q0id, edges.toSeq)
+    val x: Map[Int, Double] = xormap._1
+    for (i <- xor.fMap.keys) {
+      if (x(i) < xor.Q.size.toDouble) {
+        resmap += (xor.fMap(i) -> Some(false))
+        res = Some(false)
+      }
+      else if (xormap._1(i) < PositiveInfinity) {
+        if (resmap(xor.fMap(i)).contains(true)) {
+          resmap += (i -> None)
+          if (res.contains(true)) {
+            res = None
+          }
+        }
+      }
+    }
+    (res, resmap)
+  }
 }
