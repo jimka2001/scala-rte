@@ -5,6 +5,9 @@ package xymbolyco
 import com.sun.javaws.exceptions.InvalidArgumentException
 import genus.{RandomType, SimpleTypeD}
 
+// FIXME, this code does not conform to the indentation and spacing recommendations
+//    of IntelliJ.   Reformat the file using the IntelliJ reformat-file feature.
+
 object RandomDFAGautier {
   // FIXME, is there a problem with these type parameters?
   //    it looks like Σ, and L are never used.  Why are they defined?

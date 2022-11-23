@@ -21,6 +21,9 @@
 
 package adjuvant
 
+// FIXME, this code does not conform to the indentation and spacing recommendations
+//    of IntelliJ.   Reformat the file using the IntelliJ reformat-file feature.
+
 object BellmanFord {
   def shortestPath[V](vertices:Seq[V],
                       source:V,
