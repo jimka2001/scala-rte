@@ -63,7 +63,13 @@ object BellmanFord {
   def Dijkstra[V](vertices: Seq[V],
                   source: V,
                   edges: Seq[((V, V), Double)]): (Map[V, Double], Map[V, V]) = {
-
+    // FIXME, this does not look like the Dijkstra algorithm I recognize.
+    //    For me, Dijkstra declares a priority queue, thus avoiding having to
+    //    avoid having to search to find the best next vertex during every
+    //    iteration.  The loop, probably a recursive function, simply takes
+    //    the item from front of the priority heap, which is by construction, the
+    //    best vertex. I suspect the priority queue needs to be declared with
+    //    var, but no other variables need to be var.
     var current = source
     var distancemap: Map[V, Double] = vertices.zip(Array.fill(vertices.size)(Double.PositiveInfinity)).toMap
     var bestpredecessor: Map[V, V] = Map(source -> source)
