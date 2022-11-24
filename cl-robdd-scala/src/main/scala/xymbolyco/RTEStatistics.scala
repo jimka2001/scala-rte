@@ -123,22 +123,20 @@ object mystats {
   def statisticSizePerRndDFASize(number: Int = 30000,  minsize :Int = 5, maxsize:Int = 20, sizevar : Int = 5,typeDepth: Int = 1, f: Rte => Double = brz): Unit = {
     //sequence that will contain all curves
     val r = scala.util.Random
-    var myseq: Seq[(String, Seq[(Double, Double)])] = Seq()
-    for (i <- Range(minsize/sizevar,1+(maxsize/sizevar))) {
+    val myseq: Seq[(String, Seq[(Double, Double)])] =
+    for (i <- minsize/sizevar to (maxsize/sizevar)) yield {
       //using a map to count DFAs (creating couples of size->count, incrementing at each DFA
       val mymap: Map[Double, Double] = Map().withDefaultValue(0)
-      val data = Range(0, number).foldLeft(mymap) { (acc, x) =>
+      val data = (0 until number).foldLeft(mymap) { (acc, x) =>
         println(x)
-        val value = ((i*sizevar)/16)+2
         val fins = r.nextInt(3)
-        val dfa = RandomDFAGautier.RandomDFA(i*sizevar,fins,2,1,42,typeDepth,None)
-        val rte = dfaToRte(dfa,42)(42)
+        val dfa = RandomDFAGautier.RandomDFA(i * sizevar, fins, 2, 1, 42, typeDepth, None)
+        val rte = dfaToRte(dfa, 42)(42)
         val fr = f(rte)
         acc + (fr -> (acc(fr) + 1))
       }
       //converting map to sequence of doubles, then adding the sequence of doubles to curve sequence
-      val mytempseq: Seq[(Double, Double)] = data.toSeq.sorted
-      myseq :+= ("Random DFA Size :".concat((i*sizevar).toString), mytempseq)
+      (s"Random DFA Size : {(i * sizevar)}", data.toSeq.sorted)
     }
     //build graph with each curve
     gnuPlot(myseq)(Set("png"), "", "", "Number of States per Sigma-DFA from a random DFA",
