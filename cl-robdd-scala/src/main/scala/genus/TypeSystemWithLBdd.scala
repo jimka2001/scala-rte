@@ -155,7 +155,7 @@ object TypeSystemWithLBdd {
 
       numericLBdd.bddView(drawFalseLeaf=true, "numericTypeLBdd")
 
-      val b2 = typeAsLBdd(SOr(SAnd(numericType, RandomType.intJavaType), RandomType.stringType))
+      val b2 = typeAsLBdd(SOr(SAnd(numericType, RandomType.intJavaType()), RandomType.stringType()))
       b2.bddView(drawFalseLeaf=true, "string or (num and int)")
     }
   }
