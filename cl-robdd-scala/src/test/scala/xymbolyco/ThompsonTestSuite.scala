@@ -146,7 +146,7 @@ class ThompsonTestSuite  extends MyFunSuite {
                                                Seq(1),
                                                Seq((0, ti, 1),
                                                    (0, ti, 2)))
-    //TODO not sure how to test this
+    // TODO not sure how to test this
     assert(outs.nonEmpty)
     assert(determinized.nonEmpty)
   }
