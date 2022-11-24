@@ -383,6 +383,15 @@ object Adjuvant {
       s"$ns ns"
   }
 
+  def generateVerticeSet(finals: Int, num: Int): Set[Int] = {
+    val r = util.Random
+    var fids: Set[Int] = Set()
+    while (fids.size < finals) {
+      fids += r.nextInt(num)
+    }
+    fids
+  }
+
   // Given a sequence of strings designating files (or directories)
   //   find the first one in the sequence which corresponds to an existing
   //   file or directory in the file system.  Otherwise the default

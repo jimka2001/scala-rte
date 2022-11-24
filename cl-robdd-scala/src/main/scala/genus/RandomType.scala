@@ -21,12 +21,12 @@
 
 package genus
 
-import scala.language.implicitConversions
 import java.lang
 
-import scala.annotation.tailrec
-import NormalForm._
+import genus.NormalForm._
 
+import scala.annotation.tailrec
+import scala.language.implicitConversions
 import scala.runtime.BoxedUnit
 
 object RandomType {
@@ -35,62 +35,7 @@ object RandomType {
   //   simply as values, because the SAtomic constructor caches
   //   objects depending on the world view.
 
-
-  // the following classes have no instantiatable subclass
-  trait Trait1
-  trait Trait2
-  trait Trait3 extends Trait2
-  abstract class Abstract1
-  abstract class Abstract2 extends Trait3
-
-  sealed abstract class ADT_abstr
-  class ADT1 extends ADT_abstr
-  class ADT2 extends ADT_abstr
-  class ADT3 extends ADT_abstr
-
-
-  trait Trait1X
-  trait Trait2X // has subclass Trait3X which has subclass Abstract2X
-  trait Trait3X extends Trait2X // has subclass Abstract2X
-  abstract class Abstract1X // has subclass Class1X
-  abstract class Abstract2X extends Trait3X
-  class Class1X extends Abstract1X
-  class Class2X extends Abstract2X
-
-  // allow implicit conversions from c:Class[_] to AtomicType(c)
-  //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)
-  //    classOf[A] && classOf[B]
-  implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
-
-  def oddp(a: Any): Boolean = {
-    a match {
-      case a: Int => a % 2 != 0 // warning! -5 % 2 = -1, not 1.
-      case _ => false
-    }
-  }
   val oddType: SSatisfies = SSatisfies(oddp, "odd")
-
-  def evenp(a: Any): Boolean = {
-    a match {
-      case a: Int => a % 2 == 0
-      case _ => false
-    }
-  }
-
-  def isPrime(x: Any): Boolean = {
-    @scala.annotation.tailrec
-    def go(k: Int, y: Int): Boolean = {
-      if (k > scala.math.sqrt(y)) true
-      else if (y % k == 0) false
-      else go(k + 1, y)
-    }
-
-    x match {
-      case y: Int => go(2, y)
-      case _ => false
-    }
-  }
-
   val primeType: SSatisfies = SSatisfies(isPrime)
   val evenType: SSatisfies = SSatisfies(evenp, "even")
   val Any: Class[Any] = classOf[Any]
@@ -107,35 +52,10 @@ object RandomType {
   val AnyVal: Class[AnyVal] = classOf[AnyVal]
   val Numeric: Class[Number] = classOf[lang.Number]
 
-  def anyType(): SimpleTypeD = SAtomic(Any)
-
-  def nothingType(): SimpleTypeD = SAtomic(Nothing)
-
-  def intType(): SimpleTypeD = SAtomic(Int)
-
-  def intJavaType(): SimpleTypeD = SAtomic(Integer)
-
-  def doubleJavaType(): SimpleTypeD = SAtomic(Double)
-
-  def stringType(): SimpleTypeD = SAtomic(String)
-
-  def listAnyType(): SimpleTypeD = SAtomic(ListAny)
-
-  def booleanType(): SimpleTypeD = SAtomic(Boolean)
-
-  def unitRuntimeType(): SimpleTypeD = SAtomic(Unit)
-
-  def charJavaType(): SimpleTypeD = SAtomic(Char)
-
-  def anyRefType(): SimpleTypeD = SAtomic(AnyRef)
-
-  def numericType(): SimpleTypeD = SAtomic(Numeric)
-
-  def atomicTypesSeq(): Seq[SimpleTypeD] =
-    Seq(intType(), intJavaType(), doubleJavaType(), stringType(),
-        listAnyType(), booleanType(), unitRuntimeType(),
-        charJavaType(), anyRefType(), numericType())
-
+  // allow implicit conversions from c:Class[_] to AtomicType(c)
+  //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)
+  //    classOf[A] && classOf[B]
+  implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
   val interestingTypes: Vector[SimpleTypeD] = Vector(
     STop,
     SEmpty,
@@ -185,6 +105,105 @@ object RandomType {
     new Class1X,
     new Class2X
     )
+  val atomicp: SimpleTypeD => Boolean = {
+    case SAtomic(_) => true
+    case _ => false
+  }
+  val eqlp: SimpleTypeD => Boolean = {
+    case SEql(_) => true
+    case _ => false
+  }
+  val memberp: SimpleTypeD => Boolean = {
+    case SMember(_) => true
+    case SEql(_) => true
+    case _ => false
+  }
+  val andp: SimpleTypeD => Boolean = {
+    case SAnd(_*) => true
+    case _ => false
+  }
+  val orp: SimpleTypeD => Boolean = {
+    case SOr(_*) => true
+    case _ => false
+  }
+  val combop: SimpleTypeD => Boolean = {
+    case SOr(_*) => true
+    case SAnd(_*) => true
+    case _ => false
+  }
+  val notp: SimpleTypeD => Boolean = {
+    case SNot(_) => true
+    case _ => false
+  }
+
+  def oddp(a: Any): Boolean = {
+    a match {
+      case a: Int => a % 2 != 0 // warning! -5 % 2 = -1, not 1.
+      case _ => false
+    }
+  }
+
+  def evenp(a: Any): Boolean = {
+    a match {
+      case a: Int => a % 2 == 0
+      case _ => false
+    }
+  }
+
+  def isPrime(x: Any): Boolean = {
+    @scala.annotation.tailrec
+    def go(k: Int, y: Int): Boolean = {
+      if (k > scala.math.sqrt(y)) true
+      else if (y % k == 0) false
+      else go(k + 1, y)
+    }
+
+    x match {
+      case y: Int => go(2, y)
+      case _ => false
+    }
+  }
+
+  def anyType(): SimpleTypeD = SAtomic(Any)
+
+  def nothingType(): SimpleTypeD = SAtomic(Nothing)
+
+  def atomicTypesSeq(): Seq[SimpleTypeD] =
+    Seq(intType(), intJavaType(), doubleJavaType(), stringType(),
+        listAnyType(), booleanType(), unitRuntimeType(),
+        charJavaType(), anyRefType(), numericType())
+
+  def intType(): SimpleTypeD = SAtomic(Int)
+
+  def intJavaType(): SimpleTypeD = SAtomic(Integer)
+
+  def doubleJavaType(): SimpleTypeD = SAtomic(Double)
+
+  def stringType(): SimpleTypeD = SAtomic(String)
+
+  def listAnyType(): SimpleTypeD = SAtomic(ListAny)
+
+  def booleanType(): SimpleTypeD = SAtomic(Boolean)
+
+  def unitRuntimeType(): SimpleTypeD = SAtomic(Unit)
+
+  def charJavaType(): SimpleTypeD = SAtomic(Char)
+
+  def anyRefType(): SimpleTypeD = SAtomic(AnyRef)
+
+  def numericType(): SimpleTypeD = SAtomic(Numeric)
+
+  def randomType(depth: Int, filter: Option[Boolean]): SimpleTypeD = {
+    if (filter.contains(false)) {
+      RandomType.randomType(depth, a => !a.inhabited.contains(false))
+    }
+    else if (filter.isEmpty) {
+      RandomType.randomType(depth, a => a.inhabited.contains(true))
+    }
+    else {
+      RandomType.randomType(depth)
+    }
+  }
 
   def randomType(depth: Int, filter: SimpleTypeD => Boolean): SimpleTypeD = {
     @tailrec
@@ -196,6 +215,7 @@ object RandomType {
         recur()
       }
     }
+
     recur()
   }
 
@@ -332,37 +352,6 @@ object RandomType {
     }
   }
 
-  val atomicp: SimpleTypeD => Boolean = {
-    case SAtomic(_) => true
-    case _ => false
-  }
-  val eqlp: SimpleTypeD => Boolean = {
-    case SEql(_) => true
-    case _ => false
-  }
-  val memberp: SimpleTypeD => Boolean = {
-    case SMember(_) => true
-    case SEql(_) => true
-    case _ => false
-  }
-  val andp: SimpleTypeD => Boolean = {
-    case SAnd(_*) => true
-    case _ => false
-  }
-  val orp: SimpleTypeD => Boolean = {
-    case SOr(_*) => true
-    case _ => false
-  }
-  val combop: SimpleTypeD => Boolean = {
-    case SOr(_*) => true
-    case SAnd(_*) => true
-    case _ => false
-  }
-  val notp: SimpleTypeD => Boolean = {
-    case SNot(_) => true
-    case _ => false
-  }
-
   def compareSequence(tds1: Seq[SimpleTypeD], tds2: Seq[SimpleTypeD]): Boolean = {
     @tailrec
     def comp(as: List[SimpleTypeD], bs: List[SimpleTypeD]): Boolean = {
@@ -396,6 +385,7 @@ object RandomType {
       a.getClass.getName < b.getClass.getName
     }
   }
+
   def main(args: Array[String]): Unit = {
     case class Box(value: Any)
     println(SAtomic(classOf[scala.runtime.RichInt]).typep(1))
@@ -411,4 +401,37 @@ object RandomType {
     println(classOf[java.lang.Object].isInstance(1))
 
   }
+
+  // the following classes have no instantiatable subclass
+  trait Trait1
+
+  trait Trait2
+
+  trait Trait3 extends Trait2
+
+  trait Trait1X
+
+  trait Trait2X // has subclass Trait3X which has subclass Abstract2X
+
+  trait Trait3X extends Trait2X // has subclass Abstract2X
+
+  sealed abstract class ADT_abstr
+
+  abstract class Abstract1
+
+  abstract class Abstract2 extends Trait3
+
+  abstract class Abstract1X // has subclass Class1X
+
+  abstract class Abstract2X extends Trait3X
+
+  class ADT1 extends ADT_abstr
+
+  class ADT2 extends ADT_abstr
+
+  class ADT3 extends ADT_abstr
+
+  class Class1X extends Abstract1X
+
+  class Class2X extends Abstract2X
 }
