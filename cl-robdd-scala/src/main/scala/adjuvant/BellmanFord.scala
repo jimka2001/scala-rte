@@ -62,45 +62,26 @@ object BellmanFord {
     recur(List(v))
   }
 
-
   def Dijkstra[V](vertices: Seq[V],
                   source: V,
                   edges: Seq[((V, V), Double)]): (Map[V, Double], Map[V, V]) = {
-    // FIXME, this does not look like the Dijkstra algorithm I recognize.
-    //    For me, Dijkstra declares a priority queue, thus avoiding having to
-    //    avoid having to search to find the best next vertex during every
-    //    iteration.  The loop, probably a recursive function, simply takes
-    //    the item from front of the priority heap, which is by construction, the
-    //    best vertex. I suspect the priority queue needs to be declared with
-    //    var, but no other variables need to be var.
-    var current = source
+    var pq: Set[(V, Double)] = Set((source, 0.0))
     var distancemap: Map[V, Double] = vertices.zip(Array.fill(vertices.size)(Double.PositiveInfinity)).toMap
     var bestpredecessor: Map[V, V] = Map(source -> source)
-    var visitedmap: Map[V, Boolean] = vertices.zip(Array.fill(vertices.size)(false)).toMap
     distancemap += (source -> 0)
-    while (!visitedmap(current)) {
-      //updating all distances, if we have found a new shorter path, then the distances and predecessors will be updated
+    while (pq.nonEmpty) {
+      val current = pq.toSeq.reduce((x, y) => if (x._2 < y._2) x else y)
+      pq -= current
       for (i <- edges) {
-        if (i._1._1 == current) {
-          if (distancemap(i._1._2) > i._2 + distancemap(current)) {
-            distancemap += (i._1._2 -> (i._2 + distancemap(current)))
-            bestpredecessor += (current -> i._1._2)
+        if (i._1._1 == current._1) {
+          if (distancemap(i._1._2) > i._2 + distancemap(current._1)) {
+            distancemap += (i._1._2 -> (i._2 + distancemap(current._1)))
+            val tuple = (i._1._2, i._2 + distancemap(current._1))
+            pq += tuple
+            bestpredecessor += (current._1 -> i._1._2)
           }
         }
       }
-      //finding the next vertex ( the one with the smallest distance that we haven't visited yet)
-      var next = source
-      var nextdist = Double.PositiveInfinity
-      for (i <- distancemap) {
-        if (i._2 < nextdist) {
-          nextdist = i._2
-          next = i._1
-        }
-      }
-      //marking the current as visited, then continuing on the next, if we have visited all vertexes,
-      // or at least all those that were accessible then the loop will stop
-      visitedmap += (current -> true)
-      current = next
     }
     (distancemap, bestpredecessor)
   }
