@@ -72,6 +72,7 @@ object BellmanFord {
                   source: V,
                   edges: Seq[((V, V), Double)]): (Map[V, Double], Map[V, V]) = {
     implicit val myOrdering: Ordering[(V, Double)] = Ordering.by { case (_, d) => d }
+    val edgess = edges.groupBy(x => x._1._1)
     val pq1 = new mutable.PriorityQueue[(V, Double)]().reverse.addOne((source -> Double.PositiveInfinity))
     pq1.enqueue(source -> 0)
     var distancemap: Map[V, Double] = vertices.zip(Array.fill(vertices.size)(Double.PositiveInfinity)).toMap
@@ -79,13 +80,14 @@ object BellmanFord {
     distancemap += (source -> 0)
     while (pq1.head._2 != Double.PositiveInfinity) {
       val current = pq1.dequeue()
-
-      for (i <- edges) {
-        if (i._1._1 == current._1) {
-          if (distancemap(i._1._2) > i._2 + distancemap(current._1)) {
-            distancemap += (i._1._2 -> (i._2 + distancemap(current._1)))
-            pq1.enqueue((i._1._2, i._2 + distancemap(current._1)))
-            bestpredecessor += (current._1 -> i._1._2)
+      if (current._2 < distancemap(current._1)) {
+        for (i <- edgess(current._1)) {
+          if (i._1._1 == current._1) {
+            if (distancemap(i._1._2) > i._2 + distancemap(current._1)) {
+              distancemap += (i._1._2 -> (i._2 + distancemap(current._1)))
+              pq1.enqueue((i._1._2, i._2 + distancemap(current._1)))
+              bestpredecessor += (current._1 -> i._1._2)
+            }
           }
         }
       }
