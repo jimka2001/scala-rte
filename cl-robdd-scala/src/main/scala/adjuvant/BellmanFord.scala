@@ -21,6 +21,8 @@
 
 package adjuvant
 
+import scala.collection.mutable
+
 object BellmanFord {
   def shortestPath[V](vertices: Seq[V],
                       source: V,
@@ -62,22 +64,27 @@ object BellmanFord {
     recur(List(v))
   }
 
+  def ordering[V](d: (V, Double)): Double = {
+    d._2
+  }
+
   def Dijkstra[V](vertices: Seq[V],
                   source: V,
                   edges: Seq[((V, V), Double)]): (Map[V, Double], Map[V, V]) = {
-    var pq: Set[(V, Double)] = Set((source, 0.0))
+    implicit val myOrdering: Ordering[(V, Double)] = Ordering.by { case (_, d) => d }
+    val pq1 = new mutable.PriorityQueue[(V, Double)]().reverse.addOne((source -> Double.PositiveInfinity))
+    pq1.enqueue(source -> 0)
     var distancemap: Map[V, Double] = vertices.zip(Array.fill(vertices.size)(Double.PositiveInfinity)).toMap
     var bestpredecessor: Map[V, V] = Map(source -> source)
     distancemap += (source -> 0)
-    while (pq.nonEmpty) {
-      val current = pq.toSeq.reduce((x, y) => if (x._2 < y._2) x else y)
-      pq -= current
+    while (pq1.head._2 != Double.PositiveInfinity) {
+      val current = pq1.dequeue()
+
       for (i <- edges) {
         if (i._1._1 == current._1) {
           if (distancemap(i._1._2) > i._2 + distancemap(current._1)) {
             distancemap += (i._1._2 -> (i._2 + distancemap(current._1)))
-            val tuple = (i._1._2, i._2 + distancemap(current._1))
-            pq += tuple
+            pq1.enqueue((i._1._2, i._2 + distancemap(current._1)))
             bestpredecessor += (current._1 -> i._1._2)
           }
         }
