@@ -92,7 +92,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     import genus.RandomType.booleanType
     import genus.SMember.trueOrFalse
     lazy val dd = trueOrFalse.disjoint(t)
-    if (this == booleanType && !dd.isEmpty) {
+    if (this == booleanType() && !dd.isEmpty) {
       dd
     }
     else t match {

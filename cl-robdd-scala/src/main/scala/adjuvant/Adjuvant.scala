@@ -383,13 +383,18 @@ object Adjuvant {
       s"$ns ns"
   }
 
+  // create a set of a given size by multiple calls to generate()
+  //   which generates one element at a time.
+  def sizedSet[A](targetSize:Int, generate: () => A):Set[A] = {
+    var data:Set[A] = Set()
+    while (data.size < targetSize)
+      data += generate()
+    data
+  }
+
   def generateVerticeSet(finals: Int, num: Int): Set[Int] = {
     val r = util.Random
-    var fids: Set[Int] = Set()
-    while (fids.size < finals) {
-      fids += r.nextInt(num)
-    }
-    fids
+    sizedSet[Int](finals, () => r.nextInt(num))
   }
 
   // Given a sequence of strings designating files (or directories)
