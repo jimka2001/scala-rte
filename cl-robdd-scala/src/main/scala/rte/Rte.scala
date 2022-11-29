@@ -260,11 +260,11 @@ object Rte {
     Singleton(SMember(xs: _*))
   }
 
-  def Eql(x: Any):Rte = {
+  def Eql(x: Any): Rte = {
     Singleton(SEql(x))
   }
 
-  def Atomic(ct: Class[_]):Rte = {
+  def Atomic(ct: Class[_]): Rte = {
     Singleton(SAtomic(ct))
   }
 
@@ -288,7 +288,7 @@ object Rte {
     case _ => false
   }
 
-  def isStarCat(rt: Rte):Boolean = rt match {
+  def isStarCat(rt: Rte): Boolean = rt match {
     case Star(Cat(Seq(_*))) => true
     case _ => false
   }
@@ -320,11 +320,11 @@ object Rte {
     case _ => false
   }
 
-  def randomSeq(depth: Int, length : Int): Seq[Rte] = {
-    (0 until length).map { _ => randomRte(depth) }
+  def randomSeq(depth: Int, length: Int, option: Boolean = true): Seq[Rte] = {
+    (0 until length).map { _ => randomRte(depth, option) }
   }
 
-  def rteCase[E](seq:Seq[(Rte,E)]):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
+  def rteCase[E](seq: Seq[(Rte, E)]): xymbolyco.Dfa[Any, SimpleTypeD, E] = {
     import xymbolyco.Dfa.dfaUnion
     @tailrec
     def excludePrevious(remaining: List[(Rte, E)], previous: List[Rte], acc: List[(Rte, E)]): Seq[(Rte, E)] = {
@@ -354,23 +354,23 @@ object Rte {
     funnyFold[(Rte, E), xymbolyco.Dfa[Any, SimpleTypeD, E], E](disjoint, f, dfaUnion)
   }
 
-//  // Compute the intersection of two given types (SimpleTypeD) for the purpose
-//  // of creating a label on a Dfa transition.  So we return None if the resulting
-//  // label (is proved to be) is an empty type, and Some(SimpleTypeD) otherwise.
-//  def intersectLabels(td1:SimpleTypeD,td2:SimpleTypeD):Option[SimpleTypeD] = {
-//    val comb = SAnd(td1,td2).canonicalize()
-//    comb.inhabited match {
-//      case Some(false) => None
-//      case _ => Some(comb)
-//    }
-//  }
+  //  // Compute the intersection of two given types (SimpleTypeD) for the purpose
+  //  // of creating a label on a Dfa transition.  So we return None if the resulting
+  //  // label (is proved to be) is an empty type, and Some(SimpleTypeD) otherwise.
+  //  def intersectLabels(td1:SimpleTypeD,td2:SimpleTypeD):Option[SimpleTypeD] = {
+  //    val comb = SAnd(td1,td2).canonicalize()
+  //    comb.inhabited match {
+  //      case Some(false) => None
+  //      case _ => Some(comb)
+  //    }
+  //  }
 
   // Sort the sequence alphabetically according to toString
-  def sortAlphabetically(seq:Seq[Rte]):Seq[Rte] = {
+  def sortAlphabetically(seq: Seq[Rte]): Seq[Rte] = {
     seq.sortBy(_.toString)
   }
 
-  def randomRte(depth: Int): Rte = {
+  def randomRte(depth: Int, option: Boolean = true): Rte = {
     import scala.util.Random
     val random = new Random
 
@@ -382,14 +382,12 @@ object Rte {
                            notEpsilon)
     val generators: Seq[() => Rte] = Vector(
       () => rteVector(random.nextInt(rteVector.length)),
-      () => Not(randomRte(depth - 1)),
-      () => Star(randomRte(depth - 1)),
-      () => And(randomSeq(depth - 1,2)),
-      () => Cat(randomSeq(depth - 1,random.nextInt(2)+2)),
-      () => Or(randomSeq(depth - 1,random.nextInt(3)+2)),
-      //() => Singleton(RandomType.randomType(depth-1)),
-      () => Singleton(RandomType.randomType(0))
-      )
+      () => Not(randomRte(depth - 1, option)),
+      () => Star(randomRte(depth - 1, option)),
+      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, option)),
+      () => Singleton(RandomType.randomType(0))).concat(if (!option) Vector() else Vector(
+      () => And(randomSeq(depth - 1, 2, option)),
+      () => Or(randomSeq(depth - 1, random.nextInt(3) + 2, option))))
     if (depth <= 0)
       Singleton(RandomType.randomType(0))
     else {
@@ -398,7 +396,6 @@ object Rte {
     }
   }
 }
-
 object sanityTest2 {
   def main(argv: Array[String]): Unit = {
     for {depth <- 5 to 7
