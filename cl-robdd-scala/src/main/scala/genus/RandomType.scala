@@ -25,13 +25,8 @@ import scala.language.implicitConversions
 import java.lang
 import scala.annotation.tailrec
 import NormalForm._
-import Types._
 
 object RandomType {
-
-  // The following definitions are defined as functions rather than
-  //   simply as values, because the SAtomic constructor caches
-  //   objects depending on the world view.
 
 
   // the following classes have no instantiatable subclass
@@ -79,6 +74,11 @@ object RandomType {
     }
   }
 
+  // The following definitions are defined as functions rather than
+  //   simply as values, because the SAtomic constructor caches
+  //   objects depending on the world view.
+
+
   def interestingTypes(): Vector[SimpleTypeD] = Vector(
     STop,
     SEmpty,
@@ -90,6 +90,7 @@ object RandomType {
     SEql(true),
     SEql(false),
     SMember(false, true),
+    SSatisfies(evenp, "even"),
     SMember("a", "b", "c"),
     SAtomic(classOf[lang.Number]),
     SAtomic(classOf[String]),
