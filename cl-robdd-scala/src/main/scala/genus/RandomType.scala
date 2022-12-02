@@ -28,6 +28,12 @@ import NormalForm._
 import Types._
 
 object RandomType {
+
+  // The following definitions are defined as functions rather than
+  //   simply as values, because the SAtomic constructor caches
+  //   objects depending on the world view.
+
+
   // the following classes have no instantiatable subclass
   trait Trait1
 
@@ -47,7 +53,6 @@ object RandomType {
 
   class ADT3 extends ADT_abstr
 
-
   trait Trait1X
 
   trait Trait2X // has subclass Trait3X which has subclass Abstract2X
@@ -62,7 +67,12 @@ object RandomType {
 
   class Class2X extends Abstract2X
 
-  def oddp(a: Any): Boolean = {
+  // allow implicit conversions from c:Class[_] to AtomicType(c)
+  //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)
+  //    classOf[A] && classOf[B]
+  implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
+
+  def evenp(a: Any): Boolean = {
     a match {
       case a: Int => a % 2 != 0 // because e.g., -5 % 2 = -1, rather than 1
       case _ => false
@@ -79,9 +89,6 @@ object RandomType {
     SEql(-1),
     SEql(true),
     SEql(false),
-    //SInt, // removing these from the list because they trigger very long computation times
-    //SDouble,
-    SSatisfies(oddp, "oddp"),
     SMember(false, true),
     SMember("a", "b", "c"),
     SAtomic(classOf[lang.Number]),
