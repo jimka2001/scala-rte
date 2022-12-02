@@ -30,32 +30,46 @@ import Types._
 object RandomType {
   // the following classes have no instantiatable subclass
   trait Trait1
+
   trait Trait2
+
   trait Trait3 extends Trait2
+
   abstract class Abstract1
+
   abstract class Abstract2 extends Trait3
 
   sealed abstract class ADT_abstr
+
   class ADT1 extends ADT_abstr
+
   class ADT2 extends ADT_abstr
+
   class ADT3 extends ADT_abstr
 
 
   trait Trait1X
+
   trait Trait2X // has subclass Trait3X which has subclass Abstract2X
+
   trait Trait3X extends Trait2X // has subclass Abstract2X
+
   abstract class Abstract1X // has subclass Class1X
+
   abstract class Abstract2X extends Trait3X
+
   class Class1X extends Abstract1X
+
   class Class2X extends Abstract2X
 
-  def oddp(a:Any):Boolean = {
+  def oddp(a: Any): Boolean = {
     a match {
-      case a:Int => a % 2 != 0 // because e.g., -5 % 2 = -1, rather than 1
+      case a: Int => a % 2 != 0 // because e.g., -5 % 2 = -1, rather than 1
       case _ => false
     }
   }
-  def interestingTypes():Vector[SimpleTypeD] = Vector(
+
+  def interestingTypes(): Vector[SimpleTypeD] = Vector(
     STop,
     SEmpty,
     SMember(1, 2, 3, 4),
@@ -67,8 +81,8 @@ object RandomType {
     SEql(false),
     //SInt, // removing these from the list because they trigger very long computation times
     //SDouble,
-    SSatisfies(oddp,"oddp"),
-    SMember(false,true),
+    SSatisfies(oddp, "oddp"),
+    SMember(false, true),
     SMember("a", "b", "c"),
     SAtomic(classOf[lang.Number]),
     SAtomic(classOf[String]),
@@ -91,22 +105,23 @@ object RandomType {
     SOr(SAtomic(classOf[ADT1]), SAtomic(classOf[ADT2]), SAtomic(classOf[ADT3])),
     SAtomic(classOf[ADT_abstr])
     )
-  val interestingValues:Vector[Any] = Vector(
+
+  val interestingValues: Vector[Any] = Vector(
     -1, -1, 0, 1, 2, 3, 4, 5, 6,
     1L, 0L, -1L, 1000L, 1000000L, // these values causes problems reported in issue #7
-    3.14,2.17,-math.sqrt(2),
+    3.14, 2.17, -math.sqrt(2),
     3.14d, 2.17d,
     3.14f, 2.17f,
     'a', 'b', 'c',
-    true,false,
+    true, false,
     "a", "b", "c", "d", "",
     new Class1X,
     new Class2X
-  )
+    )
 
-  def randomType(depth:Int, filter:SimpleTypeD=>Boolean):SimpleTypeD = {
+  def randomType(depth: Int, filter: SimpleTypeD => Boolean): SimpleTypeD = {
     @tailrec
-    def recur():SimpleTypeD = {
+    def recur(): SimpleTypeD = {
       val td = randomType(depth)
       if (filter(td))
         td
@@ -114,17 +129,18 @@ object RandomType {
         recur()
       }
     }
+
     recur()
   }
 
-  def randomType(depth:Int):SimpleTypeD = {
+  def randomType(depth: Int): SimpleTypeD = {
     val random = new scala.util.Random
     val maxCompoundSize = 2
-    val generators:Seq[()=>SimpleTypeD] = Vector(
+    val generators: Seq[() => SimpleTypeD] = Vector(
       () => SNot(randomType(depth - 1)),
       // always at least one argument of SAnd and SOr
-      () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*),
-      () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1)} : _*)
+      () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1) }: _*),
+      () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1) }: _*)
       )
     if (depth <= 0) {
       val items = interestingTypes()
@@ -135,7 +151,7 @@ object RandomType {
     }
   }
 
-  def sanityTest():Unit = {
+  def sanityTest(): Unit = {
     val a = 2
     val t = SAtomic(classOf[Int])
 
@@ -158,17 +174,17 @@ object RandomType {
                   SAtomic(classOf[Trait2]))
     println(t1)
     println(t2)
-    println(t2.canonicalize(nf=Some(Dnf)))
+    println(t2.canonicalize(nf = Some(Dnf)))
     println(t1.canonicalize())
-    println(t1.canonicalize(nf=Some(Dnf)))
-    println(SNot(t1).canonicalize(nf=Some(Dnf)))
-    (0 to 10). foreach { i =>
+    println(t1.canonicalize(nf = Some(Dnf)))
+    println(SNot(t1).canonicalize(nf = Some(Dnf)))
+    (0 to 10).foreach { i =>
       val t = randomType(6)
       println(s"$i:" + t)
       println("   " + t.canonicalize())
     }
 
-    println(t1 || t2 )
+    println(t1 || t2)
     println(t1 && t2)
     println(t1 ^^ t2)
     println(t1 - t2)
@@ -185,7 +201,7 @@ object RandomType {
     trait C
     class D extends A with B with C
     withClosedWorldView {
-      val rte = SAnd(classOf[D], SNot(SAnd( classOf[B], classOf[C])))
+      val rte = SAnd(classOf[D], SNot(SAnd(classOf[B], classOf[C])))
 
       println("xxxxxx -> " + rte.inhabited)
     }
@@ -207,9 +223,7 @@ object RandomType {
   }
 
   def main(args: Array[String]): Unit = {
-
     test179()
     //test192()
-
   }
 }
