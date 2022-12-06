@@ -23,7 +23,7 @@ package padl
 
 import adjuvant.Adjuvant.{existingFile, filterFile}
 import genus.{SAnd, SAtomic, SEmpty, SNot, SOr, SSatisfies, STop, SimpleTypeD}
-import genus.RandomType.{evenType, oddType}
+import genus.Types.{evenType, oddType}
 import rte.{And, Cat, Or, Permute, Plus, Rte, Singleton, Star}
 import xymbolyco.{Dfa, GraphViz, Thompson}
 import xymbolyco.GraphViz.{dfaView, multiLineString}

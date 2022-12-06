@@ -23,6 +23,7 @@ package rte
 
 import genus._
 import adjuvant.Adjuvant._
+import genus.Types.mdtd
 import xymbolyco.Dfa
 
 import scala.annotation.tailrec
@@ -172,7 +173,7 @@ abstract class Rte {
     import adjuvant.Adjuvant.traceGraph
     def edges(rt: Rte): Seq[(SimpleTypeD, Rte)] = {
       val fts = rt.firstTypes
-      val wrts = RandomType.mdtd(fts)
+      val wrts = mdtd(fts)
 
       wrts.map { case (td, (factors, disjoints)) => (td,
         // Here we call rt.derivative, but we pass along the correct-by-construction
@@ -192,7 +193,7 @@ abstract class Rte {
                                                          "  derivatives() reported: " + e.msg).mkString("\n"),
                                                rte = this,
                                                firstTypes = rt.firstTypes,
-                                               mdtd = RandomType.mdtd(rt.firstTypes)
+                                               mdtd = mdtd(rt.firstTypes)
                                                )
         })
       }.toSeq

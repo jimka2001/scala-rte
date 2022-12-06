@@ -26,6 +26,7 @@ import RteImplicits._
 import adjuvant.Adjuvant.{copyFile, existingFile}
 import genus.SMember
 import genus.RandomType._
+import genus.Types.evenType
 import xymbolyco.GraphViz.dfaView
 import xymbolyco.Minimize
 
@@ -83,7 +84,7 @@ object TeamDays {
     val rte1: Rte = Cat(classOf[String],
                         Star(classOf[Int]),
                         Or(classOf[Boolean],
-                           Star(evenType)))
+                           Star(evenType())))
     val rte2: Rte = Cat(classOf[String],
                         Star(classOf[Int]),
                         // SMember(1,0,-1),
