@@ -213,7 +213,7 @@ object Types {
     }
   }
 
-  val evenType: SSatisfies = SSatisfies(isEven, "even")
+  def evenType(): SSatisfies = SSatisfies(isEven, "even")
 
   def isOdd(x: Any): Boolean = {
     x match {
@@ -222,7 +222,7 @@ object Types {
     }
   }
 
-  val oddType: SSatisfies = SSatisfies(isOdd, "odd")
+  def oddType(): SSatisfies = SSatisfies(isOdd, "odd")
 
   def isPrime(x: Any): Boolean = {
     @scala.annotation.tailrec

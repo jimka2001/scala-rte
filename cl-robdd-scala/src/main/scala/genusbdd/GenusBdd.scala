@@ -181,7 +181,7 @@ object GenusBdd {
                     SEql(42),
                     SMember(1, 2, 3),
                     SMember(1, 3, 2),
-                    evenType, // SSatisfies(evenp)
+                    evenType(), // SSatisfies(evenp)
                     SAnd(classOf[Trait1], classOf[Trait2]),
                     SAnd(classOf[Trait1], classOf[Trait2], classOf[Trait3]),
                     SOr(classOf[Trait1], classOf[Trait2]),
