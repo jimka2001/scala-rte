@@ -24,6 +24,7 @@ package genus
 import RandomType._
 import NormalForm._
 import adjuvant.Adjuvant.{findSimplifier, uniquify}
+import genus.Types.{andp, createMemberFromPairs, orp}
 
 /** A union type, which is the union of zero or more types.
  *

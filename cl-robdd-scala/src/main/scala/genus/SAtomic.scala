@@ -89,7 +89,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
   // SAtomic(ct: Class[_])
   override protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
-    import genus.RandomType.booleanType
+    import genus.Types.booleanType
     import genus.SMember.trueOrFalse
     lazy val dd = trueOrFalse.disjoint(t)
     if (this == booleanType() && !dd.isEmpty) {

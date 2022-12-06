@@ -21,7 +21,7 @@
 
 package genus
 
-import RandomType._
+import Types._
 import NormalForm._
 import adjuvant.Adjuvant.{findSimplifier, uniquify}
 
@@ -164,7 +164,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     //  ==> SMember(42,44)
     tds.find(memberp) match {
       case Some(m:SMemberImpl) =>
-        RandomType.createMemberFromPairs(m.xs.filter { case (_: SimpleTypeD, b: Any) => typep(b) })
+        Types.createMemberFromPairs(m.xs.filter { case (_: SimpleTypeD, b: Any) => typep(b) })
       case _ => this
     }
   }

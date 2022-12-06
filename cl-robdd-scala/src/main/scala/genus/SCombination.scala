@@ -23,7 +23,8 @@ package genus
 
 import RandomType._
 import NormalForm._
-import adjuvant.Adjuvant.{findSimplifier, uniquify, eql}
+import adjuvant.Adjuvant.{eql, findSimplifier, uniquify}
+import genus.Types.{cmpTypeDesignators, compareSequence, createMemberFromPairs}
 
 // The purpose of this class, SCombination, is to serve as a superclass
 // of both SAnd and SOr, as there is quite a bit of common code between
@@ -234,7 +235,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     if (notMembers.size <= 1)
       this
     else {
-      val newNotMember = SNot(createMemberFromPairs(notMembers.map{
+      val newNotMember = SNot(Types.createMemberFromPairs(notMembers.map{
         case SNot(td:SMemberImpl) => td.xs
         case _ => throw new Exception("scalac is not smart enough to know this will never happen")
       }.reduce(dualCombinator[(SimpleTypeD,Any)])))
@@ -256,7 +257,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     if (members.size <= 1)
       this
     else {
-      val newMember = createMemberFromPairs(members.map(_.xs).reduce(combinator[(SimpleTypeD,Any)]))
+      val newMember = Types.createMemberFromPairs(members.map(_.xs).reduce(combinator[(SimpleTypeD,Any)]))
 
       create(uniquify(tds.map{
         case _:SMemberImpl => newMember
