@@ -29,6 +29,7 @@ import org.scalatest.funsuite.AnyFunSuite
 import RandomType.{interestingValues, randomType}
 import adjuvant.Adjuvant.eql
 import adjuvant.MyFunSuite
+import genus.Types.{intJavaType, stringType}
 
 class GenusCanonicalize extends MyFunSuite {
 
@@ -59,11 +60,11 @@ class GenusCanonicalize extends MyFunSuite {
                    SAtomic(B)))
 
     // IntersectionType(EqlType(42), AtomicType(Integer)) --> EqlType(42)
-    assert(SAnd(SEql(42), SAtomic(RandomType.Integer)).canonicalize()
+    assert(SAnd(SEql(42), intJavaType()).canonicalize()
            == SEql(42))
 
     // IntersectionType(MemberType(42,43,"hello"), AtomicType(Integer)) --> MemberType(42,43)
-    assert(SAnd(SMember(42, 43, "hello"), SAtomic(RandomType.Integer)).canonicalize()
+    assert(SAnd(SMember(42, 43, "hello"), intJavaType()).canonicalize()
            == SMember(42, 43))
 
     // IntersectionType(A,TopType,B) ==> IntersectionType(A,B)
@@ -72,32 +73,32 @@ class GenusCanonicalize extends MyFunSuite {
   }
   test("and canonicalize 2") {
     assert(SMember("1", "2", "3", "4").typep("2"))
-    assert(SAtomic(RandomType.String).typep("2"))
+    assert(stringType().typep("2"))
     assert(SNot(SMember("1", "2", "3", "4")).typep("5"))
-    assert(SAnd(SAtomic(RandomType.String), SMember("1", "2", "3", "4")).typep("2"))
+    assert(SAnd(stringType(), SMember("1", "2", "3", "4")).typep("2"))
     // (and Int (not (member 1 2)) (not (member 3 4)))
     //  --> (and Int (not (member 1 2 3 4)))
 
 
-    assert(SAnd(SAtomic(RandomType.String),SNot(SMember("1","2","3","4"))).canonicalizeOnce()
-           != SAtomic(RandomType.String))
+    assert(SAnd(stringType(),SNot(SMember("1","2","3","4"))).canonicalizeOnce()
+           != stringType())
 
-    val td1 = SAnd(SAtomic(RandomType.String),
+    val td1 = SAnd(stringType(),
                    SNot(SMember("1", "2")),
                    SNot(SMember("3", "4")))
 
     assert(td1.canonicalize()
-             == SAnd(SAtomic(RandomType.String),
+             == SAnd(SAtomic(classOf[String]),
                      SNot(SMember("1", "2", "3", "4"))),
            s"\nlhs= " + td1.canonicalize() +
-             "\nrhs" + SAnd(SAtomic(RandomType.String),
+             "\nrhs" + SAnd(classOf[String],
                             SNot(SMember("1", "2", "3", "4"))
                             )
            )
-    assert(SAnd(SAtomic(RandomType.String),
+    assert(SAnd(classOf[String],
                 SNot(SMember("1", 2)),
                 SNot(SMember("3", 4))).canonicalize()
-           == SAnd(SAtomic(RandomType.String),
+           == SAnd(classOf[String],
                    SNot(SMember("1", "3"))
                    )
            )
@@ -163,10 +164,10 @@ class GenusCanonicalize extends MyFunSuite {
              == SOr(SAtomic(A),
                     SMember(1, 2, 3, 4, 5)))
     // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
-    assert(SOr(SAtomic(RandomType.String),
+    assert(SOr(classOf[String],
                SMember(1, 2, "hello"),
                SMember(2, 3, 4, "world")).canonicalize()
-           == SOr(SAtomic(RandomType.String),
+           == SOr(classOf[String],
                   SMember(1, 2, 3, 4)
                   ))
     // (or (or A B) (or C D)) --> (or A B C D)
@@ -235,7 +236,7 @@ class GenusCanonicalize extends MyFunSuite {
 
     // [And [Not java.lang.String],
     //      [Not [= 0]]]
-    SOr(SNot(String),
+    SOr(SNot(classOf[String]),
         SNot(SEql(0))).canonicalize(Some(Dnf))
     // [Not [Or [Not
     //           [Or
@@ -404,17 +405,17 @@ class GenusCanonicalize extends MyFunSuite {
     //assert(classOf[Long].isInstance(one))
     //assert(classOf[Integer].isInstance(one))
     assert(SAtomic(classOf[Integer]).typep(oneInteger))
-    assert(SAtomic(Integer).typep(oneInteger))
-    check_type(SAtomic(Integer))
+    assert(SAtomic(classOf[Integer]).typep(oneInteger))
+    check_type(SAtomic(classOf[Integer]))
 
     assert(SAtomic(classOf[Long]).typep(1L))
     assert(SEql(oneInteger).typep(1L) == false)
+    check_type(SOr(classOf[Integer],SEql(oneInteger)))
     check_type(SOr(SAtomic(classOf[Integer]),SEql(oneInteger)))
-    check_type(SOr(SAtomic(Integer),SEql(oneInteger)))
 
     assert(SAtomic(classOf[Integer]).typep(1))
-    check_type(SOr(Integer,SEql(1)))
-    check_type(SOr(SAtomic(Integer),SEql(1)))
+    check_type(SOr(classOf[Integer],SEql(1)))
+    check_type(SOr(SAtomic(classOf[Integer]),SEql(1)))
   }
   test("discovered 389"){
 
@@ -582,10 +583,10 @@ class GenusCanonicalize extends MyFunSuite {
                     SMember(1, 2, 3, 4, 5)))
   }
   test("combo conversion13"){
-    assert(SAnd(SAtomic(RandomType.String),
+    assert(SAnd(classOf[String],
                 SNot(SMember("1", "2")),
                 SNot(SMember("3", "4"))).conversion13()
-             == SAnd(SAtomic(RandomType.String),
+             == SAnd(classOf[String],
                      SNot(SMember("1", "2", "3", "4"))
                      ))
   }
@@ -995,11 +996,11 @@ class GenusCanonicalize extends MyFunSuite {
              == SEmpty)
   }
   test("canonicalize member with primitive"){
-    SEql(1).subtypep(SAtomic(Integer))
-    SAtomic(Integer).typep(1)
+    SEql(1).subtypep(SAtomic(classOf[Integer]))
+    SAtomic(classOf[Integer]).typep(1)
 
-    assert(SOr(SAtomic(Integer),SEql(1)).canonicalize() == SAtomic(Integer))
-    assert(SOr(SAtomic(Integer),SEql(1L)).canonicalize() == SOr(SAtomic(Integer),SEql(1L)))
+    assert(SOr(SAtomic(classOf[Integer]),SEql(1)).canonicalize() == SAtomic(classOf[Integer]))
+    assert(SOr(SAtomic(classOf[Integer]),SEql(1L)).canonicalize() == SOr(SAtomic(classOf[Integer]),SEql(1L)))
   }
   test("combo conversion 177"){
     class ClassX

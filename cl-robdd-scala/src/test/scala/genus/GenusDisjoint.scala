@@ -23,6 +23,7 @@ package genus
 
 import RandomType._
 import adjuvant.MyFunSuite
+import genus.Types.{atomicTypesSeq, booleanType, charJavaType, doubleJavaType, intJavaType, oddType, stringType}
 
 class GenusDisjoint extends MyFunSuite {
 
@@ -219,7 +220,7 @@ class GenusDisjoint extends MyFunSuite {
   test("boolean disjoint"){
     val b = SAtomic(classOf[Boolean])
 
-    assert(SMember(true,false).disjoint(oddType).contains(true))
-    assert(b.disjoint(oddType).contains(true))
+    assert(SMember(true,false).disjoint(oddType()).contains(true))
+    assert(b.disjoint(oddType()).contains(true))
   }
 }

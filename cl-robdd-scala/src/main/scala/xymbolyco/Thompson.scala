@@ -2,6 +2,7 @@ package xymbolyco
 
 import adjuvant.Accumulators.{makeCounter, withSetCollector}
 import adjuvant.Adjuvant.{fixedPoint, traceGraph, uniquify}
+import genus.Types.mdtd
 import genus.{RandomType, SAnd, SNot, SOr, STop, SimpleTypeD}
 import rte.And.createAnd
 import rte.Cat.createCat
@@ -350,7 +351,7 @@ object Thompson {
       //      to each type.
       //      The pair returned from step 2 is exactly what is needed by traceGraph
       val tr2 = withSetCollector[(SimpleTypeD, Int)](collect =>
-                                                       for {(td, (factors, _)) <- RandomType.mdtd(tds)
+                                                       for {(td, (factors, _)) <- mdtd(tds)
                                                             q <- qs
                                                             trs <- grouped.get(q)
                                                             (_, td1, y) <- trs

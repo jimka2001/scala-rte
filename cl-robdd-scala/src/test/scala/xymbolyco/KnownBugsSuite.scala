@@ -22,6 +22,7 @@
 package xymbolyco
 
 import genus.RandomType._
+import genus.Types.isOdd
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import rte._
@@ -38,7 +39,8 @@ class KnownBugsSuite extends AnyFunSuite {
     assert(dfa.Qids.size == 1)
   }
   test("known bug B") {
-    val rte = Or(And(Star(Singleton(SSatisfies(oddp, "oddp"))), Cat(Singleton(SSatisfies(evenp, "evenp")),
+    import genus.Types.isOdd
+    val rte = Or(And(Star(Singleton(SSatisfies(isOdd, "oddp"))), Cat(Singleton(SSatisfies(evenp, "evenp")),
                                                                     Singleton(SMember("a", "b", "c")))), Star(Or(Singleton(SAtomic(classOf[Class1X])),
                                                                                                                  Singleton(SAtomic(classOf[Trait2X])))), Not(Star(Singleton(SAtomic(classOf[Trait3X])))))
     val dfa = Minimize.minimize(Minimize.trim(rte.toDfa(42)))
@@ -53,7 +55,7 @@ class KnownBugsSuite extends AnyFunSuite {
   test("known bug D") {
     val rte = Or(And(Not(Singleton(SAtomic(classOf[String]))),
                      And(Singleton(SAtomic(classOf[Class2X])), Singleton(SAtomic(classOf[ADT_abstr])))),
-                 Star(Singleton(SSatisfies(oddp, "oddp"))))
+                 Star(Singleton(SSatisfies(isOdd, "oddp"))))
     val dfa = Minimize.minimize(Minimize.trim(rte.toDfa(42)))
     assert(dfa.Qids.size == 1)
   }

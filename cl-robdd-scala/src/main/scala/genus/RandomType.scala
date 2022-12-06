@@ -127,6 +127,18 @@ object RandomType {
     new Class2X
     )
 
+  def randomType(depth: Int, filter: Option[Boolean]): SimpleTypeD = {
+    if (filter.contains(false)) {
+      RandomType.randomType(depth, a => !a.inhabited.contains(false))
+    }
+    else if (filter.isEmpty) {
+      RandomType.randomType(depth, a => a.inhabited.contains(true))
+    }
+    else {
+      RandomType.randomType(depth)
+    }
+  }
+
   def randomType(depth: Int, filter: SimpleTypeD => Boolean): SimpleTypeD = {
     @tailrec
     def recur(): SimpleTypeD = {
