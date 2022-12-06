@@ -126,50 +126,55 @@ object RandomType {
     new Class1X,
     new Class2X
     )
-
   def randomType(depth: Int, filter: Option[Boolean]): SimpleTypeD = {
     if (filter.contains(false)) {
-      RandomType.randomType(depth, a => !a.inhabited.contains(false))
+      RandomType.randomType(depth, a => !a.inhabited.contains(false), true)
     }
     else if (filter.isEmpty) {
-      RandomType.randomType(depth, a => a.inhabited.contains(true))
+      RandomType.randomType(depth, a => a.inhabited.contains(true), true)
     }
     else {
       RandomType.randomType(depth)
     }
   }
 
-  def randomType(depth: Int, filter: SimpleTypeD => Boolean): SimpleTypeD = {
+  def randomType(depth: Int, filter: SimpleTypeD => Boolean, avoid: Boolean): SimpleTypeD = {
     @tailrec
     def recur(): SimpleTypeD = {
-      val td = randomType(depth)
+      val td = randomType(depth, avoid)
       if (filter(td))
         td
       else {
         recur()
       }
     }
-
     recur()
   }
 
-  def randomType(depth: Int): SimpleTypeD = {
+  def randomType(depth: Int, avoid: Boolean = false): SimpleTypeD = {
     val random = new scala.util.Random
     val maxCompoundSize = 2
     val generators: Seq[() => SimpleTypeD] = Vector(
-      () => SNot(randomType(depth - 1)),
+      () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1, avoid) }: _*),
       // always at least one argument of SAnd and SOr
-      () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1) }: _*),
-      () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1) }: _*)
+      () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1, avoid) }: _*),
+      () => SNot(randomType(depth - 1, avoid))
       )
     if (depth <= 0) {
-      val items = interestingTypes()
-      items(random.nextInt(items.length))
-    } else {
-      val g = generators(random.nextInt(generators.length))
+      println("a")
+
+      interestingTypes()(random.nextInt(interestingTypes.length - (if (!avoid) {
+        1
+      } else 0)))
+    }
+    else {
+      val g = generators(random.nextInt(generators.length - (if (!avoid) {
+        2
+      } else 0)))
       g()
     }
   }
+
 
   def sanityTest(): Unit = {
     val a = 2

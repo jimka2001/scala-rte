@@ -371,28 +371,36 @@ object Rte {
     seq.sortBy(_.toString)
   }
 
-  def randomRte(depth: Int, option: Boolean = true): Rte = {
+  def randomRte(depth: Int, avoidEmpty: Boolean = true): Rte = {
     import scala.util.Random
     val random = new Random
 
-    val rteVector = Vector(EmptySet,
-                           EmptyWord,
+    val rteVector = Vector(notEpsilon,
                            Sigma,
                            sigmaStar,
                            notSigma,
-                           notEpsilon)
+                           EmptyWord,
+                           EmptySet)
     val generators: Seq[() => Rte] = Vector(
-      () => rteVector(random.nextInt(rteVector.length)),
-      () => Not(randomRte(depth - 1, option)),
-      () => Star(randomRte(depth - 1, option)),
-      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, option)),
-      () => Singleton(RandomType.randomType(0))).concat(if (!option) Vector() else Vector(
-      () => And(randomSeq(depth - 1, 2, option)),
-      () => Or(randomSeq(depth - 1, random.nextInt(3) + 2, option))))
+      () => rteVector(random.nextInt(rteVector.length - (if (avoidEmpty) 3 else 0))),
+      () => Or(randomSeq(depth - 1, random.nextInt(3) + 2, avoidEmpty)),
+      () => Star(randomRte(depth - 1, avoidEmpty)),
+      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
+      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
+      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
+      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
+      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
+      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
+      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
+      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
+      () => Singleton(RandomType.randomType(0, Some(!avoidEmpty))),
+      () => And(randomSeq(depth - 1, 2, avoidEmpty)),
+      () => Not(randomRte(depth - 1, avoidEmpty)))
+
     if (depth <= 0)
-      Singleton(RandomType.randomType(0))
+      Singleton(RandomType.randomType(0, Some(!avoidEmpty)))
     else {
-      val g = generators(random.nextInt(generators.length))
+      val g = generators(random.nextInt(generators.length - (if (avoidEmpty) 2 else 0)))
       g()
     }
   }

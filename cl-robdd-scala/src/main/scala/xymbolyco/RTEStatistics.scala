@@ -68,7 +68,7 @@ object mystats {
         acc + (fr -> (acc(fr) + 1))
       }
       //converting map to sequence of doubles, then adding the sequence of doubles to curve sequence
-      val mytempseq: Seq[(Double, Double)] = data.toSeq.sorted
+      val mytempseq: Seq[(Double, Double)] = data.toSeq.map(a => (a._1, (a._2 * 100) / number)).sorted
       myseq :+= ("Depth :".concat((j+1).toString), mytempseq)
     }
     //build graph with each curve
@@ -94,7 +94,7 @@ object mystats {
         acc + (fr -> (acc(fr) + 1))
       }
       //adds curve to sequence of curves
-      myseq :+= (fnames(i), data.toSeq.sorted)
+      myseq :+= (fnames(i), data.toSeq.map(a => (a._1, (a._2 * 100) / num * depth)).sorted)
     }
     //creates gnuplot
     gnuPlot(myseq)(Set("png"), title = "", comment = "", xAxisLabel = "Number of States per Sigma-DFA",
@@ -136,7 +136,7 @@ object mystats {
         acc + (fr -> (acc(fr) + 1))
       }
       //converting map to sequence of doubles, then adding the sequence of doubles to curve sequence
-      (s"Random DFA Size : {(i * sizevar)}", data.toSeq.sorted)
+      (s"Random DFA Size : {(i * sizevar)}", data.toSeq.map(a => (a._1, (a._2 * 100) / number)).sorted)
     }
     //build graph with each curve
     gnuPlot(myseq)(Set("png"), "", "", "Number of States per Sigma-DFA from a random DFA",
@@ -166,7 +166,7 @@ object mystats {
         acc + (fr -> (acc(fr) + 1))
       }
       //adds curve to sequence of curves
-      myseq :+= (fnames(i), data.toSeq.sorted)
+      myseq :+= (fnames(i), data.toSeq.map(a => (a._1, (a._2 * 100) / num * ((maxsize - minsize) / sizevar))).sorted)
     }
     //creates gnuplot
     gnuPlot(myseq)(Set("png"), title = "", comment = "", xAxisLabel = "Number of States per Sigma-DFA from a Random DFA",
