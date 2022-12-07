@@ -151,6 +151,8 @@ object RandomType {
     recur()
   }
 
+  // FIXME -- document the avoid option, including the "trick" used
+  //   to avoid SAnd and SNot
   def randomType(depth: Int, avoid: Boolean = false): SimpleTypeD = {
     val random = new scala.util.Random
     val maxCompoundSize = 2
@@ -172,7 +174,6 @@ object RandomType {
       g()
     }
   }
-
 
   def sanityTest(): Unit = {
     val a = 2
