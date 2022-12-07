@@ -32,7 +32,7 @@ object Types {
   // allow implicit conversions from c:Class[_] to AtomicType(c)
   //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)
   //    classOf[A] && classOf[B]
-  implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
+  // implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
 
   def createMemberFromPairs(xs:Seq[(SimpleTypeD,Any)]):SimpleTypeD = {
     createMember(xs.map(_._2))
@@ -170,19 +170,19 @@ object Types {
     }
   }
 
-  val Any: Class[Any] = classOf[Any]
-  val Nothing: Class[Nothing] = classOf[Nothing]
-  val Int: Class[Int] = classOf[Int]
-  val Integer: Class[Integer] = classOf[lang.Integer]
-  val Double: Class[lang.Double] = classOf[lang.Double]
-  val String: Class[String] = classOf[lang.String]
-  val ListAny: Class[List[Any]] = classOf[List[Any]]
-  val Boolean: Class[lang.Boolean] = classOf[lang.Boolean]
-  val Unit: Class[BoxedUnit] = classOf[scala.runtime.BoxedUnit]
-  val Char: Class[Character] = classOf[lang.Character]
-  val AnyRef: Class[AnyRef] = classOf[AnyRef]
-  val AnyVal: Class[AnyVal] = classOf[AnyVal]
-  val Numeric: Class[Number] = classOf[lang.Number]
+  private val Any: Class[Any] = classOf[Any]
+  private val Nothing: Class[Nothing] = classOf[Nothing]
+  private val Int: Class[Int] = classOf[Int]
+  private val Integer: Class[Integer] = classOf[lang.Integer]
+  private val Double: Class[lang.Double] = classOf[lang.Double]
+  private val String: Class[String] = classOf[lang.String]
+  private val ListAny: Class[List[Any]] = classOf[List[Any]]
+  private val Boolean: Class[lang.Boolean] = classOf[lang.Boolean]
+  private val Unit: Class[BoxedUnit] = classOf[scala.runtime.BoxedUnit]
+  private val Char: Class[Character] = classOf[lang.Character]
+  private val AnyRef: Class[AnyRef] = classOf[AnyRef]
+  private val AnyVal: Class[AnyVal] = classOf[AnyVal]
+  private val Numeric: Class[Number] = classOf[lang.Number]
 
   // The following definitions are defined as functions rather than
   //   simply as values, because the SAtomic constructor caches
@@ -238,5 +238,5 @@ object Types {
     }
   }
 
-  val primeType: SSatisfies = SSatisfies(isPrime)
+  def primeType(): SSatisfies = SSatisfies(isPrime)
 }
