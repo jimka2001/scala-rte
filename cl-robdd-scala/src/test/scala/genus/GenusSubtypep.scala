@@ -25,6 +25,7 @@ package genus
 import RandomType._
 import java.lang
 import RandomType.randomType
+import Types._
 
 class Test1
 

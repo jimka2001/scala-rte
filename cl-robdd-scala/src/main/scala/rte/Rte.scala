@@ -371,6 +371,11 @@ object Rte {
     seq.sortBy(_.toString)
   }
 
+
+  //here we are passing along an avoidEmpty boolean that will be true when we do not wish there to be :
+  // any ANDs or NOTs in the RTE, and that any of the SimpleTypeDs will not be empty either
+  // this way we are also excluding the EmptyWord, EmptySet, and notSigma explicitely, while also not allowing
+  // the recursive call for the randomTypeD to create any EmptyTypes
   def randomRte(depth: Int, avoidEmpty: Boolean = true): Rte = {
     import scala.util.Random
     val random = new Random
@@ -396,6 +401,7 @@ object Rte {
       () => Singleton(RandomType.randomType(0, Some(!avoidEmpty))),
       () => And(randomSeq(depth - 1, 2, avoidEmpty)),
       () => Not(randomRte(depth - 1, avoidEmpty)))
+
 
     if (depth <= 0)
       Singleton(RandomType.randomType(0, Some(!avoidEmpty)))
