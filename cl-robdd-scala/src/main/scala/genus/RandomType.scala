@@ -193,7 +193,6 @@ object RandomType {
     }
   }
 
-
   def sanityTest(): Unit = {
     val a = 2
     val t = SAtomic(classOf[Int])
