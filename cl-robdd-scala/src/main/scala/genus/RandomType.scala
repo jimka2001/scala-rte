@@ -126,6 +126,20 @@ object RandomType {
     new Class1X,
     new Class2X
     )
+
+  // here we have 3 functions called randomType, however all three take different arguments in addition to
+  // the depth of the random type that needs to be generated.
+
+
+  // the first function takes as an argument depth ( to be used recursively) and a "filter"
+  // the filter is an option [Boolean] which can take Some(true),Some( false), and None
+  // when the filter is set to Some(true) every type will be accepted and there are no restrictions
+  // when the filter is set to some (false ) the only types that are accepted are those that are not proven to be uninhabited
+  // when the filter is set to None, the on ly types that are accepted are those that are proven to be inhabited ( which means
+  // that the types that are untederminately inhabited will be rejected, and those that are proven to be uninhabited will also be rejected)
+  //this function then calls the 2nd function if the filter is set to be different than Some(true) with a filter function
+
+
   def randomType(depth: Int, filter: Option[Boolean]): SimpleTypeD = {
     if (filter.contains(false)) {
       RandomType.randomType(depth, a => !a.inhabited.contains(false), true)
@@ -138,6 +152,9 @@ object RandomType {
     }
   }
 
+  // this function still takes a depth for the simpletypeD, an "avoid" boolean, and a filter function that will be given as an argument
+  // the function takes a simpletypeD as an argument and return a boolean according to some restrictions. While the boolean is not true
+  // the second function will call itself.
   def randomType(depth: Int, filter: SimpleTypeD => Boolean, avoid: Boolean): SimpleTypeD = {
     @tailrec
     def recur(): SimpleTypeD = {
@@ -151,6 +168,9 @@ object RandomType {
     recur()
   }
 
+  // the final function that is in charge of generating the random simpletypeDs
+  // the avoid boolean, when true, will avoid using nots and ands to compound types, and will also ensure that the
+  // selected type/compound type will not be uninhabited.
   def randomType(depth: Int, avoid: Boolean = false): SimpleTypeD = {
     val random = new scala.util.Random
     val maxCompoundSize = 2
