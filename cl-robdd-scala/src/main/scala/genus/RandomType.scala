@@ -171,6 +171,8 @@ object RandomType {
   // the final function that is in charge of generating the random simpletypeDs
   // the avoid boolean, when true, will avoid using nots and ands to compound types, and will also ensure that the
   // selected type/compound type will not be uninhabited.
+  // when creating compound types, we will randomly select one of the "and or not" keyword to combine types, when the
+  // avoid boolean is set to true, it will only select the Or keyword
   def randomType(depth: Int, avoid: Boolean = false): SimpleTypeD = {
     val random = new scala.util.Random
     val maxCompoundSize = 2
@@ -181,9 +183,7 @@ object RandomType {
       () => SNot(randomType(depth - 1, avoid))
       )
     if (depth <= 0) {
-      interestingTypes()(random.nextInt(interestingTypes.length - (if (!avoid) {
-        1
-      } else 0)))
+      interestingTypes()(random.nextInt(interestingTypes.length))
     }
     else {
       val g = generators(random.nextInt(generators.length - (if (!avoid) {
