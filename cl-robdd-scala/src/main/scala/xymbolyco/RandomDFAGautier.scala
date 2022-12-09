@@ -5,7 +5,7 @@ import genus.{RandomType, SimpleTypeD}
 
 object RandomDFAGautier {
 
-  def RandomDFA[E](num: Int, finals: Int = scala.util.Random.nextInt(3), transitions: Int = 2, transrange: Int = 1,
+  def RandomDFA[E](num: Int = 5, finals: Int = scala.util.Random.nextInt(3), transitions: Int = 2, transrange: Int = 1,
                    exitValue: E = 42, typedepth: Int = 1, filter: Option[Boolean] = None): Dfa[Any, SimpleTypeD, E] = {
     val r = scala.util.Random
     if (finals + 1 > num || transitions + transrange > num - 1) {

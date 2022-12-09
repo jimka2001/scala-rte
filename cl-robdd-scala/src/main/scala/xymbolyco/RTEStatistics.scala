@@ -103,7 +103,6 @@ object mystats {
                    key = "horizontal bmargin", _ => (), verbose = false, view = false)
   }
 
-  // GnuFileCB   Seq(String).! to execute with console
   //functions to use as arguments for statisticsizeperdepth
   def brz(rte: Rte): Double = {
     rte.toDfa(42).Q.size
@@ -128,7 +127,6 @@ object mystats {
       //using a map to count DFAs (creating couples of size->count, incrementing at each DFA
       val mymap: Map[Double, Double] = Map().withDefaultValue(0)
       val data = (0 until number).foldLeft(mymap) { (acc, x) =>
-        println(x)
         val fins = r.nextInt(3)
         val dfa = RandomDFAGautier.RandomDFA(i * sizevar, fins, 2, 1, 42, typeDepth, None)
         val rte = dfaToRte(dfa, 42)(42)
@@ -157,10 +155,9 @@ object mystats {
       val f = myfuncseq(i)
       //builds map of double->double, rte, counts all values
       val mymap: Map[Double, Double] = Map().withDefaultValue(0)
-      val data = Range(minsize/sizevar,1+(maxsize/sizevar)).foldLeft(mymap) { (acc, x) =>
-        println(x)
+      val data = Range(0, (num * (maxsize - minsize)) / sizevar).foldLeft(mymap) { (acc, x) =>
         val fins = r.nextInt(3)
-        val dfa = RandomDFAGautier.RandomDFA(i*sizevar,fins,2,1,42,1,None)
+        val dfa = RandomDFAGautier.RandomDFA(((x / num) * sizevar) + minsize, fins, 2, 1, 42, 1, None)
         val rte = dfaToRte(dfa,42)(42)
         val fr = f(rte)
         acc + (fr -> (acc(fr) + 1))
@@ -174,6 +171,61 @@ object mystats {
                    grid = false, outputFileBaseName = "DFAsizeperdepth", plotWith = "linespoints",
                    key = "horizontal bmargin", _ => (), verbose = false, view = false)
   }
+
+  def statisticSizePerF(number: Int = 30000, minsize: Int = 5, maxsize: Int = 20, sizevar: Int = 5, frte: Int => Rte, f: Rte => Double = brz): Unit = {
+    //sequence that will contain all curves
+    val r = scala.util.Random
+    val myseq: Seq[(String, Seq[(Double, Double)])] =
+      for (i <- minsize / sizevar to (maxsize / sizevar)) yield {
+        //using a map to count DFAs (creating couples of size->count, incrementing at each DFA
+        val mymap: Map[Double, Double] = Map().withDefaultValue(0)
+        val data = (0 until number).foldLeft(mymap) { (acc, _) =>
+          val fins = r.nextInt(3)
+          val fr = f(frte(i))
+          acc + (fr -> (acc(fr) + 1))
+        }
+        //converting map to sequence of doubles, then adding the sequence of doubles to curve sequence
+        (s"Random DFA Size : {(i * sizevar)}", data.toSeq.map(a => (a._1, (a._2 * 100) / number)).sorted)
+      }
+    //build graph with each curve
+    gnuPlot(myseq)(Set("png"), "", "", "Number of States per Sigma-DFA from a random DFA",
+                   false, "Proportion of sigma DFAs", false,
+                   false, "DFAsizeperdepth", "linespoints",
+                   "horizontal bmargin", _ => (), false, false)
+  }
+
+  def statisticSizePerDFAfromF(num: Int = 30000, minsize: Int = 5, maxsize: Int = 20, sizevar: Int = 5, frte: Int => Rte): Unit = {
+    //sequence that will contain all the curves
+    val now = System.nanoTime()
+    val r = scala.util.Random
+    var myseq: Seq[(String, Seq[(Double, Double)])] = Seq()
+    //seq of strings to name the curves
+    val fnames = Seq("thompson", "thompson_min", "brzozowski", "brzozowski min")
+    //seq of functions to create each curve
+    val myfuncseq: Seq[Rte => Double] = Seq(thmp, thmpmin, brz, brzmin)
+    for (i <- Range(0, 4)) {
+      val f = myfuncseq(i)
+      //builds map of double->double, rte, counts all values
+      val mymap: Map[Double, Double] = Map().withDefaultValue(0)
+      val data = Range(0, (num * (maxsize - minsize)) / sizevar).foldLeft(mymap) { (acc, x) =>
+        val fins = r.nextInt(3)
+        val rte = frte(((x / num) * sizevar) + minsize)
+        val fr = f(rte)
+        acc + (fr -> (acc(fr) + 1))
+      }
+      //adds curve to sequence of curves
+      myseq :+= (fnames(i), data.toSeq.map(a => (a._1, (a._2 * 100) / num * ((maxsize - minsize) / sizevar))).sorted)
+    }
+    //creates gnuplot
+    gnuPlot(myseq)(Set("png"), title = "", comment = "", xAxisLabel = "Number of States per Sigma-DFA from a Random DFA",
+                   xLog = true, yAxisLabel = "Proportion of sigma DFAs", yLog = true,
+                   grid = false, outputFileBaseName = "DFAsizeperdepth", plotWith = "linespoints",
+                   key = "horizontal bmargin", _ => (), verbose = false, view = false)
+  }
+
+
+
+
   def main(argv: Array[String]):Unit=
   {
     mystats.statisticSizePerRndDFASize(4,5,10,5,1,mystats.brz)
