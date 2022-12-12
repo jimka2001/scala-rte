@@ -78,6 +78,8 @@ object mystats {
                    "horizontal bmargin", _ => (), false, false)
   }
 
+  //creates a gnu plot from a given rte depth
+  // that creates one curve (percentage of dfas per size) for each( brzmin,brz,thmp,thmp min)
   def statisticSizePerDFA(num: Int = 30000, depth: Int = 5): Unit = {
     //sequence that will contain all the curves
     var myseq: Seq[(String, Seq[(Double, Double)])] = Seq()
@@ -90,7 +92,7 @@ object mystats {
       //builds map of double->double, rte, counts all values
       val mymap: Map[Double, Double] = Map().withDefaultValue(0)
       val data = Range(0, num * depth).foldLeft(mymap) { (acc, x) =>
-        val fr = f(Rte.randomRte(x / num + 1))
+        val fr = f(Rte.randomRte((x / num) + 1))
         acc + (fr -> (acc(fr) + 1))
       }
       //adds curve to sequence of curves
@@ -119,6 +121,10 @@ object mystats {
   def thmpmin(rte: Rte): Double = {
     Minimize.minimize(Minimize.trim(Thompson.constructThompsonDfa(rte, 42))).Q.size
   }
+
+  //creates a GNUPLOT, the dfas generated are generated from an rte using a given function, the rte is extracted from a random DFA of a given size
+  // for each size in the given range there will be one curve on the GNUPLOT
+  // each curve represents the percentage of DFAs per size.
   def statisticSizePerRndDFASize(number: Int = 30000,  minsize :Int = 5, maxsize:Int = 20, sizevar : Int = 5,typeDepth: Int = 1, f: Rte => Double = brz): Unit = {
     //sequence that will contain all curves
     val r = scala.util.Random
@@ -127,9 +133,7 @@ object mystats {
       //using a map to count DFAs (creating couples of size->count, incrementing at each DFA
       val mymap: Map[Double, Double] = Map().withDefaultValue(0)
       val data = (0 until number).foldLeft(mymap) { (acc, x) =>
-        val fins = r.nextInt(3)
-        val dfa = RandomDFAGautier.RandomDFA(i * sizevar, fins, 2, 1, 42, typeDepth, None)
-        val rte = dfaToRte(dfa, 42)(42)
+        val rte = dfaToRte(RandomDFAGautier.RandomDFA(i * sizevar, r.nextInt(3), 2, 1, 42, typeDepth, None), 42)(42)
         val fr = f(rte)
         acc + (fr -> (acc(fr) + 1))
       }
@@ -142,9 +146,12 @@ object mystats {
                    false, "DFAsizeperdepth", "linespoints",
                    "horizontal bmargin", _ => (), false, false)
   }
+
+  //creates a GNUPLOT, the dfas generated are generated from an rte, the rte is extracted from a random DFA of a given size
+  // for each ( brzmin,brz,thmp,thmp min) there will be one curve on the GNUPLOT
+  // each curve represents the percentage of DFAs per size.
   def statisticSizePerDFAfromRandomDFA(num: Int = 30000, minsize :Int = 5, maxsize:Int = 20, sizevar : Int = 5 ): Unit = {
     //sequence that will contain all the curves
-    val now = System.nanoTime()
     val r = scala.util.Random
     var myseq: Seq[(String, Seq[(Double, Double)])] = Seq()
     //seq of strings to name the curves
@@ -156,8 +163,7 @@ object mystats {
       //builds map of double->double, rte, counts all values
       val mymap: Map[Double, Double] = Map().withDefaultValue(0)
       val data = Range(0, (num * (maxsize - minsize)) / sizevar).foldLeft(mymap) { (acc, x) =>
-        val fins = r.nextInt(3)
-        val dfa = RandomDFAGautier.RandomDFA(((x / num) * sizevar) + minsize, fins, 2, 1, 42, 1, None)
+        val dfa = RandomDFAGautier.RandomDFA(((x / num) * sizevar) + minsize, r.nextInt(3), 2, 1, 42, 1, None)
         val rte = dfaToRte(dfa,42)(42)
         val fr = f(rte)
         acc + (fr -> (acc(fr) + 1))
@@ -172,15 +178,16 @@ object mystats {
                    key = "horizontal bmargin", _ => (), verbose = false, view = false)
   }
 
-  def statisticSizePerF(number: Int = 30000, minsize: Int = 5, maxsize: Int = 20, sizevar: Int = 5, frte: Int => Rte, f: Rte => Double = brz): Unit = {
+  //creates a GNUPLOT, the dfas generated are generated from an rte using a given function(f), the rte is generated from a given function(frte)
+  // for each size in the given range there will be one curve on the GNUPLOT
+  // each curve represents the percentage of DFAs per size.
+  def statisticSizePerF(number: Int = 30000, minsize: Int = 5, maxsize: Int = 20, sizevar: Int = 5, frte: (Int, Boolean) => Rte = Rte.randomRte, f: Rte => Double = brz): Unit = {
     //sequence that will contain all curves
-    val r = scala.util.Random
     val myseq: Seq[(String, Seq[(Double, Double)])] =
       for (i <- minsize / sizevar to (maxsize / sizevar)) yield {
         //using a map to count DFAs (creating couples of size->count, incrementing at each DFA
         val mymap: Map[Double, Double] = Map().withDefaultValue(0)
         val data = (0 until number).foldLeft(mymap) { (acc, _) =>
-          val fins = r.nextInt(3)
           val fr = f(frte(i))
           acc + (fr -> (acc(fr) + 1))
         }
@@ -194,10 +201,11 @@ object mystats {
                    "horizontal bmargin", _ => (), false, false)
   }
 
-  def statisticSizePerDFAfromF(num: Int = 30000, minsize: Int = 5, maxsize: Int = 20, sizevar: Int = 5, frte: Int => Rte): Unit = {
+  //creates a GNUPLOT, the dfas generated are generated from an rte, the rte is generated by a given function (frte)
+  // for each ( brzmin,brz,thmp,thmp min) there will be one curve on the GNUPLOT
+  // each curve represents the percentage of DFAs per size.
+  def statisticSizePerDFAfromF(num: Int = 30000, minsize: Int = 5, maxsize: Int = 20, sizevar: Int = 5, frte: (Int, Boolean) => Rte = Rte.randomRte): Unit = {
     //sequence that will contain all the curves
-    val now = System.nanoTime()
-    val r = scala.util.Random
     var myseq: Seq[(String, Seq[(Double, Double)])] = Seq()
     //seq of strings to name the curves
     val fnames = Seq("thompson", "thompson_min", "brzozowski", "brzozowski min")
@@ -208,7 +216,6 @@ object mystats {
       //builds map of double->double, rte, counts all values
       val mymap: Map[Double, Double] = Map().withDefaultValue(0)
       val data = Range(0, (num * (maxsize - minsize)) / sizevar).foldLeft(mymap) { (acc, x) =>
-        val fins = r.nextInt(3)
         val rte = frte(((x / num) * sizevar) + minsize)
         val fr = f(rte)
         acc + (fr -> (acc(fr) + 1))
