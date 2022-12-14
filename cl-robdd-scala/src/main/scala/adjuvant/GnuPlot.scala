@@ -41,6 +41,7 @@ object GnuPlot {
     if (verbose)
       println(s"finished $csvName]")
   }
+
   case class GnuPlotDescriptor(terminals: Set[String] = Set("png"), // e.g Set("png","tikz")
                                title: String = "",
                                comment: String = "",
@@ -155,6 +156,7 @@ object GnuPlot {
         }
     }
   }
+
   // Create a plot using gnuplot (which we assume is stalled
   //  on the system).
   //   dataToPlot specifies a sequence of *curves*:
@@ -181,24 +183,24 @@ object GnuPlot {
   def gnuPlot[A](dataToPlot: Seq[A]
                  // dataToPlot: Seq[(String, Seq[Double], Seq[Double])]
                  // dataToPlot: Seq[(String, Seq[(Double,Double)])]
-             )(
-    terminals: Set[String] = Set("png"), // e.g Set("png","tikz")
-    title: String = "",
-    comment: String = "",
-    xAxisLabel: String = "",
-    xLog: Boolean = false,
-    yAxisLabel: String = "",
-    yLog: Boolean = false,
-    grid: Boolean = false,
-    // outputDirName     : String = "/tmp/",
-    // outputFileBaseName is basename without the .pdf, .gnu, .png etc and without leading path
-    outputFileBaseName: String = "curves",
-    plotWith: String = "linespoints",
-    key: String = "horizontal bmargin",
-    gnuFileCB: String => Unit = (_) => (),
-    verbose: Boolean = false,
-    view: Boolean = false
-  ): Unit = {
+                )(
+                  terminals: Set[String] = Set("png"), // e.g Set("png","tikz")
+                  title: String = "",
+                  comment: String = "",
+                  xAxisLabel: String = "",
+                  xLog: Boolean = false,
+                  yAxisLabel: String = "",
+                  yLog: Boolean = false,
+                  grid: Boolean = false,
+                  // outputDirName     : String = "/tmp/",
+                  // outputFileBaseName is basename without the .pdf, .gnu, .png etc and without leading path
+                  outputFileBaseName: String = "curves",
+                  plotWith: String = "linespoints",
+                  key: String = "horizontal bmargin",
+                  gnuFileCB: String => Unit = (_) => (),
+                  verbose: Boolean = false,
+                  view: Boolean = false
+                ): Unit = {
     val gpd = GnuPlotDescriptor(terminals = terminals,
                                 title = title,
                                 comment = comment,
@@ -214,13 +216,14 @@ object GnuPlot {
                                 verbose = verbose,
                                 view = view)
     // convert dataToPlot to the form Seq[(String,Seq[Double],Seq[Double])]
-    val curves = dataToPlot.map{
-      case (label:String, xys:Seq[_]) => {
-        val pairs = xys.collect{case xy@(x:Any,y:Double) => x match {
-          case x:Int => (x.toDouble,y)
-          case x:Double => (x,y)
+    val curves = dataToPlot.map {
+      case (label: String, xys: Seq[_]) => {
+        val pairs = xys.collect { case xy@(x: Any, y: Double) => x match {
+          case x: Int => (x.toDouble, y)
+          case x: Double => (x, y)
           case _ => throw new NotImplementedError(s"invalid data: $xys, in $dataToPlot")
-        }}
+        }
+        }
         Tuple3(label, pairs.map(_._1), pairs.map(_._2))
       }
       case (label: String, xs1: Seq[_], ys1: Seq[_]) => {
@@ -234,23 +237,23 @@ object GnuPlot {
           case y: Int => y.toDouble
           case _ => throw new NotImplementedError(s"invalid data: $ys1, in $dataToPlot")
         }
-        Tuple3(label,xs,ys)
+        Tuple3(label, xs, ys)
       }
       case data => throw new NotImplementedError(s"invalid data: $data, in $dataToPlot")
     }
-    gpd.plot(dataToPlot=curves)
+    gpd.plot(dataToPlot = curves)
   }
 
-  def main(argv:Array[String]):Unit = {
-    gnuPlot(dataToPlot=Seq(// gnuPlot can handle list of Xs followed by list of Ys
-                           ("curve1",
-                             Seq(1.0, 2.0, 3, 4), // Xs can be Int or Double
-                             Seq(1.0, 2.0, 2.5, 2.75)),
-                           // can also handle list of xy pairs
-                           ("curve2", Seq((1.0, 2.0), // x can be Double
-                                          (2, 2.25),  // x can also be Int
-                                          (3, 2.125),
-                                          (4, 2.012)))))(
-            view=true)
+  def main(argv: Array[String]): Unit = {
+    gnuPlot(dataToPlot = Seq( // gnuPlot can handle list of Xs followed by list of Ys
+                              ("curve1",
+                                Seq(1.0, 2.0, 3, 4), // Xs can be Int or Double
+                                Seq(1.0, 2.0, 2.5, 2.75)),
+                              // can also handle list of xy pairs
+                              ("curve2", Seq((1.0, 2.0), // x can be Double
+                                             (2, 2.25), // x can also be Int
+                                             (3, 2.125),
+                                             (4, 2.012)))))(
+      view = true)
   }
 }

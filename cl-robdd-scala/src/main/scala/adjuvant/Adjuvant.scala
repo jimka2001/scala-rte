@@ -385,8 +385,8 @@ object Adjuvant {
 
   // create a set of a given size by multiple calls to generate()
   //   which generates one element at a time.
-  def sizedSet[A](targetSize:Int, generate: () => A):Set[A] = {
-    var data:Set[A] = Set()
+  def sizedSet[A](targetSize: Int, generate: () => A): Set[A] = {
+    var data: Set[A] = Set()
     while (data.size < targetSize)
       data += generate()
     data
@@ -401,7 +401,7 @@ object Adjuvant {
   //   find the first one in the sequence which corresponds to an existing
   //   file or directory in the file system.  Otherwise the default
   //   is returned.
-  def existingFile(fNames:Seq[String],default:String):String = {
+  def existingFile(fNames: Seq[String], default: String): String = {
     import java.nio.file.{Files, Paths}
     fNames.find { fName =>
       Files.exists(Paths.get(fName))
