@@ -298,7 +298,7 @@ class OrTestSuite extends MyFunSuite {
 
   test("canonicalize or 204") {
     for {depth <- 0 to 4
-         _ <- 1 to 100
+         _ <- 1 to 50
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)

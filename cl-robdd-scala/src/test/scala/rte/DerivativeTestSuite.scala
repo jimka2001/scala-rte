@@ -212,7 +212,7 @@ class DerivativeTestSuite extends MyFunSuite {
 
   test("derivatives random") {
 
-    for {depth <- 0 to 6
+    for {depth <- 0 to 4
          _ <- 1 to 2000
          rt = Rte.randomRte(depth)
          (intToV,_) = rt.derivatives()

@@ -452,7 +452,7 @@ class GenusCanonicalize extends MyFunSuite {
   test("rand typep") {
     // make sure typep membership of particular values is the same before and after canonicalizing
     def testit():Unit = {
-      for {depth <- 0 to 5
+      for {depth <- 0 to 4
            _ <- 0 to 2000
            } check_type(randomType(depth))
     }
