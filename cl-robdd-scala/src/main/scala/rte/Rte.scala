@@ -43,7 +43,9 @@ abstract class Rte {
   def ? : Rte = Or(this, EmptyWord)
 
   def * : Rte = Star(this) // postfix operator
+
   def + : Rte = Cat(this, Star(this)) // postfix operator
+
   def ^(n: Short): Rte = {
     n match {
       case 0 => EmptyWord
@@ -54,7 +56,7 @@ abstract class Rte {
   }
 
   // can this and that be proven to be equivalent?
-  def ~=(that:Rte):Boolean = {
+  def ~=(that: Rte): Boolean = {
     isomorphic(that).contains(true)
   }
 
@@ -80,30 +82,34 @@ abstract class Rte {
   //     return Some(false)
   //   If every path from q0 to a final state traverses at least one transition,(q,td,q')
   //     for which td.inhabited == None, then return None.
-  def isomorphic(that:Rte):Option[Boolean] = {
-    (this,that) match {
-      case (x,y) if x == y => Some(true)
-        // compare the arguments of And and Or in any order
-      case (Or(Seq(r1s@_*)),Or(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
-      case (And(Seq(r1s@_*)),And(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
-      case (rt1,rt2) =>
-        val dfa = Or(And(rt1,Not(rt2)),
-          And(rt2,Not(rt1))).canonicalize.toDfa()
+  def isomorphic(that: Rte): Option[Boolean] = {
+    (this, that) match {
+      case (x, y) if x == y => Some(true)
+      // compare the arguments of And and Or in any order
+      case (Or(Seq(r1s@_*)), Or(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
+      case (And(Seq(r1s@_*)), And(Seq(r2s@_*))) if r1s.toSet == r2s.toSet => Some(true)
+      case (rt1, rt2) =>
+        val dfa = Or(And(rt1, Not(rt2)),
+                     And(rt2, Not(rt1))).canonicalize.toDfa()
         if (dfa.F.isEmpty) // no final states
           Some(true)
         else dfa.spanningPath match {
           case None => Some(true)
-          case Some(Right(_)) => Some(false)// exists satisfiable path to a final state
+          case Some(Right(_)) => Some(false) // exists satisfiable path to a final state
           case _ => None // exists semi-satisfiable path to a final state
         }
     }
   }
 
-  def toDot():String = this.toString
-  def toLaTeX():String
-  def nullable:Boolean
-  def firstTypes:Set[SimpleTypeD]
-  def canonicalize:Rte = {
+  def toDot(): String = this.toString
+
+  def toLaTeX(): String
+
+  def nullable: Boolean
+
+  def firstTypes: Set[SimpleTypeD]
+
+  def canonicalize: Rte = {
     fixedPoint[Rte](this,
                     (r: Rte) => r.canonicalizeOnce,
                     (r1: Rte, r2: Rte) => r1 == r2)
@@ -142,8 +148,8 @@ abstract class Rte {
                       })
   }
 
-  def canonicalizeDebug(n:Int):Rte = {
-    canonicalizeDebug(n,(_:Rte,_:Rte)=>())
+  def canonicalizeDebug(n: Int): Rte = {
+    canonicalizeDebug(n, (_: Rte, _: Rte) => ())
   }
 
   def canonicalizeOnce: Rte = this
@@ -160,7 +166,7 @@ abstract class Rte {
     raw
   }
 
-  def derivativeDown(wrt:SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte
+  def derivativeDown(wrt: SimpleTypeD, factors: List[SimpleTypeD], disjoints: List[SimpleTypeD]): Rte
 
   // Computes a pair of Vectors: (Vector[Rte], Vector[Seq[(SimpleTypeD,Int)]])
   //   Vector[Rte] is a mapping from Int to Rte designating the states
@@ -174,18 +180,8 @@ abstract class Rte {
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       val fts = rt.firstTypes
       val wrts = mdtd(fts)
-      //      println(s"rt=${rt.toLaTeX()}")
-      //      println(s"firsts=")
-      //      fts.map(s => println(s"  ${s.toLaTeX()}"))
-      //      println(s"mdtd=")
-      //      wrts.map{case (td,(f,d)) =>
-      //        println(s"  ${td.toLaTeX()}")
-      //        println(s"  factors")
-      //        f.map(td => println(s"    ${td.toLaTeX()}"))
-      //        println(s"  disjoints")
-      //        d.map(td => println(s"    ${td.toLaTeX()}"))
-      //      }
-      wrts.map{case (td, (factors,disjoints)) => (td,
+
+      wrts.map { case (td, (factors, disjoints)) => (td,
         // Here we call rt.derivative, but we pass along the correct-by-construction
         //   factors and disjoint types.  The Singleton:disjointDown method takes
         //   advantage of these trusted lists to easily determine whether the type
@@ -214,7 +210,7 @@ abstract class Rte {
 
   import xymbolyco.Dfa
 
-  def toDfa[E](exitValue:E=true):Dfa[Any,SimpleTypeD,E] = {
+  def toDfa[E](exitValue: E = true): Dfa[Any, SimpleTypeD, E] = {
     //println(s"toDfa: $this")
     val (rtes, edges) = try {
       derivatives()
@@ -231,14 +227,14 @@ abstract class Rte {
     }
     val qids = rtes.indices.toSet
     val fids = qids.filter(i => rtes(i).nullable)
-    val fmap = fids.map{i => i -> exitValue}.toMap
+    val fmap = fids.map { i => i -> exitValue }.toMap
     val protoDelta = (for {src <- rtes.indices
                            srcEdges: Seq[(SimpleTypeD, Int)] = edges(src)
                            // in the case that all the transitions from src go to the same destination
                            // then we know they all combine to 1 single transition labeled by STop
                            // because the Dfa is complete by construction.
                            trivial: Boolean = srcEdges.map(_._2).distinct.size == 1
-                           (rt, dst) <- if (trivial) Seq((STop,srcEdges.head._2) ) else srcEdges
+                           (rt, dst) <- if (trivial) Seq((STop, srcEdges.head._2)) else srcEdges
                            } yield (src, rt, dst)).toSet
     Dfa(Qids = qids,
         q0id = 0,
@@ -248,7 +244,7 @@ abstract class Rte {
         fMap = fmap)
   }
 
-  def simulate[E](exitValue:E, seq:Seq[Any]):Option[E] = {
+  def simulate[E](exitValue: E, seq: Seq[Any]): Option[E] = {
     toDfa(exitValue).simulate(seq)
   }
 
@@ -349,13 +345,11 @@ object Rte {
       }
     }
 
-    def funnyFold[X,Y](seq:Seq[X],
-                       f:X=>Y,
-                       g:(Y,Y,(E,E)=>E)=>Y):Y = {
+    def funnyFold[X, Y, Z](seq: Seq[X], f: X => Y, g: (Y, Y, (Z, Z) => Z) => Y): Y = {
       assert(seq.nonEmpty)
-      seq.tail.foldLeft(f(seq.head))((acc,x) => g(acc,
-                                                  f(x),
-                                                  xymbolyco.Dfa.defaultArbitrate))
+      seq.tail.foldLeft(f(seq.head))((acc, x) => g(acc,
+                                                   f(x),
+                                                   xymbolyco.Dfa.defaultArbitrate))
     }
 
     def f(pair: (Rte, E)): xymbolyco.Dfa[Any, SimpleTypeD, E] = {
@@ -366,7 +360,7 @@ object Rte {
     }
 
     val disjoint: Seq[(Rte, E)] = excludePrevious(seq.toList, List(), List())
-    funnyFold[(Rte, E), xymbolyco.Dfa[Any, SimpleTypeD, E]](disjoint, f, dfaUnion)
+    funnyFold[(Rte, E), xymbolyco.Dfa[Any, SimpleTypeD, E], E](disjoint, f, dfaUnion)
   }
 
   //  // Compute the intersection of two given types (SimpleTypeD) for the purpose
@@ -418,6 +412,7 @@ object Rte {
     }
   }
 }
+
 object sanityTest2 {
   def main(argv: Array[String]): Unit = {
     for {depth <- 5 to 7
