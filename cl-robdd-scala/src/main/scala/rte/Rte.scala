@@ -169,13 +169,23 @@ abstract class Rte {
   //      the i'th component designates a Seq of transitions, each of the form
   //      (td:SimpleTypeD,j:Int), indicating that in state i, an object of type
   //      td transitions to state j.
-  def derivatives(): (Vector[Rte], Vector[Seq[(SimpleTypeD, Int)]]) = {
+  def derivatives():(Vector[Rte],Vector[Seq[(SimpleTypeD,Int)]]) = {
     import adjuvant.Adjuvant.traceGraph
-    def edges(rt: Rte): Seq[(SimpleTypeD, Rte)] = {
+    def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       val fts = rt.firstTypes
-      val wrts = mdtd(fts)
-
-      wrts.map { case (td, (factors, disjoints)) => (td,
+      val wrts = Types.mdtd(fts)
+      //      println(s"rt=${rt.toLaTeX()}")
+      //      println(s"firsts=")
+      //      fts.map(s => println(s"  ${s.toLaTeX()}"))
+      //      println(s"mdtd=")
+      //      wrts.map{case (td,(f,d)) =>
+      //        println(s"  ${td.toLaTeX()}")
+      //        println(s"  factors")
+      //        f.map(td => println(s"    ${td.toLaTeX()}"))
+      //        println(s"  disjoints")
+      //        d.map(td => println(s"    ${td.toLaTeX()}"))
+      //      }
+      wrts.map{case (td, (factors,disjoints)) => (td,
         // Here we call rt.derivative, but we pass along the correct-by-construction
         //   factors and disjoint types.  The Singleton:disjointDown method takes
         //   advantage of these trusted lists to easily determine whether the type
@@ -339,9 +349,13 @@ object Rte {
       }
     }
 
-    def funnyFold[X, Y, Z](seq: Seq[X], f: X => Y, g: (Y, Y, (Z, Z) => Z) => Y): Y = {
+    def funnyFold[X,Y](seq:Seq[X],
+                       f:X=>Y,
+                       g:(Y,Y,(E,E)=>E)=>Y):Y = {
       assert(seq.nonEmpty)
-      seq.tail.foldLeft(f(seq.head))((acc, x) => g(acc, f(x), Dfa.defaultArbitrate))
+      seq.tail.foldLeft(f(seq.head))((acc,x) => g(acc,
+                                                  f(x),
+                                                  xymbolyco.Dfa.defaultArbitrate))
     }
 
     def f(pair: (Rte, E)): xymbolyco.Dfa[Any, SimpleTypeD, E] = {

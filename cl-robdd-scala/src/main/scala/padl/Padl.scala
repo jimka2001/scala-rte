@@ -41,31 +41,31 @@ object Padl {
                keepIf= line=> !line.contains("labelloc=") && !line.contains("  label=") )
   }
 
-  val tyint = SAtomic(classOf[Int])
-  val tystr = SAtomic(classOf[String])
-  val tynum = SAtomic(classOf[Number])
-  val str = Singleton(tystr)
-  val num = Singleton(tynum)
-  val odd = Singleton(oddType)
-  val even = Singleton(evenType)
-  val integer = Singleton(tyint)
-  val givenLabels = Seq[SimpleTypeD](SEmpty, // 0
+  def tyint() = SAtomic(classOf[Int])
+  def tystr() = SAtomic(classOf[String])
+  def tynum() = SAtomic(classOf[Number])
+  def str() = Singleton(tystr())
+  def num() = Singleton(tynum())
+  def odd() = Singleton(oddType())
+  def even() = Singleton(evenType())
+  def integer() = Singleton(tyint())
+  def givenLabels() = Seq[SimpleTypeD](SEmpty, // 0
                                      STop, // 1
-                                     tyint, // 2
-                                     SNot(tyint), // 3
-                                     evenType, // 4
-                                     SAnd(tystr, evenType), // 5
-                                     SAnd(SNot(tystr), evenType), // 6
-                                     SAnd(tystr, SNot(evenType)), // 7
-                                     SOr(SAnd(tyint, SNot(evenType)), // 8
-                                         SAnd(tystr, SNot(evenType))),
-                                     SAnd(SNot(tyint), // 9
-                                          SNot(tystr),
-                                          evenType),
-                                     SOr(SAnd(tyint, evenType), // 10
-                                         SAnd(tystr, evenType)),
-                                     SAnd(SNot(tystr), SNot(evenType)), // 11
-                                     SAnd(SNot(tyint), SNot(tystr), SNot(evenType)) //12
+                                     tyint(), // 2
+                                     SNot(tyint()), // 3
+                                     evenType(), // 4
+                                     SAnd(tystr(), evenType()), // 5
+                                     SAnd(SNot(tystr()), evenType()), // 6
+                                     SAnd(tystr(), SNot(evenType())), // 7
+                                     SOr(SAnd(tyint(), SNot(evenType())), // 8
+                                         SAnd(tystr(), SNot(evenType()))),
+                                     SAnd(SNot(tyint()), // 9
+                                          SNot(tystr()),
+                                          evenType()),
+                                     SOr(SAnd(tyint(), evenType()), // 10
+                                         SAnd(tystr(), evenType())),
+                                     SAnd(SNot(tystr()), SNot(evenType())), // 11
+                                     SAnd(SNot(tyint()), SNot(tystr()), SNot(evenType())) //12
                                      )
 
   def exampleCode():Unit = {
@@ -97,7 +97,7 @@ object Padl {
 
   def example1(): Unit = {
 
-    val rt1: Rte = Star(Cat(integer, str, even))
+    val rt1: Rte = Star(Cat(integer(), str(), even()))
 
     println("-----------------------")
     dfaView(rt1.toDfa(),
@@ -106,12 +106,12 @@ object Padl {
             label = Some(multiLineString(s"rt1=${rt1.toDot()}", 60)),
             showSink = false,
             dotFileCB = str => cpTo(str, "padl-example-1"),
-            givenLabels = givenLabels,
+            givenLabels = givenLabels(),
             printLatex = true)
   }
 
   def example2(): Unit = {
-    val rt2: Rte = Star(Cat(integer, Star(str), even))
+    val rt2: Rte = Star(Cat(integer(), Star(str()), even()))
 
     println("-----------------------")
     dfaView(rt2.toDfa(),
@@ -121,13 +121,13 @@ object Padl {
                                                   60)),
             showSink = true,
             dotFileCB = str => cpTo(str, "padl-not-min-example-2"),
-            givenLabels = givenLabels,
+            givenLabels = givenLabels(),
             printLatex = true)
 
   }
 
   def example2min(): Unit = {
-    val rt2: Rte = Star(Cat(integer, Star(str), even))
+    val rt2: Rte = Star(Cat(integer(), Star(str()), even()))
 
     println("-----------------------")
     dfaView(minimize(rt2.toDfa()),
@@ -137,7 +137,7 @@ object Padl {
                                                       60)),
             showSink = false,
             dotFileCB = str => cpTo(str, "padl-min-example-2"),
-            givenLabels = givenLabels,
+            givenLabels = givenLabels(),
             printLatex = true)
   }
 
