@@ -183,9 +183,7 @@ object RandomType {
       () => SNot(randomType(depth - 1, avoid))
       )
     if (depth <= 0) {
-      interestingTypes()(random.nextInt(interestingTypes().length - (if (!avoid) {
-        1
-      } else 0)))
+      interestingTypes()(random.nextInt(interestingTypes().length))
     }
     else {
       val g = generators(random.nextInt(generators.length - (if (!avoid) {
