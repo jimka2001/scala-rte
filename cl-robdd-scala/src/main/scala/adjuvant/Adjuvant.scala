@@ -392,6 +392,7 @@ object Adjuvant {
     data
   }
 
+  // TODO name mispelled, and move to more appropriate file
   def generateVerticeSet(finals: Int, num: Int): Set[Int] = {
     val r = util.Random
     sizedSet[Int](finals, () => r.nextInt(num))
