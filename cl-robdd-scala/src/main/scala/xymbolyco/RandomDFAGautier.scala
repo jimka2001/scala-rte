@@ -2,7 +2,7 @@ package xymbolyco
 
 import adjuvant.Adjuvant._
 import genus.{RandomType, SimpleTypeD}
-
+import adjuvant.BellmanFord._
 object RandomDFAGautier {
 
   def RandomDFA[E](num: Int = 5, finals: Int = scala.util.Random.nextInt(3), transitions: Int = 2, transrange: Int = 1,
@@ -13,7 +13,7 @@ object RandomDFAGautier {
     }
     val qids: Set[Int] = Range(0, num).toSet
 
-    val fids = generateVerticeSet(finals, num) + (num - 1)
+    val fids = generateVerticesSet(finals, num) + (num - 1)
     if (transrange == 0) {
       throw new IllegalArgumentException("transrange must be positive")
     }
@@ -30,10 +30,10 @@ object RandomDFAGautier {
   def randomTransition(t: Int, trrange: Int, i: Int, num: Int): Set[Int] = {
 
     if (trrange != 0) {
-      generateVerticeSet(t + util.Random.nextInt(trrange * 2), num)
+      generateVerticesSet(t + util.Random.nextInt(trrange * 2), num)
     }
     else {
-      generateVerticeSet(t, num)
+      generateVerticesSet(t, num)
     }
   }
 

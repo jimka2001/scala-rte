@@ -24,7 +24,7 @@ package genus
 import Types._
 import NormalForm._
 import adjuvant.Adjuvant.{findSimplifier, uniquify}
-
+import genus.Types._
 /** An intersection type, which is the intersection of zero or more types.
  *
  * @param tds var-arg, zero or more types
@@ -164,7 +164,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     //  ==> SMember(42,44)
     tds.find(memberp) match {
       case Some(m:SMemberImpl) =>
-        Types.createMemberFromPairs(m.xs.filter { case (_: SimpleTypeD, b: Any) => typep(b) })
+        createMemberFromPairs(m.xs.filter { case (_: SimpleTypeD, b: Any) => typep(b) })
       case _ => this
     }
   }

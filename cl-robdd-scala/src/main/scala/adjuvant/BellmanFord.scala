@@ -21,6 +21,8 @@
 
 package adjuvant
 
+import adjuvant.Adjuvant.sizedSet
+
 import scala.collection.mutable
 
 object BellmanFord {
@@ -62,6 +64,11 @@ object BellmanFord {
     }
 
     recur(List(v))
+  }
+
+  def generateVerticesSet(finals: Int, num: Int): Set[Int] = {
+    val r = util.Random
+    sizedSet[Int](finals, () => r.nextInt(num))
   }
 
   def ordering[V](d: (V, Double)): Double = {

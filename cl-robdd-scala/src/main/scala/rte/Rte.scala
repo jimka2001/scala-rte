@@ -23,7 +23,7 @@ package rte
 
 import genus._
 import adjuvant.Adjuvant._
-import genus.Types.mdtd
+import genus.Types._
 import xymbolyco.Dfa
 
 import scala.annotation.tailrec
@@ -173,7 +173,7 @@ abstract class Rte {
     import adjuvant.Adjuvant.traceGraph
     def edges(rt:Rte):Seq[(SimpleTypeD,Rte)] = {
       val fts = rt.firstTypes
-      val wrts = Types.mdtd(fts)
+      val wrts = mdtd(fts)
       //      println(s"rt=${rt.toLaTeX()}")
       //      println(s"firsts=")
       //      fts.map(s => println(s"  ${s.toLaTeX()}"))
@@ -366,7 +366,7 @@ object Rte {
     }
 
     val disjoint: Seq[(Rte, E)] = excludePrevious(seq.toList, List(), List())
-    funnyFold[(Rte, E), xymbolyco.Dfa[Any, SimpleTypeD, E], E](disjoint, f, dfaUnion)
+    funnyFold[(Rte, E), xymbolyco.Dfa[Any, SimpleTypeD, E]](disjoint, f, dfaUnion)
   }
 
   //  // Compute the intersection of two given types (SimpleTypeD) for the purpose
@@ -404,13 +404,6 @@ object Rte {
       () => rteVector(random.nextInt(rteVector.length - (if (avoidEmpty) 3 else 0))),
       () => Or(randomSeq(depth - 1, random.nextInt(3) + 2, avoidEmpty)),
       () => Star(randomRte(depth - 1, avoidEmpty)),
-      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
-      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
-      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
-      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
-      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
-      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
-      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
       () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
       () => Singleton(RandomType.randomType(0, Some(!avoidEmpty))),
       () => And(randomSeq(depth - 1, 2, avoidEmpty)),

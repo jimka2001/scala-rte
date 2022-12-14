@@ -251,11 +251,11 @@ object Dfa {
   }
 
   def apply[Σ, L, E](Qids: Set[Int],
-           q0id: Int,
-           Fids: Set[Int],
-           protoDelta: Set[(Int, L,Int)],
-           labeler: Labeler[Σ, L],
-           fMap: Map[Int, E]):Dfa[Σ, L, E] = {
+                     q0id: Int,
+                     Fids: Set[Int],
+                     protoDelta: Set[(Int, L, Int)],
+                     labeler: Labeler[Σ, L],
+                     fMap: Map[Int, E]): Dfa[Σ, L, E] = {
     val merged = mergeParallel[Σ, L](labeler,protoDelta.toSeq)
     new Dfa[Σ, L, E](Qids, q0id, Fids, merged, labeler, fMap)
   }
