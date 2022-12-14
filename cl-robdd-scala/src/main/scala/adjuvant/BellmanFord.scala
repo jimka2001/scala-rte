@@ -22,40 +22,43 @@
 package adjuvant
 
 object BellmanFord {
-  def shortestPath[V](vertices:Seq[V],
-                      source:V,
-                      edges:Seq[((V,V),Double)]):(Map[V,Double],Map[V,V]) = {
+  def shortestPath[V](vertices: Seq[V],
+                      source: V,
+                      edges: Seq[((V, V), Double)]): (Map[V, Double], Map[V, V]) = {
     import scala.Double.PositiveInfinity
-    def recur(k:Int,d:Map[V,Double],p:Map[V,V]):(Map[V,Double],Map[V,V]) = {
-      def dist(v:V) = d.getOrElse(v,PositiveInfinity)
+    def recur(k: Int, d: Map[V, Double], p: Map[V, V]): (Map[V, Double], Map[V, V]) = {
+      def dist(v: V) = d.getOrElse(v, PositiveInfinity)
+
       if (k == 0)
-        (d,p)
+        (d, p)
       else {
-        val (d2:Map[V,Double],p2:Map[V,V]) = edges.foldLeft((d,p)){
-          case ((d1,p1),((u,v),w)) =>
+        val (d2: Map[V, Double], p2: Map[V, V]) = edges.foldLeft((d, p)) {
+          case ((d1, p1), ((u, v), w)) =>
             val newDist = dist(u) + w
             if (newDist < dist(v))
               (d1 + (v -> newDist),
                 p1 + (v -> u))
             else
-              (d1,p1)
+              (d1, p1)
         }
-        recur(k-1,d2,p2)
+        recur(k - 1, d2, p2)
       }
     }
+
     recur(vertices.size - 1,
-          vertices.map{v => v -> (if (v == source) 0.0 else PositiveInfinity)}.toMap,
+          vertices.map { v => v -> (if (v == source) 0.0 else PositiveInfinity) }.toMap,
           Map(source -> source))
   }
 
-  def reconstructPath[V](pred:Map[V,V], v:V):List[V] = {
-    def recur(path:List[V]):List[V] = {
+  def reconstructPath[V](pred: Map[V, V], v: V): List[V] = {
+    def recur(path: List[V]): List[V] = {
       path match {
         case Nil => throw new Error(s"empty path not supported")
-        case v::_ if v == pred(v) => path.reverse
-        case v::_ => pred(v):: path
+        case v :: _ if v == pred(v) => path.reverse
+        case v :: _ => pred(v) :: path
       }
     }
+
     recur(List(v))
   }
 }

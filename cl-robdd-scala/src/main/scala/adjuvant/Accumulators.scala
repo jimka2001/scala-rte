@@ -21,10 +21,10 @@
 
 package adjuvant
 
-case class successor[A](init:A){
-  var current:A = init
+case class successor[A](init: A) {
+  var current: A = init
 
-  def apply(f:A=>A):A = {
+  def apply(f: A => A): A = {
     current = f(current)
     current
   }
@@ -59,42 +59,46 @@ object Accumulators {
   }
 
 
-  def withReducer[A](init:A,folder:(A,A)=>A)(f:(A=>Unit)=>Unit):A = {
+  def withReducer[A](init: A, folder: (A, A) => A)(f: (A => Unit) => Unit): A = {
     var acc = init
-    def reduce(obj:A):Unit = {
-      acc = folder(acc,obj)
+
+    def reduce(obj: A): Unit = {
+      acc = folder(acc, obj)
     }
+
     f(reduce)
     acc
   }
 
   def withMaximizer[A](init: A)(f: (A => Unit) => Unit)(implicit ev: A => Ordered[A]): A = {
-    withReducer(init, (a:A,b:A)=>if (a < b) b else a)(f)
+    withReducer(init, (a: A, b: A) => if (a < b) b else a)(f)
   }
 
   def withMinimizer[A](init: A)(f: (A => Unit) => Unit)(implicit ev: A => Ordered[A]): A = {
-    withReducer(init, (a:A,b:A)=>if (a > b) b else a)(f)
+    withReducer(init, (a: A, b: A) => if (a > b) b else a)(f)
   }
 
-  def withSummer[A](init:A,plus:(A,A)=>A)(f:(A=>Unit)=>Unit): A = {
-    withReducer(init,plus)(f)
+  def withSummer[A](init: A, plus: (A, A) => A)(f: (A => Unit) => Unit): A = {
+    withReducer(init, plus)(f)
   }
 
-  def withCounter(f:(()=>Unit)=>Unit):Int = {
+  def withCounter(f: (() => Unit) => Unit): Int = {
     var i = 0
-    def reduce():Unit = {
-      i = i+1
+
+    def reduce(): Unit = {
+      i = i + 1
     }
+
     f(reduce)
     i
   }
 
-  def withOutputToString(f:(String=>Unit)=>Unit):String = {
+  def withOutputToString(f: (String => Unit) => Unit): String = {
     withOutputToString(f, java.nio.charset.StandardCharsets.UTF_8)
   }
 
-  def withOutputToString(f:(String=>Unit)=>Unit,
-                         encoding:java.nio.charset.Charset):String = {
+  def withOutputToString(f: (String => Unit) => Unit,
+                         encoding: java.nio.charset.Charset): String = {
     import java.io.{ByteArrayOutputStream, PrintWriter}
     val baos = new ByteArrayOutputStream()
     val pw = new PrintWriter(baos)
@@ -112,12 +116,14 @@ object Accumulators {
     str
   }
 
-  def makeCounter(start:Int = 0, incr:Int= 1):()=>Int = {
+  def makeCounter(start: Int = 0, incr: Int = 1): () => Int = {
     var c = start
-    def count():Int = {
+
+    def count(): Int = {
       c = c + incr
       c
     }
+
     count
   }
 
