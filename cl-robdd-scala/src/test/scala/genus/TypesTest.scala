@@ -148,7 +148,7 @@ class TypesTest extends MyFunSuite {
     assert(! eql(0,0.0))
     for {d <- 1 to 3
          n <- 1 to 100
-         _ <- 1 to 80
+         _ <- 1 to 20
          li = for {_ <- 1 to 10} yield randomType(d)
          m <- 1 to n
          prefix = li.take(m)

@@ -128,7 +128,7 @@ class OrTestSuite extends MyFunSuite {
   test("canonicalize or b2") {
 
     for {depth <- 0 to 5
-         _ <- 1 to 2500
+         _ <- 1 to 1000
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
@@ -297,7 +297,7 @@ class OrTestSuite extends MyFunSuite {
   }
 
   test("canonicalize or 204") {
-    for {depth <- 0 to 4
+    for {depth <- 0 to 3
          _ <- 1 to 50
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
