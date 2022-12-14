@@ -1,3 +1,8 @@
+// TODO remove this file and this package,
+//    this was a pedagogical project.  It does not belong in the master branch.
+//    Are there any test cases associated with it, if so make sure they are
+//    removed as well.
+
 package nfa
 
 import scala.collection.immutable.Queue
