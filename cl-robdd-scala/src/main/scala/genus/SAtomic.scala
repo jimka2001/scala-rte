@@ -22,6 +22,7 @@
 package genus
 
 // genus
+
 import NormalForm._
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -34,7 +35,8 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   //if (ct != classOf[Nothing] && ! SAtomic.existsInstantiatableSubclass(ct))
   //  println(s"WARNING: SAtomic($ct) is equivalent to SEmpty")
   val wv = SAtomic.getWorldView()
-  def shortTypeName():String = {
+
+  def shortTypeName(): String = {
     val fullName = if (ct.getName.startsWith("java.lang."))
       ct.getName.drop(10)
     else
@@ -47,23 +49,27 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     else
       shortName.drop(1)
   }
-  override def toString:String = "SAtomic:" + shortTypeName()
-  override def toDot():String = shortTypeName()
-  override def toLaTeX():String = shortTypeName()
-  override def toMachineReadable():String = toString
+
+  override def toString: String = "SAtomic:" + shortTypeName()
+
+  override def toDot(): String = shortTypeName()
+
+  override def toLaTeX(): String = shortTypeName()
+
+  override def toMachineReadable(): String = toString
 
   override def typep(a: Any): Boolean = {
     // according to Sébastien Doeraene https://gitter.im/scala/center?at=6124feac63dca8189120a1c9
     // if ct is a primitive (ct.isPrimitive() returns True) then isInstance always returns false
 
-    (a.getClass == ct) || ct.isInstance(a) || locally{
+    (a.getClass == ct) || ct.isInstance(a) || locally {
       if (ct == classOf[Boolean])
         a.getClass == classOf[java.lang.Boolean]
       else if (ct == classOf[scala.Long])
-        // SAtomic(classOf[java.lang.Long]).typep(a)
+      // SAtomic(classOf[java.lang.Long]).typep(a)
         a.getClass == classOf[java.lang.Long]
       else if (ct == classOf[scala.Int])
-        // SAtomic(classOf[Integer]).typep(a)
+      // SAtomic(classOf[Integer]).typep(a)
         a.getClass == classOf[Integer]
       else if (ct == classOf[scala.Short])
         a.getClass == classOf[java.lang.Short]
@@ -92,7 +98,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     import genus.Types.booleanType
     import genus.SMember.trueOrFalse
     lazy val dd = trueOrFalse.disjoint(t)
-    if (this == booleanType() && ! dd.isEmpty) {
+    if (this == booleanType() && !dd.isEmpty) {
       dd
     }
     else t match {
@@ -120,7 +126,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
 
   // SAtomic(ct: Class[_])
   override protected def subtypepDown(s: SimpleTypeD): Option[Boolean] = {
-    if ( inhabited.contains(false))
+    if (inhabited.contains(false))
       Some(true)
     else
       s match {
@@ -135,12 +141,12 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
             // here we know that neither inhabited nor s.inhabited is Some(false)
             (inhabited, s.inhabited) match {
               // case (Some(false),_) => Some(true) // redundant case because of if/then/else
-              case (_,None) => None
-              case (None,Some(true)) => None
+              case (_, None) => None
+              case (None, Some(true)) => None
               // super.isAssignableFrom(sub) means sub is subtype of super
               //   we ask where whether ct is a subtype of tp
               //  i.e    this.ct subtype of s.ct
-              case (Some(true),Some(true)) => Some(tp.isAssignableFrom(ct))
+              case (Some(true), Some(true)) => Some(tp.isAssignableFrom(ct))
               case _ => throw new Exception("impossible")
             }
           }
@@ -152,11 +158,11 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
           //   trueOrFalse has declared type SimpleTypeD, but it is actually SMember(true,false)
           //   so in order to get the xs out of the SMember object we have to use a pattern
           //   match with a useless 2nd case.
-          if (ct == classOf[java.lang.Boolean] )
+          if (ct == classOf[java.lang.Boolean])
             Some(trueOrFalse.xs.forall(p => xs.contains(p)))
           else
           // TODO, need to verify this assumption.  E.g., for an Algebraic Data Type?
-          Some(false) // no member type exhausts all the values of an Atomic Type
+            Some(false) // no member type exhausts all the values of an Atomic Type
         }
         // TODO, need to verify this assumption.  E.g., for an Algebraic Data Type?
         case SEql(_) =>
@@ -192,39 +198,42 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
   }
 
   // SAtomic(ct: Class[_])
-  override def canonicalizeOnce(nf:Option[NormalForm]=None): SimpleTypeD = {
+  override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
     if (ct == classOf[Nothing])
       SEmpty
     else if (ct == classOf[Any])
       STop
-    else if ( inhabited.contains(false))
+    else if (inhabited.contains(false))
       SEmpty
     else
       this
   }
 
   // SAtomic(ct: Class[_])
-  override def cmpToSameClassObj(td:SimpleTypeD):Boolean = {
+  override def cmpToSameClassObj(td: SimpleTypeD): Boolean = {
     if (this == td)
       false
     else td match {
       // this < td ?
       case SAtomic(cl) => s"$ct" < s"$cl"
-      case _ => super.cmpToSameClassObj(td)  // throws an exception
+      case _ => super.cmpToSameClassObj(td) // throws an exception
     }
   }
 }
-sealed abstract class WorldView(openness:String){
+
+sealed abstract class WorldView(openness: String) {
   override def toString = s"$openness-world-view"
 }
+
 object ClosedWorldView extends WorldView("closed")
+
 object OpenWorldView extends WorldView("open")
 
 /** The AtomicType object, implementing an apply method in order to
  * deal with EmptyType and TopType construction.
  */
 object SAtomic {
-  val knownSAtomics:mutable.Map[(WorldView,Class[_]),SAtomic] = mutable.Map[(WorldView,Class[_]),SAtomic]()
+  val knownSAtomics: mutable.Map[(WorldView, Class[_]), SAtomic] = mutable.Map[(WorldView, Class[_]), SAtomic]()
 
   @tailrec
   def apply(ct: Class[_]): SimpleTypeD = {
@@ -233,12 +242,13 @@ object SAtomic {
     else if (ct == classOf[Any]) STop
     else if (ct == classOf[Int]) SAtomic(classOf[Integer])
     else if (getWorldView() == ClosedWorldView && !existsInstantiatableSubclass(ct)) SEmpty
-    else knownSAtomics.getOrElseUpdate((getWorldView(),ct), {
+    else knownSAtomics.getOrElseUpdate((getWorldView(), ct), {
       new SAtomic(ct)
     })
   }
 
   import scala.util.DynamicVariable
+
   // closedWorldView determines semantics of disjointness.
   //   if the world view is open, then for any two interfaces (for example)
   //   we assume that it is possible to create a class inheriting from both
@@ -250,20 +260,20 @@ object SAtomic {
   val worldView: DynamicVariable[WorldView] = new DynamicVariable[WorldView](ClosedWorldView)
 
   //noinspection AccessorLikeMethodIsEmptyParen
-  def getWorldView():WorldView= worldView.value
+  def getWorldView(): WorldView = worldView.value
 
   // evaluate a piece of code in a dynamic context where it is considers that classes
   //   may be loaded at run-time.  Thus, for example, it is NOT considered that
   //   two given traits are disjoint.
-  def withOpenWorldView[T](code: =>T):T = {
-    withWorldView(OpenWorldView,code)
+  def withOpenWorldView[T](code: => T): T = {
+    withWorldView(OpenWorldView, code)
   }
 
   // evaluate a piece of code in a dynamic context where it is considers that classes
   //   may NOT be loaded at run-time.  Thus, for example, it is considered that
   //   two given traits are disjoint if there exists no common instantiable subclass.
-  def withClosedWorldView[T](code: =>T):T = {
-    withWorldView(ClosedWorldView,code)
+  def withClosedWorldView[T](code: => T): T = {
+    withWorldView(ClosedWorldView, code)
   }
 
   // evaluate a piece of code in a dynamic context where it is considers that classes
