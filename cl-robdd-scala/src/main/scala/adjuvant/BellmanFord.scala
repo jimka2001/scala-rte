@@ -71,10 +71,6 @@ object BellmanFord {
     sizedSet[Int](finals, () => r.nextInt(num))
   }
 
-  def ordering[V](d: (V, Double)): Double = {
-    d._2
-  }
-
   def Dijkstra[V](vertices: Seq[V],
                   source: V,
                   edges: Seq[((V, V), Double)]): (Map[V, Double], Map[V, V]) = {
