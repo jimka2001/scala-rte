@@ -345,9 +345,9 @@ object Rte {
                        f:X=>Y,
                        g:(Y,Y,(E,E)=>E)=>Y):Y = {
       assert(seq.nonEmpty)
-      seq.tail.foldLeft(f(seq.head))((acc,x) => g(acc,
-                                                  f(x),
-                                                  xymbolyco.Dfa.defaultArbitrate))
+      seq.tail.foldLeft(f(seq.head))((acc, x) => g(acc,
+                                                   f(x),
+                                                   xymbolyco.Dfa.defaultArbitrate))
     }
     def f(pair:(Rte,E)):xymbolyco.Dfa[Any,SimpleTypeD,E] = {
       val (rte,e) = pair
