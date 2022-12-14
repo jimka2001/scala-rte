@@ -22,9 +22,10 @@
 package genus
 
 import NormalForm._
+import genus.Types._
+import genus.RandomType._
 
 object Statistics {
-  import RandomType.randomType
   def measureSubtypeComputability(n:Int,depth:Int,inh:Boolean):Map[String,Double] = {
     // This function returns a Map which associates Strings with percentages
     //  "inhabited" => what percentage of n randomly selected type designators are inhabited
@@ -42,13 +43,13 @@ object Statistics {
     //  "gained" -> how many % were not computed a original but became computable after DNF
     //  "lost" -> how many % lost computability after DNF
     assert(n > 0, s"measureSubtypeComputability does not support n=$n")
-    val m = (0 until n).foldLeft(Map[String, Int]()) { case (m, _) =>
+    val m = (0 until n).foldLeft(Map[String, Int]()) { case (m, a) =>
       val rt1 = if (inh)
-        randomType(depth, _.inhabited.contains(true))
+        randomType(depth, a => a.inhabited.contains(true), true)
       else
         randomType(depth)
       val rt2 = if (inh)
-        randomType(depth, td => td.inhabited.contains(true) && td.typeEquivalent(rt1).contains(false))
+        randomType(depth, td => td.inhabited.contains(true) && td.typeEquivalent(rt1).contains(false), true)
       else
         randomType(depth)
       val can1 = rt1.canonicalize(Some(Dnf))

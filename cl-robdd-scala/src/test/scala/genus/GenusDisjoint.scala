@@ -21,8 +21,9 @@
 
 package genus
 
-import Types._
+import RandomType._
 import adjuvant.MyFunSuite
+import genus.Types.{atomicTypesSeq, booleanType, charJavaType, doubleJavaType, intJavaType, oddType, stringType}
 
 class GenusDisjoint extends MyFunSuite {
 
@@ -94,12 +95,12 @@ class GenusDisjoint extends MyFunSuite {
 
     assert(m1.disjoint(m2).getOrElse(false))
     assert(m2.disjoint(m1).getOrElse(false))
-    assert(! m1.disjoint(intJavaType()).getOrElse(true))
+    assert(!m1.disjoint(intJavaType()).getOrElse(true))
     assert(m1.disjoint(stringType()).getOrElse(false))
-    assert(! m2.disjoint(intJavaType()).getOrElse(true))
-    assert(! m2.disjoint(stringType()).getOrElse(true))
-    assert(! intJavaType().disjoint(m2).getOrElse(true))
-    assert(! stringType().disjoint(m2).getOrElse(true))
+    assert(!m2.disjoint(intJavaType()).getOrElse(true))
+    assert(!m2.disjoint(stringType()).getOrElse(true))
+    assert(!intJavaType().disjoint(m2).getOrElse(true))
+    assert(!stringType().disjoint(m2).getOrElse(true))
   }
 
   test("disjoint union") {
@@ -219,7 +220,7 @@ class GenusDisjoint extends MyFunSuite {
   test("boolean disjoint"){
     val b = SAtomic(classOf[Boolean])
 
-    assert(SMember(true,false).disjoint(oddType).contains(true))
-    assert(b.disjoint(oddType).contains(true))
+    assert(SMember(true,false).disjoint(oddType()).contains(true))
+    assert(b.disjoint(oddType()).contains(true))
   }
 }

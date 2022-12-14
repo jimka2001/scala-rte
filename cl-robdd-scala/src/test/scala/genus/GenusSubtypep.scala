@@ -22,9 +22,10 @@
 
 package genus
 
-import Types._
+import RandomType._
 import java.lang
 import RandomType.randomType
+import Types._
 
 class Test1
 
@@ -259,7 +260,7 @@ class GenusSubtypep extends MyFunSuite {
     assert(SAtomic(classOf[java.lang.Boolean]).subtypep(SMember(true,false)).contains(true))
   }
   test("discovered 258"){
-    assert(SAtomic(Boolean).subtypep(SAtomic(Boolean)).contains(true))
+    assert(SAtomic(classOf[Boolean]).subtypep(SAtomic(classOf[Boolean])).contains(true))
     assert(SAtomic(classOf[java.lang.Boolean]).subtypep(SAtomic(classOf[java.lang.Boolean])).contains(true))
 
     checkSubtype(SMember(true,false), SAtomic(classOf[java.lang.Boolean]),"test 257")
@@ -268,12 +269,12 @@ class GenusSubtypep extends MyFunSuite {
   }
   test("discovered 269"){
     val rt = SOr(SOr(SMember(false, true), SMember(4, 5, 6)),
-                 SOr(SEql(true), SAtomic(Boolean)))
+                 SOr(SEql(true), SAtomic(classOf[Boolean])))
     val rt2 = SOr(SMember(false, true,4,5,6),
-                  SAtomic(Boolean))
+                  SAtomic(classOf[Boolean]))
     //val rt_can = rt.canonicalize() // SMember(false,true,4,5,6)
     val rt_can = SMember(false,true,4,5,6)
-    assert(SAtomic(Boolean).subtypep(SMember(false,true,4,5,6)) != Some(false), "270")
+    assert(SAtomic(classOf[Boolean]).subtypep(SMember(false,true,4,5,6)) != Some(false), "270")
     assert(rt2.subtypep(SMember(false, true,4,5,6)) != Some(false), "271")
     assert(rt.subtypep(SMember(false, true,4,5,6)) != Some(false), "272")
     assert(rt.subtypep(rt_can) != Some(false), "273")
@@ -393,9 +394,9 @@ class GenusSubtypep extends MyFunSuite {
     }
   }
   test("discovered cases 275") {
-    assert(SAtomic(Long).disjoint(SAtomic(Double)).contains(true), "#1")
-    assert(SAtomic(Long).subtypep(SNot(SAtomic(Double))).contains(true), "#2 Long <: not(Double)")
-    assert(SNot(SAtomic(Double)).subtypep(SAtomic(Long)).contains(false), "#3 not(Double) !<: Long")
+    assert(SAtomic(Long).disjoint(SAtomic(classOf[Double])).contains(true), "#1")
+    assert(SAtomic(Long).subtypep(SNot(SAtomic(classOf[Double]))).contains(true), "#2 Long <: not(Double)")
+    assert(SNot(SAtomic(classOf[Double])).subtypep(SAtomic(Long)).contains(false), "#3 not(Double) !<: Long")
   }
   test("discovered cases SMember/SEql") {
     assert(      SNot(SMember(1,2)).subtypep(SOr(SEql(3),SNot(SMember(1,2)))).contains(true), "#4" )

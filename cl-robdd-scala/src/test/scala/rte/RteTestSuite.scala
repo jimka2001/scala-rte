@@ -288,13 +288,13 @@ class RteTestSuite extends MyFunSuite {
     }
   }
   test("isomorphic"){
-    import genus.Types.evenType
+    import Types.evenType
     import scala.language.implicitConversions
     import rte.RteImplicits._
 
-    assert(Star(Cat(classOf[Int],Star(classOf[String]),evenType)).isomorphic(Not(evenType))
+    assert(Star(Cat(classOf[Int],Star(classOf[String]),evenType())).isomorphic(Not(evenType()))
              == None)
-    assert((Star(Cat(classOf[Int], Star(classOf[String]), evenType)) ~= Not(evenType))
+    assert((Star(Cat(classOf[Int], Star(classOf[String]), evenType())) ~= Not(evenType()))
              == false)
   }
 

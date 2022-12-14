@@ -39,7 +39,7 @@ class CatTestSuite extends MyFunSuite {
 
   test("canonicalize cat") {
     assert(Cat().canonicalize == EmptyWord)
-    for {depth <- 0 to 5
+    for {depth <- 0 to 4
          _ <- 1 to 1000
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)

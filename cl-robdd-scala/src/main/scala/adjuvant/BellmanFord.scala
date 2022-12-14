@@ -21,6 +21,10 @@
 
 package adjuvant
 
+import adjuvant.Adjuvant.sizedSet
+
+import scala.collection.mutable
+
 object BellmanFord {
   def shortestPath[V](vertices: Seq[V],
                       source: V,
@@ -60,5 +64,43 @@ object BellmanFord {
     }
 
     recur(List(v))
+  }
+
+  def generateVerticesSet(finals: Int, num: Int): Set[Int] = {
+    val r = util.Random
+    sizedSet[Int](finals, () => r.nextInt(num))
+  }
+
+  def Dijkstra[V](vertices: Seq[V],
+                  source: V,
+                  edges: Seq[((V, V), Double)]): (Map[V, Double], Map[V, V]) = {
+    implicit val myOrdering: Ordering[(V, Double)] = Ordering.by { case (_, d) => d }
+    //create a map of vertex to edges to reduce the cost when treating every accessible vertex
+    val edgess: Map[V, Seq[((V, V), Double)]] = edges.groupBy(x => x._1._1).withDefaultValue(Seq())
+    //create priority queue, distance map and best predecessor map,
+    // adding a source-> infinity item to mark the end of the queue
+    val pq1 = new mutable.PriorityQueue[(V, Double)]().reverse.addOne((source -> Double.PositiveInfinity))
+    pq1.enqueue(source -> 0)
+    var distancemap: Map[V, Double] = vertices.zip(Array.fill(vertices.size)(Double.PositiveInfinity)).toMap
+    var bestpredecessor: Map[V, V] = Map(source -> source)
+    //loop on all the vertices that will get treated, meeting with a (x-> infinity) key will mean that the end of the
+    // queue has been reached
+    while (pq1.head._2 != Double.PositiveInfinity) {
+      val current = pq1.dequeue()
+      //not treat a vertex if we have already treated it with a better path
+      if (current._2 < distancemap(current._1)) {
+        distancemap += current
+        for (i <- edgess(current._1)) {
+          //change values for each edge if the new value is better than the old one
+          if (i._1._1 == current._1) {
+            if (distancemap(i._1._2) > i._2 + distancemap(current._1)) {
+              pq1.enqueue((i._1._2, i._2 + distancemap(current._1)))
+              bestpredecessor += (i._1._2 -> current._1)
+            }
+          }
+        }
+      }
+    }
+    (distancemap, bestpredecessor)
   }
 }

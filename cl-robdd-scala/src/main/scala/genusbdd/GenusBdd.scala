@@ -21,10 +21,12 @@
 
 package genusbdd
 import genus._
-import genus.Types._
+import genus.RandomType._
 import bdd._
+
 import scala.collection._
 import NormalForm._
+import genus.Types.evenType
 
 case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
   // Creation of a Bdd representing a SimpleTypeD

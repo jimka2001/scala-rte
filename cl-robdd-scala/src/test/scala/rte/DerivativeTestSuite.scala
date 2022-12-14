@@ -26,6 +26,7 @@ import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import RandomType.randomType
 import adjuvant.MyFunSuite
+import genus.Types._
 import xymbolyco.GraphViz.dfaView
 import xymbolyco.Profiling
 
@@ -171,7 +172,7 @@ class DerivativeTestSuite extends MyFunSuite {
          _ <- 1 to 1000
          rt = Rte.randomRte(depth)
          can = rt.canonicalize
-         m = Types.mdtd(can.firstTypes)
+         m = mdtd(can.firstTypes)
          (td,(factors,disjoints)) <- m
          } {
       can.derivative(Some(td),factors.toList,disjoints.toList)
@@ -190,7 +191,7 @@ class DerivativeTestSuite extends MyFunSuite {
     val ft= rt.firstTypes
     //println(s"rt=$rt")
     //println(s"first types = $ft")
-    Types.mdtd(ft).map {
+    mdtd(ft).map {
       case (td,(factors,disjoints)) =>
         //println(s"td=$td")
         //println(s"  factors   = $factors")
@@ -211,7 +212,7 @@ class DerivativeTestSuite extends MyFunSuite {
 
   test("derivatives random") {
 
-    for {depth <- 0 to 6
+    for {depth <- 0 to 4
          _ <- 1 to 2000
          rt = Rte.randomRte(depth)
          (intToV,_) = rt.derivatives()

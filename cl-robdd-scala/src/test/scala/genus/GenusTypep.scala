@@ -22,9 +22,9 @@
 
 package genus
 
-import Types._
 import adjuvant.MyFunSuite
 import genus.RandomType.interestingValues
+import genus.Types._
 import org.scalatest.funsuite.AnyFunSuite
 
 class GenusTypep extends MyFunSuite {
@@ -130,22 +130,22 @@ class GenusTypep extends MyFunSuite {
     val even = List(0, 2, 4, 6, 10, 42, 100, 550, -42)
     val odd = List(1, 3, 7, -5, 9, 43, 101)
 
-    assert(even.forall(evenType.typep(_)))
-    assert(odd.forall(oddType.typep(_)))
-    assert(odd.forall(! evenType.typep(_)))
-    assert(even.forall(! oddType.typep(_)))
-    assert(! oddType.typep("test"))
-    assert(! evenType.typep("test"))
-    assert((even ++ odd).forall(SOr(oddType, evenType).typep(_)))
-    assert((even ++ odd).forall(! SAnd(oddType, evenType).typep(_)))
+    assert(even.forall(evenType().typep(_)))
+    assert(odd.forall(oddType().typep(_)))
+    assert(odd.forall(! evenType().typep(_)))
+    assert(even.forall(! oddType().typep(_)))
+    assert(! oddType().typep("test"))
+    assert(! evenType().typep("test"))
+    assert((even ++ odd).forall(SOr(oddType(), evenType()).typep(_)))
+    assert((even ++ odd).forall(! SAnd(oddType(), evenType()).typep(_)))
   }
 
   test("typep prime type") {
     val primes = List(2, 3, 5, 7, 11, 13, 79, 97, 983, 991, 521)
     val notPrimes = List(4, 6,  8, 9, 42, 867, 913)
 
-    assert(primes.forall(primeType.typep(_)))
-    assert(notPrimes.forall(! primeType.typep(_)))
+    assert(primes.forall(primeType().typep(_)))
+    assert(notPrimes.forall(! primeType().typep(_)))
   }
 
   test("typep member") {

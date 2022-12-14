@@ -95,14 +95,14 @@ object Adjuvant {
           //   yet been treated.
           if (next < nextAvailableState) {
             val v2 = intToV(next)
-            recur(next, nextAvailableState, edges(v2).toList, intToV, vToInt, m.appended(s0))
+            recur(next, nextAvailableState, edges(v2).toList.sortBy(_.toString), intToV, vToInt, m.appended(s0))
           }
           else
             (intToV, m)
       }
     }
 
-    recur(0, 1, edges(v0).toList, Vector(v0), Map(v0 -> 0), Vector(s0))
+    recur(0, 1, edges(v0).toList.sortBy(_.toString), Vector(v0), Map(v0 -> 0), Vector(s0))
   }
 
   // find and replace all occurrences of `search` in the given sequence,
@@ -382,6 +382,16 @@ object Adjuvant {
     else
       s"$ns ns"
   }
+
+  // create a set of a given size by multiple calls to generate()
+  //   which generates one element at a time.
+  def sizedSet[A](targetSize: Int, generate: () => A): Set[A] = {
+    var data: Set[A] = Set()
+    while (data.size < targetSize)
+      data += generate()
+    data
+  }
+
 
   // Given a sequence of strings designating files (or directories)
   //   find the first one in the sequence which corresponds to an existing

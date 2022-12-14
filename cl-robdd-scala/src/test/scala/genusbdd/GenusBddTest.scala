@@ -22,13 +22,13 @@
 package genusbdd
 
 import bdd._
+import genus.RandomType._
 import genus._
-import genus.Types._
-
 
 import scala.collection.{Seq, mutable}
 import adjuvant._
 import RandomType.randomType
+import genus.Types.evenType
 
 class GenusBddTest extends MyFunSuite {
   trait Trait1
@@ -112,7 +112,7 @@ class GenusBddTest extends MyFunSuite {
 
   test("test 111") {
     val td = SAnd(SNot(SEql(true)),
-                  SOr(SMember(false, true), SAtomic(String)
+                  SOr(SMember(false, true), classOf[String]
                       ))
     Bdd.withNewBddHash {
       testDnf(td, mutable.Map[SimpleTypeD, Int](), -1)
@@ -129,7 +129,7 @@ class GenusBddTest extends MyFunSuite {
                     SEql(42),
                     SMember(1, 2, 3),
                     SMember(1, 3, 2),
-                    evenType, // SSatisfies(evenp)
+                    evenType(), // SSatisfies(evenp)
                     SAnd(classOf[Trait1], classOf[Trait2]),
                     SAnd(classOf[Trait1], classOf[Trait2], classOf[Trait3]),
                     SOr(classOf[Trait1], classOf[Trait2]),

@@ -28,21 +28,29 @@ object Minimize {
 
   import adjuvant.Adjuvant._
 
-  def trim[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    removeNonAccessible(removeNonCoAccessible(dfa))
+  //trust accessible will be true for brzozowski constructions as it does not have unsatisfiable or unaccesible states
+  // removing
+  def trim[Σ, L, E](dfa: Dfa[Σ, L, E], trustAccessible: Boolean = false): Dfa[Σ, L, E] = {
+    if (!trustAccessible) {
+      removeNonCoAccessible(removeNonAccessible(dfa))
+    }
+    else {
+      removeNonCoAccessible(dfa)
+    }
   }
 
   @tailrec
-  def findReachable(succ:Map[Int,Set[Int]], done:Set[Int], todo:Set[Int]):Set[Int] = {
+  def findReachable(succ: Map[Int, Set[Int]], done: Set[Int], todo: Set[Int]): Set[Int] = {
     if (todo.isEmpty)
       done
     else {
       val q = todo.head
-      findReachable(succ,done + q, todo ++ (succ.getOrElse(q,Set()) diff done) - q)
+      findReachable(succ, done + q, todo ++ (succ.getOrElse(q, Set()) diff done) - q)
     }
   }
 
   def removeNonAccessible[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+
     val succ:Map[Int,Set[Int]] = dfa.successors()
     val accessible:Set[Int] = findReachable(succ,Set(),Set(dfa.q0.id))
     Dfa(accessible,
@@ -65,14 +73,13 @@ object Minimize {
               dfa.labeler,
               dfa.fMap)
     }
-    else
-    {
+    else {
       val q0id = dfa.q0id
-      val allLabel = dfa.protoDelta.collect{case (src,lab,_) if src == q0id => lab}
-      val protoDelta:Set[(Int,L,Int)] = if (allLabel.isEmpty)
+      val allLabel = dfa.protoDelta.collect { case (src, lab, _) if src == q0id => lab }
+      val protoDelta: Set[(Int, L, Int)] = if (allLabel.isEmpty)
         Set()
       else
-        Set((q0id,allLabel.reduce((acc:L,lab:L)=> dfa.labeler.combineLabels(acc,lab)),q0id))
+        Set((q0id, allLabel.reduce((acc: L, lab: L) => dfa.labeler.combineLabels(acc, lab)), q0id))
       // make trivial dfa with only a self-loop labeled Sigma on q0
       Dfa(Set(q0id),
               q0id,
@@ -82,47 +89,6 @@ object Minimize {
               dfa.fMap
               )
     }
-  }
-
-  def findHopcroftPartition[Σ, L, E](dfa: Dfa[Σ, L, E]): Set[Set[State[Σ, L, E]]] = {
-    type STATE = State[Σ, L, E]
-    type EQVCLASS = Set[STATE]
-    type PARTITION = Set[EQVCLASS]
-
-    val Pi0 = partitionBy(dfa.F, dfa.exitValue) + dfa.Q.diff(dfa.F)
-
-    def partitionEqual(pi1: PARTITION, pi2: PARTITION): Boolean =
-      pi1 == pi2
-
-    def refine(partition: PARTITION): PARTITION = {
-      def phi(source: STATE, label: L): EQVCLASS = {
-        // find the element of partition, itself an equivalence class, which
-        //   which contains the destination state of the transition
-        //   whose source and label are given
-        partition.find(_.contains(source.delta(label))).get
-      }
-
-      def PhiPrime(s: STATE): Set[(L, EQVCLASS)] = {
-        for {Transition(_, label, _) <- s.transitions}
-          yield (label, phi(s, label))
-      }
-
-      def Phi(s: STATE): Set[(L, EQVCLASS)] = {
-        val m = for {(k, pairs) <- PhiPrime(s).groupBy(_._2)
-                     labels = pairs.map(_._1)
-                     label = labels.reduce(dfa.labeler.combineLabels)}
-        yield (label, k)
-        m.toSet
-      }
-
-      def repartition(eqvClass: EQVCLASS): PARTITION = {
-        partitionBy(eqvClass, Phi)
-      }
-
-      partition.flatMap(repartition)
-    }
-
-    fixedPoint(Pi0, refine, partitionEqual)
   }
 
   def minimize[Σ, L, E](dfa: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
@@ -164,6 +130,47 @@ object Minimize {
     Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
   }
 
+  def findHopcroftPartition[Σ, L, E](dfa: Dfa[Σ, L, E]): Set[Set[State[Σ, L, E]]] = {
+    type STATE = State[Σ, L, E]
+    type EQVCLASS = Set[STATE]
+    type PARTITION = Set[EQVCLASS]
+
+    val Pi0 = partitionBy(dfa.F, dfa.exitValue) + dfa.Q.diff(dfa.F)
+
+    def partitionEqual(pi1: PARTITION, pi2: PARTITION): Boolean =
+      pi1 == pi2
+
+    def refine(partition: PARTITION): PARTITION = {
+      def phi(source: STATE, label: L): EQVCLASS = {
+        // find the element of partition, itself an equivalence class, which
+        //   which contains the destination state of the transition
+        //   whose source and label are given
+        partition.find(_.contains(source.delta(label))).get
+      }
+
+      def PhiPrime(s: STATE): Set[(L, EQVCLASS)] = {
+        for {Transition(_, label, _) <- s.transitions}
+          yield (label, phi(s, label))
+      }
+
+      def Phi(s: STATE): Set[(L, EQVCLASS)] = {
+        val m = for {(k, pairs) <- PhiPrime(s).groupBy(_._2)
+                     labels = pairs.map(_._1)
+                     label = labels.reduce(dfa.labeler.combineLabels)}
+          yield (label, k)
+        m.toSet
+      }
+
+      def repartition(eqvClass: EQVCLASS): PARTITION = {
+        partitionBy(eqvClass, Phi)
+      }
+
+      partition.flatMap(repartition)
+    }
+
+    fixedPoint(Pi0, refine, partitionEqual)
+  }
+
   // Construct a new Dfa which is complete, i.e., for each state q
   //   the outgoing transitions of q partition Sigma.
   //   This main entail creating a new state to be a sink state.
@@ -191,7 +198,6 @@ object Minimize {
     val protoDelta = dfa.protoDelta ++
       toSink ++
       (if (toSink.nonEmpty) Set((sinkId, labeler.universe, sinkId)) else Set())
-
     val dfaComplete = Dfa[Σ, L, E](Qids = dfa.Qids + sinkId,
                                        q0id = dfa.q0id,
                                        Fids = dfa.Fids,
@@ -209,7 +215,6 @@ object Minimize {
                    dfa2:Dfa[Σ, L, E],
                    arbitrateFinal:(Boolean,Boolean)=>Boolean,
                    combineFmap:(Option[E], Option[E])=>Option[E] = (e1:Option[E], e2:Option[E]) => Dfa.combineFmap[E](e1,e2)):Dfa[Σ, L, E] = {
-
     val grouped1 = complete(dfa1).protoDelta.groupBy(_._1)
     val grouped2 = complete(dfa2).protoDelta.groupBy(_._1)
 
@@ -254,16 +259,16 @@ object Minimize {
 
       reportInconsistent(edges.toSeq).map{tr => (tr._1,tr._2)}
     }
-    val (vertices,edges) = traceGraph[(Int,Int),L]((dfa1.q0id,dfa2.q0id),
-                                                   getEdges)
-    assert( vertices(0) == (dfa1.q0id,dfa2.q0id))
-    // assert( vertices(0) == (0,0))
-    val fIds = vertices.indices.filter{q =>
-      val (q1,q2) = vertices(q)
-      arbitrateFinal(dfa1.Fids.contains(q1),
-                     dfa2.Fids.contains(q2))
-    }
 
+    val (vertices, edges) = traceGraph[(Int, Int), L]((dfa1.q0id, dfa2.q0id),
+      getEdges)
+    assert(vertices(0) == (dfa1.q0id, dfa2.q0id))
+    // assert( vertices(0) == (0,0))
+    val fIds = vertices.indices.filter { q =>
+      val (q1, q2) = vertices(q)
+      arbitrateFinal(dfa1.Fids.contains(q1),
+        dfa2.Fids.contains(q2))
+    }
     val fMap = for { q <- fIds
                      (q1,q2) = vertices(q)
                      e <- combineFmap(dfa1.fMap.get(q1),dfa2.fMap.get(q2))
@@ -278,7 +283,6 @@ object Minimize {
                      dfa1.labeler, // labeler:Labeler[Σ,L],
                      fMap.toMap // val fMap:Map[Int,E]
                      )
-
     trim(dfa)
   }
 }

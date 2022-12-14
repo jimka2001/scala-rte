@@ -22,6 +22,7 @@
 
 package genus
 
+import genus.Types.{intJavaType, stringType}
 import lbdd._
 import lbdd.GraphViz._
 
@@ -155,7 +156,7 @@ object TypeSystemWithLBdd {
 
       numericLBdd.bddView(drawFalseLeaf=true, "numericTypeLBdd")
 
-      val b2 = typeAsLBdd(SOr(SAnd(numericType, Types.intJavaType()), Types.stringType()))
+      val b2 = typeAsLBdd(SOr(SAnd(numericType, intJavaType()), stringType()))
       b2.bddView(drawFalseLeaf=true, "string or (num and int)")
     }
   }

@@ -21,11 +21,14 @@
 
 package genus
 
-import genus.Types._
 import org.scalatest.funsuite.AnyFunSuite
 import RandomType.randomType
 import adjuvant.Adjuvant.eql
 import adjuvant.MyFunSuite
+import genus.RandomType._
+import genus.Types._
+import genus.GenusImplicits
+import scala.language.implicitConversions
 
 class TypesTest extends MyFunSuite {
 

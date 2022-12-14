@@ -23,6 +23,7 @@
 package rte
 
 import adjuvant.Adjuvant.{findSimplifier, searchReplace, uniquify}
+import genus.Types.createMemberFromPairs
 import genus._
 
 abstract class Combination(val operands:Seq[Rte]) extends Rte {
@@ -161,7 +162,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
             case (p1:SimpleTypeD,p2:Any) => (p1,p2)
             case pair => throw new NotImplementedError(s"invalid data: this=$this, pair=$pair")
           }
-          Singleton(Types.createMemberFromPairs(memberOperands))
+          Singleton(createMemberFromPairs(memberOperands))
         }
       }
       val newNotMember:Rte = notMembers
@@ -173,7 +174,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
             case (p1:SimpleTypeD, p2:Any) => (p1,p2)
             case pair => throw new NotImplementedError(s"invalid data: this=$this, pair=$pair")
           }
-          Not(Singleton(Types.createMemberFromPairs(notMemberOperands)))
+          Not(Singleton(createMemberFromPairs(notMemberOperands)))
         }
       }
       // careful to put the SMember back in the place of the first
@@ -249,7 +250,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
           case Seq() => this
           case tds =>
             val td = createTypeD(tds)
-            val rte = Singleton(Types.createMemberFromPairs(m.xs.filter{case (_:SimpleTypeD,a:Any) => orInvert(td.typep(a))}))
+            val rte = Singleton(createMemberFromPairs(m.xs.filter{case (_:SimpleTypeD,a:Any) => orInvert(td.typep(a))}))
             create(searchReplace(operands, s, rte))
         }
       case _ => this

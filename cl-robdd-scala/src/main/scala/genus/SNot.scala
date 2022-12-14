@@ -21,8 +21,9 @@
 
 package genus
 
-import Types._
+import RandomType._
 import NormalForm._
+import genus.Types.cmpTypeDesignators
 
 /** A negation of a type.
  *

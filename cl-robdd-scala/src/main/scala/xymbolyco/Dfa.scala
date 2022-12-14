@@ -37,24 +37,21 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   // each element of Fids is in Qids
   require(Fids.subsetOf(Qids))
   // each triple in protoDelta is of the form (x,_,y) where x and y are elements of Qids
-  require(protoDelta.forall { case (from: Int, _, to: Int) => Qids.contains(from) && Qids.contains(to) })
+  require(protoDelta.forall  { case (from: Int, _, to: Int) => Qids.contains(from) && Qids.contains(to) })
 
-  // returns a Map of src -> Set(dst)
-  // The Map collects the destinations per origin, omitting those
-  //   only reachable by un-satisfiable transitions.
+  // returns a map of src -> Set(dst)
+  // tests if the transitions are valid, if the transitions carry a type that is empty
+  // the following state will not be added to the queue
   def successors():Map[Int,Set[Int]] = {
     for{ (src,triples) <- protoDelta.groupBy{case (src,_,_) => src}
-         satisfiable = triples.filter { case (_, lab, _) => !labeler.inhabited(lab).contains(false) }
-         } yield src -> satisfiable.map(_._3)
+      triples2= triples.filter{case (_,tr,_) => !labeler.inhabited(tr).contains(false)}
+         } yield src -> triples2.map(_._3)
   }
 
   // returns a map of dst -> Set(src)
-  // The Map collects the origins per destination, omitting those
-  //   only reachable by un-satisfiable transitions.
   def predecessors():Map[Int,Set[Int]] = {
     for{ (dst,triples) <- protoDelta.groupBy{case (_,_,dst) => dst}
-         satisfiable = triples.filter { case (_, lab, _) => !labeler.inhabited(lab).contains(false) }
-         } yield dst -> satisfiable.map(_._1)
+         } yield dst -> triples.map(_._1)
   }
 
   def exitValue(q: State[Σ, L, E]): E = fMap(q.id)
@@ -254,11 +251,11 @@ object Dfa {
   }
 
   def apply[Σ, L, E](Qids: Set[Int],
-           q0id: Int,
-           Fids: Set[Int],
-           protoDelta: Set[(Int, L,Int)],
-           labeler: Labeler[Σ, L],
-           fMap: Map[Int, E]):Dfa[Σ, L, E] = {
+                     q0id: Int,
+                     Fids: Set[Int],
+                     protoDelta: Set[(Int, L, Int)],
+                     labeler: Labeler[Σ, L],
+                     fMap: Map[Int, E]): Dfa[Σ, L, E] = {
     val merged = mergeParallel[Σ, L](labeler,protoDelta.toSeq)
     new Dfa[Σ, L, E](Qids, q0id, Fids, merged, labeler, fMap)
   }
