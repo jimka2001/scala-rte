@@ -307,4 +307,18 @@ class DerivativeTestSuite extends MyFunSuite {
 //    Profiling.check(rte,1,1)
 //    dfaView(rte.toDfa(42),title="Number-star",true,Some("xyzzy"))
 //  }
+
+  test("derivative not"){
+    for {depth <- 0 to 5
+         _ <- 1 to 3000
+         rt = Rte.randomRte(depth)
+         not_rte = Not(rt)
+         (td, (factors, disjoints)) <- mdtd(rt.firstTypes ++ not_rte.firstTypes)
+         d1 = not_rte.derivative(Some(td),factors.toList,disjoints.toList)
+         d2 = Not(rt.derivative(Some(td),factors.toList,disjoints.toList))
+         } {
+      assert(d1 ~= d2)
+    }
+
+  }
 }
