@@ -238,6 +238,7 @@ object SAtomic {
   @tailrec
   def apply(ct: Class[_]): SimpleTypeD = {
     if (ct == classOf[Nothing]) SEmpty
+    else if (ct == classOf[Char]) SAtomic(classOf[java.lang.Character])
     else if (ct == classOf[Boolean]) SAtomic(classOf[java.lang.Boolean])
     else if (ct == classOf[Any]) STop
     else if (ct == classOf[Int]) SAtomic(classOf[Integer])
@@ -347,4 +348,10 @@ object SAtomic {
   import org.reflections.Reflections
 
   val reflections = new Reflections()
+}
+
+object SAtomicTest {
+  def main(argv:Array[String]): Unit = {
+    
+  }
 }

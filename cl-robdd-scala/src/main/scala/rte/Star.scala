@@ -103,7 +103,7 @@ case class Star(operand:Rte) extends Rte {
 }
 
 object Star{
-  val sigmaStar: Star = Star(Sigma)
+  import rte.Rte.sigmaStar
   def createStar(operand:Rte):Rte = {
     operand match {
       case Sigma => sigmaStar

@@ -24,6 +24,7 @@ package padl
 import adjuvant.Adjuvant.{existingFile, filterFile}
 import genus.{SAnd, SAtomic, SEmpty, SNot, SOr, SSatisfies, STop, SimpleTypeD}
 import genus.Types.{evenType, oddType}
+import rte.Rte.sigmaStar
 import rte.{And, Cat, Or, Permute, Plus, Rte, Singleton, Star}
 import xymbolyco.{Dfa, GraphViz, Thompson}
 import xymbolyco.GraphViz.{dfaView, multiLineString}
@@ -31,6 +32,8 @@ import xymbolyco.Minimize.minimize
 
 
 object Padl {
+  import scala.language.implicitConversions
+  import rte.RteImplicits._
   val dotDir:String = existingFile(Seq("/Users/jnewton/Repos/research/dot/",
                                        "/Users/jimka/Repos/research/dot/"),
                                    "dot-dir-not-found")
@@ -41,14 +44,17 @@ object Padl {
                keepIf= line=> !line.contains("labelloc=") && !line.contains("  label=") )
   }
 
-  def tyint() = SAtomic(classOf[Int])
-  def tystr() = SAtomic(classOf[String])
-  def tynum() = SAtomic(classOf[Number])
-  def str() = Singleton(tystr())
-  def num() = Singleton(tynum())
-  def odd() = Singleton(oddType())
-  def even() = Singleton(evenType())
-  def integer() = Singleton(tyint())
+  def tyint():SimpleTypeD = SAtomic(classOf[Int])
+  def tystr():SimpleTypeD = SAtomic(classOf[String])
+  def tynum():SimpleTypeD = SAtomic(classOf[Number])
+  def tychar():SimpleTypeD = SAtomic(classOf[Char])
+  def str():Rte = Singleton(tystr())
+  def num():Rte = Singleton(tynum())
+  def odd():Rte = Singleton(oddType())
+  def even():Rte = Singleton(evenType())
+  def integer():Rte = Singleton(tyint())
+  def char():Rte = Singleton(tychar())
+  def charx():Rte = classOf[Char]
   def givenLabels() = Seq[SimpleTypeD](SEmpty, // 0
                                      STop, // 1
                                      tyint(), // 2
@@ -111,18 +117,39 @@ object Padl {
   }
 
   def example2(): Unit = {
-    val rt2: Rte = Star(Cat(integer(), Star(str()), even()))
-
+    val rt2: Rte = Plus(Cat(Or(classOf[Int], classOf[Char]),
+                            Star(classOf[String]),
+                            even()))
+    val rt3: Rte = Cat(sigmaStar, even(),
+                       sigmaStar, even(),
+                       sigmaStar, even(),
+                       sigmaStar)
+    val rt4: Rte = And(rt2,rt3)
     println("-----------------------")
-    dfaView(rt2.toDfa(),
-            abbrev = true,
-            title = "rt2-not-min",
-            label = Some("Brz " + multiLineString(s"rt2=${rt2.toDot()}",
-                                                  60)),
-            showSink = true,
-            dotFileCB = str => cpTo(str, "padl-not-min-example-2"),
-            givenLabels = givenLabels(),
-            printLatex = true)
+    if(false) {
+      dfaView(rt2.toDfa(),
+              abbrev = true,
+              title = "rt2-not-min",
+              label = Some("Brz " + multiLineString(s"rt2=${rt2.toDot()}",
+                                                    60)),
+              showSink = false,
+              dotFileCB = str => cpTo(str, "padl-not-min-example-2"),
+              givenLabels = givenLabels(),
+              printLatex = false)
+    }
+    for{ seq <- Vector(List(13,"hello","world", 14),
+                       List(13,14),
+                       List(12),
+                       List(12,13),
+                       List(1, "hello", "world", 14,
+                            'z', "hello", 4),
+                       List('z'),
+                       List('z',16)
+                       )} {
+      println(seq)
+      println("  ---> " + rt2.simulate(true,seq))
+      println(Singleton(SAtomic(classOf[scala.Char])).simulate(true,Vector('a')))
+    }
 
   }
 
@@ -138,7 +165,8 @@ object Padl {
             showSink = false,
             dotFileCB = str => cpTo(str, "padl-min-example-2"),
             givenLabels = givenLabels(),
-            printLatex = true)
+            printLatex = false)
+
   }
 
   def main(argv: Array[String]): Unit = {
