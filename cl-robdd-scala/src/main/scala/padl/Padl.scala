@@ -22,10 +22,10 @@
 package padl
 
 import adjuvant.Adjuvant.{existingFile, filterFile}
-import genus.{SAnd, SAtomic, SEmpty, SNot, SOr, SSatisfies, STop, SimpleTypeD}
+import genus.{SAnd, SAtomic, SEmpty, SEql, SNot, SOr, SSatisfies, STop, SimpleTypeD}
 import genus.Types.{evenType, oddType}
-import rte.Rte.sigmaStar
-import rte.{And, Cat, Or, Permute, Plus, Rte, Singleton, Star}
+import rte.Rte.{Eql, sigmaStar}
+import rte.{And, Cat, Not, Or, Permute, Plus, Rte, Singleton, Star}
 import xymbolyco.{Dfa, GraphViz, Thompson}
 import xymbolyco.GraphViz.{dfaView, multiLineString}
 import xymbolyco.Minimize.minimize
@@ -117,14 +117,11 @@ object Padl {
   }
 
   def example2(): Unit = {
-    val rt2: Rte = Plus(Cat(Or(classOf[Int], classOf[Char]),
+    val rt2: Rte = Plus(Cat(Or(classOf[Int], And(classOf[Char],
+                                                 Not(SEql('z')))),
                             Star(classOf[String]),
                             even()))
-    val rt3: Rte = Cat(sigmaStar, even(),
-                       sigmaStar, even(),
-                       sigmaStar, even(),
-                       sigmaStar)
-    val rt4: Rte = And(rt2,rt3)
+
     println("-----------------------")
     if(false) {
       dfaView(rt2.toDfa(),
@@ -142,7 +139,7 @@ object Padl {
                        List(12),
                        List(12,13),
                        List(1, "hello", "world", 14,
-                            'z', "hello", 4),
+                            'x', "hello", 4),
                        List('z'),
                        List('z',16)
                        )} {
