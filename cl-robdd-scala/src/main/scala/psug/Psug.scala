@@ -21,13 +21,11 @@
 
 package psug
 
-import adjuvant.Adjuvant.{existingFile, filterFile}
+import adjuvant.Adjuvant.{existingFile}
 import genus.Types.{evenType, oddType}
 import genus._
 import rte._
-import xymbolyco.Dfa
 import xymbolyco.GraphViz.{dfaView, multiLineString}
-import xymbolyco.Minimize.minimize
 
 
 object Psug {
@@ -38,24 +36,22 @@ object Psug {
                                        "/Users/jimka/Repos/research/dot/"),
                                    "dot-dir-not-found")
 
-  def tyint():SimpleTypeD = SAtomic(classOf[Int])
-  def tystr():SimpleTypeD = SAtomic(classOf[String])
-  def tynum():SimpleTypeD = SAtomic(classOf[Number])
-  def tychar():SimpleTypeD = SAtomic(classOf[Char])
-  def str():Rte = Singleton(tystr())
-  def num():Rte = Singleton(tynum())
-  def odd():Rte = Singleton(oddType())
-  def even():Rte = Singleton(evenType())
-  def integer():Rte = Singleton(tyint())
+  def isEven(x: Any): Boolean = {
+    x match {
+      case y: Int => y % 2 == 0
+      case _ => false
+    }
+  }
+
+  val even: SSatisfies = SSatisfies(isEven, "even")
 
   def example(): Unit = {
     val rt2: Rte = Plus(Cat(Or(classOf[Int], And(classOf[Char],
                                                  Not(SEql('z')))),
                             Star(classOf[String]),
-                            even()))
+                            even))
 
-    println("-----------------------")
-    if(true) {
+    if(false) {
       dfaView(rt2.toDfa(),
               abbrev = true,
               title = "rt2-not-min",
@@ -70,11 +66,11 @@ object Psug {
                        List(1, "hello", "world", 14,
                             'x', "hello", 4),
                        List('z'),
-                       List('z',16)
+                       List('z',16),
+                       List('z',17)
                        )} {
       println(seq)
       println("  ---> " + rt2.simulate(true,seq))
-      println(Singleton(SAtomic(classOf[scala.Char])).simulate(true,Vector('a')))
     }
   }
 
