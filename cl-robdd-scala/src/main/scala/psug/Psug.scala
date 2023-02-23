@@ -21,8 +21,6 @@
 
 package psug
 
-import adjuvant.Adjuvant.{existingFile}
-import genus.Types.{evenType, oddType}
 import genus._
 import rte._
 import xymbolyco.GraphViz.{dfaView, multiLineString}
@@ -32,9 +30,6 @@ object Psug {
   import rte.RteImplicits._
 
   import scala.language.implicitConversions
-  val dotDir:String = existingFile(Seq("/Users/jnewton/Repos/research/dot/",
-                                       "/Users/jimka/Repos/research/dot/"),
-                                   "dot-dir-not-found")
 
   def isEven(x: Any): Boolean = {
     x match {
