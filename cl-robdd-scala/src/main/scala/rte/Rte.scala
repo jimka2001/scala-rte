@@ -335,7 +335,8 @@ object Rte {
     (0 until length).map { _ => randomRte(depth, option) }
   }
 
-  def rteCase[E](seq: Seq[(Rte, E)]): Seq[Any] => Option[E] = {
+  def rteCase[E](seq: Seq[(Rte, E)],
+                 handleUnreachable: Rte=>Unit=(rte=>())): Seq[Any] => Option[E] = {
     // take a sequence of pairs (Rte,E)
     // and return a function, f, from Seq[Any] => Option[E]
     // the function, f, can be called with a Seq[Any]
@@ -353,7 +354,16 @@ object Rte {
     }
 
     val caseDfa = makeDisjoint(seq.toList, Or())
-      .map { case (rte, e) => rte.toDfa(e) }
+      .flatMap { case (rte, e) =>
+        val dfa = rte.toDfa(e)
+        dfa.vacuous() match {
+          case Some(true) =>
+            handleUnreachable(rte)
+            None
+          case _ =>
+            Some(dfa)
+        }
+      }
       .reduceLeft(dfaUnion(_, _, xymbolyco.Dfa.defaultArbitrate))
 
     // it is important that caseDfa is computed separately.
@@ -393,8 +403,10 @@ object Rte {
   //   Typical values for handleUnreachable would be a function that does nothing,
   //   or a function which raises an exception, or prints a warning message.
   def rteIfThenElse[E](seq: Seq[(Rte, () => E)],
-                       otherwise: () => E): Seq[Any] => E = {
-    val arbitrate1 = rteCase(seq)
+                       otherwise: () => E,
+                       handleUnreachable: Rte=>Unit=(rte=>())): Seq[Any] => E = {
+    val arbitrate1 = rteCase(seq,
+                             handleUnreachable=handleUnreachable)
 
     def arbitrate2(seq: Seq[Any]): E = {
       arbitrate1(seq) match {
@@ -473,11 +485,15 @@ object sanityTest {
       Cat(Star(int), Star(str)) -> (() => {
         println("case 3")
         3
+      }),
+      Cat(int, str) -> (() => {
+        println("case impossible")
+        0
       })),
       () => {
         println("default case")
         4
-      })
+      }, handleUnreachable=(rte => println(s"unsatisfiable rte: $rte")))
     f(List(1,2,3,4,5))
     f(List("one","two","three", "four"))
     f(List("one","two",3, 4))
