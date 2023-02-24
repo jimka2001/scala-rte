@@ -356,25 +356,11 @@ object Rte {
       }
     }
 
-    def funnyFold[X, Y](seq: Seq[X],
-                        f: X => Y,
-                        g: (Y, Y, (E, E) => E) => Y): Y = {
-      assert(seq.nonEmpty)
-      seq.tail.foldLeft(f(seq.head))((acc, x) => g(acc,
-                                                   f(x),
-                                                   xymbolyco.Dfa.defaultArbitrate))
-    }
-
-    def f(pair: (Rte, E)): xymbolyco.Dfa[Any, SimpleTypeD, E] = {
-      val (rte, e) = pair
-      val dfa = rte.toDfa(e)
-
-      dfa
-    }
-
     val disjoint: Seq[(Rte, E)] = excludePrevious(seq.toList, List(), List())
-    val caseDfa = funnyFold[(Rte, E), xymbolyco.Dfa[Any, SimpleTypeD, E]](disjoint, f, dfaUnion)
-
+    val caseDfa = LazyList
+      .from(disjoint)
+      .map{case (rte, e) => rte.toDfa(e)}
+      .reduceLeft(dfaUnion(_,_,xymbolyco.Dfa.defaultArbitrate))
     def arbitrate(seq: Seq[Any]): Option[E] = {
       caseDfa.simulate(seq)
     }
