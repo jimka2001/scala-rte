@@ -364,6 +364,34 @@ object Rte {
     seq => caseDfa.simulate(seq)
   }
 
+  // rteIfThenElse return a function which we call "the arbitration function".
+  // The caller of rteIfThenElse, may thereafter call the arbitration function
+  // with a sequence (of type Seq[Any])
+  // to selectively execute code corresponding to one of the Rtes provided,
+  // The code executed is the code corresponding to the Rte which matches
+  // the given sequence.
+  //
+  // The syntax for calling this rteIfThenElse is awkward, but I have not yet
+  // found a better way.
+  // The first arg seq: is a sequence of pairs, normally written as follows:
+  // Seq( rte1 -> (() => { body1 ... }),
+  //      rte2 -> (() => { body2 ... }),
+  //      ...
+  //     )
+  //  each of body1, body2, ... are bodies of code which will be
+  //     executed in the case that a Seq[Any] (to be provided later)
+  //     matches the Rte.  If the sequence matches more than one Rte,
+  //     then the first applicably body will be executed, and its bottom-most
+  //     value will be returned from the arbitration function.
+  //
+  // The second arg, otherwise: designates which code to evaluate
+  //   if none of the Rtes match the sequence given to the arbitration function.
+  //
+  // The 3rd arg, handleUnreachable: is called if rteIfTheElse detects
+  //   an Rte whose code is unreachable, I.e. if one of the Rtes is subsumed
+  //   by the other Rrts preceding it in the input sequence.
+  //   Typical values for handleUnreachable would be a function that does nothing,
+  //   or a function which raises an exception, or prints a warning message.
   def rteIfThenElse[E](seq: Seq[(Rte, () => E)],
                        otherwise: () => E): Seq[Any] => E = {
     val arbitrate1 = rteCase(seq)
