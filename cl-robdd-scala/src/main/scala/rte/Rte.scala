@@ -340,35 +340,32 @@ object Rte {
     // and return a function, f, from Seq[Any] => Option[E]
     // the function, f, can be called with a Seq[Any]
     // to determine which of the seq of Rte's the sequence matches,
-    // and if found, then return the corresponding value of type E.
+    // and if found, then return the corresponding value of type Option[E]
     import xymbolyco.Dfa.dfaUnion
-    @tailrec
-    def excludePrevious(remaining: List[(Rte, E)],
-                        previous: List[Rte],
-                        acc: List[(Rte, E)]): Seq[(Rte, E)] = {
+    def makeDisjoint(remaining: List[(Rte, E)],
+                     previous: Rte): LazyList[(Rte, E)] = {
       remaining match {
-        case Nil => acc
+        case Nil => LazyList.empty
         case (rte, e) :: pairs =>
-          val excluded = And(rte, Not(Or.createOr(previous)))
-          excludePrevious(pairs,
-                          rte :: previous,
-                          (excluded.canonicalize, e) :: acc)
+          (And(rte, Not(previous))
+            -> e) #:: makeDisjoint(pairs, Or(rte, previous))
       }
     }
 
-    val disjoint: Seq[(Rte, E)] = excludePrevious(seq.toList, List(), List())
-    val caseDfa = LazyList
-      .from(disjoint)
-      .map{case (rte, e) => rte.toDfa(e)}
-      .reduceLeft(dfaUnion(_,_,xymbolyco.Dfa.defaultArbitrate))
-    def arbitrate(seq: Seq[Any]): Option[E] = {
-      caseDfa.simulate(seq)
-    }
+    val caseDfa = makeDisjoint(seq.toList, Or())
+      .map { case (rte, e) => rte.toDfa(e) }
+      .reduceLeft(dfaUnion(_, _, xymbolyco.Dfa.defaultArbitrate))
 
-    arbitrate
+    // it is important that caseDfa is computed separately.
+    // because when the caller calls the following function,
+    // we want to make sure caseDfa does not get recomputed.
+    // In fact the function is re-usable many times, knowing
+    // that the Dfa will not get recomputed.
+    seq => caseDfa.simulate(seq)
   }
 
-  def rteIfThenElse[E](seq: Seq[(Rte, () => E)], otherwise: () => E): Seq[Any] => E = {
+  def rteIfThenElse[E](seq: Seq[(Rte, () => E)],
+                       otherwise: () => E): Seq[Any] => E = {
     val arbitrate1 = rteCase(seq)
 
     def arbitrate2(seq: Seq[Any]): E = {
@@ -408,7 +405,6 @@ object Rte {
       () => Singleton(RandomType.randomType(0, Some(!avoidEmpty))),
       () => And(randomSeq(depth - 1, 2, avoidEmpty)),
       () => Not(randomRte(depth - 1, avoidEmpty)))
-
 
     if (depth <= 0)
       Singleton(RandomType.randomType(0, Some(!avoidEmpty)))
