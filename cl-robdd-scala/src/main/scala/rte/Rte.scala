@@ -343,7 +343,9 @@ object Rte {
     // and if found, then return the corresponding value of type E.
     import xymbolyco.Dfa.dfaUnion
     @tailrec
-    def excludePrevious(remaining: List[(Rte, E)], previous: List[Rte], acc: List[(Rte, E)]): Seq[(Rte, E)] = {
+    def excludePrevious(remaining: List[(Rte, E)],
+                        previous: List[Rte],
+                        acc: List[(Rte, E)]): Seq[(Rte, E)] = {
       remaining match {
         case Nil => acc
         case (rte, e) :: pairs =>
@@ -473,7 +475,9 @@ object sanityTest {
   }
 }
 
-class CannotComputeDerivative(val msg: String, val rte: Rte, val wrt: SimpleTypeD) extends Exception(msg) {}
+class CannotComputeDerivative(val msg: String,
+                              val rte: Rte,
+                              val wrt: SimpleTypeD) extends Exception(msg) {}
 
 class CannotComputeDerivatives(val msg: String,
                                val rte: Rte,
