@@ -380,6 +380,19 @@ object Rte {
     arbitrate
   }
 
+  def rteIfThenElse[E](seq: Seq[(Rte, () => E)], otherwise: () => E): Seq[Any] => E = {
+    val arbitrate1 = rteCase(seq)
+
+    def arbitrate2(seq: Seq[Any]): E = {
+      arbitrate1(seq) match {
+        case Some(e) => e()
+        case _ => otherwise()
+      }
+    }
+
+    arbitrate2
+  }
+
   // Sort the sequence alphabetically according to toString
   def sortAlphabetically(seq: Seq[Rte]): Seq[Rte] = {
     seq.sortBy(_.toString)
@@ -431,6 +444,32 @@ object sanityTest2 {
 
 object sanityTest {
   def main(argv: Array[String]): Unit = {
+    import rte.RteImplicits._
+    import scala.language.implicitConversions
+    import rte.Rte.rteIfThenElse
+    val int = classOf[Int]
+    val str = classOf[String]
+    val f = rteIfThenElse[Int](Seq(
+      Star(int) -> (() => {
+        println("case 1")
+        1
+      }),
+      Star(str) -> (() => {
+        println("case 2")
+        2
+      }),
+      Cat(Star(int), Star(str)) -> (() => {
+        println("case 3")
+        3
+      })),
+      () => {
+        println("default case")
+        4
+      })
+    f(List(1,2,3,4,5))
+    f(List("one","two","three", "four"))
+    f(List("one","two",3, 4))
+    f(List(1,2,"three","four"))
   }
 }
 
