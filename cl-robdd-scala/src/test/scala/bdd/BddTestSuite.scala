@@ -83,16 +83,16 @@ class BddTestSuite extends MyFunSuite {
       val bdd1 = Bdd(3, BddTrue, BddFalse)
       val bdd2 = Bdd(2, BddFalse, BddTrue)
       val bdd3 = Bdd(1, bdd1, bdd2)
-      assert(BddFalse.size() == 1)
-      assert(BddTrue.size() == 1)
-      assert(bdd1.size() == 3)
-      assert(bdd2.size() == 3)
+      assert(BddFalse.size == 1)
+      assert(BddTrue.size == 1)
+      assert(bdd1.size == 3)
+      assert(bdd2.size == 3)
       //bdd3.bddView(true,"Testing")
-      assert(bdd3.size() == 5)
+      assert(bdd3.size == 5)
       for (bdd <- samples) {
         bdd match {
-          case _: BddTerm => assert(bdd.size() == 1)
-          case b: BddNode => assert(bdd.size() <= 1 + b.positive.size() + b.negative.size()) // maybe less because some nodes or terms might be shared
+          case _: BddTerm => assert(bdd.size == 1)
+          case b: BddNode => assert(bdd.size <= 1 + b.positive.size + b.negative.size) // maybe less because some nodes or terms might be shared
         }
       }
     }

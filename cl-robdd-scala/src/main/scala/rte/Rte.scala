@@ -190,8 +190,7 @@ abstract class Rte {
         try rt.derivative(Some(td),
                           factors.toList.sortBy(_.toString),
                           disjoints.toList.sortBy(_.toString)).canonicalize
-        catch
-        {
+        catch {
           case e: CannotComputeDerivative =>
             throw new CannotComputeDerivatives(msg = Seq("when generating derivatives of",
                                                          s"  this=$this",
@@ -206,7 +205,7 @@ abstract class Rte {
                                                mdtd = mdtd(rt.firstTypes)
                                                )
         }
-        )
+      )
       }.toSeq
     }
 
@@ -336,7 +335,12 @@ object Rte {
     (0 until length).map { _ => randomRte(depth, option) }
   }
 
-  def rteCase[E](seq: Seq[(Rte, E)]): xymbolyco.Dfa[Any, SimpleTypeD, E] = {
+  def rteCase[E](seq: Seq[(Rte, E)]): Seq[Any] => Option[E] = {
+    // take a sequence of pairs (Rte,E)
+    // and return a function, f, from Seq[Any] => Option[E]
+    // the function, f, can be called with a Seq[Any]
+    // to determine which of the seq of Rte's the sequence matches,
+    // and if found, then return the corresponding value of type E.
     import xymbolyco.Dfa.dfaUnion
     @tailrec
     def excludePrevious(remaining: List[(Rte, E)], previous: List[Rte], acc: List[(Rte, E)]): Seq[(Rte, E)] = {
@@ -350,102 +354,91 @@ object Rte {
       }
     }
 
-
     def funnyFold[X, Y](seq: Seq[X],
                         f: X => Y,
                         g: (Y, Y, (E, E) => E) => Y): Y = {
-
-      //def funnyFold[X, Y, Z](seq: Seq[X],
-      //                       f: X => Y,
-      //                       g: (Y, Y, (Z, Z) => Z) => Y): Y = {
-          assert(seq.nonEmpty)
-        seq.tail.foldLeft(f(seq.head))((acc, x) => g(acc,
-                                                     f(x),
-                                                     xymbolyco.Dfa.defaultArbitrate))
-      }
-
-      def f(pair: (Rte, E)): xymbolyco.Dfa[Any, SimpleTypeD, E] = {
-        val (rte, e) = pair
-        val dfa = rte.toDfa(e)
-
-        dfa
-      }
-
-      val disjoint: Seq[(Rte, E)] = excludePrevious(seq.toList, List(), List())
-        funnyFold[(Rte, E), xymbolyco.Dfa[Any, SimpleTypeD, E]](disjoint, f, dfaUnion)
+      assert(seq.nonEmpty)
+      seq.tail.foldLeft(f(seq.head))((acc, x) => g(acc,
+                                                   f(x),
+                                                   xymbolyco.Dfa.defaultArbitrate))
     }
 
-    //  // Compute the intersection of two given types (SimpleTypeD) for the purpose
-    //  // of creating a label on a Dfa transition.  So we return None if the resulting
-    //  // label (is proved to be) is an empty type, and Some(SimpleTypeD) otherwise.
-    //  def intersectLabels(td1:SimpleTypeD,td2:SimpleTypeD):Option[SimpleTypeD] = {
-    //    val comb = SAnd(td1,td2).canonicalize()
-    //    comb.inhabited match {
-    //      case Some(false) => None
-    //      case _ => Some(comb)
-    //    }
-    //  }
+    def f(pair: (Rte, E)): xymbolyco.Dfa[Any, SimpleTypeD, E] = {
+      val (rte, e) = pair
+      val dfa = rte.toDfa(e)
 
-    // Sort the sequence alphabetically according to toString
-    def sortAlphabetically(seq: Seq[Rte]): Seq[Rte] = {
-      seq.sortBy(_.toString)
+      dfa
     }
 
+    val disjoint: Seq[(Rte, E)] = excludePrevious(seq.toList, List(), List())
+    val caseDfa = funnyFold[(Rte, E), xymbolyco.Dfa[Any, SimpleTypeD, E]](disjoint, f, dfaUnion)
 
-    //here we are passing along an avoidEmpty boolean that will be true when we do not wish there to be :
-    // any ANDs or NOTs in the RTE, and that any of the SimpleTypeDs will not be empty either
-    // this way we are also excluding the EmptyWord, EmptySet, and notSigma explicitly, while also not allowing
-    // the recursive call for the randomTypeD to create any EmptyTypes
-    def randomRte(depth: Int, avoidEmpty: Boolean = true): Rte = {
-      import scala.util.Random
-      val random = new Random
-
-      val rteVector = Vector(notEpsilon,
-                             Sigma,
-                             sigmaStar,
-                             notSigma,
-                             EmptyWord,
-                             EmptySet)
-      val generators: Seq[() => Rte] = Vector(
-        () => rteVector(random.nextInt(rteVector.length - (if (avoidEmpty) 3 else 0))),
-        () => Or(randomSeq(depth - 1, random.nextInt(3) + 2, avoidEmpty)),
-        () => Star(randomRte(depth - 1, avoidEmpty)),
-        () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
-        () => Singleton(RandomType.randomType(0, Some(!avoidEmpty))),
-        () => And(randomSeq(depth - 1, 2, avoidEmpty)),
-        () => Not(randomRte(depth - 1, avoidEmpty)))
-
-
-      if (depth <= 0)
-        Singleton(RandomType.randomType(0, Some(!avoidEmpty)))
-      else {
-        val g = generators(random.nextInt(generators.length - (if (avoidEmpty) 2 else 0)))
-        g()
-      }
+    def arbitrate(seq: Seq[Any]): Option[E] = {
+      caseDfa.simulate(seq)
     }
+
+    arbitrate
   }
 
-  object sanityTest2 {
-    def main(argv: Array[String]): Unit = {
-      for {depth <- 5 to 7
-           _ <- 1 to 2000
-           rt = Rte.randomRte(depth)
-           } {
-        rt.toDfa()
-      }
-    }
+  // Sort the sequence alphabetically according to toString
+  def sortAlphabetically(seq: Seq[Rte]): Seq[Rte] = {
+    seq.sortBy(_.toString)
   }
 
-  object sanityTest {
-    def main(argv: Array[String]): Unit = {
+  //here we are passing along an avoidEmpty boolean that will be true when we do not wish there to be :
+  // any ANDs or NOTs in the RTE, and that any of the SimpleTypeDs will not be empty either
+  // this way we are also excluding the EmptyWord, EmptySet, and notSigma explicitly, while also not allowing
+  // the recursive call for the randomTypeD to create any EmptyTypes
+  def randomRte(depth: Int, avoidEmpty: Boolean = true): Rte = {
+    import scala.util.Random
+    val random = new Random
+
+    val rteVector = Vector(notEpsilon,
+                           Sigma,
+                           sigmaStar,
+                           notSigma,
+                           EmptyWord,
+                           EmptySet)
+    val generators: Seq[() => Rte] = Vector(
+      () => rteVector(random.nextInt(rteVector.length - (if (avoidEmpty) 3 else 0))),
+      () => Or(randomSeq(depth - 1, random.nextInt(3) + 2, avoidEmpty)),
+      () => Star(randomRte(depth - 1, avoidEmpty)),
+      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
+      () => Singleton(RandomType.randomType(0, Some(!avoidEmpty))),
+      () => And(randomSeq(depth - 1, 2, avoidEmpty)),
+      () => Not(randomRte(depth - 1, avoidEmpty)))
+
+
+    if (depth <= 0)
+      Singleton(RandomType.randomType(0, Some(!avoidEmpty)))
+    else {
+      val g = generators(random.nextInt(generators.length - (if (avoidEmpty) 2 else 0)))
+      g()
     }
   }
+}
 
-  class CannotComputeDerivative(val msg: String, val rte: Rte, val wrt: SimpleTypeD) extends Exception(msg) {}
+object sanityTest2 {
+  def main(argv: Array[String]): Unit = {
+    for {depth <- 5 to 7
+         _ <- 1 to 2000
+         rt = Rte.randomRte(depth)
+         } {
+      rt.toDfa()
+    }
+  }
+}
 
-  class CannotComputeDerivatives(val msg: String,
-                                 val rte: Rte,
-                                 val firstTypes: Set[SimpleTypeD],
-                                 val mdtd: Map[SimpleTypeD, (Set[SimpleTypeD], Set[SimpleTypeD])]) extends Exception(msg) {}
+object sanityTest {
+  def main(argv: Array[String]): Unit = {
+  }
+}
 
-  class CannotComputeDfa(val msg: String, val rte: Rte) extends Exception(msg) {}
+class CannotComputeDerivative(val msg: String, val rte: Rte, val wrt: SimpleTypeD) extends Exception(msg) {}
+
+class CannotComputeDerivatives(val msg: String,
+                               val rte: Rte,
+                               val firstTypes: Set[SimpleTypeD],
+                               val mdtd: Map[SimpleTypeD, (Set[SimpleTypeD], Set[SimpleTypeD])]) extends Exception(msg) {}
+
+class CannotComputeDfa(val msg: String, val rte: Rte) extends Exception(msg) {}

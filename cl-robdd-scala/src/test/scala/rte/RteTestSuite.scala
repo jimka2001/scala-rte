@@ -264,19 +264,19 @@ class RteTestSuite extends MyFunSuite {
     assert(! SInt.typep(1.0))
     assert(! SDouble.typep(1))
     assert(SDouble.typep(1.0))
-    val dfa = Rte.rteCase( Seq(Star(classOf[String]) -> 1,
+    val arbitrate = Rte.rteCase( Seq(Star(classOf[String]) -> 1,
                                Cat(Star(classOf[String]),Singleton(SEql(1))) -> 2,
                                Cat(Star(classOf[String]),Singleton(SEql(-1))) -> 3,
                                Cat(Star(classOf[String]),Singleton(SEql(0))) -> 4,
                                Cat(Star(classOf[String]),Singleton(SInt)) -> 5
                                ))
-    assert(dfa.simulate(Seq("hello")).contains(1))
-    assert(dfa.simulate(List()).contains(1))
-    assert(dfa.simulate(List("hello", "world", 1)).contains(2))
-    assert(dfa.simulate(List("hello", "world", -1)).contains(3))
-    assert(dfa.simulate(List("hello", "world", 0)).contains(4))
-    assert(dfa.simulate(List("hello", "world", 12)).contains(5))
-    assert(dfa.simulate(List("hello", "world", 12.0)).isEmpty)
+    assert(arbitrate(Seq("hello")).contains(1))
+    assert(arbitrate(List()).contains(1))
+    assert(arbitrate(List("hello", "world", 1)).contains(2))
+    assert(arbitrate(List("hello", "world", -1)).contains(3))
+    assert(arbitrate(List("hello", "world", 0)).contains(4))
+    assert(arbitrate(List("hello", "world", 12)).contains(5))
+    assert(arbitrate(List("hello", "world", 12.0)).isEmpty)
   }
   test("search"){
     val rte:Rte = Star(And(Cat(Or(Not(Singleton(SEql(1))),
