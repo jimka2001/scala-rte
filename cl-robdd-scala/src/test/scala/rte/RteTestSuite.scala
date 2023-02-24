@@ -278,6 +278,60 @@ class RteTestSuite extends MyFunSuite {
     assert(arbitrate(List("hello", "world", 12)).contains(5))
     assert(arbitrate(List("hello", "world", 12.0)).isEmpty)
   }
+  test("rteIfThenElse") {
+    import rte.RteImplicits._
+    import scala.language.implicitConversions
+    import rte.Rte.rteIfThenElse
+    val int = classOf[Int]
+    val str = classOf[String]
+
+    var c1 = 0
+    var c2 = 0
+    var c3 = 0
+    var cdefault = 0
+
+    val f: Seq[Any] => Int = rteIfThenElse(
+      Seq(
+        Star(int) -> (() => {
+          c1 += 1
+          1
+        }),
+        Star(str) -> (() => {
+          c2 += 1
+          2
+        }),
+        Cat(Star(int), Star(str)) -> (() => {
+          c3 += 1
+          3
+        })),
+      () => {
+        cdefault += 1
+        4
+      })
+    assert(f(List(1, 2, 3, 4, 5)) == 1)
+    assert(c1 == 1)
+    assert(f(List(1, 2, 3, 4, 5)) == 1)
+    assert(c1 == 2)
+
+    assert(f(List("one", "two", "three", "four")) == 2)
+    assert(c2 == 1)
+    assert(f(List(1, 2, 3, 4, 5)) == 1)
+    assert(c1 == 3)
+    assert(c2 == 1)
+
+    assert(f(List("one", "two", 3, 4)) == 4)
+    assert(cdefault == 1)
+    assert(c1 == 3)
+    assert(c2 == 1)
+
+    assert(f(List(1, 2, "three", "four")) == 3)
+    assert(cdefault == 1)
+    assert(c1 == 3)
+    assert(f(List("one", "two", "three", "four")) == 2)
+    assert(c2 == 2)
+    assert(c3 == 1)
+  }
+
   test("search"){
     val rte:Rte = Star(And(Cat(Or(Not(Singleton(SEql(1))),
                                   Singleton(SEql(2)))),
@@ -287,6 +341,7 @@ class RteTestSuite extends MyFunSuite {
       case _ => fail()
     }
   }
+  
   test("isomorphic"){
     import Types.evenType
     import scala.language.implicitConversions

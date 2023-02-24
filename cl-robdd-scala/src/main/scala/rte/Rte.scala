@@ -433,7 +433,7 @@ object sanityTest {
     import rte.Rte.rteIfThenElse
     val int = classOf[Int]
     val str = classOf[String]
-    val f = rteIfThenElse[Int](Seq(
+    val f = rteIfThenElse(Seq(
       Star(int) -> (() => {
         println("case 1")
         1
