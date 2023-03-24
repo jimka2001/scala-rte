@@ -56,6 +56,39 @@ class RteCaseTestSuite extends MyFunSuite {
     assert(f(List(1, 2, "three", "four")) == Some(3))
   }
 
+  test("rteCase traverse only once") {
+    val int = classOf[Int]
+    val str = classOf[String]
+    var caught = 0
+    val f = rteCase(Seq((Plus(int), 1),
+                        (Plus(str), 2),
+                        (Cat(Plus(int), Plus(str)), 3),
+                        (Cat(int, str), 0)),
+                    rte => {
+                      caught = 1
+                      val leftOver = And(Cat(int, str),
+                                         Not(Or(Cat(Star(int),
+                                                    Star(str)),
+                                                Star(str),
+                                                Star(int))))
+
+                      assert(rte.isomorphic(leftOver).contains(true))
+                    })
+
+    assert(caught == 1)
+    val it1 = List(1, 2, 3, 4, 5).iterator
+    assert(f(it1) == Some(1))
+    assert(f(it1) != Some(1))
+    val it2 = List("one", "two", "three", "four").iterator
+    assert(f(it2) == Some(2))
+    assert(f(it2) != Some(2))
+    val it3 = List("one", "two", 3, 4).iterator
+    assert(f(it3) == None)
+    val it4 = List(1, 2, "three", "four").iterator
+    assert(f(it4) == Some(3))
+    assert(f(it4) != Some(3))
+  }
+
   test("rteIfThenElse") {
     val int = classOf[Int]
     val str = classOf[String]
@@ -87,6 +120,7 @@ class RteCaseTestSuite extends MyFunSuite {
     assert(f(List("one", "two", 3, 4)) == 4)
     assert(f(List(1, 2, "three", "four")) == 3)
   }
+
   test("lazy") {
     val int = classOf[Int]
     val str = classOf[String]

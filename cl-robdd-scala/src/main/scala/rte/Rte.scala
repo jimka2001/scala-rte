@@ -336,7 +336,8 @@ object Rte {
   }
 
   def rteCase[E](seq: Seq[(Rte, E)],
-                 handleUnreachable: Rte=>Unit=(rte=>())): Seq[Any] => Option[E] = {
+                 handleUnreachable: Rte=>Unit=(rte=>())
+                ): IterableOnce[Any] => Option[E] = {
     // take a sequence of pairs (Rte,E)
     // and return a function, f, from Seq[Any] => Option[E]
     // the function, f, can be called with a Seq[Any]
@@ -468,7 +469,7 @@ object sanityTest2 {
 }
 
 object sanityTest {
-  def main(argv: Array[String]): Unit = {
+  def check1() = {
     import rte.RteImplicits._
     import scala.language.implicitConversions
     import rte.Rte.rteIfThenElse
@@ -491,14 +492,24 @@ object sanityTest {
         println("case impossible")
         0
       })),
-      () => {
-        println("default case")
-        4
-      }, handleUnreachable=(rte => println(s"unsatisfiable rte: $rte")))
-    f(List(1,2,3,4,5))
-    f(List("one","two","three", "four"))
-    f(List("one","two",3, 4))
-    f(List(1,2,"three","four"))
+                          () => {
+                            println("default case")
+                            4
+                          }, handleUnreachable = (rte => println(s"unsatisfiable rte: $rte")))
+    f(List(1, 2, 3, 4, 5))
+    f(List("one", "two", "three", "four"))
+    f(List("one", "two", 3, 4))
+    f(List(1, 2, "three", "four"))
+  }
+  def check2() = {
+    val data = List(1,2,3)
+    val it = data.iterator
+    print(it.foreach(println))
+    print(it.foreach(println))
+  }
+  def main(argv: Array[String]): Unit = {
+    //check1()
+    check2()
   }
 }
 
