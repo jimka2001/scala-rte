@@ -336,7 +336,8 @@ object Rte {
   }
 
   def rteCase[E](seq: Seq[(Rte, E)],
-                 handleUnreachable: Rte=>Unit=(rte=>())): IterableOnce[Any] => Option[E] = {
+                 handleUnreachable: Rte=>Unit=(rte=>())
+                ): IterableOnce[Any] => Option[E] = {
     // take a sequence of pairs (Rte,E)
     // and return a function, f, from Seq[Any] => Option[E]
     // the function, f, can be called with a Seq[Any]
