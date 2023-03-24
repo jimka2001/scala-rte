@@ -399,12 +399,13 @@ object Rte {
   //
   // The 3rd arg, handleUnreachable: is called if rteIfTheElse detects
   //   an Rte whose code is unreachable, I.e. if one of the Rtes is subsumed
-  //   by the other Rrts preceding it in the input sequence.
+  //   by the other Rtes preceding it in the input sequence.
   //   Typical values for handleUnreachable would be a function that does nothing,
   //   or a function which raises an exception, or prints a warning message.
   def rteIfThenElse[E](seq: Seq[(Rte, () => E)],
                        otherwise: () => E,
-                       handleUnreachable: Rte=>Unit=(rte=>())): Seq[Any] => E = {
+                       handleUnreachable: Rte=>Unit=(rte=>())
+                      ): Seq[Any] => E = {
     val arbitrate1 = rteCase(seq,
                              handleUnreachable=handleUnreachable)
 
