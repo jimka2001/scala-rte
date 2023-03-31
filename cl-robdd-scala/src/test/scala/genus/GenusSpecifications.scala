@@ -24,12 +24,11 @@ object GenusSpecifications {
 
         // implicit lazy val arbPredicate = Arbitrary(genPredicate)
 
-        // TODO: Generate predicates to be able to generate SAtomic types
+        // TODO: Generate predicates to be able to generate SSatisfies types
         // TODO: Generate SMembers
         Gen.frequency(
-          (1, SAtomic(Arbitrary.arbitrary[AnyVal].getClass)),
-          (1, SEql(Arbitrary.arbitrary[AnyVal])),
-          (1, SEql(Arbitrary.arbitrary[AnyVal])),
+          (5, SAtomic(Arbitrary.arbitrary[AnyVal].getClass)),
+          (5, SEql(Arbitrary.arbitrary[AnyVal].sample.get)),
           // (1, SMember(Gen.listOf[Any])), // <- smol aled
           // (1, SSatisfies(arbPredicate)) // <- Aled
           (1, STop),
@@ -59,7 +58,13 @@ object GenusSpecifications {
         )
       }
 
+      // TODO: Does naiveGenGenus need to generate null genus ? I don't think so
       Gen.oneOf(genInternalNode, genLeaf)
     }
+
   }
+
+  // TODO: Genus Shrinker
+  //  - Delete random nodes
+  //  - Delete random leaves
 }

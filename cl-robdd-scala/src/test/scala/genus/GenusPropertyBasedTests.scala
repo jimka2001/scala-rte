@@ -1,15 +1,27 @@
 package genus
 
-import org.scalacheck.Gen
-import genus.SimpleTypeD
-import genus.GenusSpecifications
+import org.scalacheck.{Arbitrary, Properties}
+import org.scalacheck.Prop.forAll
+
+import genus.GenusSpecifications.naiveGenGenus
+import genus.NormalForm.Dnf
 
 object GenusPropertyBasedTests extends App {
-  // TODO: Create arbitrary generator for trees => properties
-  val genusSample = GenusSpecifications.naiveGenGenus.sample.get
-  println(genusSample)
-  val dot = genusSample.toDot()
-  // println(System.getProperty("user.dir") + "/src/test/scala/genus/dot/naiveGenGenus.dot")
-  // TODO: Write dot in a file
-  // TOOD: display dot
+  val genusList = for {
+    n <- 0 until 10
+  } yield naiveGenGenus.sample.get
+  for (g <- genusList)
+    println(g)
+}
+
+object GenusSpecification extends Properties("Genus") {
+  implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus)
+
+  property("DNF Inverse") = forAll { (t: SimpleTypeD) =>
+    val dnf = t.canonicalize(Some(Dnf))
+    val inverse = SNot(dnf)
+
+    (t - dnf).inhabited != Some(true) &&
+    (t || inverse) == STop || (!(t || inverse) == SEmpty) || (!(t || inverse)).inhabited != Some(true)
+  }
 }
