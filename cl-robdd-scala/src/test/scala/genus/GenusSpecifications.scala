@@ -4,39 +4,37 @@ import org.scalacheck.rng.Seed
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 
 object GenusSpecifications {
-  def naiveGenGenus: Gen[SimpleTypeD] = Gen.lzy { Gen.sized { size =>
-
+  def naiveGenGenus: Gen[SimpleTypeD] = Gen.lzy {
+    Gen.sized { size =>
       lazy val genLeaf = {
-        //      def createPredicate[Any, Boolean](seed0: Seed, cogen: Cogen[Any], gen: Gen[Boolean]): Any => Boolean =
-        //        n => {
-        //          val seed1 = cogen.perturb(seed0, n)
-        //          gen.run(seed1)._1
-        //        }
+        // Generate a predicate and its string representation
+        def genPredicate: Gen[(Any => Boolean, String)] = {
+          def predicate(a: Any, b: Boolean): Any => Boolean = ((a: Any) => b)
 
-        // def genPredicate: Gen[AnyVal => Boolean] = {
-        //   def predicate(a: AnyVal, b: Boolean): AnyVal => Boolean = ((a: AnyVal) => b)
+          for {
+            anyval <- Arbitrary.arbitrary[AnyVal]
+            bool <- Arbitrary.arbitrary[Boolean]
+          } yield (predicate(anyval, bool), anyval + " => " + bool)
+        }
 
-        //   for {
-        //     anyval <- Arbitrary.arbitrary[AnyVal]
-        //     bool <- Arbitrary.arbitrary[Boolean]
-        //   } yield predicate(anyval, bool)
-        // }
+        implicit lazy val arbPredicate = Arbitrary(genPredicate)
 
-        // implicit lazy val arbPredicate = Arbitrary(genPredicate)
-
-        // TODO: Generate predicates to be able to generate SSatisfies types
-        // TODO: Generate SMembers
+        // Choose between one of the 6 terminal types
         Gen.frequency(
           (5, SAtomic(Arbitrary.arbitrary[AnyVal].getClass)),
           (5, SEql(Arbitrary.arbitrary[AnyVal].sample.get)),
-          // (1, SMember(Gen.listOf[Any])), // <- smol aled
-          // (1, SSatisfies(arbPredicate)) // <- Aled
+          (5, SMember(Gen.listOfN[AnyVal](5, Arbitrary.arbitrary[AnyVal]).sample.get)),
+          (5, {
+            val predicate = arbPredicate.arbitrary.sample.get
+            SSatisfies(predicate._1, predicate._2)
+          }),
           (1, STop),
           (1, SEmpty),
         )
       }
 
       lazy val genInternalNode = {
+        // TODO: Change genAnd and genOr to have 0 or more (>=2) parameters
         lazy val genAnd = for {
           left <- naiveGenGenus
           right <- naiveGenGenus
@@ -51,6 +49,7 @@ object GenusSpecifications {
           arg <- naiveGenGenus
         } yield SNot(arg)
 
+        // Choose between one of the 3 non terminal types
         Gen.frequency(
           1 -> Gen.lzy(genAnd),
           1 -> Gen.lzy(genOr),
@@ -58,10 +57,8 @@ object GenusSpecifications {
         )
       }
 
-      // TODO: Does naiveGenGenus need to generate null genus ? I don't think so
       Gen.oneOf(genInternalNode, genLeaf)
     }
-
   }
 
   // TODO: Genus Shrinker
