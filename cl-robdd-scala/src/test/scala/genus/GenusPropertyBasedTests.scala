@@ -2,9 +2,12 @@ package genus
 
 import org.scalacheck.{Arbitrary, Properties}
 import org.scalacheck.Prop.forAll
+
 import genus.GenusSpecifications.naiveGenGenus
+// import genus.GenusSpecifications.shrinkGenus // <- Not ready yet
 import genus.NormalForm.Dnf
 import genus.RandomType.{Class1X, Class2X, interestingValues}
+
 import org.scalatest.prop.Configuration
 import org.scalatest.prop.Configuration.PropertyCheckConfiguration
 
@@ -98,6 +101,15 @@ object GenusSpecification extends Properties("Genus") {
 
     // TODO: Generate randomly values passed to typep
     t.typep(interestingValues) == cnf.typep(interestingValues) && t.typep(interestingValues) == dnf.typep(interestingValues)
+  }
+
+  property("Canonicalize and") = forAll { (a: SimpleTypeD, b: SimpleTypeD) =>
+    // Properties tested:
+    //  - (and A A B) --> (and A B)
+    //  - (and A EmptyType) -> EmptyType
+    //  - IntersectionType(A,TopType,B) ==> IntersectionType(A,B)
+
+    SAnd(a, a, b).canonicalize() == SAnd(a, b) && SAnd(a, SEmpty, b).canonicalize() == SEmpty && SAnd(a, STop, b).canonicalize() == SAnd(a, b)
   }
 
   // TODO: Add more tests !

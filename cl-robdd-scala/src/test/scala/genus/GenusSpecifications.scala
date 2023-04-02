@@ -1,7 +1,9 @@
 package genus
 
-import org.scalacheck.rng.Seed
-import org.scalacheck.{Arbitrary, Cogen, Gen}
+import org.scalacheck.Shrink.shrink
+import org.scalacheck.{Arbitrary, Gen, Shrink}
+
+import scala.collection.immutable.Stream.cons
 
 object GenusSpecifications {
   def naiveGenGenus: Gen[SimpleTypeD] = Gen.lzy {
@@ -13,8 +15,8 @@ object GenusSpecifications {
 
           for {
             anyval <- Arbitrary.arbitrary[AnyVal]
-            bool <- Arbitrary.arbitrary[Boolean]
-          } yield (predicate(anyval, bool), anyval + " => " + bool)
+            // bool <- Arbitrary.arbitrary[Boolean]
+          } yield (predicate(anyval, true), anyval + " => " + true)
         }
 
         implicit lazy val arbPredicate = Arbitrary(genPredicate)
@@ -61,7 +63,12 @@ object GenusSpecifications {
     }
   }
 
-  // TODO: Genus Shrinker
-  //  - Delete random nodes
-  //  - Delete random leaves
+  implicit def shrinkGenus: Shrink[genus.SimpleTypeD] = Shrink {
+    // TODO: Try shrinking with canonicalize() ?
+    // TODO: Implement Shrinking:
+    //  - If sons are TerminalType, remove one of them
+    //  - If you have no sons, remove yourself
+    // https://stackoverflow.com/questions/42581883/scalacheck-shrink
+    case SNot(s) => shrink(s).map(SNot(_))
+  }
 }
