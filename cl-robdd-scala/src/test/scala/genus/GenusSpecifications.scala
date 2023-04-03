@@ -3,7 +3,8 @@ package genus
 import org.scalacheck.Shrink.shrink
 import org.scalacheck.{Arbitrary, Gen, Shrink}
 
-import scala.collection.immutable.Stream.cons
+import genus.STop
+import genus.SEmpty
 
 object GenusSpecifications {
   def naiveGenGenus: Gen[SimpleTypeD] = Gen.lzy {
@@ -53,8 +54,8 @@ object GenusSpecifications {
 
         // Choose between one of the 3 non terminal types
         Gen.frequency(
-          1 -> Gen.lzy(genAnd),
-          1 -> Gen.lzy(genOr),
+          5 -> Gen.lzy(genAnd),
+          5 -> Gen.lzy(genOr),
           1 -> Gen.lzy(genNot)
         )
       }
@@ -63,12 +64,76 @@ object GenusSpecifications {
     }
   }
 
+  // Implementation similar to this Ast Shrinker (https://stackoverflow.com/questions/42581883/scalacheck-shrink)
+  // Sorry for using Stream even tho it is deprecated, it's ScalaCheck's fault
+  //
+  // Shrinks with the following strategy:
+  //  - For SAnd and SOr, try to simplify if there is a STop or SEmpty. Otherwise, try the property again removing each child one time
+  //  - For TerminalTypes, if we can reduce one of their attribute, we reduce it
   implicit def shrinkGenus: Shrink[genus.SimpleTypeD] = Shrink {
-    // TODO: Try shrinking with canonicalize() ?
-    // TODO: Implement Shrinking:
-    //  - If sons are TerminalType, remove one of them
-    //  - If you have no sons, remove yourself
-    // https://stackoverflow.com/questions/42581883/scalacheck-shrink
-    case SNot(s) => shrink(s).map(SNot(_))
+    // TODO: Fix recursive shrink
+    case t: SAnd => {
+      // Reconstruct SAnd while omitting the ith child
+      // If one of the child is SEmpty, we can simplify the SAnd by a SEmpy because the combination is not satisfiable
+      var s: Stream[SimpleTypeD] = Stream.empty
+
+      // TODO: does it work like I think it does ?
+      for {
+        c <- t.tds
+      } shrink(c)
+
+      // FIXME: short circuit if SEmpty found
+      for {
+        i <- 0 until t.tds.size
+      } if (t.tds(i) == SEmpty) s = (SEmpty #:: Stream.empty) else s = (SAnd(t.tds.take(i) ++ t.tds.drop(i + 1): _*) #:: s)
+
+      println(s"shrunk values: ${s.mkString(",")}")
+      s
+    }
+
+    case t: SOr => {
+      // Reconstruct SOr while omitting the ith child
+      // If one of the child is STop, we can simplify the SOr by a STop because the combination is always satisfiable
+      var s: Stream[SimpleTypeD] = Stream.empty
+
+      for {
+        c <- t.tds
+      } shrink(c)
+
+      // FIXME: short circuit if STop found
+      for {
+        i <- 0 until t.tds.size
+      } if (t.tds(i) == STop) s = (STop #:: Stream.empty) else s = (SOr(t.tds.take(i) ++ t.tds.drop(i + 1): _*) #:: s)
+      println(s"shrunk values: ${s.mkString(",")}")
+      s
+    }
+    case t: SNot => {
+      val s = if (t.s == SEmpty) STop #:: Stream.empty else if (t.s == STop) SEmpty #:: Stream.empty else shrink(t)
+      println(s"shrunk values: ${s.mkString(",")}")
+      s
+    }
+
+    case t: SEql => {
+      val s = shrink(t.a).map(SEql(_))
+      println(s"shrunk values: ${s.mkString(",")}")
+      s
+    }
+
+    case t: SMember => {
+      val s = SMember(shrink(t.xs)) #:: Stream.empty
+      println(s"shrunk values: ${s.mkString(",")}")
+      s
+    }
+
+    case t: SSatisfies => {
+      val s = shrink(t.f).map(SSatisfies(_, t.printable))
+      println(s"shrunk values: ${s.mkString(",")}")
+      s
+    }
+
+    case t => {
+      println(s"shrunk ${t} into the void")
+      Stream.empty
+    }
   }
 }

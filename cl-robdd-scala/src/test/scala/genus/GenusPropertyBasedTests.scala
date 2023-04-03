@@ -4,7 +4,7 @@ import org.scalacheck.{Arbitrary, Properties}
 import org.scalacheck.Prop.forAll
 
 import genus.GenusSpecifications.naiveGenGenus
-// import genus.GenusSpecifications.shrinkGenus // <- Not ready yet
+import genus.GenusSpecifications.shrinkGenus // <- Not ready yet
 import genus.NormalForm.Dnf
 import genus.RandomType.{Class1X, Class2X, interestingValues}
 
@@ -103,15 +103,12 @@ object GenusSpecification extends Properties("Genus") {
     t.typep(interestingValues) == cnf.typep(interestingValues) && t.typep(interestingValues) == dnf.typep(interestingValues)
   }
 
-  property("Canonicalize and") = forAll { (a: SimpleTypeD, b: SimpleTypeD) =>
-    // Properties tested:
-    //  - (and A A B) --> (and A B)
-    //  - (and A EmptyType) -> EmptyType
-    //  - IntersectionType(A,TopType,B) ==> IntersectionType(A,B)
-
-    SAnd(a, a, b).canonicalize() == SAnd(a, b) && SAnd(a, SEmpty, b).canonicalize() == SEmpty && SAnd(a, STop, b).canonicalize() == SAnd(a, b)
+  // Second test of "combo conversion9"
+  property("AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C") = forAll { (A: SimpleTypeD, B: SimpleTypeD, C:SimpleTypeD) =>
+    SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9() == SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C)))
   }
 
-  // TODO: Add more tests !
-  // Stopped at GenusCanonicalize.scala line 400
+  // TODO: Craft a test that fails doesn't fail every time to test if SAnd / SOr shrink well
+  // TODO: Add more tests
+  // Stopped at GenusCanonicalize.scala line 400~
 }
