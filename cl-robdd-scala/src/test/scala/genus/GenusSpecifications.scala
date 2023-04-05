@@ -8,6 +8,7 @@ import genus.SEmpty
 
 object GenusSpecifications {
   def naiveGenGenus: Gen[SimpleTypeD] = Gen.lzy {
+    // TODO: Upgrade current AnyValgen with other types
     Gen.sized { size =>
       lazy val genLeaf = {
         // Generate a predicate and its string representation
@@ -54,8 +55,8 @@ object GenusSpecifications {
 
         // Choose between one of the 3 non terminal types
         Gen.frequency(
-          5 -> Gen.lzy(genAnd),
-          5 -> Gen.lzy(genOr),
+          2 -> Gen.lzy(genAnd),
+          2 -> Gen.lzy(genOr),
           1 -> Gen.lzy(genNot)
         )
       }
@@ -71,7 +72,10 @@ object GenusSpecifications {
   //  - For SAnd and SOr, try to simplify if there is a STop or SEmpty. Otherwise, try the property again removing each child one time
   //  - For TerminalTypes, if we can reduce one of their attribute, we reduce it
   implicit def shrinkGenus: Shrink[genus.SimpleTypeD] = Shrink {
-    // TODO: Fix recursive shrink
+        //  TODO: Implement new Shrinker strategy
+        //    - Append to the stream the SimpleTypeD with 1 child removed at each iteration
+        //    - Append to the stream the SimpleTypeD with 1 child shrunk at each iteration
+        //    - If 1 child and is TerminalType, put the child in stream
     case t: SAnd => {
       // Reconstruct SAnd while omitting the ith child
       // If one of the child is SEmpty, we can simplify the SAnd by a SEmpy because the combination is not satisfiable

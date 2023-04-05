@@ -1,15 +1,16 @@
 package genus
 
-import org.scalacheck.{Arbitrary, Properties}
+
+import org.scalacheck.{Arbitrary, Properties, Shrink}
 import org.scalacheck.Prop.forAll
+import org.scalacheck.Shrink.shrink
 
 import genus.GenusSpecifications.naiveGenGenus
-import genus.GenusSpecifications.shrinkGenus // <- Not ready yet
+import genus.GenusSpecifications.shrinkGenus
 import genus.NormalForm.Dnf
 import genus.RandomType.{Class1X, Class2X, interestingValues}
 
-import org.scalatest.prop.Configuration
-import org.scalatest.prop.Configuration.PropertyCheckConfiguration
+import scala.collection.mutable.ArrayBuffer
 
 object GenusPropertyBasedTests extends App {
   val genusList = for {
