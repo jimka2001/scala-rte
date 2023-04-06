@@ -464,6 +464,6 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   }
 
   override def searchReplaceDown(search: SimpleTypeD, replace: SimpleTypeD): SimpleTypeD = {
-    create(tds.map(td => td.searchReplace(search, replace)))
+    create(tds.map(td => td.searchReplaceInType(search, replace)))
   }
 }

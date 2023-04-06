@@ -253,7 +253,7 @@ abstract class SimpleTypeD { // SimpleTypeD
   }
   def leafTypes(): Set[SimpleTypeD] = Set[SimpleTypeD](this)
 
-  def searchReplace(search:SimpleTypeD,replace:SimpleTypeD):SimpleTypeD = {
+  def searchReplaceInType(search:SimpleTypeD, replace:SimpleTypeD):SimpleTypeD = {
     if (this == search)
       replace
     else

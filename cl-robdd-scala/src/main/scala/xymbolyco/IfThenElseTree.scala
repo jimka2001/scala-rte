@@ -56,7 +56,7 @@ case class IfThenElseNode[E](tds:List[SimpleTypeD], transitions:Set[Transition[A
     transitions.flatMap { case Transition(src, td, dest) =>
       val simpler = SAnd(td,intersect)
         .canonicalize()
-        .searchReplace(search, replace)
+        .searchReplaceInType(search, replace)
         .canonicalize()
       if (simpler.inhabited.contains(false))
         Set()
