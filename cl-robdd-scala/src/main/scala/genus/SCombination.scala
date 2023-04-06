@@ -149,19 +149,24 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       case td1: SCombination if dualCombination(td1) =>
         // A+!B+C -> A+C
         // A+B+C -> A+B+C
-        val toRemove = td1.tds.collectFirst {
-          case td@SNot(n) if duals.exists {
-            case td2: SCombination if dualCombination(td2) => td2.tds == adjuvant.Adjuvant.searchReplace(td1.tds, td, Seq(n))
+        val toRemove = td1.tds.zipWithIndex.collectFirst {
+          case (td@SNot(n),i) if duals.exists {
                 // if td is SNot(n) does a td2 exist in duals such that
                 //   that would be the same as td1 if we replace one SNot(n) with n
                 // we are looking for a pair (td1, td2) where each is a dual combination of
                 // this, and they differ by a single SNot(n) vs n, in which case
                 //  we wish to remove the SNot(n) from the one it occurs in.
-          } => td
-        } // Some(!B) or None
+            case td2: SCombination =>
+              val a = td1.tds
+              val b = td2.tds
+              ( a.size == b.size
+                && a.zip(b).count{case (tda,tdb) => tda == td && tdb==n} == 1
+                && a.zip(b).count{case (tda,tdb) => tda == tdb} == a.size-1 )
+          } => (td,i)
+        } // Some((!B,i)) or None   where i is the index of !B in td1
         toRemove match {
           case None => td1
-          case Some(td) => createDual(td1.tds.filterNot(_ == td))
+          case Some((_,i)) => createDual(td1.tds.zipWithIndex.flatMap{case (td,j) => if (j==i) Seq() else Seq(td)})
         }
       case td => td // X -> X
     }

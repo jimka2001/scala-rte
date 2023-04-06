@@ -811,9 +811,9 @@ class GenusCanonicalize extends MyFunSuite {
     import RandomType.randomType
     for {depth <- 0 to 0
          r <- 0 to 1000
-         a = SEmpty // randomType(depth)
-         b = SEmpty // randomType(depth)
-         c = SEmpty // randomType(depth)
+         a = randomType(depth)
+         b = randomType(depth)
+         c = randomType(depth)
          } {
 
       // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C ->
@@ -824,13 +824,6 @@ class GenusCanonicalize extends MyFunSuite {
                        SAnd(a, SNot(b), c),
                        SAnd(a, SNot(b), SNot(c)))
       val out = ty.conversion9()
-      println(s"a=$a")
-      println(s"b=$b")
-      println(s"c=$c")
-      println(s"in:     $ty")
-      println(s"out:    $out")
-      println(s"expect: $expect")
-      println("----------")
       assert(out == expect,
              "825")
     }
