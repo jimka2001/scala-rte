@@ -152,6 +152,11 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         val toRemove = td1.tds.collectFirst {
           case td@SNot(n) if duals.exists {
             case td2: SCombination if dualCombination(td2) => td2.tds == adjuvant.Adjuvant.searchReplace(td1.tds, td, Seq(n))
+                // if td is SNot(n) does a td2 exist in duals such that
+                //   that would be the same as td1 if we replace one SNot(n) with n
+                // we are looking for a pair (td1, td2) where each is a dual combination of
+                // this, and they differ by a single SNot(n) vs n, in which case
+                //  we wish to remove the SNot(n) from the one it occurs in.
           } => td
         } // Some(!B) or None
         toRemove match {
