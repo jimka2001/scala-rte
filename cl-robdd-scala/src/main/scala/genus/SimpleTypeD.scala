@@ -27,8 +27,17 @@ import scala.collection.mutable
 
 /** A general type of our type system. */
 abstract class SimpleTypeD { // SimpleTypeD
+  // toMachineReadable is intended to output a printed representation
+  //    which is easy to copy and paste into code, such as to create
+  //    a test case.
   def toMachineReadable():String = toString
+
+  // toDot is intended to allow printing as a label on an edge
+  //   in a graphviz/dot file
   def toDot():String = toString
+
+  // toLaTeX is intended to be a printed representation which is
+  //    easy to copy paste into a LaTeX file.
   def toLaTeX():String = "[LaTeX? " + toString + "]"
 
   def ||(t: SimpleTypeD): SimpleTypeD = SOr(this, t).canonicalize(nf = Some(Dnf))
@@ -49,8 +58,7 @@ abstract class SimpleTypeD { // SimpleTypeD
    * @return a Boolean which is true is a is of this type
    */
   def typep(a: Any): Boolean
-
-
+  
   val knownDisjoint:mutable.Map[(WorldView,SimpleTypeD),Option[Boolean]] =
     mutable.Map[(WorldView,SimpleTypeD),Option[Boolean]]()
 
