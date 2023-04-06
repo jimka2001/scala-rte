@@ -13,6 +13,10 @@ import genus.RandomType.{Class1X, Class2X, interestingValues}
 import scala.collection.mutable.ArrayBuffer
 
 object GenusPropertyBasedTests extends App {
+//  val A = SEmpty
+//  val B = SEmpty
+//  val C = SEmpty
+//  println(SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9() == SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C))))
   val genusList = for {
     _ <- 0 until 10
   } yield naiveGenGenus.sample.get
@@ -20,6 +24,7 @@ object GenusPropertyBasedTests extends App {
     println(g.toMachineReadable())
 }
 
+// TODO: Link these tests with the rest
 object GenusSpecification extends Properties("Genus") {
   implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus)
 
@@ -89,7 +94,7 @@ object GenusSpecification extends Properties("Genus") {
 
     val interestingValues: Vector[Any] = Vector(
       -1, -1, 0, 1, 2, 3, 4, 5, 6,
-      1L, 0L, -1L, 1000L, 1000000L, // these values causes problems reported in issue #7
+      1L, 0L, -1L, 1000L, 1000000L,
       3.14, 2.17, -math.sqrt(2),
       3.14d, 2.17d,
       3.14f, 2.17f,
@@ -105,11 +110,11 @@ object GenusSpecification extends Properties("Genus") {
   }
 
   // Second test of "combo conversion9"
+  // TODO: What kind of conditions does Jim need to satisfy this test ? How can I implement this ?
   property("AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C") = forAll { (A: SimpleTypeD, B: SimpleTypeD, C:SimpleTypeD) =>
     SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9() == SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C)))
   }
 
-  // TODO: Craft a test that fails doesn't fail every time to test if SAnd / SOr shrink well
   // TODO: Add more tests
   // Stopped at GenusCanonicalize.scala line 400~
 }

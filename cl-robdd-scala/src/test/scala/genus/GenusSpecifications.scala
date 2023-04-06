@@ -9,6 +9,7 @@ import genus.SEmpty
 object GenusSpecifications {
   def naiveGenGenus: Gen[SimpleTypeD] = Gen.lzy {
     // TODO: Upgrade current AnyValgen with other types
+    // TODO: Check implementation of RandomType
     Gen.sized { size =>
       lazy val genLeaf = {
         // Generate a predicate and its string representation
@@ -68,69 +69,92 @@ object GenusSpecifications {
   // Implementation similar to this Ast Shrinker (https://stackoverflow.com/questions/42581883/scalacheck-shrink)
   // Sorry for using Stream even tho it is deprecated, it's ScalaCheck's fault
   //
-  // Shrinks with the following strategy:
-  //  - For SAnd and SOr, try to simplify if there is a STop or SEmpty. Otherwise, try the property again removing each child one time
-  //  - For TerminalTypes, if we can reduce one of their attribute, we reduce it
+  // TODO: Vulgarize strategy
+  //  Shrinks according to the following strategy
+  //    - Put STop and SEmpty at the top of the Stream
+  //    - Append to the stream the SimpleTypeD with 1 child removed at each iteration
+  //    - Append to the stream the SimpleTypeD with 1 child shrunk at each iteration
+  //    - If 1 child and is TerminalType, put the child in stream
   implicit def shrinkGenus: Shrink[genus.SimpleTypeD] = Shrink {
-        //  TODO: Implement new Shrinker strategy
-        //    - Append to the stream the SimpleTypeD with 1 child removed at each iteration
-        //    - Append to the stream the SimpleTypeD with 1 child shrunk at each iteration
-        //    - If 1 child and is TerminalType, put the child in stream
-    case t: SAnd => {
-      // Reconstruct SAnd while omitting the ith child
-      // If one of the child is SEmpty, we can simplify the SAnd by a SEmpy because the combination is not satisfiable
-      var s: Stream[SimpleTypeD] = Stream.empty
+    case t: SCombination => {
+      var s: Stream[SimpleTypeD] = STop #:: SEmpty #:: Stream.empty
 
-      // TODO: does it work like I think it does ?
-      for {
-        c <- t.tds
-      } shrink(c)
+      // If 1 child and is TerminalType, put the child in stream
+      if (t.tds.size == 1) s = t.tds(0) #:: s else {
 
-      // FIXME: short circuit if SEmpty found
+      // Append to the stream the SimpleTypeD with 1 child removed at each iteration
+      // TODO: return a t.zero if t.zero one of the children is t.zero
       for {
         i <- 0 until t.tds.size
-      } if (t.tds(i) == SEmpty) s = (SEmpty #:: Stream.empty) else s = (SAnd(t.tds.take(i) ++ t.tds.drop(i + 1): _*) #:: s)
+      } if (t.tds(i) == t.zero) s = t.zero #:: Stream.Empty else s = (t.create(t.tds.take(i) ++ t.tds.drop(i + 1)) #:: s)
+
+      // TODO: Finish this
+        // Append to the stream the SimpleTypeD with 1 child shrunk at each iteration
+        //      for {
+        //        i <- 0 until t.tds.size
+        //      } if (t.tds(i) == t.zero) s = (t.zero #:: Stream.empty) else s = shrink(t.tds(i)).map(_ => t.create(t.tds.take(i) ++ t.tds.drop(i + 1)).appended(_)) #:: Stream.empty
+      }
 
       println(s"shrunk values: ${s.mkString(",")}")
       s
     }
+                                                                              // Old
+//    case t: SAnd => {
+//      // Reconstruct SAnd while omitting the ith child
+//      // If one of the child is SEmpty, we can simplify the SAnd by a SEmpy because the combination is not satisfiable
+//      var s: Stream[SimpleTypeD] = Stream.empty
+//
+//      // TODO: does it work like I think it does ?
+//      for {
+//        c <- t.tds
+//      } shrink(c)
+//
+//      // FIXME: short circuit if SEmpty found
+//      for {
+//        i <- 0 until t.tds.size
+//      } if (t.tds(i) == SEmpty) s = (SEmpty #:: Stream.empty) else s = (SAnd(t.tds.take(i) ++ t.tds.drop(i + 1): _*) #:: s)
+//
+//      println(s"shrunk values: ${s.mkString(",")}")
+//      s
+//    }
+//
+//    case t: SOr => {
+//      // Reconstruct SOr while omitting the ith child
+//      // If one of the child is STop, we can simplify the SOr by a STop because the combination is always satisfiable
+//      var s: Stream[SimpleTypeD] = Stream.empty
+//
+//      for {
+//        c <- t.tds
+//      } shrink(c)
+//
+//      // FIXME: short circuit if STop found
+//      for {
+//        i <- 0 until t.tds.size
+//      } if (t.tds(i) == STop) s = (STop #:: Stream.empty) else s = (SOr(t.tds.take(i) ++ t.tds.drop(i + 1): _*) #:: s)
+//      println(s"shrunk values: ${s.mkString(",")}")
+//      s
+//    }
 
-    case t: SOr => {
-      // Reconstruct SOr while omitting the ith child
-      // If one of the child is STop, we can simplify the SOr by a STop because the combination is always satisfiable
-      var s: Stream[SimpleTypeD] = Stream.empty
-
-      for {
-        c <- t.tds
-      } shrink(c)
-
-      // FIXME: short circuit if STop found
-      for {
-        i <- 0 until t.tds.size
-      } if (t.tds(i) == STop) s = (STop #:: Stream.empty) else s = (SOr(t.tds.take(i) ++ t.tds.drop(i + 1): _*) #:: s)
-      println(s"shrunk values: ${s.mkString(",")}")
-      s
-    }
     case t: SNot => {
-      val s = if (t.s == SEmpty) STop #:: Stream.empty else if (t.s == STop) SEmpty #:: Stream.empty else shrink(t)
+      val s = STop #:: SEmpty #:: (if (t.s == SEmpty) STop #:: Stream.empty else if (t.s == STop) SEmpty #:: Stream.empty else shrink(t))
       println(s"shrunk values: ${s.mkString(",")}")
       s
     }
 
     case t: SEql => {
-      val s = shrink(t.a).map(SEql(_))
+      val s = STop #:: SEmpty #:: (shrink(t.a).map(SEql(_)))
       println(s"shrunk values: ${s.mkString(",")}")
       s
     }
 
     case t: SMember => {
-      val s = SMember(shrink(t.xs)) #:: Stream.empty
+      val s = STop #:: SEmpty #:: (SMember(shrink(t.xs)) #:: Stream.empty)
       println(s"shrunk values: ${s.mkString(",")}")
       s
     }
 
     case t: SSatisfies => {
-      val s = shrink(t.f).map(SSatisfies(_, t.printable))
+      val s = STop #:: SEmpty #:: (shrink(t.f).map(SSatisfies(_, t.printable)))
       println(s"shrunk values: ${s.mkString(",")}")
       s
     }
