@@ -132,8 +132,14 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
 
   def conversion9(): SimpleTypeD = {
     // (A+B+C)(A+!B+C)(X) -> (A+B+C)(A+C)(X)  (later -> (A+C)(X))
+    // ABC + A!BC + X -> ABC + AC + X
+
     // (A+B+!C)(A+!B+C)(A+!B+!C) -> (A+B+!C)(A+!B+C)(A+!C) ->
+    // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C
+
     // (A+B+!C)(A+!B+C)(A+!B+!C) -> does not reduce to (A+B+!C)(A+!B+C)(A)
+    // AB!C + A!BC + A!B!C -> does not reduce to AB!C + A!BC + A
+
     import adjuvant.Adjuvant.searchReplace
     val duals = tds.collect { case td: SCombination if dualCombination(td) => td }
     val outerArgs = tds.map {
