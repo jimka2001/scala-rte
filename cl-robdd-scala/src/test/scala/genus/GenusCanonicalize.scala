@@ -760,7 +760,7 @@ class GenusCanonicalize extends MyFunSuite {
     // if rule does not apply, the it must return exactly the default
     assert(SAnd(A, B, C).conversion11() == SAnd(A,B,C))
   }
-  test("combo conversion9"){
+  test("combo conversion9") {
     trait TraitA
     trait TraitB
     trait TraitC
@@ -774,38 +774,42 @@ class GenusCanonicalize extends MyFunSuite {
 
     // ABC + A!BC + X -> ABC + AC + X (later -> AC + X)
     assert(SOr(SAnd(A, B, C), SAnd(A, SNot(B), C), X).conversion9()
-             == SOr(SAnd(A,B,C),SAnd(A,C),X), "434")
+             == SOr(SAnd(A, B, C), SAnd(A, C), X), "434")
 
     // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C ->
     assert(SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9()
-             == SOr(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(C))), "438")
+             == SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C))), "438")
 
     // AB!C + A!BC + A!B!C -> does not reduce to AB!C + A!BC + A
     assert(SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9()
-             == SOr(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(C))))
+             == SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C))))
 
     // no change sequence
     // !ABC + A!BC + X -> no change
     assert(SOr(SAnd(SNot(A), B, C), SAnd(A, SNot(B), C), X).conversion9()
-             == SOr(SAnd(SNot(A),B,C),SAnd(A,SNot(B),C),X))
+             == SOr(SAnd(SNot(A), B, C), SAnd(A, SNot(B), C), X))
 
 
     // -----------------
 
     assert(SAnd(SOr(A, B, C), SOr(A, SNot(B), C), X).conversion9()
-             == SAnd(SOr(A,B,C),SOr(A,C),X), "434")
+             == SAnd(SOr(A, B, C), SOr(A, C), X), "434")
 
     assert(SAnd(SOr(A, B, SNot(C)), SOr(A, SNot(B), C), SOr(A, SNot(B), SNot(C))).conversion9()
-             == SAnd(SOr(A,B,SNot(C)),SOr(A,SNot(B),C),SOr(A,SNot(C))), "438")
+             == SAnd(SOr(A, B, SNot(C)), SOr(A, SNot(B), C), SOr(A, SNot(C))), "438")
 
     assert(SAnd(SOr(A, B, SNot(C)), SOr(A, SNot(B), C), SOr(A, SNot(B), SNot(C))).conversion9()
-             == SAnd(SOr(A,B,SNot(C)),SOr(A,SNot(B),C),SOr(A,SNot(C))))
+             == SAnd(SOr(A, B, SNot(C)), SOr(A, SNot(B), C), SOr(A, SNot(C))))
 
 
     assert(SAnd(SOr(SNot(A), B, C), SOr(A, SNot(B), C), X).conversion9()
-             == SAnd(SOr(SNot(A),B,C),SOr(A,SNot(B),C),X))
+             == SAnd(SOr(SNot(A), B, C), SOr(A, SNot(B), C), X))
 
   }
+
+
+  }
+
   test("and conversionD1"){
     // SAnd(SMember(42,43,44), A, B, C)
     //  ==> SMember(42,44)
