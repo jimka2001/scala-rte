@@ -48,7 +48,7 @@ class RteDfaTestSuite extends MyFunSuite {
     //import xymbolyco.GraphViz._
 
     for {depth <- 5 to 6
-         rep <- 1 to 300
+         rep <- 1 to num_random_tests/3
          rt = Rte.randomRte(depth)
          } {
       //println(List(depth,rep))
@@ -69,7 +69,7 @@ class RteDfaTestSuite extends MyFunSuite {
   }
   test("dfa minimize") {
     for {depth <- 5 to 6
-         _ <- 1 to 300 // rep
+         _ <- 1 to num_random_tests/3
          dfa = Rte.randomRte(depth).toDfa()
          } {
       xymbolyco.Minimize.minimize(dfa)
@@ -77,7 +77,7 @@ class RteDfaTestSuite extends MyFunSuite {
   }
   test("dfa trim") {
     for {depth <- 5 to 6
-         _ <- 1 to 300 // rep
+         _ <- 1 to num_random_tests/3 // rep
          dfa = Rte.randomRte(depth).toDfa()
          } {
       xymbolyco.Minimize.removeNonAccessible(dfa)

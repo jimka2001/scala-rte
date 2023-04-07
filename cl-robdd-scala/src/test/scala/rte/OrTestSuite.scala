@@ -109,7 +109,7 @@ class OrTestSuite extends MyFunSuite {
   }
   test("canonicalize or b1") {
     for {depth <- 2 to 2
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {
@@ -128,7 +128,7 @@ class OrTestSuite extends MyFunSuite {
   test("canonicalize or b2") {
 
     for {depth <- 0 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
@@ -165,7 +165,7 @@ class OrTestSuite extends MyFunSuite {
     val trsub = Singleton(genus.SAtomic(classOf[TestSub]))
 
     for {depth <- 0 to 5
-         _ <- 1 to 500
+         _ <- 1 to num_random_tests/2
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
@@ -353,7 +353,7 @@ class OrTestSuite extends MyFunSuite {
 
   test("canonicalize or 253") {
     for {depth <- 0 to 4
-         _ <- 1 to 500
+         _ <- 1 to num_random_tests/2
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)

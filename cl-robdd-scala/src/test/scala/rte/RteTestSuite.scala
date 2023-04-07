@@ -68,7 +68,7 @@ class RteTestSuite extends MyFunSuite {
 
   test("operators") {
     for {depth <- 1 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)} {
       assert((r1 | r2) == Or(r1, r2))
@@ -90,7 +90,7 @@ class RteTestSuite extends MyFunSuite {
 
   test("canonicalize random") {
     for {depth <- 0 to 5
-         _ <- 1 to 10000
+         _ <- 1 to num_random_tests
          r1 = Rte.randomRte(depth = depth)
          } {
       r1.canonicalize
@@ -117,7 +117,7 @@ class RteTestSuite extends MyFunSuite {
   }
   test("canonicalize Singleton") {
     for {
-      _ <- 1 to 1000
+      _ <- 1 to num_random_tests
       t1 = randomType(0)
       t2 = randomType(0)
     } {
@@ -205,7 +205,7 @@ class RteTestSuite extends MyFunSuite {
     assert(Not(EmptyWord).canonicalize == Cat(Sigma, Star(Sigma)))
     assert(Not(EmptySet).canonicalize == Star(Sigma))
     for {depth <- 0 to 2
-         _ <- 1 to 500
+         _ <- 1 to num_random_tests/2
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {

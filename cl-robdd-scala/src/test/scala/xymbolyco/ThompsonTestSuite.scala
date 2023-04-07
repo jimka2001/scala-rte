@@ -31,7 +31,6 @@ import xymbolyco.Thompson._
 
 
 class ThompsonTestSuite  extends MyFunSuite {
-  val num_random_tests: Int = 1000
 
   test("remove epsilon transitions 1") {
     val t1: SimpleTypeD = SAtomic(classOf[String])

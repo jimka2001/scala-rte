@@ -22,7 +22,6 @@
 package rte
 
 import genus._
-import org.scalatest.funsuite.AnyFunSuite
 import RandomType.randomType
 import adjuvant.MyFunSuite
 
@@ -80,7 +79,7 @@ class SingletonTestSuite extends MyFunSuite {
   test("singleton  canonicalize") {
 
     for {depth <- 0 to 4
-         _ <- 1 to 10000
+         _ <- 1 to num_random_tests
          td = randomType(depth)
          rt = Singleton(td)
          } {

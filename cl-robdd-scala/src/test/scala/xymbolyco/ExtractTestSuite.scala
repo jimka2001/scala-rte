@@ -33,7 +33,7 @@ class ExtractTestSuite  extends MyFunSuite {
   val ε: EmptyWord.type = EmptyWord
   val t2x: Singleton = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
   val etrue: Singleton = Singleton(SEql(true))
-  val num_random_tests: Int = 1000
+  
   test("extraction 31"){
     check_extraction_cycle(Cat(Singleton(SEql(1)),Singleton(SEql(2))))
   }
