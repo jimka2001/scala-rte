@@ -140,35 +140,45 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     // (A+B+!C)(A+!B+C)(A+!B+!C) -> does not reduce to (A+B+!C)(A+!B+C)(A)
     // AB!C + A!BC + A!B!C -> does not reduce to AB!C + A!BC + A
 
-    import adjuvant.Adjuvant.searchReplace
+    // find two elements (a,b) in the sequence tds for which
+    //   a.tds and b.tds are the same except for one element a.tds(i) and b.tds(i)
+    //   for which a.tds(i) = SNot(b.tds(i))
+    // In this case remove the i'th element of b.tds.
+
+    def findExceptional(td1:SCombination, td2:SCombination):Option[Int] = {
+      // compare td1.tds vs td2.tds
+      // if all the corresponding elements are the same
+      //   except some x in tds2.tds corresponds to SNot(x) in tds1.tds
+      //       E.g., (A+!B+C) vs (A+!B+!C)
+      //         or     A!BC vs A!B!C
+      //   then return Some(i) where i is the index of SNot(...),
+      //      otherwise None.
+
+      if (td1 == td2)
+        None
+      else if (td1.tds.size != td2.tds.size)
+        None
+      else {
+        // compute the indices of the elements of td1.tds and td2.tds where
+        //    the elements are different.  If we have exactly 1 difference,
+        //    test whether it is SNot(x) vs x
+        (0 until td1.tds.size).filter { i => td1.tds(i) != td2.tds(i) }
+        match {
+          case Seq(i) if td1.tds(i) == SNot(td2.tds(i)) => Some(i)
+          case _ => None
+        }
+      }
+    }
     val duals = tds.collect { case td: SCombination if dualCombination(td) => td }
     val outerArgs = tds.map {
-      // A+!B+C -> A+C
-      // A+B+C -> A+B+C
-      // X -> X
       case td1: SCombination if dualCombination(td1) =>
-        // A+!B+C -> A+C
-        // A+B+C -> A+B+C
-        val toRemove = td1.tds.zipWithIndex.collectFirst {
-          case (td@SNot(n),i) if duals.exists {
-                // if td is SNot(n) does a td2 exist in duals such that
-                //   that would be the same as td1 if we replace one SNot(n) with n
-                // we are looking for a pair (td1, td2) where each is a dual combination of
-                // this, and they differ by a single SNot(n) vs n, in which case
-                //  we wish to remove the SNot(n) from the one it occurs in.
-            case td2: SCombination =>
-              val a = td1.tds
-              val b = td2.tds
-              ( a.size == b.size
-                && a.zip(b).count{case (tda,tdb) => tda == td && tdb==n} == 1
-                && a.zip(b).count{case (tda,tdb) => tda == tdb} == a.size-1 )
-          } => (td,i)
-        } // Some((!B,i)) or None   where i is the index of !B in td1
-        toRemove match {
-          case None => td1
-          case Some((_,i)) => createDual(td1.tds.zipWithIndex.flatMap{case (td,j) => if (j==i) Seq() else Seq(td)})
-        }
-      case td => td // X -> X
+        // search for td1,td2 such that td1.tds and td2.tds are same except
+        //    the one has an td1 had SNot(x) and the td2 has x,
+        //    in this case simply remove SNot(x) from td1
+        duals.iterator.map(td2 => findExceptional(td1,td2))
+          .collectFirst{case Some(i) => createDual(td1.tds.patch(i, Seq(), 1))}
+          .getOrElse(td1)
+      case td1 => td1
     }
     create(outerArgs)
   }

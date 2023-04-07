@@ -808,6 +808,23 @@ class GenusCanonicalize extends MyFunSuite {
   }
 
   test("combo conversion9 2nd") {
+    val a = SEmpty
+    val b = SEmpty
+    val c = SEmpty
+
+    // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C ->
+    val expect = SOr(SAnd(a, b, SNot(c)),
+                     SAnd(a, SNot(b), c),
+                     SAnd(a, SNot(c)))
+    val ty = SOr(SAnd(a, b, SNot(c)),
+                 SAnd(a, SNot(b), c),
+                 SAnd(a, SNot(b), SNot(c)))
+    val out = ty.conversion9()
+    assert(out == expect,
+           "828")
+  }
+
+  test("combo conversion9 3rd") {
     import RandomType.randomType
     for {depth <- 0 to 0
          r <- 0 to 1000
@@ -820,9 +837,9 @@ class GenusCanonicalize extends MyFunSuite {
       val expect = SOr(SAnd(a, b, SNot(c)),
                        SAnd(a, SNot(b), c),
                        SAnd(a, SNot(c)))
-      val ty     = SOr(SAnd(a, b, SNot(c)),
-                       SAnd(a, SNot(b), c),
-                       SAnd(a, SNot(b), SNot(c)))
+      val ty = SOr(SAnd(a, b, SNot(c)),
+                   SAnd(a, SNot(b), c),
+                   SAnd(a, SNot(b), SNot(c)))
       val out = ty.conversion9()
       assert(out == expect,
              "825")
