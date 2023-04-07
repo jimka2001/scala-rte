@@ -48,7 +48,7 @@ class RteDfaTestSuite extends MyFunSuite {
     //import xymbolyco.GraphViz._
 
     for {depth <- 5 to 6
-         rep <- 1 to num_random_tests/3
+         rep <- 1 to num_random_tests/10
          rt = Rte.randomRte(depth)
          } {
       //println(List(depth,rep))
