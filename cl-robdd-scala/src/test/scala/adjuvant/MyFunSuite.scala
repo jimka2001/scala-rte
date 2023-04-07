@@ -25,10 +25,11 @@ import org.scalatest.funsuite.AnyFunSuite
 class MyFunSuite extends AnyFunSuite {
   import org.scalactic.source
   import org.scalatest.Tag
-
-  assert(sys.env.get("CI_REGISTRY_IMAGE").nonEmpty)
-
-  val num_random_tests:Int = 1000 // TODO set this as function of ci/cd vs interactive
+  
+  val num_random_tests:Int = sys.env.get("CI_REGISTRY_IMAGE") match {
+    case None => 1000   // if interactive
+    case Some(_) => 100 // if in ci/cd pipeline
+  }
 
   override def test(testName: String, testTags: Tag*)(testFun: => Any /* Assertion */)(implicit pos: source.Position):Unit = {
     super.test(testName,testTags : _*)(locally{
