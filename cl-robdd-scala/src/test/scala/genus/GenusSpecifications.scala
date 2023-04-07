@@ -7,6 +7,7 @@ import genus.STop
 import genus.SEmpty
 
 object GenusSpecifications {
+  implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus)
   def naiveGenGenus: Gen[SimpleTypeD] = Gen.lzy {
     // TODO: Upgrade current AnyValgen with other types
     // TODO: Check implementation of RandomType
@@ -28,7 +29,7 @@ object GenusSpecifications {
         Gen.frequency(
           (5, SAtomic(Arbitrary.arbitrary[AnyVal].getClass)),
           (5, SEql(Arbitrary.arbitrary[AnyVal].sample.get)),
-          (5, SMember(Gen.listOfN[AnyVal](5, Arbitrary.arbitrary[AnyVal]).sample.get)),
+          (5, SMember(Gen.listOfN[AnyVal](20, Arbitrary.arbitrary[AnyVal]).sample.get)),
           (5, {
             val predicate = arbPredicate.arbitrary.sample.get
             SSatisfies(predicate._1, predicate._2)
@@ -39,20 +40,12 @@ object GenusSpecifications {
       }
 
       lazy val genInternalNode = {
-        // TODO: Change genAnd and genOr to have 0 or more (>=2) parameters
-        lazy val genAnd = for {
-          left <- naiveGenGenus
-          right <- naiveGenGenus
-        } yield SAnd(left, right)
+        // TODO: Support generation of >= 2 parameters for SAnd and SOr
+        lazy val genListGenus = Gen.listOfN[SimpleTypeD](2, Arbitrary.arbitrary[SimpleTypeD](arbitraryGen))
 
-        lazy val genOr = for {
-          left <- naiveGenGenus
-          right <- naiveGenGenus
-        } yield SOr(left, right)
-
-        lazy val genNot = for {
-          arg <- naiveGenGenus
-        } yield SNot(arg)
+        lazy val genAnd = SAnd(genListGenus.sample.get :_*)
+        lazy val genOr = SOr(genListGenus.sample.get :_*)
+        lazy val genNot = SNot(naiveGenGenus.sample.get)
 
         // Choose between one of the 3 non terminal types
         Gen.frequency(
@@ -66,102 +59,63 @@ object GenusSpecifications {
     }
   }
 
-  // Implementation similar to this Ast Shrinker (https://stackoverflow.com/questions/42581883/scalacheck-shrink)
-  // Sorry for using Stream even tho it is deprecated, it's ScalaCheck's fault
-  //
-  // TODO: Vulgarize strategy
   //  Shrinks according to the following strategy
-  //    - Put STop and SEmpty at the top of the Stream
-  //    - Append to the stream the SimpleTypeD with 1 child removed at each iteration
-  //    - Append to the stream the SimpleTypeD with 1 child shrunk at each iteration
-  //    - If 1 child and is TerminalType, put the child in stream
+  //    - Try STop and SEmpty
+  //    - Try removing 1 different child at each iteration
+  //    - Try to shrink 1 different child at each iteration
+  //    - If a SCombination only has 1 child, try with the child
+  // Implementation similar to this Ast Shrinker (https://stackoverflow.com/questions/42581883/scalacheck-shrink)
   implicit def shrinkGenus: Shrink[genus.SimpleTypeD] = Shrink {
     case t: SCombination => {
-      var s: Stream[SimpleTypeD] = STop #:: SEmpty #:: Stream.empty
+      var s: Stream[SimpleTypeD] = SEmpty #:: STop #:: Stream.empty
 
       // If 1 child and is TerminalType, put the child in stream
-      if (t.tds.size == 1) s = t.tds(0) #:: s else {
+      if (t.tds.size == 1) t.tds(0) #:: s else {
 
-      // Append to the stream the SimpleTypeD with 1 child removed at each iteration
-      // TODO: return a t.zero if t.zero one of the children is t.zero
-      for {
-        i <- 0 until t.tds.size
-      } if (t.tds(i) == t.zero) s = t.zero #:: Stream.Empty else s = (t.create(t.tds.take(i) ++ t.tds.drop(i + 1)) #:: s)
+        // Append to the stream the SimpleTypeD with 1 child removed at each iteration
+        for {
+          i <- 0 until t.tds.size
+        } s = (t.create(t.tds.take(i) ++ t.tds.drop(i + 1)) #:: s)
 
-      // TODO: Finish this
         // Append to the stream the SimpleTypeD with 1 child shrunk at each iteration
-        //      for {
-        //        i <- 0 until t.tds.size
-        //      } if (t.tds(i) == t.zero) s = (t.zero #:: Stream.empty) else s = shrink(t.tds(i)).map(_ => t.create(t.tds.take(i) ++ t.tds.drop(i + 1)).appended(_)) #:: Stream.empty
+        for {
+          i <- 0 until t.tds.size
+        } s = (shrink(t.tds(i)).map(e => t.create(t.tds.take(i) ++ t.tds.drop(i + 1).appended(e)))) #::: s
+
+        s
       }
-
-      println(s"shrunk values: ${s.mkString(",")}")
-      s
     }
-                                                                              // Old
-//    case t: SAnd => {
-//      // Reconstruct SAnd while omitting the ith child
-//      // If one of the child is SEmpty, we can simplify the SAnd by a SEmpy because the combination is not satisfiable
-//      var s: Stream[SimpleTypeD] = Stream.empty
-//
-//      // TODO: does it work like I think it does ?
-//      for {
-//        c <- t.tds
-//      } shrink(c)
-//
-//      // FIXME: short circuit if SEmpty found
-//      for {
-//        i <- 0 until t.tds.size
-//      } if (t.tds(i) == SEmpty) s = (SEmpty #:: Stream.empty) else s = (SAnd(t.tds.take(i) ++ t.tds.drop(i + 1): _*) #:: s)
-//
-//      println(s"shrunk values: ${s.mkString(",")}")
-//      s
-//    }
-//
-//    case t: SOr => {
-//      // Reconstruct SOr while omitting the ith child
-//      // If one of the child is STop, we can simplify the SOr by a STop because the combination is always satisfiable
-//      var s: Stream[SimpleTypeD] = Stream.empty
-//
-//      for {
-//        c <- t.tds
-//      } shrink(c)
-//
-//      // FIXME: short circuit if STop found
-//      for {
-//        i <- 0 until t.tds.size
-//      } if (t.tds(i) == STop) s = (STop #:: Stream.empty) else s = (SOr(t.tds.take(i) ++ t.tds.drop(i + 1): _*) #:: s)
-//      println(s"shrunk values: ${s.mkString(",")}")
-//      s
-//    }
 
+    // Try STop, SEmpty, or the shrinked child
     case t: SNot => {
-      val s = STop #:: SEmpty #:: (if (t.s == SEmpty) STop #:: Stream.empty else if (t.s == STop) SEmpty #:: Stream.empty else shrink(t))
-      println(s"shrunk values: ${s.mkString(",")}")
-      s
+      SEmpty #:: STop #:: shrink(t)
     }
 
+    // Try STop, SEmpty, or shrink the content
     case t: SEql => {
-      val s = STop #:: SEmpty #:: (shrink(t.a).map(SEql(_)))
-      println(s"shrunk values: ${s.mkString(",")}")
-      s
+      SEmpty #:: STop #:: (shrink(t.a).map(SEql(_)))
     }
 
+    // Try STop, SEmpty, or shrink the content
     case t: SMember => {
-      val s = STop #:: SEmpty #:: (SMember(shrink(t.xs)) #:: Stream.empty)
-      println(s"shrunk values: ${s.mkString(",")}")
-      s
+      SEmpty #:: STop #:: (SMember(shrink(t.xs)) #:: Stream.empty)
     }
 
+    // Try STop, SEmpty, or shrink the content
     case t: SSatisfies => {
-      val s = STop #:: SEmpty #:: (shrink(t.f).map(SSatisfies(_, t.printable)))
-      println(s"shrunk values: ${s.mkString(",")}")
-      s
+      SEmpty #:: STop #:: (shrink(t.f).map(SSatisfies(_, t.printable)))
     }
 
+    case t: SAtomic => {
+      println("Fais au moins semblant d'essayer")
+      SEmpty #:: STop #:: Stream.empty
+    }
+
+    // For other cases, nothing to shrink
     case t => {
-      println(s"shrunk ${t} into the void")
       Stream.empty
     }
   }
+
+  // TODO: Make the Shrinker from conversion9 property shrink all 3 values in the tuple
 }

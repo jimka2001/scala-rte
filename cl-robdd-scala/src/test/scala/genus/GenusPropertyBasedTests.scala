@@ -13,15 +13,11 @@ import genus.RandomType.{Class1X, Class2X, interestingValues}
 import scala.collection.mutable.ArrayBuffer
 
 object GenusPropertyBasedTests extends App {
-//  val A = SEmpty
-//  val B = SEmpty
-//  val C = SEmpty
-//  println(SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9() == SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C))))
   val genusList = for {
     _ <- 0 until 10
   } yield naiveGenGenus.sample.get
   for (g <- genusList)
-    println(g.toMachineReadable())
+    println(g.toString())
 }
 
 // TODO: Link these tests with the rest
