@@ -26,6 +26,10 @@ class MyFunSuite extends AnyFunSuite {
   import org.scalactic.source
   import org.scalatest.Tag
 
+  assert(sys.env.get("CI_REGISTRY_IMAGE").nonEmpty)
+
+  val num_random_tests:Int = 1000 // TODO set this as function of ci/cd vs interactive
+
   override def test(testName: String, testTags: Tag*)(testFun: => Any /* Assertion */)(implicit pos: source.Position):Unit = {
     super.test(testName,testTags : _*)(locally{
       val start = System.nanoTime()
