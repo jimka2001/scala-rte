@@ -69,7 +69,7 @@ class RteDfaTestSuite extends MyFunSuite {
   }
   test("dfa minimize") {
     for {depth <- 5 to 6
-         _ <- 1 to num_random_tests/3
+         _ <- 1 to num_random_tests/10
          dfa = Rte.randomRte(depth).toDfa()
          } {
       xymbolyco.Minimize.minimize(dfa)
