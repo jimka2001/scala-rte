@@ -211,7 +211,7 @@ class GenusSubtypep extends MyFunSuite {
       assert(!rt1.subtypep(rt2).contains(false), s"$comment: rt1=$rt1 rt2=$rt2")
     }
 
-    for {_ <- 0 to 200
+    for {_ <- 0 to num_random_tests/5
          n <- 0 to 5
          rt1 = randomType(n)
          rt2 = randomType(n)
@@ -285,7 +285,7 @@ class GenusSubtypep extends MyFunSuite {
   test("randomized testing of subtypep with normalization") {
     import NormalForm._
 
-    for {_ <- 0 to 500
+    for {_ <- 0 to num_random_tests/2
          n <- 0 to 5
          rt = randomType(n)
          } {

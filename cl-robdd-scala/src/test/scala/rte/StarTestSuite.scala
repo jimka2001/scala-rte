@@ -33,7 +33,7 @@ class StarTestSuite extends MyFunSuite {
     assert(EmptySet.*.canonicalize == EmptyWord)
 
     for {depth <- 0 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {

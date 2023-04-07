@@ -364,7 +364,7 @@ class GenusCanonicalize extends MyFunSuite {
         case _ => false
       }
     }
-    for {_ <- 0 to 1000
+    for {_ <- 0 to num_random_tests
          n <- 0 to 5
          rt = randomType(n)
          } {
@@ -453,14 +453,14 @@ class GenusCanonicalize extends MyFunSuite {
     // make sure typep membership of particular values is the same before and after canonicalizing
     def testit():Unit = {
       for {depth <- 0 to 4
-           _ <- 0 to 2000
+           _ <- 0 to num_random_tests
            } check_type(randomType(depth))
     }
     SAtomic.withOpenWorldView(testit())
     SAtomic.withClosedWorldView(testit())
   }
   test("randomized testing of canonicalize") {
-    for {_ <- 0 to 500
+    for {_ <- 0 to num_random_tests/2
          td = randomType(5)
          can = td.canonicalize(Some(Dnf))
          dnf = td.canonicalize(Some(Dnf))
@@ -558,7 +558,7 @@ class GenusCanonicalize extends MyFunSuite {
     //               [Member a,b,c]]]]
   }
   test("randomized testing of inversion") {
-    for {_ <- 0 to 500
+    for {_ <- 0 to num_random_tests/2
          }
       testDnfInverse(randomType(2))
   }
@@ -827,7 +827,7 @@ class GenusCanonicalize extends MyFunSuite {
   test("combo conversion9 3rd") {
     import RandomType.randomType
     for {depth <- 0 to 0
-         r <- 0 to 1000
+         r <- 0 to num_random_tests
          a = randomType(depth)
          b = randomType(depth)
          c = randomType(depth)

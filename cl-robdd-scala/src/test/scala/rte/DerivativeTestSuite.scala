@@ -37,20 +37,20 @@ class DerivativeTestSuite extends MyFunSuite {
     assert(Star(Sigma).nullable)
     assert(Star(EmptySet).nullable)
     for {depth <- 1 to 5
-         _ <- 0 to 100
+         _ <- 0 to num_random_tests/10
          r = Rte.randomRte(depth)} {
       assert(Star(r).nullable)
       assert(!Not(Star(r)).nullable)
     }
     for {depth <- 1 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          r = Rte.randomRte(depth)}
       r.nullable
   }
 
   test("canonicalize nullable"){
     for {depth <- 0 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          r1 = Rte.randomRte(depth)
          } {
       assert(r1.nullable == r1.canonicalize.nullable,
@@ -66,7 +66,7 @@ class DerivativeTestSuite extends MyFunSuite {
 
   test("firstTypes") {
     for {depth <- 1 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          r = Rte.randomRte(depth)}
       r.firstTypes
   }
@@ -107,7 +107,7 @@ class DerivativeTestSuite extends MyFunSuite {
 
   test("random derivative") {
     for {depth <- 0 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          td = randomType(depth)
          //rt = Singleton(td)
          } {
@@ -122,7 +122,7 @@ class DerivativeTestSuite extends MyFunSuite {
   }
   test("random derivative 2") {
     for {depth <- 0 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          td = randomType(depth)
          } {
       assert(EmptySet.derivative1(Some(td)) == EmptySet)
@@ -131,7 +131,7 @@ class DerivativeTestSuite extends MyFunSuite {
   }
   test("random derivative 3") {
     for {depth <- 0 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          td = randomType(depth)
          rt = Singleton(td)
          } {
@@ -145,7 +145,7 @@ class DerivativeTestSuite extends MyFunSuite {
   }
   test("random derivative 4") {
     for {depth <- 0 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          td = randomType(depth)
          rt = Singleton(td)
          } {
@@ -154,7 +154,7 @@ class DerivativeTestSuite extends MyFunSuite {
   }
   test("random derivative 5") {
     for {depth <- 0 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          td = randomType(depth)
          rt = Singleton(td)
          } {
@@ -169,7 +169,7 @@ class DerivativeTestSuite extends MyFunSuite {
 
   test("derivative random") {
     for {depth <- 0 to 5
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          rt = Rte.randomRte(depth)
          can = rt.canonicalize
          m = mdtd(can.firstTypes)
@@ -213,7 +213,7 @@ class DerivativeTestSuite extends MyFunSuite {
   test("derivatives random") {
 
     for {depth <- 0 to 4
-         _ <- 1 to 2000
+         _ <- 1 to num_random_tests
          rt = Rte.randomRte(depth)
          (intToV,_) = rt.derivatives()
          } {
@@ -310,7 +310,7 @@ class DerivativeTestSuite extends MyFunSuite {
 
   test("derivative not"){
     for {depth <- 0 to 5
-         _ <- 1 to 3000
+         _ <- 1 to num_random_tests
          rt = Rte.randomRte(depth)
          not_rte = Not(rt)
          (td, (factors, disjoints)) <- mdtd(rt.firstTypes ++ not_rte.firstTypes)
