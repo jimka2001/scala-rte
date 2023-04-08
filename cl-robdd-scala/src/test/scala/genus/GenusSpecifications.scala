@@ -3,60 +3,62 @@ package genus
 import org.scalacheck.Shrink.shrink
 import org.scalacheck.{Arbitrary, Gen, Shrink}
 
-import genus.STop
-import genus.SEmpty
-
+// This object contains the definition of the SimpleTypeD Generator and Shrinker
 object GenusSpecifications {
-  implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus)
-  def naiveGenGenus: Gen[SimpleTypeD] = Gen.lzy {
-    // TODO: Upgrade current AnyValgen with other types
-    // TODO: Check implementation of RandomType
-    Gen.sized { size =>
-      lazy val genLeaf = {
-        // Generate a predicate and its string representation
-        def genPredicate: Gen[(Any => Boolean, String)] = {
-          def predicate(a: Any, b: Boolean): Any => Boolean = ((a: Any) => b)
 
-          for {
-            anyval <- Arbitrary.arbitrary[AnyVal]
-            // bool <- Arbitrary.arbitrary[Boolean]
-          } yield (predicate(anyval, true), anyval + " => " + true)
-        }
+  // Generate a predicate and its string representation
+  def genPredicate: Gen[(Any => Boolean, String)] = {
+    def predicate(a: Any, b: Boolean): Any => Boolean = ((a: Any) => b)
 
-        implicit lazy val arbPredicate = Arbitrary(genPredicate)
+    for {
+      anyval <- Arbitrary.arbitrary[AnyVal]
+      // bool <- Arbitrary.arbitrary[Boolean]
+    } yield (predicate(anyval, true), anyval + " => " + true)
+  }
 
-        // Choose between one of the 6 terminal types
-        Gen.frequency(
-          (5, SAtomic(Arbitrary.arbitrary[AnyVal].getClass)),
-          (5, SEql(Arbitrary.arbitrary[AnyVal].sample.get)),
-          (5, SMember(Gen.listOfN[AnyVal](20, Arbitrary.arbitrary[AnyVal]).sample.get)),
-          (5, {
-            val predicate = arbPredicate.arbitrary.sample.get
-            SSatisfies(predicate._1, predicate._2)
-          }),
-          (1, STop),
-          (1, SEmpty),
-        )
-      }
+  // Generate a TerminalType as a leaf of the SimpleTypeD
+  def genLeaf = {
+    // Choose between one of the 6 terminal types
+    Gen.frequency(
+      (5, SAtomic(Arbitrary.arbitrary[AnyVal].getClass)),
+      (5, SEql(Arbitrary.arbitrary[AnyVal].sample.get)),
+      (5, SMember(Gen.listOfN[AnyVal](5, Arbitrary.arbitrary[AnyVal]).sample.get)),
+      (5, {
+        val predicate = genPredicate.sample.get
+        SSatisfies(predicate._1, predicate._2)
+      }),
+      (1, STop),
+      (1, SEmpty),
+    )
+  }
 
-      lazy val genInternalNode = {
-        // TODO: Support generation of >= 2 parameters for SAnd and SOr
-        lazy val genListGenus = Gen.listOfN[SimpleTypeD](2, Arbitrary.arbitrary[SimpleTypeD](arbitraryGen))
+  // Generate a SCombination or SNot as an internal node of the SimpleTypeD
+   def genInternalNode(depth: Int) = Gen.lzy {
+     val newDepth = depth - 1
+    implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus(newDepth))
+    lazy val listGenus = Gen.listOfN[SimpleTypeD](5, Arbitrary.arbitrary[SimpleTypeD](arbitraryGen)).sample.get
 
-        lazy val genAnd = SAnd(genListGenus.sample.get :_*)
-        lazy val genOr = SOr(genListGenus.sample.get :_*)
-        lazy val genNot = SNot(naiveGenGenus.sample.get)
+    lazy val genAnd = SAnd(listGenus: _*)
+    lazy val genOr = SOr(listGenus: _*)
+    lazy val genNot = SNot(naiveGenGenus(newDepth).sample.get)
 
-        // Choose between one of the 3 non terminal types
-        Gen.frequency(
-          2 -> Gen.lzy(genAnd),
-          2 -> Gen.lzy(genOr),
-          1 -> Gen.lzy(genNot)
-        )
-      }
+    // Choose between one of the 3 non terminal types
+    Gen.frequency(
+      2 -> Gen.lzy(genAnd),
+      2 -> Gen.lzy(genOr),
+      1 -> Gen.lzy(genNot)
+    )
+  }
 
-      Gen.oneOf(genInternalNode, genLeaf)
-    }
+  // TODO: Upgrade current AnyValgen with other types
+  // TODO: Check implementation of RandomType
+  // Generate a SimpleTypeD with a maximum depth of depth
+  def naiveGenGenus(depth: Int): Gen[SimpleTypeD] = Gen.lzy {
+    if (depth <= 1) Gen.lzy(genLeaf) else
+    Gen.frequency(
+      (1, Gen.lzy(genInternalNode(depth - 1))),
+      (1, Gen.lzy(genLeaf)),
+    )
   }
 
   //  Shrinks according to the following strategy
@@ -106,8 +108,8 @@ object GenusSpecifications {
       SEmpty #:: STop #:: (shrink(t.f).map(SSatisfies(_, t.printable)))
     }
 
+    // Try STop or SEmpty
     case t: SAtomic => {
-      println("Fais au moins semblant d'essayer")
       SEmpty #:: STop #:: Stream.empty
     }
 
@@ -117,5 +119,5 @@ object GenusSpecifications {
     }
   }
 
-  // TODO: Make the Shrinker from conversion9 property shrink all 3 values in the tuple
+  // TODO: Make the Shrinker from conversion9 property shrink all 3 generated values
 }

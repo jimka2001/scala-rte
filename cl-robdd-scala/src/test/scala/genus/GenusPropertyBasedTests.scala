@@ -1,10 +1,9 @@
 package genus
 
 
-import org.scalacheck.{Arbitrary, Properties, Shrink}
+import org.scalacheck.{Arbitrary, Gen, Properties, Shrink}
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Shrink.shrink
-
 import genus.GenusSpecifications.naiveGenGenus
 import genus.GenusSpecifications.shrinkGenus
 import genus.NormalForm.Dnf
@@ -15,14 +14,14 @@ import scala.collection.mutable.ArrayBuffer
 object GenusPropertyBasedTests extends App {
   val genusList = for {
     _ <- 0 until 10
-  } yield naiveGenGenus.sample.get
+  } yield naiveGenGenus(25).sample.get
   for (g <- genusList)
     println(g.toString())
 }
 
 // TODO: Link these tests with the rest
 object GenusSpecification extends Properties("Genus") {
-  implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus)
+  implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus(25))
 
   // From GenusCanonicalize.scala
 
