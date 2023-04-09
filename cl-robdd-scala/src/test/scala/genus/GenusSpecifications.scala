@@ -51,7 +51,6 @@ object GenusSpecifications {
   }
 
   // TODO: Upgrade current AnyValgen with other types
-  // TODO: Check implementation of RandomType
   // Generate a SimpleTypeD with a maximum depth of depth
   def naiveGenGenus(depth: Int): Gen[SimpleTypeD] = Gen.lzy {
     if (depth <= 1) Gen.lzy(genLeaf) else
