@@ -1,7 +1,7 @@
 package genus
 
 import org.scalacheck.{Arbitrary, Gen, Properties, Shrink}
-import org.scalacheck.Prop.{forAll, forAllNoShrink}
+import org.scalacheck.Prop.{classify, forAll, forAllNoShrink, propBoolean}
 import genus.GenusSpecifications.naiveGenGenus
 import genus.GenusSpecifications.shrinkGenus
 import genus.NormalForm.Dnf
@@ -22,10 +22,14 @@ object GenusSpecification extends Properties("Genus") {
   // From GenusCanonicalize.scala
 
   property("DNF Inverse") = forAll { (t: SimpleTypeD) =>
-    val dnf = t.canonicalize(Some(Dnf))
-    val inverse = SNot(dnf)
+    classify(t == SEmpty, "Empty") {
+      classify(t == STop, "Top", "Other") {
+        val dnf = t.canonicalize(Some(Dnf))
+        val inverse = SNot(dnf)
 
-    (t - dnf).inhabited != Some(true) && (t || inverse) == STop || (!(t || inverse) == SEmpty) || (!(t || inverse)).inhabited != Some(true)
+        (t - dnf).inhabited != Some(true) && (t || inverse) == STop || (!(t || inverse) == SEmpty) || (!(t || inverse)).inhabited != Some(true)
+      }
+    }
   }
 
   property("Verify CNF") = forAll { (t: SimpleTypeD) =>
@@ -101,9 +105,15 @@ object GenusSpecification extends Properties("Genus") {
   }
 
   // Second test of "combo conversion9"
-  // TODO: What kind of conditions does Jim need to satisfy this test ? How can I implement this ?
-  property("AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C") = forAll { (A: SimpleTypeD, B: SimpleTypeD, C:SimpleTypeD) =>
-    SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9() == SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C)))
+  // Conditions:
+  //  - Assumes no duplicates, or no SOr(A, SNot(A))/SAnd(A, SNot(A))
+  property("AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C") = forAll { (A: SimpleTypeD, B: SimpleTypeD, C: SimpleTypeD) =>
+    (A != B
+      && B != C
+      && A != C
+      && A != SNot(B)
+      && A != SNot(C)
+      ) ==> (SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9() == SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C))))
   }
 
   // TODO: Add more tests

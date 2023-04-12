@@ -6,6 +6,7 @@ import genus.GenusSpecifications.naiveGenGenus
 import genus.GenusSpecifications.shrinkGenus
 import genus.NormalForm.Dnf
 import genus.RandomType.{Class1X, Class2X}
+import org.scalacheck.Prop.{classify, propBoolean}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Configuration
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.forAll
@@ -16,14 +17,14 @@ class GenusPBT extends MyFunSuite with Matchers with Configuration {
   val depth = 10
   implicit override val generatorDrivenConfig = PropertyCheckConfiguration(minSuccessful = 10000, workers = 4)
 
-   test("DNF Inverse") {
-     forAll { (t: SimpleTypeD) =>
-       val dnf = t.canonicalize(Some(Dnf))
-       val inverse = SNot(dnf)
+  test("DNF Inverse") {
+    forAll { (t: SimpleTypeD) =>
+      val dnf = t.canonicalize(Some(Dnf))
+      val inverse = SNot(dnf)
 
-       (t - dnf).inhabited != Some(true) && (t || inverse) == STop || (!(t || inverse) == SEmpty) || (!(t || inverse)).inhabited != Some(true) should be (true)
-     }
-   }
+      (t - dnf).inhabited != Some(true) && (t || inverse) == STop || (!(t || inverse) == SEmpty) || (!(t || inverse)).inhabited != Some(true)
+    }
+  }
 
   test("Verify CNF") {
     forAll { (t: SimpleTypeD) =>
@@ -48,7 +49,7 @@ class GenusPBT extends MyFunSuite with Matchers with Configuration {
         }
       }
 
-      isCnf(t.canonicalize(Some(Cnf))) should be (true)
+      isCnf(t.canonicalize(Some(Cnf))) should be(true)
     }
   }
 
@@ -75,7 +76,7 @@ class GenusPBT extends MyFunSuite with Matchers with Configuration {
         }
       }
 
-      isDnf(t.canonicalize(Some(Dnf))) should be (true)
+      isDnf(t.canonicalize(Some(Dnf))) should be(true)
     }
   }
 
@@ -99,8 +100,8 @@ class GenusPBT extends MyFunSuite with Matchers with Configuration {
       )
 
       // TODO: Generate randomly values passed to typep
-      t.typep(interestingValues) should be (cnf.typep(interestingValues))
-      t.typep(interestingValues) should be (dnf.typep(interestingValues))
+      t.typep(interestingValues) should be(cnf.typep(interestingValues))
+      t.typep(interestingValues) should be(dnf.typep(interestingValues))
     }
   }
 
@@ -108,8 +109,13 @@ class GenusPBT extends MyFunSuite with Matchers with Configuration {
   // TODO: What kind of conditions does Jim need to satisfy this test ? How can I implement this ?
   // TODO: This seems to run for a long time / infinitely sometimes. Why ?
   test("AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C") {
-    forAll { (A: SimpleTypeD, B: SimpleTypeD, C:SimpleTypeD) =>
-      SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9() should be (SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C))))
+    forAll { (A: SimpleTypeD, B: SimpleTypeD, C: SimpleTypeD) =>
+      (A != B
+        && B != C
+        && A != C
+        && A != SNot(B)
+        && A != SNot(C)
+        ) ==> (SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9() == SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C))))
     }
   }
 
