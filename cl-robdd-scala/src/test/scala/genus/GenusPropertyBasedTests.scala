@@ -1,7 +1,7 @@
 package genus
 
-import org.scalacheck.{Arbitrary, Gen, Properties, Shrink}
-import org.scalacheck.Prop.{classify, forAll, forAllNoShrink, propBoolean}
+import org.scalacheck.{Arbitrary, Gen, Prop, Properties, Shrink, Test}
+import org.scalacheck.Prop.{classify, collect, forAll, forAllNoShrink, propBoolean}
 import genus.GenusSpecifications.naiveGenGenus
 import genus.GenusSpecifications.shrinkGenus
 import genus.NormalForm.Dnf
@@ -17,19 +17,27 @@ object GenusPropertyBasedTests extends App {
 }
 
 object GenusSpecification extends Properties("Genus") {
-  implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus(10))
+  implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus(20))
 
-  // From GenusCanonicalize.scala
+  override def overrideParameters(p: Test.Parameters): Test.Parameters = p.withMinSuccessfulTests(100)
 
-  property("DNF Inverse") = forAll { (t: SimpleTypeD) =>
-    classify(t == SEmpty, "Empty") {
-      classify(t == STop, "Top", "Other") {
-        val dnf = t.canonicalize(Some(Dnf))
-        val inverse = SNot(dnf)
-
-        (t - dnf).inhabited != Some(true) && (t || inverse) == STop || (!(t || inverse) == SEmpty) || (!(t || inverse)).inhabited != Some(true)
+  // Test for classifying the type of input. The input will be generated for all properties, so it is not a fact about the repartition of the input, rather a hint
+  property("FOR CLASSIFICATION PURPOSES") = forAll { (t: SimpleTypeD) =>
+    classify(t.inhabited == None, "undecidable") {
+      classify(t.inhabited == Some(true), "inhabited") {
+        classify(t.inhabited == Some(false), "not habited") {
+          true
+        }
       }
     }
+  }
+
+  // From GenusCanonicalize.scala
+  property("DNF Inverse") = forAll { (t: SimpleTypeD) =>
+    val dnf = t.canonicalize(Some(Dnf))
+    val inverse = SNot(dnf)
+
+    (t - dnf).inhabited != Some(true) && (t || inverse) == STop || (!(t || inverse) == SEmpty) || (!(t || inverse)).inhabited != Some(true)
   }
 
   property("Verify CNF") = forAll { (t: SimpleTypeD) =>
