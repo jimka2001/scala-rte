@@ -132,27 +132,53 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
 
   def conversion9(): SimpleTypeD = {
     // (A+B+C)(A+!B+C)(X) -> (A+B+C)(A+C)(X)  (later -> (A+C)(X))
+    // ABC + A!BC + X -> ABC + AC + X
+
     // (A+B+!C)(A+!B+C)(A+!B+!C) -> (A+B+!C)(A+!B+C)(A+!C) ->
+    // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C
+
     // (A+B+!C)(A+!B+C)(A+!B+!C) -> does not reduce to (A+B+!C)(A+!B+C)(A)
-    import adjuvant.Adjuvant.searchReplace
+    // AB!C + A!BC + A!B!C -> does not reduce to AB!C + A!BC + A
+
+    // find two elements (a,b) in the sequence tds for which
+    //   a.tds and b.tds are the same except for one element a.tds(i) and b.tds(i)
+    //   for which a.tds(i) = SNot(b.tds(i))
+    // In this case remove the i'th element of b.tds.
+
+    def findExceptional(td1:SCombination, td2:SCombination):Option[Int] = {
+      // compare td1.tds vs td2.tds
+      // if all the corresponding elements are the same
+      //   except some x in tds2.tds corresponds to SNot(x) in tds1.tds
+      //       E.g., (A+!B+C) vs (A+!B+!C)
+      //         or     A!BC vs A!B!C
+      //   then return Some(i) where i is the index of SNot(...),
+      //      otherwise None.
+
+      if (td1 == td2)
+        None
+      else if (td1.tds.size != td2.tds.size)
+        None
+      else {
+        // compute the indices of the elements of td1.tds and td2.tds where
+        //    the elements are different.  If we have exactly 1 difference,
+        //    test whether it is SNot(x) vs x
+        (0 until td1.tds.size).filter { i => td1.tds(i) != td2.tds(i) }
+        match {
+          case Seq(i) if td1.tds(i) == SNot(td2.tds(i)) => Some(i)
+          case _ => None
+        }
+      }
+    }
     val duals = tds.collect { case td: SCombination if dualCombination(td) => td }
     val outerArgs = tds.map {
-      // A+!B+C -> A+C
-      // A+B+C -> A+B+C
-      // X -> X
       case td1: SCombination if dualCombination(td1) =>
-        // A+!B+C -> A+C
-        // A+B+C -> A+B+C
-        val toRemove = td1.tds.collectFirst {
-          case td@SNot(n) if duals.exists {
-            case td2: SCombination if dualCombination(td2) => td2.tds == adjuvant.Adjuvant.searchReplace(td1.tds, td, Seq(n))
-          } => td
-        } // Some(!B) or None
-        toRemove match {
-          case None => td1
-          case Some(td) => createDual(td1.tds.filterNot(_ == td))
-        }
-      case td => td // X -> X
+        // search for td1,td2 such that td1.tds and td2.tds are same except
+        //    the one has an td1 had SNot(x) and the td2 has x,
+        //    in this case simply remove SNot(x) from td1
+        duals.iterator.map(td2 => findExceptional(td1,td2))
+          .collectFirst{case Some(i) => createDual(td1.tds.patch(i, Seq(), 1))}
+          .getOrElse(td1)
+      case td1 => td1
     }
     create(outerArgs)
   }
@@ -458,6 +484,6 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
   }
 
   override def searchReplaceDown(search: SimpleTypeD, replace: SimpleTypeD): SimpleTypeD = {
-    create(tds.map(td => td.searchReplace(search, replace)))
+    create(tds.map(td => td.searchReplaceInType(search, replace)))
   }
 }

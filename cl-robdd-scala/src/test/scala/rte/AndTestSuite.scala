@@ -149,7 +149,7 @@ class AndTestSuite extends MyFunSuite {
     val trd1 = Singleton(genus.SAtomic(classOf[TestD1]))
     val trd2 = Singleton(genus.SAtomic(classOf[TestD2]))
     for {depth <- 0 to 5
-         _ <- 1 to 500
+         _ <- 1 to num_random_tests/2
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
@@ -238,7 +238,7 @@ class AndTestSuite extends MyFunSuite {
     assert(And(Cat(Sigma, Star(Sigma)), Sigma).canonicalize
              == Sigma)
     for {depth <- 0 to 3
-         _ <- 1 to 500
+         _ <- 1 to num_random_tests/2
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
@@ -349,7 +349,7 @@ class AndTestSuite extends MyFunSuite {
   }
   test("canonicalize and 253") {
     for {depth <- 0 to 1
-         _ <- 1 to 5000
+         _ <- 1 to num_random_tests
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)
@@ -406,7 +406,7 @@ class AndTestSuite extends MyFunSuite {
     val trd1 = Singleton(genus.SAtomic(classOf[TestD1]))
     val trd2 = Singleton(genus.SAtomic(classOf[TestD2]))
     for {depth <- 0 to 4
-         _ <- 1 to 1000
+         _ <- 1 to num_random_tests
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          r3 = Rte.randomRte(depth)

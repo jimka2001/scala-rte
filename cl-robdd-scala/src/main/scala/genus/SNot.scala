@@ -132,6 +132,6 @@ case class SNot(s: SimpleTypeD) extends SimpleTypeD {
   override def leafTypes(): Set[SimpleTypeD] = s.leafTypes()
 
   override def searchReplaceDown(search: SimpleTypeD, replace: SimpleTypeD): SimpleTypeD = {
-    SNot(s.searchReplace(search, replace))
+    SNot(s.searchReplaceInType(search, replace))
   }
 }

@@ -364,7 +364,7 @@ class GenusCanonicalize extends MyFunSuite {
         case _ => false
       }
     }
-    for {_ <- 0 to 1000
+    for {_ <- 0 to num_random_tests
          n <- 0 to 5
          rt = randomType(n)
          } {
@@ -453,14 +453,14 @@ class GenusCanonicalize extends MyFunSuite {
     // make sure typep membership of particular values is the same before and after canonicalizing
     def testit():Unit = {
       for {depth <- 0 to 4
-           _ <- 0 to 2000
+           _ <- 0 to num_random_tests
            } check_type(randomType(depth))
     }
     SAtomic.withOpenWorldView(testit())
     SAtomic.withClosedWorldView(testit())
   }
   test("randomized testing of canonicalize") {
-    for {_ <- 0 to 500
+    for {_ <- 0 to num_random_tests/2
          td = randomType(5)
          can = td.canonicalize(Some(Dnf))
          dnf = td.canonicalize(Some(Dnf))
@@ -558,7 +558,7 @@ class GenusCanonicalize extends MyFunSuite {
     //               [Member a,b,c]]]]
   }
   test("randomized testing of inversion") {
-    for {_ <- 0 to 500
+    for {_ <- 0 to num_random_tests/2
          }
       testDnfInverse(randomType(2))
   }
@@ -760,7 +760,7 @@ class GenusCanonicalize extends MyFunSuite {
     // if rule does not apply, the it must return exactly the default
     assert(SAnd(A, B, C).conversion11() == SAnd(A,B,C))
   }
-  test("combo conversion9"){
+  test("combo conversion9") {
     trait TraitA
     trait TraitB
     trait TraitC
@@ -774,38 +774,78 @@ class GenusCanonicalize extends MyFunSuite {
 
     // ABC + A!BC + X -> ABC + AC + X (later -> AC + X)
     assert(SOr(SAnd(A, B, C), SAnd(A, SNot(B), C), X).conversion9()
-             == SOr(SAnd(A,B,C),SAnd(A,C),X), "434")
+             == SOr(SAnd(A, B, C), SAnd(A, C), X), "434")
 
     // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C ->
     assert(SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9()
-             == SOr(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(C))), "438")
+             == SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C))), "438")
 
     // AB!C + A!BC + A!B!C -> does not reduce to AB!C + A!BC + A
     assert(SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(B), SNot(C))).conversion9()
-             == SOr(SAnd(A,B,SNot(C)),SAnd(A,SNot(B),C),SAnd(A,SNot(C))))
+             == SOr(SAnd(A, B, SNot(C)), SAnd(A, SNot(B), C), SAnd(A, SNot(C))))
 
     // no change sequence
     // !ABC + A!BC + X -> no change
     assert(SOr(SAnd(SNot(A), B, C), SAnd(A, SNot(B), C), X).conversion9()
-             == SOr(SAnd(SNot(A),B,C),SAnd(A,SNot(B),C),X))
+             == SOr(SAnd(SNot(A), B, C), SAnd(A, SNot(B), C), X))
 
 
     // -----------------
 
     assert(SAnd(SOr(A, B, C), SOr(A, SNot(B), C), X).conversion9()
-             == SAnd(SOr(A,B,C),SOr(A,C),X), "434")
+             == SAnd(SOr(A, B, C), SOr(A, C), X), "434")
 
     assert(SAnd(SOr(A, B, SNot(C)), SOr(A, SNot(B), C), SOr(A, SNot(B), SNot(C))).conversion9()
-             == SAnd(SOr(A,B,SNot(C)),SOr(A,SNot(B),C),SOr(A,SNot(C))), "438")
+             == SAnd(SOr(A, B, SNot(C)), SOr(A, SNot(B), C), SOr(A, SNot(C))), "438")
 
     assert(SAnd(SOr(A, B, SNot(C)), SOr(A, SNot(B), C), SOr(A, SNot(B), SNot(C))).conversion9()
-             == SAnd(SOr(A,B,SNot(C)),SOr(A,SNot(B),C),SOr(A,SNot(C))))
+             == SAnd(SOr(A, B, SNot(C)), SOr(A, SNot(B), C), SOr(A, SNot(C))))
 
 
     assert(SAnd(SOr(SNot(A), B, C), SOr(A, SNot(B), C), X).conversion9()
-             == SAnd(SOr(SNot(A),B,C),SOr(A,SNot(B),C),X))
+             == SAnd(SOr(SNot(A), B, C), SOr(A, SNot(B), C), X))
 
   }
+
+  test("combo conversion9 2nd") {
+    val a = SEmpty
+    val b = SEmpty
+    val c = SEmpty
+
+    // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C ->
+    val expect = SOr(SAnd(a, b, SNot(c)),
+                     SAnd(a, SNot(b), c),
+                     SAnd(a, SNot(c)))
+    val ty = SOr(SAnd(a, b, SNot(c)),
+                 SAnd(a, SNot(b), c),
+                 SAnd(a, SNot(b), SNot(c)))
+    val out = ty.conversion9()
+    assert(out == expect,
+           "828")
+  }
+
+  test("combo conversion9 3rd") {
+    import RandomType.randomType
+    for {depth <- 0 to 0
+         r <- 0 to num_random_tests
+         a = randomType(depth)
+         b = randomType(depth)
+         c = randomType(depth)
+         } {
+
+      // AB!C + A!BC + A!B!C -> AB!C + A!BC + A!C ->
+      val expect = SOr(SAnd(a, b, SNot(c)),
+                       SAnd(a, SNot(b), c),
+                       SAnd(a, SNot(c)))
+      val ty = SOr(SAnd(a, b, SNot(c)),
+                   SAnd(a, SNot(b), c),
+                   SAnd(a, SNot(b), SNot(c)))
+      val out = ty.conversion9()
+      assert(out == expect,
+             "825")
+    }
+  }
+
   test("and conversionD1"){
     // SAnd(SMember(42,43,44), A, B, C)
     //  ==> SMember(42,44)

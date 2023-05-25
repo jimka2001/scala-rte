@@ -31,7 +31,6 @@ import xymbolyco.Thompson._
 
 
 class ThompsonTestSuite  extends MyFunSuite {
-  val num_random_tests: Int = 1000
 
   test("remove epsilon transitions 1") {
     val t1: SimpleTypeD = SAtomic(classOf[String])
@@ -473,7 +472,9 @@ class ThompsonTestSuite  extends MyFunSuite {
   test("Thompson/brz/Trait3") {
     import genus.RandomType.Trait3
     val data = Profiling.check(Singleton(SAtomic(classOf[Trait3])), 1, 1)
-    assert(data("thompson_min") == data("brzozowski_min"))
+    assert(data("min_thompson").Q.size == data("min_brzozowski").Q.size)
+    assert(data("min_thompson").F.size == data("min_brzozowski").F.size)
+    assert(data("min_thompson").protoDelta.size == data("min_brzozowski").protoDelta.size)
   }
   test("discovered 463") {
     import genus.RandomType.{Trait3X, Abstract1X}
@@ -489,7 +490,9 @@ class ThompsonTestSuite  extends MyFunSuite {
                           Cat(Not(num), Or(a1x, num)))),
                   Star(stop))
     val data = Profiling.check(rte, 1, 1)
-    assert(data("thompson_min") == data("brzozowski_min"))
+    assert(data("min_thompson").Q.size == data("min_brzozowski").Q.size)
+    assert(data("min_thompson").F.size == data("min_brzozowski").F.size)
+    assert(data("min_thompson").protoDelta.size == data("min_brzozowski").protoDelta.size)
   }
 
   def discovered463b() = {
@@ -506,7 +509,9 @@ class ThompsonTestSuite  extends MyFunSuite {
                           Cat(Not(num), Or(a1x, num)))),
                   Star(stop))
     val data = Profiling.check(rte, 1, 1)
-    assert(data("thompson_min") == data("brzozowski_min"))
+    assert(data("min_thompson").Q.size == data("min_brzozowski").Q.size)
+    assert(data("min_thompson").F.size == data("min_brzozowski").F.size)
+    assert(data("min_thompson").protoDelta.size == data("min_brzozowski").protoDelta.size)
   }
 
   test("discovered 463 b") {

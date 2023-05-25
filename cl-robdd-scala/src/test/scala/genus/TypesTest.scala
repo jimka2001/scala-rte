@@ -148,7 +148,7 @@ class TypesTest extends MyFunSuite {
     assert(! eql(0,0.0))
     for {d <- 1 to 3
          n <- 1 to 100
-         _ <- 1 to 20
+         _ <- 1 to num_random_tests / 1000 * 20
          li = for {_ <- 1 to 10} yield randomType(d)
          m <- 1 to n
          prefix = li.take(m)
@@ -177,7 +177,7 @@ class TypesTest extends MyFunSuite {
                         SNot(SAtomic(classOf[Trait1])),
                         SNot(SAtomic(classOf[Trait2]))
                         )
-    for {_ <- 1 to 1000
+    for {_ <- 1 to num_random_tests
          d <- 1 to 4
          t1 = randomType(d)
          t2 = randomType(d)
@@ -214,7 +214,7 @@ class TypesTest extends MyFunSuite {
     assert(m == expected)
   }
   test("typeEquivalent random") {
-    for {_ <- 0 to 1000
+    for {_ <- 0 to num_random_tests
          d <- 0 to 4
          t1 = randomType(d)
          t2 = randomType(d)
