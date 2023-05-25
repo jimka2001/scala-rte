@@ -97,64 +97,6 @@ abstract class Magma[T] {
   }
 }
 
-case class DynMagma[T](gen1: () => LazyList[T],
-                       op1: (T, T) => T,
-                       member1: T => Boolean) extends Magma[T] {
-  override def toString: String = "dyn"
-
-  def gen(): LazyList[T] = gen1()
-
-  def op(a: T, b: T): T = op1(a, b)
-
-  def member(a: T): TrueOrFalseBecause = member1(a) match {
-    case true => True(s"$a is member")
-    case false => False(s"$a not a member")
-  }
-}
-
-abstract class ModP(p: Int) extends Magma[Int] {
-  override def toString: String = s"ModP($p)"
-
-  override def gen(): LazyList[Int] = Magma.genFinite(p - 1)
-
-  override def equiv(a: Int, b: Int): TrueOrFalseBecause =
-    if (a == b)
-      True(s"$a equiv $b")
-    else
-      False(s"$a not equiv $b")
-
-  override def member(a: Int): TrueOrFalseBecause =
-    if (a < 0)
-      False(s"$a is not member because $a < 0")
-    else if (a >= p)
-      False(s"$a is not a member because $a >= $p")
-    else
-      True(s"0 <= $a < $p")
-}
-
-class AdditionModP(p: Int) extends ModP(p) {
-  override def toString: String = s"AdditionModP($p)"
-
-  override def op(a: Int, b: Int): Int = (a + b) % p
-}
-
-class MultiplicationModP(p: Int) extends ModP(p) {
-  override def toString: String = s"MultiplicationModP($p)"
-
-  override def gen(): LazyList[Int] = {
-    super.gen().filter { a => a != 0 }
-  }
-
-  override def member(a: Int): TrueOrFalseBecause = {
-    if (a <= 0)
-      False(s"$a <= 0")
-    else
-      super.member(a)
-  }
-
-  override def op(a: Int, b: Int): Int = (a * b) % p
-}
-
 object Magma {
 
   import TrueOrFalseBecause._
@@ -170,7 +112,7 @@ object Magma {
     loop(0)
   }
 
-  def caleyTable[T](elements: LazyList[T], dyn_op: (T, T) => T): String = {
+  def cayleyTable[T](elements: LazyList[T], dyn_op: (T, T) => T): String = {
     val header: String = "*|" ++ elements.map(x => s"$x").mkString(" ")
     val divider: String = "-+" ++ elements.map(x => "-").mkString("-")
     "\n" ++ header ++ "\n" ++ divider ++ "\n" ++ elements
@@ -227,18 +169,18 @@ object Magma {
         case tf: True =>
           groups += 1
           monoids += 1
-          tf ++ (s"found a group " + caleyTable(elements, dyn_op))
+          tf ++ (s"found a group " + cayleyTable(elements, dyn_op))
       }) ||
         (dm.isMonoid(0) match {
           case tf: False => tf //println(str)
           case tf: True =>
             monoids += 1
-            tf ++ (s"found a monoid " + caleyTable(elements, dyn_op))
+            tf ++ (s"found a monoid " + cayleyTable(elements, dyn_op))
         }) ||
         (dm.isSemiGroup() match {
           case tf: False => tf //println(str)
           case tf: True =>
-            tf ++ (s"found a semigroup " + caleyTable(elements, dyn_op))
+            tf ++ (s"found a semigroup " + cayleyTable(elements, dyn_op))
         })
     }
     println(s"monoids: $monoids/$tries")
@@ -269,7 +211,7 @@ object Magma {
          ig <- dm.isGroup(0, x => dm.findInverse(x))
          //table = caleyTable(elements, dyn_op)
          }  {
-      val table = caleyTable(elements, dyn_op)
+      val table = cayleyTable(elements, dyn_op)
       tries += 1
       groups += 1
       println(s"found a group " + table + ": ig")
