@@ -523,7 +523,7 @@ object Thompson {
     // To perform this computation, we use foldM to walk the variable, v, through
     //  the input sequence.  At each iteration of the foldM, we take a set, qs,
     //  of states, Set[Int], and map each Int, q, to a set of next states
-    //  my examining groups(q) and calling td.typep(v).   One of two things
+    //  by examining groups(q) and calling td.typep(v).   One of two things
     //  happens with this `foldM`.
     //  Either 1: it computes an empty set of next states, mid-way through the
     //  sequence, in which case foldM aborts and returns None, or 2: it reaches
