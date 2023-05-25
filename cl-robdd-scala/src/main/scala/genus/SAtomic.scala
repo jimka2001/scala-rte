@@ -32,6 +32,7 @@ import scala.collection.mutable
  * @param ct the class of a Scala or Java type this class will wrap (call it with `classOf[native_type]`)
  */
 case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
+  // syntax: SAtomic(classOf[Int])
   //if (ct != classOf[Nothing] && ! SAtomic.existsInstantiatableSubclass(ct))
   //  println(s"WARNING: SAtomic($ct) is equivalent to SEmpty")
   val wv = SAtomic.getWorldView()
