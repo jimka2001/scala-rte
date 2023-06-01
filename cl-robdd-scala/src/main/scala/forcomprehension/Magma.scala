@@ -46,8 +46,8 @@ abstract class Magma[T] {
 
   def isIdentity(z: T): TrueOrFalseBecause = {
     forallM[T](gen(), { a =>
-      equiv(op(a, z),
-            op(z, a)).map( str => s"$z is not an the identity for $this, $str")
+      equiv(op(a, z), a).map( str => s"$z is not the identity because op($a, z)=${op(a,z)}") &&
+        equiv(op(z, a), a).map( str => s"$z is not the identity because op(z, $a)=${op(z,a)}")
     })
   }
 
@@ -159,18 +159,12 @@ object Magma {
 
   import TrueOrFalseBecause._
 
+  // generate a lazy list from 0 to n inclusive
   def genFinite(n: Int): LazyList[Int] = {
-    def loop(m: Int): LazyList[Int] = {
-      if (m > n)
-        LazyList.empty
-      else
-        m #:: loop(m + 1)
-    }
-
-    loop(0)
+    LazyList.from(0 to n)
   }
 
-  def caleyTable[T](elements: LazyList[T], dyn_op: (T, T) => T): String = {
+  def cayleyTable[T](elements: LazyList[T], dyn_op: (T, T) => T): String = {
     val header: String = "*|" ++ elements.map(x => s"$x").mkString(" ")
     val divider: String = "-+" ++ elements.map(x => "-").mkString("-")
     "\n" ++ header ++ "\n" ++ divider ++ "\n" ++ elements
@@ -190,89 +184,174 @@ object Magma {
         case False(str) => println(str)
         case _ => println(s"$add is a group")
       }
-      mult.isGroup(1, a => (1 to p).find(b => (a * b) % p == 1)) match {
+      mult.isGroup(1, a => (1 until p).find(b => (a * b) % p == 1)) match {
         case False(str) => println(str)
         case _ => println(s"$mult is a group")
       }
     }
   }
+  def randomCayleyTable(n:Int):(Int,Int)=>Int = {
+    import scala.util.Random
+    // generate a function representing one possible addition table of a
+    // magma of n elements, numbers 0 to n-1 with the restriction
+    // that 0+z= 0 and z+0 = z
+    val tbl = (for{row <- 1 to n-1
+                   col <- 1 to n-1 }
+    yield (row,col) -> Random.between(0,n)).toMap
 
-  def findGroups() = {
-    val elements = genFinite(2)
+    def add(a: Int, b: Int): Int = {
+        if (a == 0)
+          b
+        else if (b == 0)
+          a
+        else tbl((a,b))
+    }
+
+    add
+  }
+  def randomCayleyTables(n:Int):LazyList[(Int,Int)=>Int] = {
+    randomCayleyTable(n) #:: randomCayleyTables(n)
+  }
+
+  def allUnitalCayleyTables(n: Int): LazyList[(Int, Int) => Int] = {
+    import scala.math.pow
+    // generate a lazy sequence of length n^n * (n-1)^2 of functions
+    // each representing one possible addition table of a
+    // magma of n elements, numbers 0 to n-1 with the restriction
+    // that 0+z= 0 and z+0 = z
+    def recur(i: Int): LazyList[(Int, Int) => Int] = {
+      def add(a: Int, b: Int): Int = {
+        if (a == 0)
+          b
+        else if (b == 0)
+          a
+        else {
+          // interpret i as a (n-1)x(n-1) digit number in base n, i.e., composed
+          // of digits 0 ... (n-1)
+          // arrange these digits into an (n-1) x (n-1) matrix, and return
+          // the element at row a, column b.
+          // i.e. the digit in position (1 based) (a-1)*(n-1)+(b-1)
+          // we know that a>0 and b>0 because of the first two clauses
+          // of the if/else-if.
+          val pos = (a - 1) * (n - 1) + (b - 1)
+          i / pow(n, pos).toInt % n
+        }
+      }
+
+      if (i < 0)
+        LazyList()
+      else
+        add _ #:: recur(i - 1)
+    }
+    // n ^ ((n-1)^2)
+    // e.g., if n=8, we want to know how many 49 digit base 8 numbers exist?
+    // i.e., 8^((8-1)*(8-1))
+    // if n=2, how many 1 digit base 2 numbers = 1^2 = 2
+    // if n=3, how many 4 digit base 3 numbers = 3^4 = 81
+    // if n=4, how many 9 digit base 4 numbers = 4^9 = 262144
+    recur(pow(n, (n - 1) * (n - 1)).toInt - 1)
+  }
+
+  def allCayleyTables(n: Int): LazyList[(Int, Int) => Int] = {
+    import scala.math.pow
+
+    def recur(i: Int): LazyList[(Int, Int) => Int] = {
+      def add(a: Int, b: Int): Int = {
+          // interpret i as a n x n  digit number in base n, i.e., composed
+          // of digits 0 ... (n-1)
+          // arrange these digits into an n x n matrix, and return
+          // the element at row a, column b.
+          // i.e. the digit in position (0 based) a*n+b
+          val pos = a * n + b
+          i / pow(n, pos).toInt % n
+      }
+
+      if (i < 0)
+        LazyList()
+      else
+        add _ #:: recur(i - 1)
+    }
+
+    recur(pow(n, n*n).toInt - 1)
+  }
+
+  def findGroups(n:Int) = {
+    val elements = genFinite(n-1)
     var groups = 0
+    var abeliangroups = 0
     var monoids = 0
+    var abelianmonoids = 0
+    var semigroups = 0
+    var abeliansemigroups = 0
     var tries = 0
-    // find 3 element monoids
-    for {a <- elements
-         b <- elements
-         c <- elements
-         d <- elements
-         dyn_op = ((x: Int, y: Int) => (x, y) match {
-           case (_, 0) => x
-           case (0, _) => y
-           case (1, 1) => a
-           case (1, 2) => b
-           case (2, 1) => c
-           case (2, 2) => d
-         })
+    var abelians = 0
+    // find n element monoids
+    for {dyn_op <- allCayleyTables(n)
          dm = DynMagma(() => elements,
                        op1 = dyn_op,
                        member1 = (a: Int) => elements.contains(a)
                        )
+         ab = dm.isAbelian()
          } {
       tries += 1
-
+      if (ab.toBoolean)
+        abelians += 1
       (dm.isGroup(0, x => dm.findInverse(x)) match {
         case tf: False => tf // println(str)
         case tf: True =>
           groups += 1
           monoids += 1
-          tf ++ (s"found a group " + caleyTable(elements, dyn_op))
+          semigroups += 1
+          if (ab.toBoolean) {
+            abeliangroups += 1
+            abelianmonoids += 1
+            abeliansemigroups += 1
+          }
+
+          tf ++ (s"found a group " + cayleyTable(elements, dyn_op))
       }) ||
         (dm.isMonoid(0) match {
           case tf: False => tf //println(str)
           case tf: True =>
             monoids += 1
-            tf ++ (s"found a monoid " + caleyTable(elements, dyn_op))
+            semigroups += 1
+            if (ab.toBoolean) {
+              abelianmonoids += 1
+              abeliansemigroups += 1
+            }
+            tf ++ (s"found a monoid " + cayleyTable(elements, dyn_op))
         }) ||
         (dm.isSemiGroup() match {
           case tf: False => tf //println(str)
           case tf: True =>
-            tf ++ (s"found a semigroup " + caleyTable(elements, dyn_op))
+            semigroups += 1
+            if (ab.toBoolean) {
+              abeliansemigroups += 1
+            }
+            tf ++ (s"found a semigroup " + cayleyTable(elements, dyn_op))
         })
     }
-    println(s"monoids: $monoids/$tries")
-    println(s"groups:  $groups/$tries")
+    println(s"magmas: $tries   abelian=$abelians")
+    println(s"semigroups: $semigroups   abelian=$abeliansemigroups")
+    println(s"monoids: $monoids   abelian=$abelianmonoids")
+    println(s"groups:  $groups   abelian=$abeliangroups")
   }
 
-  def findGroupsM() = {
-    val elements = genFinite(2)
+  def findGroupsM(n:Int) = {
+    val elements = genFinite(n-1) // [0, 1, 2] size 3
     var groups = 0
     var tries = 0
-    // find 3 element monoids
-    for {a <- elements
-         b <- elements
-         c <- elements
-         d <- elements
-         dyn_op = ((x: Int, y: Int) => (x, y) match {
-           case (_, 0) => x
-           case (0, _) => y
-           case (1, 1) => a
-           case (1, 2) => b
-           case (2, 1) => c
-           case (2, 2) => d
-         })
-         dm = DynMagma(() => elements,
-                      op1 = dyn_op,
-                      member1 = (a: Int) => elements.contains(a)
-                      )
-         ig <- dm.isGroup(0, x => dm.findInverse(x))
-         //table = caleyTable(elements, dyn_op)
-         }  {
-      val table = caleyTable(elements, dyn_op)
-      tries += 1
+    for { add <- allUnitalCayleyTables(n)
+          _ = (tries += 1)
+          dm = DynMagma(() => elements,
+                        op1 = add,
+                        member1 = (a: Int) => elements.contains(a)
+                        )
+          ig <- dm.isGroup(0, x => dm.findInverse(x))
+          }  {
+      val table = cayleyTable(elements, add)
       groups += 1
-      println(s"found a group " + table + ": ig")
+      println(s"found a group " + table + s": $ig")
     }
     println(s"groups:  $groups/$tries")
   }
@@ -313,13 +392,23 @@ object Magma {
     }
   }
 
+  def testCayleyTables(n:Int):Unit = {
+    for {add <- allUnitalCayleyTables(n)
+         str = cayleyTable(genFinite(n-1), add)
+         } println(str)
+  }
+
   def main(argv: Array[String]): Unit = {
-    testLogic()
-    moreTests()
-    testModP()
-    //findGroups()
-    findGroupsM()
-    testExists()
+    //testCayleyTables(2)
+    //testCayleyTables(3)
+    //testLogic()
+    //moreTests()
+    //testModP()
+    findGroups(4)
+    //findGroupsM(2)
+    //findGroupsM(3)
+    //findGroupsM(4)
+    //testExists()
   }
 }
 
