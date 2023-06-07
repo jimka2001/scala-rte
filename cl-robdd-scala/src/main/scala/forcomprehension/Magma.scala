@@ -136,6 +136,10 @@ class AdditionModP(p: Int) extends ModP(p) {
   override def toString: String = s"AdditionModP($p)"
 
   override def op(a: Int, b: Int): Int = (a + b) % p
+
+  override def findInverse(a: Int):Option[Int] = {
+    Some(p - a)
+  }
 }
 
 class MultiplicationModP(p: Int) extends ModP(p) {
@@ -153,6 +157,33 @@ class MultiplicationModP(p: Int) extends ModP(p) {
   }
 
   override def op(a: Int, b: Int): Int = (a * b) % p
+
+  override def findInverse(a:Int):Option[Int] = {
+    if (a == 0)
+      None
+    else {
+      def loop(a:Int, b:Int,
+               u:Int, u1:Int):Int = {
+        val r = a % b
+        val q = a / b
+        if (r == 1)
+          (u - q * u1) % p
+        else
+          loop(b, r,
+               u1, (u - q * u1) % p)
+      }
+      Some(
+        if (a == 1)
+          1
+        else if ((p-1) % a == 0){
+          // p-1 and all its factors have easy to find inverses
+          val b = (p-1) / a
+          p - b
+        }
+        else
+          loop(p, a, 0, 1))
+    }
+  }
 }
 
 object Magma {
@@ -307,7 +338,9 @@ object Magma {
             abelianmonoids += 1
             abeliansemigroups += 1
           }
-
+          print("found"
+                  + (if (ab.toBoolean) " Abelian" else "")
+                  + s" group ${cayleyTable(elements, dyn_op)} ")
           tf ++ (s"found a group " + cayleyTable(elements, dyn_op))
       }) ||
         (dm.isMonoid(0) match {
