@@ -97,95 +97,6 @@ abstract class Magma[T] {
   }
 }
 
-case class DynMagma[T](gen1: () => LazyList[T],
-                       op1: (T, T) => T,
-                       member1: T => Boolean) extends Magma[T] {
-  override def toString: String = "dyn"
-
-  def gen(): LazyList[T] = gen1()
-
-  def op(a: T, b: T): T = op1(a, b)
-
-  def member(a: T): TrueOrFalseBecause = member1(a) match {
-    case true => True(s"$a is member")
-    case false => False(s"$a not a member")
-  }
-}
-
-abstract class ModP(p: Int) extends Magma[Int] {
-  override def toString: String = s"ModP($p)"
-
-  override def gen(): LazyList[Int] = Magma.genFinite(p - 1)
-
-  override def equiv(a: Int, b: Int): TrueOrFalseBecause =
-    if (a == b)
-      True(s"$a equiv $b")
-    else
-      False(s"$a not equiv $b")
-
-  override def member(a: Int): TrueOrFalseBecause =
-    if (a < 0)
-      False(s"$a is not member because $a < 0")
-    else if (a >= p)
-      False(s"$a is not a member because $a >= $p")
-    else
-      True(s"0 <= $a < $p")
-}
-
-class AdditionModP(p: Int) extends ModP(p) {
-  override def toString: String = s"AdditionModP($p)"
-
-  override def op(a: Int, b: Int): Int = (a + b) % p
-
-  override def findInverse(a: Int):Option[Int] = {
-    Some(p - a)
-  }
-}
-
-class MultiplicationModP(p: Int) extends ModP(p) {
-  override def toString: String = s"MultiplicationModP($p)"
-
-  override def gen(): LazyList[Int] = {
-    super.gen().filter { a => a != 0 }
-  }
-
-  override def member(a: Int): TrueOrFalseBecause = {
-    if (a <= 0)
-      False(s"$a <= 0")
-    else
-      super.member(a)
-  }
-
-  override def op(a: Int, b: Int): Int = (a * b) % p
-
-  override def findInverse(a:Int):Option[Int] = {
-    if (a == 0)
-      None
-    else {
-      def loop(a:Int, b:Int,
-               u:Int, u1:Int):Int = {
-        val r = a % b
-        val q = a / b
-        if (r == 1)
-          (u - q * u1) % p
-        else
-          loop(b, r,
-               u1, (u - q * u1) % p)
-      }
-      Some(
-        if (a == 1)
-          1
-        else if ((p-1) % a == 0){
-          // p-1 and all its factors have easy to find inverses
-          val b = (p-1) / a
-          p - b
-        }
-        else
-          loop(p, a, 0, 1))
-    }
-  }
-}
-
 object Magma {
 
   import TrueOrFalseBecause._
@@ -374,6 +285,7 @@ object Magma {
     val elements = genFinite(n-1) // [0, 1, 2] size 3
     var groups = 0
     var tries = 0
+
     for { add <- allUnitalCayleyTables(n)
           _ = (tries += 1)
           dm = DynMagma(() => elements,
