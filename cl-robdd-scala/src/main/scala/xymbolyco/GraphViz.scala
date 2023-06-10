@@ -103,6 +103,7 @@ object GraphViz {
     locally {
       import sys.process._
       Seq("dot", "-Tplain", dotPath, "-o", altPath).! // write file containing coordinates
+
       val cmd = Seq("dot", "-Tpng", dotPath, "-o", pngPath)
       //println(s"cmd = $cmd")
       cmd.!

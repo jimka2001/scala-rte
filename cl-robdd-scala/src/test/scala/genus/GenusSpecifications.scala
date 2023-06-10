@@ -18,18 +18,20 @@ object GenusSpecifications {
 
   // Generate a TerminalType as a leaf of the SimpleTypeD
   def genLeaf = {
-    // Choose between one of the 6 terminal types
-    Gen.frequency(
-      (5, SAtomic(Arbitrary.arbitrary[AnyVal].getClass)),
-      (5, SEql(Arbitrary.arbitrary[AnyVal].sample.get)),
-      (5, SMember(Gen.listOfN[AnyVal](5, Arbitrary.arbitrary[AnyVal]).sample.get)),
-      (5, {
-        val predicate = genPredicate.sample.get
-        SSatisfies(predicate._1, predicate._2)
-      }),
-      (1, STop),
-      (1, SEmpty),
-    )
+    Gen.lzy {
+      // Choose between one of the 6 terminal types
+      Gen.frequency(
+        (5, SAtomic(Arbitrary.arbitrary[AnyVal].getClass)),
+        (5, SEql(Arbitrary.arbitrary[AnyVal].sample.get)),
+        (5, SMember(Gen.listOfN[AnyVal](5, Arbitrary.arbitrary[AnyVal]).sample.get)),
+        (5, {
+          val predicate = genPredicate.sample.get
+          SSatisfies(predicate._1, predicate._2)
+        }),
+        (1, STop),
+        (1, SEmpty),
+      )
+    }
   }
 
   // Generate a SCombination or SNot as an internal node of the SimpleTypeD

@@ -17,7 +17,7 @@ object RteSpecifications {
       (1, EmptySet),
       (1, EmptyWord),
       (1, Sigma),
-      (1, Singleton(naiveGenGenus(depthSimpleTypeD).sample.get)), // FIXME: May be costly to call the Rte gen
+      (1, Singleton(Gen.lzy(naiveGenGenus(depthSimpleTypeD)).sample.get)), // FIXME: May be costly to call the Rte gen
     )
   }
 
@@ -43,7 +43,7 @@ object RteSpecifications {
   def naiveGenRte(depth: Int): Gen[Rte] = Gen.lzy {
     if (depth <= 1) Gen.lzy(genLeaf) else
       Gen.frequency(
-        (1, Gen.lzy(genInternalNode(depth - 1))),
+        (5, Gen.lzy(genInternalNode(depth - 1))),
         (1, Gen.lzy(genLeaf)),
       )
   }

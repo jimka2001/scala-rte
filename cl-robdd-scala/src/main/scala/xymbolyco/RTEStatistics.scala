@@ -29,7 +29,7 @@ import adjuvant.GnuPlot._
 import xymbolyco.Extract.dfaToRte
 
 case class RTEStatistics(rte: Rte) {
-//object countains a map of the transitions
+//object contains a map of the transitions
   lazy val numberOfTransitions: Map[(Boolean, String, Boolean, String), Int] = createMap(rte)
 //function that creates the map to be returned
   // in the for loop each of the DFAs are being built in turn and the transitions are being counted in a way that the DFAs do not need to be built twice.
