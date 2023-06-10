@@ -99,7 +99,7 @@ object GenusSpecifications {
 
     // Try STop, SEmpty, or shrink the content
     case t: SMember => {
-      SEmpty #:: STop #:: (SMember(shrink(t.xs)) #:: Stream.empty)
+      SEmpty #:: STop #:: (SMember(shrink(t.xs)) #:: Stream.empty) // TODO: add .map
     }
 
     // Try STop, SEmpty, or shrink the content

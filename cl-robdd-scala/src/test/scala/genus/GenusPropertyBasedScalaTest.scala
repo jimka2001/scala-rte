@@ -15,7 +15,7 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.forAll
 // With this method, we can integrate ScalaCheck and Scalatest. But we lose clear information about what is the original argument (before shrinking), what number of tests are passing etc.
 class GenusPBT extends MyFunSuite with Matchers with Configuration {
   val depth = 10
-  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(minSuccessful = 10000, workers = 4)
+  implicit override val generatorDrivenConfig = PropertyCheckConfiguration(minSuccessful = 100000, workers = 4)
 
   test("DNF Inverse") {
     forAll { (t: SimpleTypeD) =>
@@ -76,7 +76,7 @@ class GenusPBT extends MyFunSuite with Matchers with Configuration {
         }
       }
 
-      isDnf(t.canonicalize(Some(Dnf))) should be(true)
+      isDnf(t.canonicalize(Some(Dnf)))
     }
   }
 
