@@ -89,7 +89,7 @@ object GenusSpecifications {
 
     // Try STop, SEmpty, or the shrinked child
     case t: SNot => {
-      SEmpty #:: STop #:: shrink(t)
+      SEmpty #:: STop #:: t.s #:: Stream.Empty
     }
 
     // Try STop, SEmpty, or shrink the content
