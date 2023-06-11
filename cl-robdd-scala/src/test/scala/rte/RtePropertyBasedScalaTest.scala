@@ -13,35 +13,11 @@ import scala.collection.immutable.{Map, Set}
 
 import scala.Predef.->
 
-
-// Main entrypoint
 object RtePropertyBasedScalaTest extends App {
     // This is a copy of the statisticSizePerfDFAfromF in the xymbolico package, adapted to work with a generator.
-    def statisticSizePerDFAfromGen(num: Int = 30000, minsize: Int = 5, maxsize: Int = 20, sizevar: Int = 5): Unit = {
-    //sequence that will contain all the curves
-    var myseq: Seq[(String, Seq[(Double, Double)])] = Seq()
-    //seq of strings to name the curves
-    val fnames = Seq("thompson", "thompson_min", "brzozowski", "brzozowski min")
-    //seq of functions to create each curve
-    val myfuncseq: Seq[Rte => Double] = Seq(thmp, thmpmin, brz, brzmin)
-    for (i <- Range(0, 4)) {
-      val f = myfuncseq(i)
-      //builds map of double->double, rte, counts all values
-      val mymap: Map[Double, Double] = Map().withDefaultValue(0)
-      val data = Range(0, (num * (maxsize - minsize)) / sizevar).foldLeft(mymap) { (acc, x) =>
-        val rte = naiveGenRte(((x / num) * sizevar) + minsize).sample.get
-        val fr = f(rte)
-        acc + (fr -> (acc(fr) + 1)) // FIXME: Error
-      }
-      //adds curve to sequence of curves
-      myseq :+= (fnames(i), data.toSeq.map(a => (a._1, (a._2 * 100) / num * ((maxsize - minsize) / sizevar))).sorted)
-    }
-    //creates gnuplot
-    gnuPlot(myseq)(Set("png"), title = "", comment = "", xAxisLabel = "Number of States per Sigma-DFA from a Random DFA",
-                   xLog = true, yAxisLabel = "Proportion of sigma DFAs", yLog = true,
-                   grid = false, outputFileBaseName = "DFAsizeperdepth", plotWith = "linespoints",
-                   key = "horizontal bmargin", _ => (), verbose = false, view = false)
-  }
+    // FIXME: Move this function in the proper location
+
+    mystats.statisticSizePerDFAfromGen(5, 5, 10, 1, naiveGenRte(5))
 //  val rteList = for {
 //    _ <- 0 until 5
 //  } yield naiveGenRte(25).sample.get

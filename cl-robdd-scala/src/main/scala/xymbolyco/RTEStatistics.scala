@@ -22,11 +22,13 @@
 package xymbolyco
 
 import genus.{SAtomic, SimpleTypeD}
+
 import javax.management.openmbean.SimpleType
 import rte._
 import xymbolyco.Profiling.check
 import adjuvant.GnuPlot._
 import xymbolyco.Extract.dfaToRte
+import org.scalacheck.Gen
 
 case class RTEStatistics(rte: Rte) {
 //object contains a map of the transitions
@@ -231,10 +233,38 @@ object mystats {
   }
 
 
+  def statisticSizePerDFAfromGen(num: Int = 30000, minsize: Int = 5, maxsize: Int = 20, sizevar: Int = 5, gen: Gen[Rte]): Unit = {
+    //sequence that will contain all the curves
+    var myseq: Seq[(String, Seq[(Double, Double)])] = Seq()
+    //seq of strings to name the curves
+    val fnames = Seq("thompson", "thompson_min", "brzozowski", "brzozowski min")
+    //seq of functions to create each curve
+    val myfuncseq: Seq[Rte => Double] = Seq(thmp, thmpmin, brz, brzmin)
+    for (i <- Range(0, 4)) {
+      val f = myfuncseq(i)
+      //builds map of double->double, rte, counts all values
+      val mymap: Map[Double, Double] = Map().withDefaultValue(0)
+      val data = Range(0, (num * (maxsize - minsize)) / sizevar).foldLeft(mymap) { (acc, x) =>
+        val rte = gen.sample.get // (((x / num) * sizevar) + minsize)
+        val fr = f(rte)
+        acc + (fr -> (acc(fr) + 1))
+      }
+      //adds curve to sequence of curves
+      myseq :+= (fnames(i), data.toSeq.map(a => (a._1, (a._2 * 100) / num * ((maxsize - minsize) / sizevar))).sorted)
+    }
+    //creates gnuplot
+    gnuPlot(myseq)(Set("png"), title = "", comment = "", xAxisLabel = "Number of States per Sigma-DFA from a Random DFA",
+      xLog = true, yAxisLabel = "Proportion of sigma DFAs", yLog = true,
+      grid = false, outputFileBaseName = "DFAsizeperdepth", plotWith = "linespoints",
+      key = "horizontal bmargin", _ => (), verbose = false, view = false)
+  }
 
 
   def main(argv: Array[String]):Unit=
   {
-    mystats.statisticSizePerRndDFASize(4,5,10,5,1,mystats.brz)
+//    mystats.statisticSizePerDFAfromF(100,5,10,5,false)
+//    mystats.statisticSizePerDFAfromRandomDFA(100,5,10,5)
+//    mystats.statisticSizePerRndDFASize(4,5,10,5,1,mystats.brz)
+    mystats.statisticSizePerDFA(100, 5)
   }
 }
