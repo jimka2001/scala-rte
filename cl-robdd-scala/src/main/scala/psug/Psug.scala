@@ -22,7 +22,8 @@
 package psug
 
 import genus._
-import rte._
+import rte.Rte.rteIfThenElse
+import rte.{Cat, _}
 import xymbolyco.GraphViz.{dfaView, multiLineString}
 
 
@@ -40,7 +41,7 @@ object Psug {
 
   val even: SSatisfies = SSatisfies(isEven, "even")
 
-  def example(): Unit = {
+  def exampleDfa(): Unit = {
     val rt2: Rte = Plus(Cat(Or(classOf[Int], And(classOf[Char],
                                                  Not(SEql('z')))),
                             Star(classOf[String]),
@@ -69,8 +70,48 @@ object Psug {
     }
   }
 
+  def exampleRteCase1(): Unit = {
+    val int = classOf[Int]
+    val str = classOf[String]
+    val f = rteIfThenElse(Seq(
+      Star(int) -> (() => "seq of Int"),
+      Star(str) -> (() => "seq of String"),
+      Cat(Star(int), Star(str)) -> (() => "seq of length 2")),
+                          () => "something else" // default case
+                          )
+    println(f(List(1, 2, 3, 4, 5)))
+    println(f(List("one", "two", "three", "four")))
+    println(f(List("one", "two", 3, 4)))
+    println(f(List(1, 2, "three", "four")))
+  }
+
+  def exampleRteCase2(): Unit = {
+    val int = classOf[Int]
+    val str = classOf[String]
+    val f = rteIfThenElse(Seq(
+      Star(int) -> (() => println("seq of Int")),
+      Star(str) -> (() => println("seq of String")),
+      Cat(Star(int), Star(str)) -> (() => println("seq of length 2")),
+      ),
+                          () => () // default case
+                          )
+    f(List(1, 2, 3, 4, 5))
+    f(List("one", "two", "three", "four"))
+    f(List("one", "two", 3, 4))
+    f(List(1, 2, "three", "four"))
+  }
+
+  def exampleMapping():Unit = {
+    def f(n:Int) = if (n % 2 == 0) List(n*n) else List()
+    //println(Vector(1,2,3,4,5,6,7).flatMap(f))
+    println((1 to 10).flatMap(f))
+  }
+
   def main(argv: Array[String]): Unit = {
-    example()
+    //exampleDfa()
+    //exampleRteCase1()
+    //exampleRteCase2()
+    exampleMapping()
   }
 
 }

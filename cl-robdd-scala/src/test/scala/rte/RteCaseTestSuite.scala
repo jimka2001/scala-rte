@@ -30,6 +30,29 @@ import rte.Rte.{rteCase,rteIfThenElse}
 
 //
 class RteCaseTestSuite extends MyFunSuite {
+  test("rteCase normal"){
+    // this test checks the normal behavior of rteCase
+    val int = classOf[Int]
+    val str = classOf[String]
+    val f = rteCase(Seq((Star(int), 1),
+                        (Star(str), 2),
+                        (Cat(Star(int), Star(str)), 3),
+                        (Cat(int, str), 0)))
+
+    assert(f(List(1, 2, 3, 4, 5)) == Some(1))
+    assert(f(Vector(1,2,3,4)) == Some(1))
+
+    assert(f(List("one", "two", "three", "four")) == Some(2))
+    assert(f(Vector("one", "two", "three", "four")) == Some(2))
+
+
+    assert(f(List(1, 2, "three", "four")) == Some(3))
+    assert(f(Vector(1, 2, "three", "four")) == Some(3))
+
+    assert(f(List("one", "two", 3, 4)) == None)
+    assert(f(Vector("one", "two", 3, 4)) == None)
+
+  }
   test("rteCase"){
     val int = classOf[Int]
     val str = classOf[String]
@@ -87,6 +110,30 @@ class RteCaseTestSuite extends MyFunSuite {
     val it4 = List(1, 2, "three", "four").iterator
     assert(f(it4) == Some(3))
     assert(f(it4) != Some(3))
+  }
+
+  test("rteIfThenElse normal") {
+    val int = classOf[Int]
+    val str = classOf[String]
+    val f = rteIfThenElse(Seq(
+      Star(int) -> (() => 1),
+      Star(str) -> (() => 2),
+      Cat(Star(int), Star(str)) -> (() => 3),
+      Cat(int, str) -> (() => {
+        //  case impossible
+        0
+      })),
+                          () => 4 // default case
+                          )
+    assert(f(List(1, 2, 3, 4, 5)) == 1)
+    assert(f(List("one", "two", "three", "four")) == 2)
+    assert(f(List("one", "two", 3, 4)) == 4)
+    assert(f(List(1, 2, "three", "four")) == 3)
+
+    assert(f(Vector(1, 2, 3, 4, 5)) == 1)
+    assert(f(Vector("one", "two", "three", "four")) == 2)
+    assert(f(Vector("one", "two", 3, 4)) == 4)
+    assert(f(Vector(1, 2, "three", "four")) == 3)
   }
 
   test("rteIfThenElse") {
