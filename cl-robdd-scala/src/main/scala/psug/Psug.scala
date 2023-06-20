@@ -103,6 +103,8 @@ object Psug {
 
   def exampleMapping():Unit = {
     def f(n:Int) = if (n % 2 == 0) List(n*n) else List()
+    //println(Vector(1,2,3,4,5,6,7).foreach(f))
+    //println(Vector(1,2,3,4,5,6,7).map(f))
     //println(Vector(1,2,3,4,5,6,7).flatMap(f))
     println((1 to 10).flatMap(f))
   }
