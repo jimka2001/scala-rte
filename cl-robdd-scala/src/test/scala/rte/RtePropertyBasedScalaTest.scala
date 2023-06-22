@@ -11,11 +11,11 @@ import xymbolyco.mystats.{brz, brzmin, thmp, thmpmin}
 import xymbolyco.{GraphViz, RTEStatistics, mystats}
 import scala.collection.immutable.{Map, Set}
 
+
 import scala.Predef.->
 
 object RtePropertyBasedScalaTest extends App {
     // This is a copy of the statisticSizePerfDFAfromF in the xymbolico package, adapted to work with a generator.
-    // FIXME: Move this function in the proper location
 
     mystats.statisticSizePerDFAfromGen(5, 5, 10, 1, naiveGenRte(5))
 //  val rteList = for {
@@ -30,7 +30,9 @@ object RtePropertyBasedScalaTest extends App {
 
 // Standalone PBT tests
 object RteSpecification extends Properties("Rte") {
-  implicit lazy val arbitraryGen: Arbitrary[Rte] = Arbitrary(naiveGenRte(10))
+  val size = 10
+  val botlzmann = new RteBoltzmann(size)
+  implicit lazy val arbitraryGen: Arbitrary[Rte] = Arbitrary(botlzmann.RteBoltzmannGen())
 
   override def overrideParameters(p: Test.Parameters): Test.Parameters = p.withMinSuccessfulTests(10000)
 
