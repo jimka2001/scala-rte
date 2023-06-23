@@ -30,7 +30,7 @@ object RtePropertyBasedScalaTest extends App {
 
 // Standalone PBT tests
 object RteSpecification extends Properties("Rte") {
-  val size = 10
+  val size = 25
   val botlzmann = new RteBoltzmann(size)
   implicit lazy val arbitraryGen: Arbitrary[Rte] = Arbitrary(botlzmann.RteBoltzmannGen())
 
