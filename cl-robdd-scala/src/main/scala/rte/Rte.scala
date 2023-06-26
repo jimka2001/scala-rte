@@ -379,6 +379,7 @@ object Rte {
   // The caller of rteIfThenElse, may thereafter call the arbitration function
   // with a sequence (of type Seq[Any])
   // to selectively execute code corresponding to one of the Rtes provided,
+  //   (i.e., provded to rteIfThenElse).
   // The code executed is the code corresponding to the Rte which matches
   // the given sequence.
   //
