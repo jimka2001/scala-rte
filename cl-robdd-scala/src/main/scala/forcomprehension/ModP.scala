@@ -24,6 +24,10 @@ class AdditionModP(p: Int) extends ModP(p) {
   override def toString: String = s"AdditionModP($p)"
 
   override def op(a: Int, b: Int): Int = (a + b) % p
+
+  def suggestInverse(a:Int):Option[Int] = {
+    Some(0)
+  }
 }
 
 class MultiplicationModP(p: Int) extends ModP(p) {
