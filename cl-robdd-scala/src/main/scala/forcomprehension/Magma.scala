@@ -214,7 +214,7 @@ object Magma {
       val table = cayleyTable(elements, dyn_op)
       tries += 1
       groups += 1
-      println(s"found a group " + table + ": ig")
+      println(s"found a group $table: $ig")
     }
     println(s"groups:  $groups/$tries")
   }
