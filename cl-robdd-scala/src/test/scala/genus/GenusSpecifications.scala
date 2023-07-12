@@ -1,10 +1,32 @@
+// copyright (c) 2021 epita research and development laboratory
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software,
+// and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 package genus
 
 import org.scalacheck.Shrink.shrink
 import org.scalacheck.{Arbitrary, Gen, Shrink}
 
-// This object contains the definition of the SimpleTypeD Generator and Shrinker
+// Definition of the SimpleTypeD Generator and Shrinker
 object GenusSpecifications {
+  val childrenNum = 5
 
   // Generate a predicate and its string representation
   def genPredicate: Gen[(Any => Boolean, String)] = {
@@ -12,7 +34,6 @@ object GenusSpecifications {
 
     for {
       anyval <- Arbitrary.arbitrary[AnyVal]
-      // bool <- Arbitrary.arbitrary[Boolean]
     } yield (predicate(anyval, true), anyval + " => " + true)
   }
 
@@ -20,10 +41,12 @@ object GenusSpecifications {
   def genLeaf = {
     Gen.lzy {
       // Choose between one of the 6 terminal types
+      // STop and SEmpty have a lesser coefficient as an attempt to improve the semantic of the generated SimpleTypeD.
+      // Since SAnd(..., SEmpty, ...) is equivalent to SEmpty, and SOr(..., STop, ...) is equivalent to STop.
       Gen.frequency(
         (5, SAtomic(Arbitrary.arbitrary[AnyVal].getClass)),
         (5, SEql(Arbitrary.arbitrary[AnyVal].sample.get)),
-        (5, SMember(Gen.listOfN[AnyVal](5, Arbitrary.arbitrary[AnyVal]).sample.get)),
+        (5, SMember(Gen.listOfN[AnyVal](childrenNum, Arbitrary.arbitrary[AnyVal]).sample.get)),
         (5, {
           val predicate = genPredicate.sample.get
           SSatisfies(predicate._1, predicate._2)
@@ -36,23 +59,18 @@ object GenusSpecifications {
 
   // Generate a SCombination or SNot as an internal node of the SimpleTypeD
    def genInternalNode(depth: Int) = Gen.lzy {
-     val newDepth = depth - 1
-    implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus(newDepth))
-    lazy val listGenus = Gen.listOfN[SimpleTypeD](5, Arbitrary.arbitrary[SimpleTypeD](arbitraryGen)).sample.get
-
-    lazy val genAnd = SAnd(listGenus: _*)
-    lazy val genOr = SOr(listGenus: _*)
-    lazy val genNot = SNot(naiveGenGenus(newDepth).sample.get)
+     val newDepth = depth - 1 // Maximmal depth of the generated subtrees
+     implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus(newDepth))
+     lazy val listGenus = Gen.listOfN[SimpleTypeD](childrenNum, Arbitrary.arbitrary[SimpleTypeD](arbitraryGen)).sample.get
 
     // Choose between one of the 3 non terminal types
     Gen.frequency(
-      2 -> Gen.lzy(genAnd),
-      2 -> Gen.lzy(genOr),
-      1 -> Gen.lzy(genNot)
+      2 -> Gen.lzy(SAnd(listGenus: _*)),
+      2 -> Gen.lzy(SOr(listGenus: _*)),
+      1 -> Gen.lzy(SNot(naiveGenGenus(newDepth).sample.get))
     )
   }
 
-  // TODO: Upgrade current AnyValgen with other types
   // Generate a SimpleTypeD with a maximum depth of depth
   def naiveGenGenus(depth: Int): Gen[SimpleTypeD] = Gen.lzy {
     if (depth <= 1) Gen.lzy(genLeaf) else
@@ -89,19 +107,19 @@ object GenusSpecifications {
       }
     }
 
-    // Try STop, SEmpty, or the shrinked child
+    // Try STop, SEmpty, or the child
     case t: SNot => {
       SEmpty #:: STop #:: t.s #:: Stream.Empty
     }
 
     // Try STop, SEmpty, or shrink the content
     case t: SEql => {
-      SEmpty #:: STop #:: (shrink(t.a).map(SEql(_)))
+      SEmpty #:: STop #:: shrink(t.a).map(SEql(_))
     }
 
     // Try STop, SEmpty, or shrink the content
     case t: SMember => {
-      SEmpty #:: STop #:: (SMember(shrink(t.xs)) #:: Stream.empty) // TODO: add .map
+      SEmpty #:: STop #:: SMember(shrink(t.xs)) #:: Stream.empty
     }
 
     // Try STop, SEmpty, or shrink the content
@@ -109,16 +127,12 @@ object GenusSpecifications {
       SEmpty #:: STop #:: (shrink(t.f).map(SSatisfies(_, t.printable)))
     }
 
-    // Try STop or SEmpty
     case t: SAtomic => {
       SEmpty #:: STop #:: Stream.empty
     }
 
-    // For other cases, nothing to shrink
     case t => {
       Stream.empty
     }
   }
-
-  // TODO: Make the Shrinker from conversion9 property shrink all 3 generated values
 }

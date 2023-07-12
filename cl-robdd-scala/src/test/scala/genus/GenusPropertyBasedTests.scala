@@ -1,12 +1,32 @@
+// copyright (c) 2021 epita research and development laboratory
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software,
+// and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 package genus
 
-import org.scalacheck.{Arbitrary, Gen, Prop, Properties, Shrink, Test}
-import org.scalacheck.Prop.{classify, collect, forAll, forAllNoShrink, propBoolean}
+import org.scalacheck.{Arbitrary, Properties, Test}
+import org.scalacheck.Prop.{classify, forAll, propBoolean}
 import genus.GenusSpecifications.naiveGenGenus
 import genus.GenusSpecifications.shrinkGenus
 import genus.NormalForm.Dnf
-import genus.RandomType.{Class1X, Class2X, interestingValues}
-
+import genus.RandomType.{Class1X, Class2X}
 
 object GenusPropertyBasedTests extends App {
   val genusList = for {

@@ -1,13 +1,33 @@
+// copyright (c) 2021 epita research and development laboratory
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software,
+// and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 package rte
 
 import genus.GenusSpecifications.naiveGenGenus
-import genus.SAtomic
 import org.scalacheck.Shrink.shrink
 import org.scalacheck.{Arbitrary, Gen, Shrink}
 
 // This object contains the definition of the Rte Generator and Shrinker
 object RteSpecifications {
-  val depthSimpleTypeD = 5  // depth of the rte found as child of singleton
+  val depthSimpleTypeD = 1  // depth of the rte found as child of singleton
   val childLimit = 5        // limit to the number of child of an internal node
 
   // Generate a TerminalType as a leaf of the Rte
@@ -17,7 +37,7 @@ object RteSpecifications {
       (1, EmptySet),
       (1, EmptyWord),
       (1, Sigma),
-      (1, Singleton(Gen.lzy(naiveGenGenus(depthSimpleTypeD)).sample.get)), // FIXME: May be costly to call the Rte gen
+      (1, Singleton(Gen.lzy(naiveGenGenus(depthSimpleTypeD)).sample.get)),
     )
   }
 
@@ -39,7 +59,7 @@ object RteSpecifications {
       2 -> Gen.lzy(genOr),
       2 -> Gen.lzy(genStar),
       2 -> Gen.lzy(genCat),
-      1 -> Gen.lzy(genNot)
+      2 -> Gen.lzy(genNot)
     )
   }
 
@@ -48,7 +68,7 @@ object RteSpecifications {
     if (depth <= 1) Gen.lzy(genLeaf) else
       Gen.frequency(
         (5, Gen.lzy(genInternalNode(depth - 1))),
-        (1, Gen.lzy(genLeaf)),
+        (5, Gen.lzy(genLeaf)),
       )
   }
 
