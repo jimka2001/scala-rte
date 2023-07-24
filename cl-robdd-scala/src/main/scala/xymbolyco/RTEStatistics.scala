@@ -22,14 +22,16 @@
 package xymbolyco
 
 import genus.{SAtomic, SimpleTypeD}
+
 import javax.management.openmbean.SimpleType
 import rte._
 import xymbolyco.Profiling.check
 import adjuvant.GnuPlot._
 import xymbolyco.Extract.dfaToRte
+import org.scalacheck.Gen
 
 case class RTEStatistics(rte: Rte) {
-//object countains a map of the transitions
+//object contains a map of the transitions
   lazy val numberOfTransitions: Map[(Boolean, String, Boolean, String), Int] = createMap(rte)
 //function that creates the map to be returned
   // in the for loop each of the DFAs are being built in turn and the transitions are being counted in a way that the DFAs do not need to be built twice.
@@ -229,12 +231,11 @@ object mystats {
                    grid = false, outputFileBaseName = "DFAsizeperdepth", plotWith = "linespoints",
                    key = "horizontal bmargin", _ => (), verbose = false, view = false)
   }
-
-
-
-
   def main(argv: Array[String]):Unit=
   {
-    mystats.statisticSizePerRndDFASize(4,5,10,5,1,mystats.brz)
+    mystats.statisticSizePerDFAfromF(100,5,10,5,false)
+//    mystats.statisticSizePerDFAfromRandomDFA(100,5,10,5)
+//    mystats.statisticSizePerRndDFASize(4,5,10,5,1,mystats.brz)
+//    mystats.statisticSizePerDFA(100, 5)
   }
 }
