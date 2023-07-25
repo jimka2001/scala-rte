@@ -72,20 +72,10 @@ object testGaussianInt {
   def main(argv: Array[String]): Unit = {
     for {p <- 2 to 4
          m = new GaussianIntModP(p)
-         f = Magma.isField(m.gen, m.member,
+         f = Magma.isField[(Int,Int)](m.gen, m.member,
                            m.add, m.mult,
-                           locally {
-                             def maybe_add_invert(a: (Int, Int)): Option[(Int, Int)] =
-                               Some(m.subtract(m.zero, a))
-
-                             maybe_add_invert _
-                           },
-                           locally {
-                             def maybe_mult_invert(a: (Int, Int)): Option[(Int, Int)] =
-                               m.gen().find(b => m.mult(a, b) == m.one)
-
-                             maybe_mult_invert _
-                           },
+                           a => Some(m.subtract(m.zero, a)),
+                           m.mult_inv,
                            m.one, m.zero
                            ).ifFalse(s"$m not a field") && True(s" $m is a field")
          } println(s"$p: $f")
