@@ -72,7 +72,7 @@ abstract class Magma[T] {
   def isInverter(g: ()=>LazyList[T], z: T, invert: T => Option[T]): TrueOrFalseBecause = {
     forallM[T](g(), { a =>
       invert(a) match {
-        case None => False(s"$a has no inverse")
+        case None => False(s", $a has no inverse")
         case Some(b) =>
           member(b) &&
             equiv(z, op(a, b)) &&
@@ -394,8 +394,8 @@ object Magma {
       mb.isAbelian() &&
       isRing(gen, member,
              add,mult, add_invert,
-             one,zero) &&
-      mb.isInverter(non_zero_gen, one, mult_invert)
+             one,zero).ifFalse(s"not a ring") &&
+      mb.isInverter(non_zero_gen, one, mult_invert).ifFalse("invalid inversion")
   }
 
   def main(argv: Array[String]): Unit = {

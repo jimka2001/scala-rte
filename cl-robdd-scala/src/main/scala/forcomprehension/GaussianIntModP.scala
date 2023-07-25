@@ -87,7 +87,7 @@ object testGaussianInt {
                              maybe_mult_invert _
                            },
                            m.one, m.zero
-                           )
-         } println(s"$p $f")
+                           ).ifFalse(s"$m not a field") && True(s" $m is a field")
+         } println(s"$p: $f")
   }
 }
