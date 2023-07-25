@@ -77,17 +77,15 @@ case class False(because: String) extends TrueOrFalseBecause {
 object TrueOrFalseBecause {
 
   def forallM[T](items: LazyList[T], p: T => TrueOrFalseBecause): TrueOrFalseBecause = {
-    def loop(acc: TrueOrFalseBecause, tail: LazyList[T]): TrueOrFalseBecause = {
-      if (tail.isEmpty)
-        acc
-      else acc match {
-        case False(_) => acc ++ s"counter example ${tail.head}"
-        case True(_) =>
-          loop(p(tail.head), tail.tail)
+    def loop(prev:Option[T], acc: TrueOrFalseBecause, tail: LazyList[T]): TrueOrFalseBecause = {
+      (prev, tail,acc) match {
+        case (_, LazyList(),_) => acc
+        case (Some(prev), _, False(_)) => acc ++ s"counter example ${prev}"
+        case (_, a #:: as, True(_)) => loop(Some(a), p(a), as)
       }
     }
 
-    loop(True(""), items)
+    loop(None, True(""), items)
   }
 
   def existsM[T](items: LazyList[T], p: T => TrueOrFalseBecause): TrueOrFalseBecause = {
