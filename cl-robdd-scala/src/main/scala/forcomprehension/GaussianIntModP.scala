@@ -31,6 +31,18 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
     mod2(u*x - v*y, u*y  + v*x)
   }
 
+  def mult_inv(ab:(Int,Int)):Option[(Int,Int)] = {
+    // a+bi has inverse (a - bi)/(a^2 + b^2) in the
+    //   case that a^2 + b^2 is non-zero (modulo p)
+    val (a,b) = ab
+    val denom = mod(a*a + b*b)
+    if (denom == 0)
+      None
+    else
+      (1 until p).find(z => mod(z*denom) == 1)
+        .map(z => mod2(a*z, -b*z))
+  }
+
   def op(a: (Int, Int), b: (Int, Int)): (Int, Int) = {
     add(a,b)
   }
