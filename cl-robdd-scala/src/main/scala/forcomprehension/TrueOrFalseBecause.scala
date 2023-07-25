@@ -11,6 +11,9 @@ sealed abstract class TrueOrFalseBecause {
   def ||(that: => TrueOrFalseBecause):TrueOrFalseBecause
   def &&(that: => TrueOrFalseBecause):TrueOrFalseBecause
 
+  def ifTrue(msg:String): TrueOrFalseBecause = this
+  def ifFalse(msg:String): TrueOrFalseBecause = this
+
   def unary_! : TrueOrFalseBecause = {
     this match {
       case True(str) => False(str)
@@ -33,6 +36,9 @@ case class True(because: String) extends TrueOrFalseBecause {
     this
   }
 
+  override def ifTrue(msg: String): TrueOrFalseBecause = {
+    this ++ (msg ++ ",")
+  }
   def map(f: String => String): TrueOrFalseBecause = {
     this
   }
@@ -50,7 +56,9 @@ case class False(because: String) extends TrueOrFalseBecause {
   def ||(that: => TrueOrFalseBecause): TrueOrFalseBecause = that
 
   def &&(that: => TrueOrFalseBecause): TrueOrFalseBecause = this
-
+  override def ifFalse(msg:String): TrueOrFalseBecause = {
+    this ++ (msg ++ ",")
+  }
   def flatMap(f: String => TrueOrFalseBecause): TrueOrFalseBecause = {
     f(because)
   }
