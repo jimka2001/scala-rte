@@ -5,22 +5,30 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
   val zero = (0,0)
   val one = (1,0)
 
+  def mod(a:Int):Int = {
+    ((a % p) + p) % p
+  }
+
+  def mod2(a:Int, b:Int):(Int,Int) = {
+    (mod(a), mod(b))
+  }
+
   def add(a: (Int, Int), b: (Int, Int)): (Int, Int) = {
     val (x, y) = a
     val (u, v) = b
-    ((x + u) % p, (y + v) % p)
+    mod2(x + u, y + v)
   }
 
   def subtract(a: (Int, Int), b: (Int, Int)): (Int, Int) = {
     val (x, y) = a
     val (u, v) = b
-    ((x - u) % p, (y - v) % p)
+    mod2(x - u, y - v)
   }
 
   def mult(a: (Int, Int), b: (Int, Int)): (Int, Int) = {
     val (x, y) = a
     val (u, v) = b
-    ((x * u) % p, (y * v) % p)
+    mod2(u*x - v*y, u*y  + v*x)
   }
 
   def op(a: (Int, Int), b: (Int, Int)): (Int, Int) = {
