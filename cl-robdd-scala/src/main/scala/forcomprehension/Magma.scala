@@ -371,10 +371,10 @@ object Magma {
           forallM[T](gen(), { c =>
             // left distribute
             ma.equiv(mult(a, add(b, c)),
-                     add(mult(a, b), mult(a, c))) ++ s"$a does not left-distribute across ($b+$c)" &&
+                     add(mult(a, b), mult(a, c))).ifFalse(s"$a does not left-distribute across ($b+$c)") &&
             // right distribute
               ma.equiv(mult(add(b,c),a),
-                       add(mult(b,a),mult(c,a))) ++ s"$a does not right-distribute across ($b+$c)"
+                       add(mult(b,a),mult(c,a))).ifFalse(s"$a does not right-distribute across ($b+$c)")
           })
         })
       })
@@ -391,10 +391,10 @@ object Magma {
       gen().filter(_ != zero)
     }
     !ma.equiv(one,zero) &&
-      mb.isAbelian() &&
+      mb.isAbelian().ifFalse("not Abelian") &&
       isRing(gen, member,
-             add,mult, add_invert,
-             one,zero).ifFalse(s"not a ring") &&
+             add, mult, add_invert,
+             one, zero).ifFalse(s"not a ring") &&
       mb.isInverter(non_zero_gen, one, mult_invert).ifFalse("invalid inversion")
   }
 

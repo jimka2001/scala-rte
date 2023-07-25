@@ -89,7 +89,8 @@ object testGaussianInt {
                            a => Some(m.subtract(m.zero, a)),
                            m.mult_inv,
                            m.one, m.zero
-                           ).ifFalse(s"$m not a field") && True(s" $m is a field")
+                           ).ifFalse(s"$m not a field") &&
+           True(s"$m is a field")
          } println(s"$p: $f")
   }
 }
