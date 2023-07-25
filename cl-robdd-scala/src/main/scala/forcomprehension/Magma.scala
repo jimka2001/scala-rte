@@ -393,7 +393,7 @@ object Magma {
     !ma.equiv(one,zero) &&
       mb.isAbelian() &&
       isRing(gen, member,
-             add,mult,add_invert,
+             add,mult, add_invert,
              one,zero) &&
       mb.isInverter(non_zero_gen, one, mult_invert)
   }
