@@ -388,7 +388,7 @@ object Magma {
     val ma = DynMagma[T](gen, add, x => member(x).toBoolean)
     lazy val mb = DynMagma[T](gen, mult, x => member(x).toBoolean)
     def non_zero_gen():LazyList[T] = {
-      gen().filter(_ == zero)
+      gen().filter(_ != zero)
     }
     !ma.equiv(one,zero) &&
       mb.isAbelian() &&
