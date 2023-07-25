@@ -79,12 +79,11 @@ object TrueOrFalseBecause {
   def forallM[T](items: LazyList[T], p: T => TrueOrFalseBecause): TrueOrFalseBecause = {
     def loop(prev:Option[T], acc: TrueOrFalseBecause, tail: LazyList[T]): TrueOrFalseBecause = {
       (prev, tail,acc) match {
-        case (_, LazyList(),_) => acc
         case (Some(prev), _, False(_)) => acc ++ s"counter example ${prev}"
+        case (_, LazyList(),_) => acc
         case (_, a #:: as, True(_)) => loop(Some(a), p(a), as)
       }
     }
-
     loop(None, True(""), items)
   }
 
