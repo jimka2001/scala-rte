@@ -37,12 +37,12 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
 
   override def gen(): LazyList[(Int,Int)] = {
     def loop(u:Int,v:Int):LazyList[(Int,Int)] = {
-      if (u==p && v == p)
+      if (u==p)
         LazyList.empty
       else if (v==p)
         loop(u+1,0)
       else
-        (u,v) #:: loop(u+1,v)
+        (u,v) #:: loop(u,v+1)
     }
     loop(0,0)
   }
