@@ -72,7 +72,7 @@ abstract class Magma[T] {
   def isInverter(g: ()=>LazyList[T], z: T, invert: T => Option[T]): TrueOrFalseBecause = {
     forallM[T](g(), { a =>
       invert(a) match {
-        case None => False(s", $a has no inverse")
+        case None => False(s"because $a has no inverse")
         case Some(b) =>
           member(b) &&
             equiv(z, op(a, b)) &&

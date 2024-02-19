@@ -82,7 +82,8 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
 
 object testGaussianInt {
   def main(argv: Array[String]): Unit = {
-    for {p <- 2 to 4
+
+    for {p <- (2 to 30).view
          m = new GaussianIntModP(p)
          f = Magma.isField[(Int,Int)](m.gen, m.member,
                            m.add, m.mult,
