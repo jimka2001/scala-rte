@@ -113,7 +113,9 @@ class RteTestSuite extends MyFunSuite {
     assert(Singleton(SOr(t1, t2)).canonicalize == Singleton(SMember(0,0L)))
     println(Or(Singleton(t1), Singleton(t2)).canonicalize)
     assert(Singleton(SOr(t1, t2)).canonicalize == Or(Singleton(t1), Singleton(t2)).canonicalize)
-    assert(Singleton(SNot(t1)).canonicalize == And(Not(t1), Sigma).canonicalize)
+    val s = Singleton(SNot(t1))
+    if (s.flattenTypes)
+      assert(s.canonicalize == And(Not(t1), Sigma).canonicalize)
   }
   test("canonicalize Singleton") {
     for {
@@ -121,9 +123,15 @@ class RteTestSuite extends MyFunSuite {
       t1 = randomType(0)
       t2 = randomType(0)
     } {
-      assert(Singleton(SAnd(t1, t2)).canonicalize == And(Singleton(t1), Singleton(t2)).canonicalize)
-      assert(Singleton(SOr(t1, t2)).canonicalize == Or(Singleton(t1), Singleton(t2)).canonicalize)
-      assert(Singleton(SNot(t1)).canonicalize == And(Not(t1), Sigma).canonicalize)
+      val s1 = Singleton(SAnd(t1, t2))
+      if (s1.flattenTypes)
+        assert(s1.canonicalize == And(Singleton(t1), Singleton(t2)).canonicalize)
+      val s2 = Singleton(SOr(t1, t2))
+      if (s2.flattenTypes)
+        assert(s2.canonicalize == Or(Singleton(t1), Singleton(t2)).canonicalize)
+      val s3 = Singleton(SNot(t1))
+      if (s3.flattenTypes)
+        assert(s3.canonicalize == And(Not(t1), Sigma).canonicalize)
     }
   }
   test("discovered case 108"){

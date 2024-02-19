@@ -267,6 +267,8 @@ object Rte {
   val notEpsilon: Rte = Cat(Sigma, sigmaStar)
   val sigmaSigmaStar: Rte = notEpsilon
 
+  val flattenSingletonTypes =  false
+
   def Member(xs: Any*): Rte = {
     Singleton(SMember(xs: _*))
   }

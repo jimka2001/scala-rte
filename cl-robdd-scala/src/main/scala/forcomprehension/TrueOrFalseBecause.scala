@@ -11,6 +11,9 @@ sealed abstract class TrueOrFalseBecause {
   def ||(that: => TrueOrFalseBecause):TrueOrFalseBecause
   def &&(that: => TrueOrFalseBecause):TrueOrFalseBecause
 
+  def ifTrue(msg:String): TrueOrFalseBecause = this
+  def ifFalse(msg:String): TrueOrFalseBecause = this
+
   def unary_! : TrueOrFalseBecause = {
     this match {
       case True(str) => False(str)
@@ -33,6 +36,9 @@ case class True(because: String) extends TrueOrFalseBecause {
     this
   }
 
+  override def ifTrue(msg: String): TrueOrFalseBecause = {
+    this ++ (msg ++ ",")
+  }
   def map(f: String => String): TrueOrFalseBecause = {
     this
   }
@@ -50,7 +56,9 @@ case class False(because: String) extends TrueOrFalseBecause {
   def ||(that: => TrueOrFalseBecause): TrueOrFalseBecause = that
 
   def &&(that: => TrueOrFalseBecause): TrueOrFalseBecause = this
-
+  override def ifFalse(msg:String): TrueOrFalseBecause = {
+    this ++ (msg ++ ",")
+  }
   def flatMap(f: String => TrueOrFalseBecause): TrueOrFalseBecause = {
     f(because)
   }
@@ -69,17 +77,14 @@ case class False(because: String) extends TrueOrFalseBecause {
 object TrueOrFalseBecause {
 
   def forallM[T](items: LazyList[T], p: T => TrueOrFalseBecause): TrueOrFalseBecause = {
-    def loop(acc: TrueOrFalseBecause, tail: LazyList[T]): TrueOrFalseBecause = {
-      if (tail.isEmpty)
-        acc
-      else acc match {
-        case False(_) => acc ++ s"counter example ${tail.head}"
-        case True(_) =>
-          loop(p(tail.head), tail.tail)
+    def loop(prev:Option[T], acc: TrueOrFalseBecause, tail: LazyList[T]): TrueOrFalseBecause = {
+      (prev, tail,acc) match {
+        case (Some(prev), _, False(_)) => acc ++ s"counter example ${prev}"
+        case (_, LazyList(),_) => acc
+        case (_, a #:: as, True(_)) => loop(Some(a), p(a), as)
       }
     }
-
-    loop(True(""), items)
+    loop(None, True(""), items)
   }
 
   def existsM[T](items: LazyList[T], p: T => TrueOrFalseBecause): TrueOrFalseBecause = {

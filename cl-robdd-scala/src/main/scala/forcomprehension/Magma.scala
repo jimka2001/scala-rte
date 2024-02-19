@@ -69,16 +69,27 @@ abstract class Magma[T] {
     }
   }
 
-  def isInverter(z: T, invert: T => Option[T]): TrueOrFalseBecause = {
-    forallM[T](gen(), { a =>
+  def isInverter(g: ()=>LazyList[T], z: T, invert: T => Option[T]): TrueOrFalseBecause = {
+    forallM[T](g(), { a =>
       invert(a) match {
-        case None => False(s"$a has no inverse")
+        case None => False(s"because $a has no inverse")
         case Some(b) =>
           member(b) &&
             equiv(z, op(a, b)) &&
             equiv(z, op(b, a))
       }
     })
+  }
+
+  def isInverter(z:T, invert: T => Option[T]): TrueOrFalseBecause = {
+    isInverter(gen, z, invert)
+  }
+
+  def isInverter(invert: T => Option[T]): TrueOrFalseBecause = {
+    findIdentity() match {
+      case None => False("has no identity")
+      case Some(z) => isInverter(z, invert)
+    }
   }
 
   def isSemiGroup(): TrueOrFalseBecause = {
@@ -106,11 +117,11 @@ object Magma {
     LazyList.from(0 to n)
   }
 
-  def cayleyTable[T](elements: LazyList[T], dyn_op: (T, T) => T): String = {
+  def cayleyTable[T](elements: LazyList[T], op: (T, T) => T): String = {
     val header: String = "*|" ++ elements.map(x => s"$x").mkString(" ")
     val divider: String = "-+" ++ elements.map(x => "-").mkString("-")
     "\n" ++ header ++ "\n" ++ divider ++ "\n" ++ elements
-      .map(x => elements.map(y => s"${dyn_op(x, y)}")
+      .map(x => elements.map(y => s"${op(x, y)}")
         .mkString(s"$x|", " ", ""))
       .mkString("\n")
   }
@@ -132,6 +143,7 @@ object Magma {
       }
     }
   }
+
   def randomCayleyTable(n:Int):(Int,Int)=>Int = {
     import scala.util.Random
     // generate a function representing one possible addition table of a
@@ -151,6 +163,7 @@ object Magma {
 
     add
   }
+
   def randomCayleyTables(n:Int):LazyList[(Int,Int)=>Int] = {
     randomCayleyTable(n) #:: randomCayleyTables(n)
   }
@@ -341,6 +354,48 @@ object Magma {
     for {add <- allUnitalCayleyTables(n)
          str = cayleyTable(genFinite(n-1), add)
          } println(str)
+  }
+
+  def isRing[T](gen: () => LazyList[T],
+                member: T => TrueOrFalseBecause,
+                add: (T, T) => T, mult: (T, T) => T,
+                invert: T => Option[T],
+                one: T, zero: T): TrueOrFalseBecause = {
+    val ma = DynMagma[T](gen, add, x => member(x).toBoolean)
+    val mb = DynMagma[T](gen, mult, x => member(x).toBoolean)
+    ma.isGroup(zero, invert) &&
+      ma.isAbelian() &&
+      mb.isMonoid(one) &&
+      forallM[T](gen(), { a =>
+        forallM[T](gen(), { b =>
+          forallM[T](gen(), { c =>
+            // left distribute
+            ma.equiv(mult(a, add(b, c)),
+                     add(mult(a, b), mult(a, c))).ifFalse(s"$a does not left-distribute across ($b+$c)") &&
+            // right distribute
+              ma.equiv(mult(add(b,c),a),
+                       add(mult(b,a),mult(c,a))).ifFalse(s"$a does not right-distribute across ($b+$c)")
+          })
+        })
+      })
+  }
+
+  def isField[T](gen: () => LazyList[T],
+                 member: T => TrueOrFalseBecause,
+                 add: (T, T) => T, mult: (T, T) => T,
+                 add_invert: T => Option[T], mult_invert: T => Option[T],
+                 one: T, zero: T): TrueOrFalseBecause = {
+    val ma = DynMagma[T](gen, add, x => member(x).toBoolean)
+    lazy val mb = DynMagma[T](gen, mult, x => member(x).toBoolean)
+    def non_zero_gen():LazyList[T] = {
+      gen().filter(_ != zero)
+    }
+    !ma.equiv(one,zero) &&
+      mb.isAbelian().ifFalse("not Abelian") &&
+      isRing(gen, member,
+             add, mult, add_invert,
+             one, zero).ifFalse(s"not a ring") &&
+      mb.isInverter(non_zero_gen, one, mult_invert).ifFalse("invalid inversion")
   }
 
   def main(argv: Array[String]): Unit = {

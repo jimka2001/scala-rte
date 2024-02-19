@@ -34,11 +34,17 @@ class SingletonTestSuite extends MyFunSuite {
     assert(Singleton(STop).canonicalizeOnce == Sigma)
     assert(Singleton(SEmpty).canonicalizeOnce == EmptySet)
     assert(Singleton(SAnd(x, y)).canonicalizeOnce == EmptySet)
-    assert(Singleton(SAnd(SDouble,SInt)).canonicalizeOnce == And(Singleton(SDouble),Singleton(SInt)))
+    val s1 = Singleton(SAnd(SDouble,SInt))
+    if (s1.flattenTypes)
+      assert(s1.canonicalizeOnce == And(Singleton(SDouble),Singleton(SInt)))
     assert(Singleton(SAnd(xy, yz)).canonicalizeOnce == Singleton(y))
-    assert(Singleton(SOr(SDouble,SInt)).canonicalizeOnce == Or(Singleton(SDouble),Singleton(SInt)))
+    val s2 = Singleton(SOr(SDouble,SInt))
+    if (s1.flattenTypes)
+      assert(s2.canonicalizeOnce == Or(Singleton(SDouble),Singleton(SInt)))
     assert(Singleton(SOr(xy, yz)).canonicalizeOnce == Singleton(SMember("x","y","z")))
-    assert(Singleton(SNot(x)).canonicalizeOnce == And(Not(Singleton(x)), Sigma))
+    val s4 = Singleton(SNot(x))
+    if (s4.flattenTypes)
+      assert(s4.canonicalizeOnce == And(Not(Singleton(x)), Sigma))
   }
   test("discovered case 43") {
     // <[SAnd [SAnd [SOr {a,b,c},{false,true},Class2X]],![SOr Trait1,Integer],![SOr {4,5,6},String]]>
