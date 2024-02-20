@@ -26,6 +26,9 @@ import genus._
 import Extract._
 import GraphViz._
 import adjuvant.MyFunSuite
+import org.scalatest.concurrent.TimeLimits.failAfter
+import org.scalatest.time.{Millis, Span}
+import org.scalatest.time.SpanSugar._
 
 //noinspection RedundantDefaultArgument
 class ExtractTestSuite  extends MyFunSuite {
@@ -82,11 +85,15 @@ class ExtractTestSuite  extends MyFunSuite {
   }
 
   test("test_extract_rte") {
-    SAtomic.withClosedWorldView {
-      for {depth <- 1 to 3
-           _ <- 0 to 25
-           rt = Rte.randomRte(depth)
-           } check_extraction_cycle(rt)
+    // test should fail if cannot run within 60 seconds
+    // perhaps need to adjust number of seconds
+    failAfter(Span(60000, Millis)) {
+      SAtomic.withClosedWorldView {
+        for {depth <- 1 to 3
+             _ <- 0 to 25
+             rt = Rte.randomRte(depth)
+             } check_extraction_cycle(rt)
+      }
     }
   }
 }
