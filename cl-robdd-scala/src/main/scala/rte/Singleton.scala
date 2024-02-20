@@ -51,8 +51,8 @@ case class Singleton(td:SimpleTypeD) extends Rte {
       //    sequences of length two or more; therefore to be correct we
       //    must intersect with Sigma to filter away empty word and
       //    words of length greater than one.
-      case SNot(operand) if flattenTypes=> And(Not(Singleton(operand)),
-                                Sigma)
+      case SNot(operand) if flattenTypes => And(Not(Singleton(operand)),
+                                                Sigma)
       // otherwise, create a new Singleton from the canonicalized
       //   version of td, ie, td2
       case td2 => Singleton(td2)
