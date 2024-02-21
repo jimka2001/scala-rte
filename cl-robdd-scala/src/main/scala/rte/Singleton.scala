@@ -39,20 +39,21 @@ case class Singleton(td:SimpleTypeD) extends Rte {
     td.canonicalize() match {
       case STop => Sigma
       case SEmpty => EmptySet
+      case td2 if !flattenTypes => Singleton(td2)
       // convert Singleton(SAnd(...)) to And(...)
       // i.e. convert an Rte of a conjunction type to a conjunction Rte
-      case SAnd(operands@_*) if flattenTypes => And.createAnd(operands.map(Singleton))
+      case SAnd(operands@_*) => And.createAnd(operands.map(Singleton))
       // convert Singleton(SOr(...)) to Or(...)
       // i.e. convert an Rte of a disjunction type to a disjunction Rte
-      case SOr(operands@_*) if flattenTypes => Or.createOr(operands.map(Singleton))
+      case SOr(operands@_*) => Or.createOr(operands.map(Singleton))
       // convert Singleton(SNot(...)) to And(Not(...),Sigma)
       // i.e. convert an Rte of a complement type to a complement Rte
       //  However, the complement Rte matches the empty sequence and also
       //    sequences of length two or more; therefore to be correct we
       //    must intersect with Sigma to filter away empty word and
       //    words of length greater than one.
-      case SNot(operand) if flattenTypes => And(Not(Singleton(operand)),
-                                                Sigma)
+      case SNot(operand) => And(Not(Singleton(operand)),
+                                Sigma)
       // otherwise, create a new Singleton from the canonicalized
       //   version of td, ie, td2
       case td2 => Singleton(td2)

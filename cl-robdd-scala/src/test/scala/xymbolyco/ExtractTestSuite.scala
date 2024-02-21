@@ -38,7 +38,7 @@ class ExtractTestSuite  extends MyFunSuite {
   val etrue: Singleton = Singleton(SEql(true))
   
   test("extraction 31"){
-    check_extraction_cycle(Cat(Singleton(SEql(1)),Singleton(SEql(2))))
+    check_extraction_cycle(Cat(Singleton(SEql(1)),Singleton(SEql(2))), 1, 1)
   }
   test("extraction 34") {
     SAtomic.withClosedWorldView {
@@ -46,17 +46,20 @@ class ExtractTestSuite  extends MyFunSuite {
                                       t2x,
                                       Singleton(SAtomic(classOf[Integer])),
                                       etrue,
-                                      Singleton(STop))))
+                                      Singleton(STop))),
+                             1, 1)
     }
   }
   test("extraction 35") {
     SAtomic.withClosedWorldView {
       check_extraction_cycle(Star(Cat(Cat(Or(Cat(Σ, Σ, Star(Σ)), ε),
                                           Cat(t2x, Singleton(SAtomic(classOf[Integer])))),
-                                      Cat(etrue, Singleton(STop)))))
+                                      Cat(etrue, Singleton(STop)))),
+                             1, 1)
     }
   }
-  def check_extraction_cycle(rt: Rte): Unit = {
+  def check_extraction_cycle(rt: Rte, depth:Int, rep:Int): Unit = {
+    println(s"depth=$depth   rep=$rep")
     val rt1 = rt.canonicalize
     val extracted = dfaToRte[Boolean](rt1.toDfa(exitValue=true),true)
     //println(s"extracted=$extracted")
@@ -90,9 +93,9 @@ class ExtractTestSuite  extends MyFunSuite {
     failAfter(Span(60000, Millis)) {
       SAtomic.withClosedWorldView {
         for {depth <- 1 to 3
-             _ <- 0 to 25
+             rep <- 0 to 25
              rt = Rte.randomRte(depth)
-             } check_extraction_cycle(rt)
+             } check_extraction_cycle(rt, depth, rep)
       }
     }
   }
