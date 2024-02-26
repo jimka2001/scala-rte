@@ -2,30 +2,30 @@ package forcomprehension
 
 abstract class Magma[T] {
 
-  import TrueOrFalseBecause._
+  import BoolBecause._
 
   def gen(): LazyList[T]
 
   def op(a: T, b: T): T
 
-  def member(a: T): TrueOrFalseBecause
+  def member(a: T): BoolBecause
 
-  def equiv(a: T, b: T): TrueOrFalseBecause = {
+  def equiv(a: T, b: T): BoolBecause = {
     if (a == b)
       True(s"$a == $b")
     else
       False(s"$a != $b")
   }
 
-  def isClosed(): TrueOrFalseBecause = {
-    forallM[T](gen(), { a =>
-      forallM[T](gen(), { b =>
-        member(op(a, b)) ++ s"$this not closed because non-member op($a,$b),"
+  def isClosed(): BoolBecause = {
+    forallM[T](gen(), { a:T =>
+      forallM[T](gen(), { b:T =>
+        member(op(a,b)) ++ s"$this not closed because non-member op($a,$b),"
       })
     })
   }
 
-  def isAssociative(): TrueOrFalseBecause = {
+  def isAssociative(): BoolBecause = {
     forallM[T](gen(), { a =>
       forallM[T](gen(), { b =>
         forallM[T](gen(), { c =>
@@ -36,7 +36,7 @@ abstract class Magma[T] {
     })
   }
 
-  def isAbelian(): TrueOrFalseBecause = {
+  def isAbelian(): BoolBecause = {
     forallM[T](gen(), { a =>
       forallM[T](gen(), { b =>
         equiv(op(a, b), op(b, a)) ++ s"not Abelian, e.g., $a, $b,"
@@ -44,7 +44,7 @@ abstract class Magma[T] {
     })
   }
 
-  def isIdentity(z: T): TrueOrFalseBecause = {
+  def isIdentity(z: T): BoolBecause = {
     forallM[T](gen(), { a =>
       equiv(op(a, z), a).map( str => s"$z is not the identity because op($a, z)=${op(a,z)}") &&
         equiv(op(z, a), a).map( str => s"$z is not the identity because op(z, $a)=${op(z,a)}")
@@ -69,7 +69,7 @@ abstract class Magma[T] {
     }
   }
 
-  def isInverter(z: T, invert: T => Option[T]): TrueOrFalseBecause = {
+  def isInverter(z: T, invert: T => Option[T]): BoolBecause = {
     forallM[T](gen(), { a =>
       invert(a) match {
         case None => False(s"$a has no inverse")
@@ -81,17 +81,17 @@ abstract class Magma[T] {
     })
   }
 
-  def isSemiGroup(): TrueOrFalseBecause = {
+  def isSemiGroup(): BoolBecause = {
     (isClosed() && isAssociative()).map(str =>
                                           s"$this is not a semigroup because $str")
   }
 
-  def isMonoid(z: T): TrueOrFalseBecause = {
+  def isMonoid(z: T): BoolBecause = {
     (isSemiGroup() && isIdentity(z)).map(str =>
                                            s"$this not a monoid because $str")
   }
 
-  def isGroup(z: T, invert: T => Option[T]): TrueOrFalseBecause = {
+  def isGroup(z: T, invert: T => Option[T]): BoolBecause = {
     (isMonoid(z) && isInverter(z, invert)).map(str =>
                                                  s"$this not a group because $str")
   }
@@ -99,7 +99,7 @@ abstract class Magma[T] {
 
 object Magma {
 
-  import TrueOrFalseBecause._
+  import BoolBecause._
 
   // generate a lazy list from 0 to n inclusive
   def genFinite(n: Int): LazyList[Int] = {
@@ -302,7 +302,7 @@ object Magma {
   }
 
   def testExists() = {
-    def f(p: Int): TrueOrFalseBecause = {
+    def f(p: Int): BoolBecause = {
       val g = new MultiplicationModP(p)
 
       def inv(a: Int): Option[Int] = {
@@ -349,7 +349,7 @@ object Magma {
     //testLogic()
     //moreTests()
     //testModP()
-    findGroups(4)
+    findGroups(2)
     //findGroupsM(2)
     //findGroupsM(3)
     //findGroupsM(4)
