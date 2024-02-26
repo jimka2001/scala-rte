@@ -10,7 +10,7 @@ case class DynMagma[T](gen1: () => LazyList[T],
 
   def op(a: T, b: T): T = op1(a, b)
 
-  def member(a: T): TrueOrFalseBecause = member1(a) match {
+  def member(a: T): BoolBecause = member1(a) match {
     case true => True(s"$a is member")
     case false => False(s"$a not a member")
   }
