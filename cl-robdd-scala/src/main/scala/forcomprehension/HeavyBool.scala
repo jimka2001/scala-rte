@@ -4,6 +4,7 @@ package forcomprehension
 import HeavyBool.Reason
 
 sealed abstract class HeavyBool(because:Reason) {
+  override def toString = toBoolean.toString + "[" + because.mkString("; ") + "]"
   val toBoolean: Boolean = {
     this match {
       case HeavyTrue(_) => true
