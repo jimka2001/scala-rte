@@ -1,5 +1,6 @@
 package forcomprehension
 
+import HeavyBool._
 
 case class DynMagma[T](gen1: () => LazyList[T],
                        op1: (T, T) => T,
@@ -10,9 +11,12 @@ case class DynMagma[T](gen1: () => LazyList[T],
 
   def op(a: T, b: T): T = op1(a, b)
 
-  def member(a: T): BoolBecause = member1(a) match {
-    case true => True(s"$a is member")
-    case false => False(s"$a not a member")
+  def member(a: T): HeavyBool = member1(a) match {
+    case true => HTrue ++ Map("reason" -> "a is a member",
+                              "a" -> a)
+
+    case false => HFalse ++ Map("reason" -> "a is not a member",
+                                "a" -> a)
   }
 }
 

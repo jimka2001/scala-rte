@@ -1,4 +1,5 @@
 package forcomprehension
+import HeavyBool._
 
 class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
   override def toString: String = s"GaussianModP($p)"
@@ -59,24 +60,30 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
     loop(0,0)
   }
 
-  override def equiv(a: (Int,Int), b: (Int,Int)): TrueOrFalseBecause =
+  override def equiv(a: (Int,Int), b: (Int,Int)): HeavyBool =
     if (a == b)
-      True(s"$a equiv $b")
-    else
-      False(s"$a not equiv $b")
+      HTrue ++ Map("reason" -> "a equiv b",
+                   "a" -> a,
+                   "b" -> b)
 
-  override def member(a: (Int,Int)): TrueOrFalseBecause = {
+    else {
+      HFalse ++ Map("reason" -> "a not equiv b",
+                    "a" -> a,
+                    "b" -> b)
+    }
+
+  override def member(a: (Int,Int)): HeavyBool = {
     val (x,y) = a
     if (x < 0)
-      False(s"$a is not member because $x < 0")
+      HFalse ++ Map("reason" -> s"$a is not member because $x < 0")
     else if (y < 0)
-      False(s"$a is not member because $y < 0")
+      HFalse ++ Map("reason" -> s"$a is not member because $y < 0")
     else if (x >= p)
-      False(s"$a is not a member because $x >= $p")
+      HFalse ++ Map("reason" -> s"$a is not a member because $x >= $p")
     else if (y >= p)
-      False(s"$a is not a member because $y >= $p")
+      HFalse ++ Map("reason" -> s"$a is not a member because $y >= $p")
     else
-      True(s"0 <= $x < $p and 0 <= $y < $p")
+      HTrue ++ Map("reason" -> s"0 <= $x < $p and 0 <= $y < $p")
   }
 }
 
@@ -90,8 +97,8 @@ object testGaussianInt {
                            a => Some(m.subtract(m.zero, a)),
                            m.mult_inv,
                            m.one, m.zero
-                           ).ifFalse(s"$m not a field") &&
-           True(s"$m is a field")
+                           ).conjFalse(Map("reason" -> s"$m not a field")) &&
+           HTrue ++ Map("reason" -> s"$m is a field")
          } println(s"$p: $f")
   }
 }
