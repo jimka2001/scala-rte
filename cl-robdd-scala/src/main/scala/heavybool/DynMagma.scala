@@ -1,4 +1,4 @@
-package forcomprehension
+package heavybool
 
 import HeavyBool._
 

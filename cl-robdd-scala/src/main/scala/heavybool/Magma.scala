@@ -1,4 +1,4 @@
-package forcomprehension
+package heavybool
 
 abstract class Magma[T] {
 

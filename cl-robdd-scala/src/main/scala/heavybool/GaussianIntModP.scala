@@ -1,4 +1,4 @@
-package forcomprehension
+package heavybool
 import HeavyBool._
 
 class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
