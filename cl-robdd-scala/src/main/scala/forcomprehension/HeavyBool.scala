@@ -1,10 +1,7 @@
 package forcomprehension
 
-package object forcomprehension {
-  type Reason = List[Map[String, Any]]
-}
 
-import forcomprehension._
+import HeavyBool.Reason
 
 sealed abstract class HeavyBool(because:Reason) {
   val toBoolean: Boolean = {
@@ -14,8 +11,19 @@ sealed abstract class HeavyBool(because:Reason) {
     }
   }
 
-  def ||(that: => HeavyBool):HeavyBool
-  def &&(that: => HeavyBool):HeavyBool
+  def ||(that: => HeavyBool):HeavyBool = {
+    this match {
+      case HeavyTrue(_) => this
+      case HeavyFalse(_) => that
+    }
+  }
+
+  def &&(that: => HeavyBool):HeavyBool = {
+    this match {
+      case HeavyTrue(_) => that
+      case HeavyFalse(_) => this
+    }
+  }
 
   def unary_! : HeavyBool = {
     this match {
@@ -24,43 +32,57 @@ sealed abstract class HeavyBool(because:Reason) {
     }
   }
 
-  def ++(any: Map[String,Any]): HeavyBool
-  def +| (reason:String): HeavyBool = {
-    this ++ Map("reason" -> reason)
+  def ==>(that: => HeavyBool): HeavyBool = {
+    !this || that
   }
 
-  def conjTrue(another: Map[String,Any]): HeavyBool = this
-  def conjFalse(another: Map[String,Any]): HeavyBool = this
+  def ++(any: Map[String,Any]): HeavyBool = {
+    this match {
+      case HeavyTrue(because) => HeavyTrue(any :: because)
+      case HeavyFalse(because) => HeavyFalse(any :: because)
+    }
+  }
+
+  def +| (reason:String): HeavyBool = this ++ Map("reason" -> reason)
+
+  def conjTrue(another: Map[String,Any]): HeavyBool = {
+    this match {
+      case HeavyTrue(_) => this ++ another
+      case HeavyFalse(_) => this
+    }
+  }
+
+  def conjFalse(another: Map[String,Any]): HeavyBool = {
+    this match {
+      case HeavyTrue(_) => this
+      case HeavyFalse(_) => this ++ another
+    }
+  }
 }
 
 
-case class HeavyTrue(because: forcomprehension.Reason) extends HeavyBool(because) {
-  def ||(that: => HeavyBool): HeavyBool = this
+case class HeavyTrue(because: Reason) extends HeavyBool(because) {}
 
-  def &&(that: => HeavyBool): HeavyBool = that
-
-  def ++(also:Map[String,Any]): HeavyBool = {
-    HeavyTrue(also :: because)
-  }
-  override def conjTrue(another: Map[String,Any]): HeavyBool = this ++ another
-}
-
-case class HeavyFalse(because: forcomprehension.Reason) extends HeavyBool(because) {
-  def ||(that: => HeavyBool): HeavyBool = that
-
-  def &&(that: => HeavyBool): HeavyBool = this
-
-  def ++(reason: Map[String,Any]): HeavyBool = {
-    HeavyFalse(reason :: because)
-  }
-  override def conjFalse(another: Map[String,Any]): HeavyBool = this ++ another
-
-}
+case class HeavyFalse(because: Reason) extends HeavyBool(because) {}
 
 object HeavyBool {
+  type Reason = List[Map[String, Any]]
+  val HTrue = HeavyTrue(List())
+  val HFalse = HeavyFalse(List())
 
-  def HTrue = HeavyTrue(List())
-  def HFalse = HeavyFalse(List())
+  def toHeavyBool(x:Boolean):HeavyBool = {
+    if (x)
+      HTrue
+    else
+      HFalse
+  }
+
+  def apply(test:Boolean, because:Reason):HeavyBool = {
+    if (test)
+      HeavyTrue(because)
+    else
+      HeavyFalse(because)
+  }
 
   def heavyIf(cond:HeavyBool,
               consequent: => HeavyBool,
@@ -76,11 +98,10 @@ object HeavyBool {
       if (data.isEmpty)
         HTrue
       else {
-        val next: HeavyBool = p(data.head)
-        heavyIf(next,
-                loop(data.tail),
-                HTrue ++ Map("witness" -> data.head))
-
+        if(p(data.head).toBoolean)
+          loop(data.tail)
+        else
+          HFalse ++ Map("witness" -> data.head)
       }
     }
     loop(items)

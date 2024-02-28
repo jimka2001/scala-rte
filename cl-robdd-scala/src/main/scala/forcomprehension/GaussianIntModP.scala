@@ -98,7 +98,7 @@ object testGaussianInt {
                            m.mult_inv,
                            m.one, m.zero
                            ).conjFalse(Map("reason" -> s"$m not a field")) &&
-           HTrue ++ Map("reason" -> s"$m is a field")
+           HTrue +| s"$m is a field"
          } println(s"$p: $f")
   }
 }
