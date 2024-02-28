@@ -84,7 +84,7 @@ object HeavyBool {
     else
       HeavyFalse(because)
   }
-  
+
   def heavyIf(cond:HeavyBool,
               consequent: => HeavyBool,
               alternative: => HeavyBool) = {
