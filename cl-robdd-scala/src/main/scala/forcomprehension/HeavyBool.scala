@@ -70,7 +70,7 @@ object HeavyBool {
   val HTrue = HeavyTrue(List())
   val HFalse = HeavyFalse(List())
 
-  def toHeavyBool(x:Boolean):HeavyBool = {
+  def apply(x:Boolean):HeavyBool = {
     if (x)
       HTrue
     else
@@ -83,7 +83,7 @@ object HeavyBool {
     else
       HeavyFalse(because)
   }
-
+  
   def heavyIf(cond:HeavyBool,
               consequent: => HeavyBool,
               alternative: => HeavyBool) = {

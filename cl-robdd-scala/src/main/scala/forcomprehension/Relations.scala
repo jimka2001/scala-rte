@@ -4,14 +4,13 @@ import HeavyBool._
 object Relations {
   def isReflexive[T](gen:LazyList[T], rel:(T,T)=>Boolean) = {
     forallM[T](gen, (x:T) =>
-      forallM[T]( gen, (y:T) => HeavyBool(rel(x,y),
-                                          List(Map("x" -> x, "y" -> y)))))
+      forallM[T]( gen, (y:T) => HeavyBool(rel(x,y))))
       .conjTrue(Map("reason" -> "reflexive"))
       .conjFalse(Map("reason" -> "not reflexive"))
   }
 
   def isSymmetric[T](gen:LazyList[T], rel:(T,T)=>Boolean) = {
-    def hrel(a:T, b:T) = HeavyBool(rel(a,b), List())
+    def hrel(a:T, b:T) = HeavyBool(rel(a,b))
     forallM[T](gen, (x:T) =>
       forallM[T]( gen, (y:T) => hrel(x,y) ==> hrel(y,x)))
       .conjTrue(Map("reason" -> "symmetric"))
@@ -19,7 +18,7 @@ object Relations {
   }
 
   def isTransitive[T](gen:LazyList[T], rel:(T,T)=>Boolean):HeavyBool = {
-    def hrel(a:T, b:T) = HeavyBool(rel(a,b), List())
+    def hrel(a:T, b:T) = HeavyBool(rel(a,b))
     forallM[T](gen, (x:T) =>
                forallM[T](gen, (y:T) => {
                  if (rel(x,y))
