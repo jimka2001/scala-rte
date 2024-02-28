@@ -38,7 +38,8 @@ object Relations {
   }
 
   def main(argv:Array[String]):Unit = {
-    println(forallM(LazyList.range(1,20), (a:Int) => HeavyBool(a < 12, List())))
+    println(forallM(LazyList.range(1,20), (a:Int) => HeavyBool(a < 12)))
+    println(isReflexive(LazyList.range(1,20), (a:Int, b:Int) => a != b))
     println(isEquivalence(LazyList.range(1,20), (a:Int, b:Int) => a != b))
   }
 }
