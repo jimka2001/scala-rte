@@ -2,7 +2,7 @@ name := "cl-robdd-scala"
 
 version := "0.1"
 
-scalaVersion := "2.13.8"
+scalaVersion := "2.13.11"
 
 //libraryDependencies += "fr.epita.lrde" %% "clcompat" % "0.1"
 

@@ -1,59 +1,59 @@
-package forcomprehension
+package heavybool
 
 abstract class Magma[T] {
 
-  import BoolBecause._
+  import HeavyBool._
 
   def gen(): LazyList[T]
 
   def op(a: T, b: T): T
 
-  def member(a: T): BoolBecause
+  def member(a: T): HeavyBool
 
-  def equiv(a: T, b: T): BoolBecause = {
+  def equiv(a: T, b: T): HeavyBool = {
     if (a == b)
-      True(s"$a == $b")
+      HTrue ++ Map("reason" -> s"$a == $b")
     else
-      False(s"$a != $b")
+      HFalse ++ Map("reason" -> s"$a != $b")
   }
 
-  def isClosed(): BoolBecause = {
+  def isClosed(): HeavyBool = {
     forallM[T](gen(), { a:T =>
       forallM[T](gen(), { b:T =>
-        member(op(a,b)) ++ s"$this not closed because non-member op($a,$b),"
+        member(op(a,b)) ++ Map("reason" -> s"$this not closed because non-member op($a,$b)")
       })
     })
   }
 
-  def isAssociative(): BoolBecause = {
+  def isAssociative(): HeavyBool = {
     forallM[T](gen(), { a =>
       forallM[T](gen(), { b =>
         forallM[T](gen(), { c =>
           equiv(op(op(a, b), c),
-                op(a, op(b, c))) ++ s"not associative: E.g, $a, $b, $c:"
+                op(a, op(b, c))) ++ Map("reason" -> s"not associative: E.g, $a, $b, $c:")
         })
       })
     })
   }
 
-  def isAbelian(): BoolBecause = {
+  def isAbelian(): HeavyBool = {
     forallM[T](gen(), { a =>
       forallM[T](gen(), { b =>
-        equiv(op(a, b), op(b, a)) ++ s"not Abelian, e.g., $a, $b,"
+        equiv(op(a, b), op(b, a)) +| s"not Abelian, e.g., $a, $b,"
       })
     })
   }
 
-  def isIdentity(z: T): BoolBecause = {
+  def isIdentity(z: T): HeavyBool = {
     forallM[T](gen(), { a =>
-      equiv(op(a, z), a).map( str => s"$z is not the identity because op($a, z)=${op(a,z)}") &&
-        equiv(op(z, a), a).map( str => s"$z is not the identity because op(z, $a)=${op(z,a)}")
+      equiv(op(a, z), a).conjFalse(Map("reason" -> s"$z is not the identity because op($a, z)=${op(a,z)}")) &&
+        equiv(op(z, a), a).conjFalse(Map("reason" -> s"$z is not the identity because op(z, $a)=${op(z,a)}"))
     })
   }
 
   def findIdentity(): Option[T] = {
     gen().find(z => isIdentity(z) match {
-      case True(_) => true
+      case HeavyTrue(_) => true
       case _ => false
     })
   }
@@ -69,10 +69,10 @@ abstract class Magma[T] {
     }
   }
 
-  def isInverter(z: T, invert: T => Option[T]): BoolBecause = {
+  def isInverter(z: T, invert: T => Option[T]): HeavyBool = {
     forallM[T](gen(), { a =>
       invert(a) match {
-        case None => False(s"because $a has no inverse")
+        case None => HFalse +| s"because $a has no inverse"
         case Some(b) =>
           member(b) &&
             equiv(z, op(a, b)) &&
@@ -81,25 +81,25 @@ abstract class Magma[T] {
     })
   }
 
-  def isSemiGroup(): BoolBecause = {
-    (isClosed() && isAssociative()).map(str =>
-                                          s"$this is not a semigroup because $str")
+  def isSemiGroup(): HeavyBool = {
+    (isClosed() && isAssociative()).conjFalse(Map("reason" ->
+                                          s"$this is not a semigroup"))
   }
 
-  def isMonoid(z: T): BoolBecause = {
-    (isSemiGroup() && isIdentity(z)).map(str =>
-                                           s"$this not a monoid because $str")
+  def isMonoid(z: T): HeavyBool = {
+    (isSemiGroup() && isIdentity(z)).conjFalse(Map("reason" ->
+                                           s"$this not a monoid because"))
   }
 
-  def isGroup(z: T, invert: T => Option[T]): BoolBecause = {
-    (isMonoid(z) && isInverter(z, invert)).map(str =>
-                                                 s"$this not a group because $str")
+  def isGroup(z: T, invert: T => Option[T]): HeavyBool = {
+    (isMonoid(z) && isInverter(z, invert)).conjFalse(Map("reason" ->
+                                                 s"$this not a group because"))
   }
 }
 
 object Magma {
 
-  import BoolBecause._
+  import HeavyBool._
 
   // generate a lazy list from 0 to n inclusive
   def genFinite(n: Int): LazyList[Int] = {
@@ -123,11 +123,11 @@ object Magma {
       assertM(add.isMonoid(0))
 
       add.isGroup(0, (a: Int) => Some((p - a) % p)) match {
-        case False(str) => println(str)
+        case HeavyFalse(str) => println(str)
         case _ => println(s"$add is a group")
       }
       mult.isGroup(1, a => (1 until p).find(b => (a * b) % p == 1)) match {
-        case False(str) => println(str)
+        case HeavyFalse(str) => println(str)
         case _ => println(s"$mult is a group")
       }
     }
@@ -241,8 +241,8 @@ object Magma {
       if (ab.toBoolean)
         abelians += 1
       (dm.isGroup(0, x => dm.findInverse(x)) match {
-        case tf: False => tf // println(str)
-        case tf: True =>
+        case tf: HeavyFalse => tf // println(str)
+        case tf: HeavyTrue =>
           groups += 1
           monoids += 1
           semigroups += 1
@@ -254,27 +254,27 @@ object Magma {
           print("found"
                   + (if (ab.toBoolean) " Abelian" else "")
                   + s" group ${cayleyTable(elements, dyn_op)} ")
-          tf ++ (s"found a group " + cayleyTable(elements, dyn_op))
+          tf ++ Map("reason" -> (s"found a group " + cayleyTable(elements, dyn_op)))
       }) ||
         (dm.isMonoid(0) match {
-          case tf: False => tf //println(str)
-          case tf: True =>
+          case tf: HeavyFalse => tf //println(str)
+          case tf: HeavyTrue =>
             monoids += 1
             semigroups += 1
             if (ab.toBoolean) {
               abelianmonoids += 1
               abeliansemigroups += 1
             }
-            tf ++ (s"found a monoid " + cayleyTable(elements, dyn_op))
+            tf ++ Map("reason" -> ("found a monoid " + cayleyTable(elements, dyn_op)))
         }) ||
         (dm.isSemiGroup() match {
-          case tf: False => tf //println(str)
-          case tf: True =>
+          case tf: HeavyFalse => tf //println(str)
+          case tf: HeavyTrue =>
             semigroups += 1
             if (ab.toBoolean) {
               abeliansemigroups += 1
             }
-            tf ++ (s"found a semigroup " + cayleyTable(elements, dyn_op))
+            tf ++ Map("reason" -> ("found a semigroup " + cayleyTable(elements, dyn_op)))
         })
     }
     println(s"magmas: $tries   abelian=$abelians")
@@ -294,7 +294,8 @@ object Magma {
                         op1 = add,
                         member1 = (a: Int) => elements.contains(a)
                         )
-          ig <- dm.isGroup(0, x => dm.findInverse(x))
+          ig = dm.isGroup(0, x => dm.findInverse(x))
+          if ig.toBoolean
           }  {
       val table = cayleyTable(elements, add)
       groups += 1
@@ -304,7 +305,7 @@ object Magma {
   }
 
   def testExists() = {
-    def f(p: Int): BoolBecause = {
+    def f(p: Int): HeavyBool = {
       val g = new MultiplicationModP(p)
 
       def inv(a: Int): Option[Int] = {
@@ -320,10 +321,12 @@ object Magma {
   }
 
   def testLogic():Unit = {
-    assert((True("x") && True("y")) == True("y"))
-    assert((True("x") || True("y")) == True("x"))
-    assert((False("x") && False("y")) == False("x"))
-    assert((False("x") || False("y")) == False("y"))
+    val x = List(Map("reason" -> "x"))
+    val y = List(Map("reason" -> "y"))
+    assert((HeavyTrue(x) && HeavyTrue(y)) == HeavyTrue(y))
+    assert((HeavyTrue(x) || HeavyTrue(y)) == HeavyTrue(x))
+    assert((HeavyFalse(x) && HeavyFalse(y)) == HeavyFalse(x))
+    assert((HeavyFalse(x) || HeavyFalse(y)) == HeavyFalse(y))
   }
 
   def moreTests():Unit = {
@@ -346,10 +349,10 @@ object Magma {
   }
 
   def isRing[T](gen: () => LazyList[T],
-                member: T => TrueOrFalseBecause,
+                member: T => HeavyBool,
                 add: (T, T) => T, mult: (T, T) => T,
                 invert: T => Option[T],
-                one: T, zero: T): TrueOrFalseBecause = {
+                one: T, zero: T): HeavyBool = {
     val ma = DynMagma[T](gen, add, x => member(x).toBoolean)
     val mb = DynMagma[T](gen, mult, x => member(x).toBoolean)
     ma.isGroup(zero, invert) &&
@@ -360,31 +363,35 @@ object Magma {
           forallM[T](gen(), { c =>
             // left distribute
             ma.equiv(mult(a, add(b, c)),
-                     add(mult(a, b), mult(a, c))).ifFalse(s"$a does not left-distribute across ($b+$c)") &&
+                     add(mult(a, b), mult(a, c)))
+              .conjFalse(Map("reason" -> s"$a does not left-distribute across ($b+$c)")) &&
             // right distribute
               ma.equiv(mult(add(b,c),a),
-                       add(mult(b,a),mult(c,a))).ifFalse(s"$a does not right-distribute across ($b+$c)")
+                       add(mult(b,a),mult(c,a)))
+                .conjFalse(Map("reason" -> s"$a does not right-distribute across ($b+$c)"))
           })
         })
       })
   }
 
   def isField[T](gen: () => LazyList[T],
-                 member: T => TrueOrFalseBecause,
+                 member: T => HeavyBool,
                  add: (T, T) => T, mult: (T, T) => T,
                  add_invert: T => Option[T], mult_invert: T => Option[T],
-                 one: T, zero: T): TrueOrFalseBecause = {
+                 one: T, zero: T): HeavyBool = {
     val ma = DynMagma[T](gen, add, x => member(x).toBoolean)
     lazy val mb = DynMagma[T](gen, mult, x => member(x).toBoolean)
+    lazy val mz = DynMagma[T](non_zero_gen, mult, x => member(x).toBoolean)
     def non_zero_gen():LazyList[T] = {
       gen().filter(_ != zero)
     }
     !ma.equiv(one,zero) &&
-      mb.isAbelian().ifFalse("not Abelian") &&
+      mb.isAbelian().conjFalse(Map("reason" -> "not Abelian")) &&
       isRing(gen, member,
              add, mult, add_invert,
-             one, zero).ifFalse(s"not a ring") &&
-      mb.isInverter(non_zero_gen, one, mult_invert).ifFalse("invalid inversion")
+             one, zero).conjFalse(Map("reason" -> s"not a ring")) &&
+      mz.isInverter(one, mult_invert)
+        .conjFalse(Map("reason" -> "invalid inversion"))
   }
 
   def main(argv: Array[String]): Unit = {
