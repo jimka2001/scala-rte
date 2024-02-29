@@ -3,7 +3,7 @@ package heavybool
 
 import HeavyBool.Reason
 
-sealed abstract class HeavyBool(because:Reason) {
+sealed abstract class HeavyBool(val because:Reason) {
   override def toString:String = locally{
     val prefix:String = toBoolean.toString
     val reasoning:List[String] = for{ m <- because
@@ -81,9 +81,9 @@ sealed abstract class HeavyBool(because:Reason) {
 }
 
 
-case class HeavyTrue(because: Reason) extends HeavyBool(because) {}
+case class HeavyTrue(override val because: Reason) extends HeavyBool(because) {}
 
-case class HeavyFalse(because: Reason) extends HeavyBool(because) {}
+case class HeavyFalse(override val because: Reason) extends HeavyBool(because) {}
 
 object HeavyBool {
   type Reason = List[Map[String, Any]]
