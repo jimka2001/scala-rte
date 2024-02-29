@@ -12,6 +12,7 @@ sealed abstract class HeavyBool(because:Reason) {
     }.mkString("(",",",")")
     prefix + reasoning.mkString("[", "; ", "]")
   }
+
   val toBoolean: Boolean = {
     this match {
       case HeavyTrue(_) => true
@@ -19,6 +20,8 @@ sealed abstract class HeavyBool(because:Reason) {
     }
   }
 
+  // logical OR between to HeavyBool objects, 
+  // `that` is only evaluated if this is HeavyFalse.
   def ||(that: => HeavyBool):HeavyBool = {
     this match {
       case HeavyTrue(_) => this
@@ -26,6 +29,9 @@ sealed abstract class HeavyBool(because:Reason) {
     }
   }
 
+
+  // logical AND between to HeavyBool objects, 
+  // `that` is only evaluated if this is HeavyTrue
   def &&(that: => HeavyBool):HeavyBool = {
     this match {
       case HeavyTrue(_) => that
@@ -40,8 +46,14 @@ sealed abstract class HeavyBool(because:Reason) {
     }
   }
 
+  // implies:   this ==> that
   def ==>(that: => HeavyBool): HeavyBool = {
     !this || that
+  }
+
+  // implied by:   this <== that
+  def <==(that: => HeavyBool): HeavyBool = {
+    this || !that
   }
 
   def ++(any: Map[String,Any]): HeavyBool = {
