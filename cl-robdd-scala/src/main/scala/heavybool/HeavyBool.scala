@@ -117,12 +117,10 @@ object HeavyBool {
     def loop(data: LazyList[T]): HeavyBool = {
       if (data.isEmpty)
         HTrue
-      else {
-        if(p(data.head).toBoolean)
-          loop(data.tail)
-        else
-          HFalse ++ Map("witness" -> data.head)
-      }
+      else if(p(data.head).toBoolean)
+        loop(data.tail)
+      else
+        HFalse ++ Map("witness" -> data.head)
     }
     loop(items)
   }
