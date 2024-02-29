@@ -7,7 +7,6 @@ sealed abstract class HeavyBool(because:Reason) {
   override def toString:String = locally{
     val prefix:String = toBoolean.toString
     val reasoning:List[String] = for{ m <- because
-
     } yield locally{
       for{(k,v)<- m} yield s"$k->$v"
     }.mkString("(",",",")")
