@@ -3,6 +3,7 @@ package heavybool
 
 import HeavyBool.Reason
 
+
 sealed abstract class HeavyBool(val because:Reason) {
   override def toString:String = locally{
     val prefix:String = toBoolean.toString
@@ -123,19 +124,19 @@ object HeavyBool {
   }
 
   def forallM[T](tag:String, items: LazyList[T], p: T => HeavyBool): HeavyBool = {
-    def loop(data: LazyList[T]): HeavyBool = {
-      if (data.isEmpty)
-        HTrue
-      else {
-        val hb = p(data.head)
-        if (hb.toBoolean)
-          loop(data.tail)
-        else
-          hb ++ Map("witness" -> data.head,
-                    "tag" -> tag)
-      }
+    import cats._
+    import cats.syntax.all._
+
+    def folder(_hb:HeavyBool, item:T):Either[HeavyBool,HeavyBool] = {
+      val hb = p(item)
+      if (hb.toBoolean)
+        Right(HTrue) // not yet finished
+      else
+        Left(hb ++ Map("witness" -> item,
+                  "tag" -> tag)) // finished
     }
-    loop(items)
+
+    items.foldM(HTrue:HeavyBool)(folder).merge
   }
 
   def existsM[T](tag:String, items: LazyList[T], p: T => HeavyBool): HeavyBool = {
