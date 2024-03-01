@@ -8,8 +8,13 @@ sealed abstract class HeavyBool(val because:Reason) {
     val prefix:String = toBoolean.toString
     val reasoning:List[String] = for{ m <- because
     } yield locally{
-      for{(k,v)<- m} yield s"$k->$v"
-    }.mkString("(",", ",")")
+      val listOfKeys = (for{(k,v)<- m} yield s"$k->$v").toList
+
+      if (1 == listOfKeys.size)
+        listOfKeys.head
+      else
+        listOfKeys.mkString("(",", ",")")
+    }
     prefix + reasoning.mkString("[", "; ", "]")
   }
 
