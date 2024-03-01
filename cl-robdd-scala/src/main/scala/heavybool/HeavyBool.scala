@@ -137,7 +137,7 @@ object HeavyBool {
     !(forallM[T](tag, items, x => !(p(x))))
   }
 
-  def assertM(a: HeavyBool) = {
+  def assertM(a: HeavyBool):Unit = {
     a match {
       case HeavyTrue(_) => ()
       case HeavyFalse(str) => throw new java.lang.AssertionError(str)
