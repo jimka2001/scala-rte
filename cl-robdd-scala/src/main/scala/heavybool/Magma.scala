@@ -12,44 +12,43 @@ abstract class Magma[T] {
 
   def equiv(a: T, b: T): HeavyBool = {
     if (a == b)
-      HTrue ++ Map("reason" -> s"$a == $b")
+      HTrue
     else
-      HFalse ++ Map("reason" -> s"$a != $b")
-  }
+      HFalse
+  }.annotate("equivalent") ++ Map("a" -> a, "b" -> b)
 
   def isClosed(): HeavyBool = {
-    forallM[T](gen(), { a:T =>
-      forallM[T](gen(), { b:T =>
-        member(op(a,b)) ++ Map("reason" -> s"$this not closed because non-member op($a,$b)")
+    forallM[T]("a", gen(), { a:T =>
+      forallM[T]("b", gen(), { b:T =>
+        member(op(a,b)) ++ Map("op(a,b)" -> op(a,b))
       })
     })
-  }
+  }.annotate("closed")
 
   def isAssociative(): HeavyBool = {
-    forallM[T](gen(), { a =>
-      forallM[T](gen(), { b =>
-        forallM[T](gen(), { c =>
+    forallM[T]("a", gen(), { a =>
+      forallM[T]("b", gen(), { b =>
+        forallM[T]("c", gen(), { c =>
           equiv(op(op(a, b), c),
-                op(a, op(b, c))) ++ Map("reason" -> s"not associative: E.g, $a, $b, $c:")
+                op(a, op(b, c)))
         })
       })
     })
-  }
+  }.annotate("associative")
 
   def isAbelian(): HeavyBool = {
-    forallM[T](gen(), { a =>
-      forallM[T](gen(), { b =>
-        equiv(op(a, b), op(b, a)) +| s"not Abelian, e.g., $a, $b,"
+    forallM[T]("a", gen(), { a =>
+      forallM[T]("b", gen(), { b =>
+        equiv(op(a, b), op(b, a))
       })
     })
-  }
+  }.annotate("commutative")
 
   def isIdentity(z: T): HeavyBool = {
-    forallM[T](gen(), { a =>
-      equiv(op(a, z), a).conjFalse(Map("reason" -> s"$z is not the identity because op($a, z)=${op(a,z)}")) &&
-        equiv(op(z, a), a).conjFalse(Map("reason" -> s"$z is not the identity because op(z, $a)=${op(z,a)}"))
+    forallM[T]("a", gen(), { a =>
+      equiv(op(a, z), a) && equiv(op(z, a), a)
     })
-  }
+  }.annotate("identity") ++ Map("z" -> z)
 
   def findIdentity(): Option[T] = {
     gen().find(z => isIdentity(z) match {
@@ -70,7 +69,7 @@ abstract class Magma[T] {
   }
 
   def isInverter(z: T, invert: T => Option[T]): HeavyBool = {
-    forallM[T](gen(), { a =>
+    forallM[T]("a", gen(), { a =>
       invert(a) match {
         case None => HFalse +| s"because $a has no inverse"
         case Some(b) =>
@@ -79,22 +78,19 @@ abstract class Magma[T] {
             equiv(z, op(b, a))
       }
     })
-  }
+  }.annotate("find inverter") ++ Map("z" -> z)
 
   def isSemiGroup(): HeavyBool = {
-    (isClosed() && isAssociative()).conjFalse(Map("reason" ->
-                                          s"$this is not a semigroup"))
-  }
+    (isClosed() && isAssociative())
+  }.annotate("semigroup")
 
   def isMonoid(z: T): HeavyBool = {
-    (isSemiGroup() && isIdentity(z)).conjFalse(Map("reason" ->
-                                           s"$this not a monoid because"))
-  }
+    (isSemiGroup() && isIdentity(z))
+  }.annotate("monoid")
 
   def isGroup(z: T, invert: T => Option[T]): HeavyBool = {
-    (isMonoid(z) && isInverter(z, invert)).conjFalse(Map("reason" ->
-                                                 s"$this not a group because"))
-  }
+    (isMonoid(z) && isInverter(z, invert))
+  }.annotate("group")
 }
 
 object Magma {
@@ -115,23 +111,7 @@ object Magma {
       .mkString("\n")
   }
 
-  def testModP() = {
-    for {p <- 2 to 10
-         add = new AdditionModP(p)
-         mult = new MultiplicationModP(p)
-         } {
-      assertM(add.isMonoid(0))
 
-      add.isGroup(0, (a: Int) => Some((p - a) % p)) match {
-        case HeavyFalse(str) => println(str)
-        case _ => println(s"$add is a group")
-      }
-      mult.isGroup(1, a => (1 until p).find(b => (a * b) % p == 1)) match {
-        case HeavyFalse(str) => println(str)
-        case _ => println(s"$mult is a group")
-      }
-    }
-  }
 
   def randomCayleyTable(n:Int):(Int,Int)=>Int = {
     import scala.util.Random
@@ -219,7 +199,7 @@ object Magma {
     recur(pow(n, n*n).toInt - 1)
   }
 
-  def findGroups(n:Int) = {
+  def countGroups(n:Int) = {
     val elements = genFinite(n-1)
     var groups = 0
     var abeliangroups = 0
@@ -304,50 +284,6 @@ object Magma {
     println(s"groups:  $groups/$tries")
   }
 
-  def testExists() = {
-    def f(p: Int): HeavyBool = {
-      val g = new MultiplicationModP(p)
-
-      def inv(a: Int): Option[Int] = {
-
-        (1 until p).find(b => (a * b) % p == 1)
-      }
-      g.isGroup(1, inv)
-    }
-    println(existsM[Int](LazyList.from(3 to 3), f))
-    println(existsM[Int](LazyList.from(2 to 10), p => !f(p)))
-    //println(existsM[Int](LazyList.from(2 to 10), f))
-
-  }
-
-  def testLogic():Unit = {
-    val x = List(Map("reason" -> "x"))
-    val y = List(Map("reason" -> "y"))
-    assert((HeavyTrue(x) && HeavyTrue(y)) == HeavyTrue(y))
-    assert((HeavyTrue(x) || HeavyTrue(y)) == HeavyTrue(x))
-    assert((HeavyFalse(x) && HeavyFalse(y)) == HeavyFalse(x))
-    assert((HeavyFalse(x) || HeavyFalse(y)) == HeavyFalse(y))
-  }
-
-  def moreTests():Unit = {
-    for {p <- List(2, 3, 5, 7, 11)
-         g = new MultiplicationModP(p)
-         } {
-      def inv(a: Int): Option[Int] = {
-        (1 until p).find(b => (a * b) % p == 1)
-      }
-
-      assertM(g.isGroup(1, inv))
-      assert(g.isGroup(1, inv).toBoolean)
-    }
-  }
-
-  def testCayleyTables(n:Int):Unit = {
-    for {add <- allUnitalCayleyTables(n)
-         str = cayleyTable(genFinite(n-1), add)
-         } println(str)
-  }
-
   def isRing[T](gen: () => LazyList[T],
                 member: T => HeavyBool,
                 add: (T, T) => T, mult: (T, T) => T,
@@ -358,9 +294,9 @@ object Magma {
     ma.isGroup(zero, invert) &&
       ma.isAbelian() &&
       mb.isMonoid(one) &&
-      forallM[T](gen(), { a =>
-        forallM[T](gen(), { b =>
-          forallM[T](gen(), { c =>
+      forallM[T]("a", gen(), { a =>
+        forallM[T]("b", gen(), { b =>
+          forallM[T]("c", gen(), { c =>
             // left distribute
             ma.equiv(mult(a, add(b, c)),
                      add(mult(a, b), mult(a, c)))
@@ -395,16 +331,7 @@ object Magma {
   }
 
   def main(argv: Array[String]): Unit = {
-    //testCayleyTables(2)
-    //testCayleyTables(3)
-    //testLogic()
-    //moreTests()
-    //testModP()
-    findGroups(2)
-    //findGroupsM(2)
-    //findGroupsM(3)
-    //findGroupsM(4)
-    //testExists()
+
   }
 }
 

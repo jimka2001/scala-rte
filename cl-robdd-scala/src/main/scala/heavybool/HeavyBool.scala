@@ -3,13 +3,18 @@ package heavybool
 
 import HeavyBool.Reason
 
-sealed abstract class HeavyBool(because:Reason) {
+sealed abstract class HeavyBool(val because:Reason) {
   override def toString:String = locally{
     val prefix:String = toBoolean.toString
     val reasoning:List[String] = for{ m <- because
     } yield locally{
-      for{(k,v)<- m} yield s"$k->$v"
-    }.mkString("(",",",")")
+      val listOfKeys = (for{(k,v)<- m} yield s"$k->$v").toList
+
+      if (1 == listOfKeys.size)
+        listOfKeys.head
+      else
+        listOfKeys.mkString("(",", ",")")
+    }
     prefix + reasoning.mkString("[", "; ", "]")
   }
 
@@ -65,6 +70,10 @@ sealed abstract class HeavyBool(because:Reason) {
 
   def +| (reason:String): HeavyBool = this ++ Map("reason" -> reason)
 
+  def annotate(reason:String): HeavyBool = {
+    this.conjTrue(Map{"success" -> reason}).conjFalse(Map("failure" -> reason))
+  }
+
   def conjTrue(another: Map[String,Any]): HeavyBool = {
     this match {
       case HeavyTrue(_) => this ++ another
@@ -81,9 +90,9 @@ sealed abstract class HeavyBool(because:Reason) {
 }
 
 
-case class HeavyTrue(because: Reason) extends HeavyBool(because) {}
+case class HeavyTrue(override val because: Reason) extends HeavyBool(because) {}
 
-case class HeavyFalse(because: Reason) extends HeavyBool(because) {}
+case class HeavyFalse(override val because: Reason) extends HeavyBool(because) {}
 
 object HeavyBool {
   type Reason = List[Map[String, Any]]
@@ -113,23 +122,27 @@ object HeavyBool {
       alternative
   }
 
-  def forallM[T](items: LazyList[T], p: T => HeavyBool): HeavyBool = {
+  def forallM[T](tag:String, items: LazyList[T], p: T => HeavyBool): HeavyBool = {
     def loop(data: LazyList[T]): HeavyBool = {
       if (data.isEmpty)
         HTrue
-      else if(p(data.head).toBoolean)
-        loop(data.tail)
-      else
-        HFalse ++ Map("witness" -> data.head)
+      else {
+        val hb = p(data.head)
+        if (hb.toBoolean)
+          loop(data.tail)
+        else
+          hb ++ Map("witness" -> data.head,
+                    "tag" -> tag)
+      }
     }
     loop(items)
   }
 
-  def existsM[T](items: LazyList[T], p: T => HeavyBool): HeavyBool = {
-    !(forallM[T](items, x => !(p(x))))
+  def existsM[T](tag:String, items: LazyList[T], p: T => HeavyBool): HeavyBool = {
+    !(forallM[T](tag, items, x => !(p(x))))
   }
 
-  def assertM(a: HeavyBool) = {
+  def assertM(a: HeavyBool):Unit = {
     a match {
       case HeavyTrue(_) => ()
       case HeavyFalse(str) => throw new java.lang.AssertionError(str)
