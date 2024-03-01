@@ -18,37 +18,29 @@ abstract class Magma[T] {
   }.annotate("equivalent") ++ Map("a" -> a, "b" -> b)
 
   def isClosed(): HeavyBool = {
-    forallM[T]("a", gen(), { a:T =>
-      forallM[T]("b", gen(), { b:T =>
-        member(op(a,b)) ++ Map("op(a,b)" -> op(a,b))
-      })
-    })
-  }.annotate("closed")
+    forallM("a", gen()){ a:T =>
+      forallM("b", gen()) { b: T =>
+        member(op(a, b)) ++ Map("op(a,b)" -> op(a, b))
+      }}}.annotate("closed")
 
   def isAssociative(): HeavyBool = {
-    forallM[T]("a", gen(), { a =>
-      forallM[T]("b", gen(), { b =>
-        forallM[T]("c", gen(), { c =>
+    forallM("a", gen()) { a =>
+      forallM("b", gen()) { b =>
+        forallM("c", gen()) { c =>
           equiv(op(op(a, b), c),
                 op(a, op(b, c)))
-        })
-      })
-    })
-  }.annotate("associative")
+        }}}}.annotate("associative")
 
   def isAbelian(): HeavyBool = {
-    forallM[T]("a", gen(), { a =>
-      forallM[T]("b", gen(), { b =>
+    forallM("a", gen()) { a:T =>
+      forallM("b", gen()) { b: T =>
         equiv(op(a, b), op(b, a))
-      })
-    })
-  }.annotate("commutative")
+      }}}.annotate("commutative")
 
   def isIdentity(z: T): HeavyBool = {
-    forallM[T]("a", gen(), { a =>
+    forallM("a", gen()) { a:T =>
       equiv(op(a, z), a) && equiv(op(z, a), a)
-    })
-  }.annotate("identity") ++ Map("z" -> z)
+    }}.annotate("identity") ++ Map("z" -> z)
 
   def findIdentity(): Option[T] = {
     gen().find(z => isIdentity(z) match {
@@ -69,16 +61,14 @@ abstract class Magma[T] {
   }
 
   def isInverter(z: T, invert: T => Option[T]): HeavyBool = {
-    forallM[T]("a", gen(), { a =>
+    forallM("a", gen()) { a:T =>
       invert(a) match {
         case None => HFalse +| s"because $a has no inverse"
         case Some(b) =>
           member(b) &&
             equiv(z, op(a, b)) &&
             equiv(z, op(b, a))
-      }
-    })
-  }.annotate("find inverter") ++ Map("z" -> z)
+      }}}.annotate("find inverter") ++ Map("z" -> z)
 
   def isSemiGroup(): HeavyBool = {
     (isClosed() && isAssociative())
@@ -294,9 +284,9 @@ object Magma {
     ma.isGroup(zero, invert) &&
       ma.isAbelian() &&
       mb.isMonoid(one) &&
-      forallM[T]("a", gen(), { a =>
-        forallM[T]("b", gen(), { b =>
-          forallM[T]("c", gen(), { c =>
+      forallM("a", gen()) { a =>
+        forallM("b", gen()) { b =>
+          forallM("c", gen()) { c =>
             // left distribute
             ma.equiv(mult(a, add(b, c)),
                      add(mult(a, b), mult(a, c)))
@@ -305,10 +295,7 @@ object Magma {
               ma.equiv(mult(add(b,c),a),
                        add(mult(b,a),mult(c,a)))
                 .conjFalse(Map("reason" -> s"$a does not right-distribute across ($b+$c)"))
-          })
-        })
-      })
-  }
+  }}}}
 
   def isField[T](gen: () => LazyList[T],
                  member: T => HeavyBool,

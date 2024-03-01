@@ -2,6 +2,7 @@ package heavybool
 
 
 import HeavyBool.Reason
+import cats.Foldable
 
 
 sealed abstract class HeavyBool(val because:Reason) {
@@ -123,7 +124,7 @@ object HeavyBool {
       alternative
   }
 
-  def forallM[T](tag:String, items: LazyList[T], p: T => HeavyBool): HeavyBool = {
+  def forallM[T, C[_]](tag:String, items: C[T])( p: T => HeavyBool)(implicit ev: cats.Foldable[C]): HeavyBool = {
     import cats._
     import cats.syntax.all._
 
@@ -139,8 +140,8 @@ object HeavyBool {
     items.foldM(HTrue:HeavyBool)(folder).merge
   }
 
-  def existsM[T](tag:String, items: LazyList[T], p: T => HeavyBool): HeavyBool = {
-    !(forallM[T](tag, items, x => !(p(x))))
+  def existsM[T, C[_]](tag:String, items: C[T])(p: T => HeavyBool)(implicit ev: cats.Foldable[C]): HeavyBool = {
+    !(forallM[T,C](tag, items)(x => !(p(x)))(ev))
   }
 
   def assertM(a: HeavyBool):Unit = {
