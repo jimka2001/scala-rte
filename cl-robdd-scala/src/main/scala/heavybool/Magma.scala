@@ -20,7 +20,7 @@ abstract class Magma[T] {
   def isClosed(): HeavyBool = {
     forallM[T]("a", gen(), { a:T =>
       forallM[T]("b", gen(), { b:T =>
-        member(op(a,b))
+        member(op(a,b)) ++ Map("op(a,b)" -> op(a,b))
       })
     })
   }.annotate("closed")
@@ -111,23 +111,7 @@ object Magma {
       .mkString("\n")
   }
 
-  def testModP() = {
-    for {p <- 2 to 10
-         add = new AdditionModP(p)
-         mult = new MultiplicationModP(p)
-         } {
-      assertM(add.isMonoid(0))
 
-      add.isGroup(0, (a: Int) => Some((p - a) % p)) match {
-        case HeavyFalse(str) => println(str)
-        case _ => println(s"$add is a group")
-      }
-      mult.isGroup(1, a => (1 until p).find(b => (a * b) % p == 1)) match {
-        case HeavyFalse(str) => println(str)
-        case _ => println(s"$mult is a group")
-      }
-    }
-  }
 
   def randomCayleyTable(n:Int):(Int,Int)=>Int = {
     import scala.util.Random
@@ -316,34 +300,6 @@ object Magma {
 
   }
 
-  def testLogic():Unit = {
-    val x = List(Map("reason" -> "x"))
-    val y = List(Map("reason" -> "y"))
-    assert((HeavyTrue(x) && HeavyTrue(y)) == HeavyTrue(y))
-    assert((HeavyTrue(x) || HeavyTrue(y)) == HeavyTrue(x))
-    assert((HeavyFalse(x) && HeavyFalse(y)) == HeavyFalse(x))
-    assert((HeavyFalse(x) || HeavyFalse(y)) == HeavyFalse(y))
-  }
-
-  def moreTests():Unit = {
-    for {p <- List(2, 3, 5, 7, 11)
-         g = new MultiplicationModP(p)
-         } {
-      def inv(a: Int): Option[Int] = {
-        (1 until p).find(b => (a * b) % p == 1)
-      }
-
-      assertM(g.isGroup(1, inv))
-      assert(g.isGroup(1, inv).toBoolean)
-    }
-  }
-
-  def testCayleyTables(n:Int):Unit = {
-    for {add <- allUnitalCayleyTables(n)
-         str = cayleyTable(genFinite(n-1), add)
-         } println(str)
-  }
-
   def isRing[T](gen: () => LazyList[T],
                 member: T => HeavyBool,
                 add: (T, T) => T, mult: (T, T) => T,
@@ -391,12 +347,8 @@ object Magma {
   }
 
   def main(argv: Array[String]): Unit = {
-    //testCayleyTables(2)
-    //testCayleyTables(3)
-    //testLogic()
-    //moreTests()
-    //testModP()
-    findGroups(2)
+
+    //findGroups(2)
     //findGroupsM(2)
     //findGroupsM(3)
     //findGroupsM(4)

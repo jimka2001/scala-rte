@@ -7,19 +7,21 @@ abstract class ModP(p: Int) extends Magma[Int] {
 
   override def gen(): LazyList[Int] = Magma.genFinite(p - 1)
 
-  override def equiv(a: Int, b: Int): HeavyBool =
+  override def equiv(a: Int, b: Int): HeavyBool = {
     if (a == b)
       HTrue +| s"$a equiv $b"
     else
       HFalse +| s"$a not equiv $b"
+  }.annotate(s"equiv mod $p")
 
-  override def member(a: Int): HeavyBool =
+  override def member(a: Int): HeavyBool = {
     if (a < 0)
       HFalse +| s"$a is not member because $a < 0"
     else if (a >= p)
       HFalse +| s"$a is not a member because $a >= $p"
     else
       HTrue +| s"0 <= $a < $p"
+  }.annotate("member")
 }
 
 class AdditionModP(p: Int) extends ModP(p) {
@@ -44,7 +46,7 @@ class MultiplicationModP(p: Int) extends ModP(p) {
       HFalse +| s"$a <= 0"
     else
       super.member(a)
-  }
+  }.annotate("member")
 
   override def op(a: Int, b: Int): Int = (a * b) % p
 }
