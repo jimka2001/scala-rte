@@ -199,7 +199,7 @@ object Magma {
     recur(pow(n, n*n).toInt - 1)
   }
 
-  def findGroups(n:Int) = {
+  def countGroups(n:Int) = {
     val elements = genFinite(n-1)
     var groups = 0
     var abeliangroups = 0
@@ -284,22 +284,6 @@ object Magma {
     println(s"groups:  $groups/$tries")
   }
 
-  def testExists() = {
-    def f(p: Int): HeavyBool = {
-      val g = new MultiplicationModP(p)
-
-      def inv(a: Int): Option[Int] = {
-
-        (1 until p).find(b => (a * b) % p == 1)
-      }
-      g.isGroup(1, inv)
-    }
-    println(existsM[Int]("f", LazyList.from(3 to 3), f))
-    println(existsM[Int]("p", LazyList.from(2 to 10), p => !f(p)))
-    //println(existsM[Int](LazyList.from(2 to 10), f))
-
-  }
-
   def isRing[T](gen: () => LazyList[T],
                 member: T => HeavyBool,
                 add: (T, T) => T, mult: (T, T) => T,
@@ -348,11 +332,6 @@ object Magma {
 
   def main(argv: Array[String]): Unit = {
 
-    //findGroups(2)
-    //findGroupsM(2)
-    //findGroupsM(3)
-    //findGroupsM(4)
-    //testExists()
   }
 }
 

@@ -95,4 +95,32 @@ class HeavyBoolSuite extends MyFunSuite {
     assert((HeavyFalse(x) || HeavyFalse(y)) == HeavyFalse(y))
   }
 
+  test("exists")  {
+    def f(p: Int): HeavyBool = {
+      val g = new MultiplicationModP(p)
+
+      def inv(a: Int): Option[Int] = {
+
+        (1 until p).find(b => (a * b) % p == 1)
+      }
+      g.isGroup(1, inv)
+    }
+    println(existsM[Int]("f", LazyList.from(3 to 3), f))
+    println(existsM[Int]("p", LazyList.from(2 to 10), p => !f(p)))
+    println(existsM[Int]("f", LazyList.from(2 to 10), f))
+  }
+
+  test("count groups"){
+    import heavybool.Magma.{countGroups}
+    countGroups(2)
+    countGroups(3)
+    //countGroups(4)
+  }
+
+  test("find groups"){
+    import heavybool.Magma.{findGroupsM}
+    findGroupsM(2)
+    findGroupsM(3)
+    findGroupsM(4)
+  }
 }
