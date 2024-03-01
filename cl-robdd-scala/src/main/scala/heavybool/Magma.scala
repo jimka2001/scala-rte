@@ -12,44 +12,43 @@ abstract class Magma[T] {
 
   def equiv(a: T, b: T): HeavyBool = {
     if (a == b)
-      HTrue ++ Map("reason" -> s"$a == $b")
+      HTrue
     else
-      HFalse ++ Map("reason" -> s"$a != $b")
-  }
+      HFalse
+  }.annotate("equivalent") ++ Map("a" -> a, "b" -> b)
 
   def isClosed(): HeavyBool = {
-    forallM[T](gen(), { a:T =>
-      forallM[T](gen(), { b:T =>
-        member(op(a,b)) ++ Map("reason" -> s"$this not closed because non-member op($a,$b)")
+    forallM[T]("a", gen(), { a:T =>
+      forallM[T]("b", gen(), { b:T =>
+        member(op(a,b))
       })
     })
-  }
+  }.annotate("closed")
 
   def isAssociative(): HeavyBool = {
-    forallM[T](gen(), { a =>
-      forallM[T](gen(), { b =>
-        forallM[T](gen(), { c =>
+    forallM[T]("a", gen(), { a =>
+      forallM[T]("b", gen(), { b =>
+        forallM[T]("c", gen(), { c =>
           equiv(op(op(a, b), c),
-                op(a, op(b, c))) ++ Map("reason" -> s"not associative: E.g, $a, $b, $c:")
+                op(a, op(b, c)))
         })
       })
     })
-  }
+  }.annotate("associative")
 
   def isAbelian(): HeavyBool = {
-    forallM[T](gen(), { a =>
-      forallM[T](gen(), { b =>
-        equiv(op(a, b), op(b, a)) +| s"not Abelian, e.g., $a, $b,"
+    forallM[T]("a", gen(), { a =>
+      forallM[T]("b", gen(), { b =>
+        equiv(op(a, b), op(b, a))
       })
     })
-  }
+  }.annotate("commutative")
 
   def isIdentity(z: T): HeavyBool = {
-    forallM[T](gen(), { a =>
-      equiv(op(a, z), a).conjFalse(Map("reason" -> s"$z is not the identity because op($a, z)=${op(a,z)}")) &&
-        equiv(op(z, a), a).conjFalse(Map("reason" -> s"$z is not the identity because op(z, $a)=${op(z,a)}"))
+    forallM[T]("a", gen(), { a =>
+      equiv(op(a, z), a) && equiv(op(z, a), a)
     })
-  }
+  }.annotate("identity") ++ Map("z" -> z)
 
   def findIdentity(): Option[T] = {
     gen().find(z => isIdentity(z) match {
@@ -70,7 +69,7 @@ abstract class Magma[T] {
   }
 
   def isInverter(z: T, invert: T => Option[T]): HeavyBool = {
-    forallM[T](gen(), { a =>
+    forallM[T]("a", gen(), { a =>
       invert(a) match {
         case None => HFalse +| s"because $a has no inverse"
         case Some(b) =>
@@ -79,22 +78,19 @@ abstract class Magma[T] {
             equiv(z, op(b, a))
       }
     })
-  }
+  }.annotate("find inverter") ++ Map("z" -> z)
 
   def isSemiGroup(): HeavyBool = {
-    (isClosed() && isAssociative()).conjFalse(Map("reason" ->
-                                          s"$this is not a semigroup"))
-  }
+    (isClosed() && isAssociative())
+  }.annotate("semigroup")
 
   def isMonoid(z: T): HeavyBool = {
-    (isSemiGroup() && isIdentity(z)).conjFalse(Map("reason" ->
-                                           s"$this not a monoid because"))
-  }
+    (isSemiGroup() && isIdentity(z))
+  }.annotate("monoid")
 
   def isGroup(z: T, invert: T => Option[T]): HeavyBool = {
-    (isMonoid(z) && isInverter(z, invert)).conjFalse(Map("reason" ->
-                                                 s"$this not a group because"))
-  }
+    (isMonoid(z) && isInverter(z, invert))
+  }.annotate("group")
 }
 
 object Magma {
@@ -314,8 +310,8 @@ object Magma {
       }
       g.isGroup(1, inv)
     }
-    println(existsM[Int](LazyList.from(3 to 3), f))
-    println(existsM[Int](LazyList.from(2 to 10), p => !f(p)))
+    println(existsM[Int]("f", LazyList.from(3 to 3), f))
+    println(existsM[Int]("p", LazyList.from(2 to 10), p => !f(p)))
     //println(existsM[Int](LazyList.from(2 to 10), f))
 
   }
@@ -358,9 +354,9 @@ object Magma {
     ma.isGroup(zero, invert) &&
       ma.isAbelian() &&
       mb.isMonoid(one) &&
-      forallM[T](gen(), { a =>
-        forallM[T](gen(), { b =>
-          forallM[T](gen(), { c =>
+      forallM[T]("a", gen(), { a =>
+        forallM[T]("b", gen(), { b =>
+          forallM[T]("c", gen(), { c =>
             // left distribute
             ma.equiv(mult(a, add(b, c)),
                      add(mult(a, b), mult(a, c)))

@@ -9,7 +9,7 @@ sealed abstract class HeavyBool(val because:Reason) {
     val reasoning:List[String] = for{ m <- because
     } yield locally{
       for{(k,v)<- m} yield s"$k->$v"
-    }.mkString("(",",",")")
+    }.mkString("(",", ",")")
     prefix + reasoning.mkString("[", "; ", "]")
   }
 
@@ -65,6 +65,10 @@ sealed abstract class HeavyBool(val because:Reason) {
 
   def +| (reason:String): HeavyBool = this ++ Map("reason" -> reason)
 
+  def annotate(reason:String): HeavyBool = {
+    this.conjTrue(Map{"success" -> reason}).conjFalse(Map("failure" -> reason))
+  }
+
   def conjTrue(another: Map[String,Any]): HeavyBool = {
     this match {
       case HeavyTrue(_) => this ++ another
@@ -113,7 +117,7 @@ object HeavyBool {
       alternative
   }
 
-  def forallM[T](items: LazyList[T], p: T => HeavyBool): HeavyBool = {
+  def forallM[T](tag:String, items: LazyList[T], p: T => HeavyBool): HeavyBool = {
     def loop(data: LazyList[T]): HeavyBool = {
       if (data.isEmpty)
         HTrue
@@ -125,8 +129,8 @@ object HeavyBool {
     loop(items)
   }
 
-  def existsM[T](items: LazyList[T], p: T => HeavyBool): HeavyBool = {
-    !(forallM[T](items, x => !(p(x))))
+  def existsM[T](tag:String, items: LazyList[T], p: T => HeavyBool): HeavyBool = {
+    !(forallM[T](tag, items, x => !(p(x))))
   }
 
   def assertM(a: HeavyBool) = {

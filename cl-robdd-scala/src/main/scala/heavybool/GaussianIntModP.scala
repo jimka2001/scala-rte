@@ -72,19 +72,19 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
                     "b" -> b)
     }
 
-  override def member(a: (Int,Int)): HeavyBool = {
+  override def member(a: (Int,Int)): HeavyBool = ({
     val (x,y) = a
     if (x < 0)
-      HFalse +| s"$a is not member because $x < 0"
+      HFalse +| s"$x < 0"
     else if (y < 0)
-      HFalse +| s"$a is not member because $y < 0"
+      HFalse +| s"$y < 0"
     else if (x >= p)
-      HFalse +| s"$a is not a member because $x >= $p"
+      HFalse +| s"$x >= $p"
     else if (y >= p)
-      HFalse +| s"$a is not a member because $y >= $p"
+      HFalse +| s"$y >= $p"
     else
       HTrue +| s"0 <= $x < $p and 0 <= $y < $p"
-  }
+  } ++ Map("a" -> a)).annotate("member")
 }
 
 object testGaussianInt {
