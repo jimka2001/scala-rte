@@ -1,10 +1,10 @@
 package heavybool
+import cats.Foldable
 
 abstract class Magma[T] {
-
   import HeavyBool._
 
-  def gen(): LazyList[T]
+  def gen[C[_]:Foldable]()(implicit ev:Foldable[C]): C[T]
 
   def op(a: T, b: T): T
 
@@ -24,9 +24,9 @@ abstract class Magma[T] {
       }}}.annotate("closed")
 
   def isAssociative(): HeavyBool = {
-    forallM("a", gen()) { a =>
-      forallM("b", gen()) { b =>
-        forallM("c", gen()) { c =>
+    forallM("a", gen()) { a:T =>
+      forallM("b", gen()) { b:T =>
+        forallM("c", gen()) { c:T =>
           equiv(op(op(a, b), c),
                 op(a, op(b, c)))
         }}}}.annotate("associative")

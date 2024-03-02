@@ -1,5 +1,6 @@
 package heavybool
 import HeavyBool._
+import cats.Foldable
 
 class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
   override def toString: String = s"GaussianModP($p)"
@@ -48,7 +49,7 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
     add(a,b)
   }
 
-  override def gen(): LazyList[(Int,Int)] = {
+  override def gen()(implicit ev:Foldable[LazyList[_]]): LazyList[(Int,Int)] = {
     def loop(u:Int,v:Int):LazyList[(Int,Int)] = {
       if (u==p)
         LazyList.empty
@@ -92,7 +93,7 @@ object testGaussianInt {
 
     for {p <- (2 to 30).view
          m = new GaussianIntModP(p)
-         f = Magma.isField[(Int,Int)](m.gen, m.member,
+         f = Magma.isField(m.gen, m.member,
                            m.add, m.mult,
                            a => Some(m.subtract(m.zero, a)),
                            m.mult_inv,

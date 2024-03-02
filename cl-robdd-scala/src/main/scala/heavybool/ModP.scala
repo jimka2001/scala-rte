@@ -1,11 +1,12 @@
 package heavybool
 
 import HeavyBool._
+import cats.Foldable
 
 abstract class ModP(p: Int) extends Magma[Int] {
   override def toString: String = s"ModP($p)"
 
-  override def gen(): LazyList[Int] = Magma.genFinite(p - 1)
+  override def gen()(implicit ev: Foldable[LazyList[_]]): LazyList[Int] = Magma.genFinite(p - 1)
 
   override def equiv(a: Int, b: Int): HeavyBool = {
     if (a == b)
@@ -37,8 +38,8 @@ class AdditionModP(p: Int) extends ModP(p) {
 class MultiplicationModP(p: Int) extends ModP(p) {
   override def toString: String = s"MultiplicationModP($p)"
 
-  override def gen(): LazyList[Int] = {
-    super.gen().filter { a => a != 0 }
+  override def gen()(implicit ev:Foldable[LazyList[_]]): LazyList[Int] = {
+    super.gen()(ev).filter { a:Int => a != 0 }
   }
 
   override def member(a: Int): HeavyBool = {

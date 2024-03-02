@@ -6,20 +6,20 @@ import HeavyBool._
 class HeavyBoolSuite extends MyFunSuite {
   test("and") {
     forallM("n",
-      LazyList.range(1,10,3)){
+            LazyList.range(1,10,3)){
       (n: Int) => HeavyBool(n % 2 != 0,
                             List(Map("forall" -> true)))} &&
-       existsM("n", LazyList.range(1,10,3)){
-      (n: Int) => HeavyBool(n % 2 != 0,
-                            List(Map("exists" -> true)))}
+      existsM("n", LazyList.range(1,10,3)){
+        (n: Int) => HeavyBool(n % 2 != 0,
+                              List(Map("exists" -> true)))}
   }
 
   test("or") {
     forallM(  "n", LazyList.range(1,10,3)) {
-    (n: Int) => HeavyBool(n % 2 != 0, List(Map("forall" -> true)))
-  } || existsM("n", LazyList.range(1,10,3)){ (n: Int) =>
-        HeavyBool(n % 2 != 0, List(Map("exists" -> true)))
-  }}
+      (n: Int) => HeavyBool(n % 2 != 0, List(Map("forall" -> true)))
+    } || existsM("n", LazyList.range(1,10,3)){ (n: Int) =>
+      HeavyBool(n % 2 != 0, List(Map("exists" -> true)))
+    }}
 
   test("forall"){
     assert(HTrue == forallM("x", LazyList(1,2,3)){ (x:Int) =>
@@ -49,8 +49,6 @@ class HeavyBoolSuite extends MyFunSuite {
     testCayleyTables(2)
     testCayleyTables(3)
   }
-
-
 
   test("more tests") {
     for {p <- List(2, 3, 5, 7, 11)
