@@ -124,7 +124,7 @@ object HeavyBool {
       alternative
   }
 
-  def forallM[T, C[_]](tag:String, items: C[T])( p: T => HeavyBool)(implicit ev: cats.Foldable[C]): HeavyBool = {
+  def forallM[T, C[_]](tag:String, items: C[T])( p: T => HeavyBool)(implicit ev: Foldable[C]): HeavyBool = {
     import cats._
     import cats.syntax.all._
 
@@ -140,7 +140,7 @@ object HeavyBool {
     items.foldM(HTrue:HeavyBool)(folder).merge
   }
 
-  def existsM[T, C[_]](tag:String, items: C[T])(p: T => HeavyBool)(implicit ev: cats.Foldable[C]): HeavyBool = {
+  def existsM[T, C[_]](tag:String, items: C[T])(p: T => HeavyBool)(implicit ev: Foldable[C]): HeavyBool = {
     !(forallM[T,C](tag, items)(x => !(p(x)))(ev))
   }
 
