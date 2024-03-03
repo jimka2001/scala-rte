@@ -1,10 +1,11 @@
 package heavybool
 import cats.Foldable
+import cats.syntax.all._
 
-abstract class Magma[T] {
+abstract class Magma[T,C[_]:Foldable] {
   import HeavyBool._
 
-  def gen[C[_]:Foldable]()(implicit ev:Foldable[C]): C[T]
+  def gen()(implicit ev:Foldable[C]): C[T]
 
   def op(a: T, b: T): T
 
@@ -210,7 +211,7 @@ object Magma {
       tries += 1
       if (ab.toBoolean)
         abelians += 1
-      (dm.isGroup(0, x => dm.findInverse(x)) match {
+      (dm.isGroup(0, (x:Int) => dm.findInverse(x)) match {
         case tf: HeavyFalse => tf // println(str)
         case tf: HeavyTrue =>
           groups += 1

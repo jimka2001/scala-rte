@@ -1,13 +1,14 @@
 package heavybool
 
 import HeavyBool._
+import cats.Foldable
 
 case class DynMagma[T](gen1: () => LazyList[T],
                        op1: (T, T) => T,
-                       member1: T => Boolean) extends Magma[T] {
+                       member1: T => Boolean) extends Magma[T, LazyList] {
   override def toString: String = "dyn"
 
-  def gen(): LazyList[T] = gen1()
+  def gen()(implicit ev: Foldable[LazyList]): LazyList[T] = gen1()
 
   def op(a: T, b: T): T = op1(a, b)
 

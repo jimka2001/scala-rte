@@ -2,7 +2,7 @@ name := "cl-robdd-scala"
 
 version := "0.1"
 
-scalaVersion := "2.13.11"
+scalaVersion := "2.13.12"
 
 //libraryDependencies += "fr.epita.lrde" %% "clcompat" % "0.1"
 
@@ -48,4 +48,4 @@ Test / parallelExecution := false
 //    parallelExecution in Test := false
 // )
 
-libraryDependencies += "org.typelevel" %% "cats-core" % "2.7.0"
+libraryDependencies += "org.typelevel" %% "cats-core" % "2.10.0"
