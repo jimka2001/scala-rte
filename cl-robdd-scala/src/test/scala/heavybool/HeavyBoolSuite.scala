@@ -39,9 +39,9 @@ class HeavyBoolSuite extends MyFunSuite {
   }
 
   def testCayleyTables(n:Int):Unit = {
-    import heavybool.Magma.{allUnitalCayleyTables, cayleyTable, genFinite}
+    import heavybool.Magma.{allUnitalCayleyTables, cayleyTable, genLazyFinite}
     for {add <- allUnitalCayleyTables(n)
-         str = cayleyTable(genFinite(n-1), add)
+         str = cayleyTable(genLazyFinite(n-1), add)
          } println(str)
   }
 

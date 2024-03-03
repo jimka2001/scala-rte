@@ -107,7 +107,6 @@ object Magma {
   }
 
 
-
   def randomCayleyTable(n:Int):(Int,Int)=>Int = {
     import scala.util.Random
     // generate a function representing one possible addition table of a
@@ -279,13 +278,13 @@ object Magma {
     println(s"groups:  $groups/$tries")
   }
 
-  def isRing[T](gen: () => LazyList[T],
+  def isRing[T, C[_]:Foldable](gen: () => C[T],
                 member: T => HeavyBool,
                 add: (T, T) => T, mult: (T, T) => T,
                 invert: T => Option[T],
                 one: T, zero: T): HeavyBool = {
-    val ma = DynMagma[T](gen, add, x => member(x).toBoolean)
-    val mb = DynMagma[T](gen, mult, x => member(x).toBoolean)
+    val ma = DynMagma[T,C](gen, add, x => member(x).toBoolean)
+    val mb = DynMagma[T,C](gen, mult, x => member(x).toBoolean)
     ma.isGroup(zero, invert) &&
       ma.isAbelian() &&
       mb.isMonoid(one) &&
@@ -302,16 +301,16 @@ object Magma {
                 .conjFalse(Map("reason" -> s"$a does not right-distribute across ($b+$c)"))
   }}}}
 
-  def isField[T](gen: () => LazyList[T],
+  def isField[T,C[_]:Foldable](gen: () => C[T],
                  member: T => HeavyBool,
                  add: (T, T) => T, mult: (T, T) => T,
                  add_invert: T => Option[T], mult_invert: T => Option[T],
                  one: T, zero: T): HeavyBool = {
-    val ma = DynMagma[T](gen, add, x => member(x).toBoolean)
-    lazy val mb = DynMagma[T](gen, mult, x => member(x).toBoolean)
-    lazy val mz = DynMagma[T](non_zero_gen, mult, x => member(x).toBoolean)
-    def non_zero_gen():LazyList[T] = {
-      gen().filter(_ != zero)
+    val ma = DynMagma[T,C](gen, add, x => member(x).toBoolean)
+    lazy val mb = DynMagma[T,C](gen, mult, x => member(x).toBoolean)
+    lazy val mz = DynMagma[T,List](non_zero_gen, mult, x => member(x).toBoolean)
+    def non_zero_gen():List[T] = {
+      gen().filter_(_ != zero)
     }
     !ma.equiv(one,zero) &&
       mb.isAbelian().conjFalse(Map("reason" -> "not Abelian")) &&
