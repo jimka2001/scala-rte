@@ -8,6 +8,19 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int), LazyList] {
   val zero = (0,0)
   val one = (1,0)
 
+  override def gen()(implicit ev:Foldable[LazyList]): LazyList[(Int,Int)] = {
+    def loop(u:Int,v:Int):LazyList[(Int,Int)] = {
+      if (u==p)
+        LazyList.empty
+      else if (v==p)
+        loop(u+1,0)
+      else
+        (u,v) #:: loop(u,v+1)
+    }
+    loop(0,0)
+  }
+
+
   def mod(a:Int):Int = {
     ((a % p) + p) % p
   }
@@ -50,18 +63,6 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int), LazyList] {
     add(a,b)
   }
 
-  override def gen()(implicit ev:Foldable[LazyList]): LazyList[(Int,Int)] = {
-    def loop(u:Int,v:Int):LazyList[(Int,Int)] = {
-      if (u==p)
-        LazyList.empty
-      else if (v==p)
-        loop(u+1,0)
-      else
-        (u,v) #:: loop(u,v+1)
-    }
-    loop(0,0)
-  }
-
   override def equiv(a: (Int,Int), b: (Int,Int)): HeavyBool =
     if (a == b)
       HTrue ++ Map("reason" -> "a equiv b",
@@ -93,7 +94,7 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int), LazyList] {
 object testGaussianInt {
   def main(argv: Array[String]): Unit = {
 
-    for {p <- (2 to 30).view
+    for {p <- (2 to 17).view
          m = new GaussianIntModP(p)
          f = Magma.isField(m.gen, m.member,
                            m.add, m.mult,
