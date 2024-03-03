@@ -89,11 +89,15 @@ object Magma {
   import HeavyBool._
 
   // generate a lazy list from 0 to n inclusive
-  def genFinite(n: Int): LazyList[Int] = {
+  def genLazyFinite(n: Int): LazyList[Int] = {
     LazyList.from(0 to n)
   }
 
-  def cayleyTable[T](elements: LazyList[T], op: (T, T) => T): String = {
+  def genListFinite(n: Int): List[Int] = {
+    List.from(0 to n)
+  }
+
+  def cayleyTable[T](elements: Seq[T], op: (T, T) => T): String = {
     val header: String = "*|" ++ elements.map(x => s"$x").mkString(" ")
     val divider: String = "-+" ++ elements.map(x => "-").mkString("-")
     "\n" ++ header ++ "\n" ++ divider ++ "\n" ++ elements
@@ -191,7 +195,7 @@ object Magma {
   }
 
   def countGroups(n:Int) = {
-    val elements = genFinite(n-1)
+    val elements = genListFinite(n-1)
     var groups = 0
     var abeliangroups = 0
     var monoids = 0
@@ -255,7 +259,7 @@ object Magma {
   }
 
   def findGroupsM(n:Int) = {
-    val elements = genFinite(n-1) // [0, 1, 2] size 3
+    val elements = genListFinite(n-1) // [0, 1, 2] size 3
     var groups = 0
     var tries = 0
 
