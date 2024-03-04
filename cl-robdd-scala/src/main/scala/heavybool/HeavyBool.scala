@@ -73,7 +73,9 @@ sealed abstract class HeavyBool(val because:Reason) {
   def +| (reason:String): HeavyBool = this ++ Map("reason" -> reason)
 
   def annotate(reason:String): HeavyBool = {
-    this.conjTrue(Map{"success" -> reason}).conjFalse(Map("failure" -> reason))
+    this
+      .conjTrue(Map{"success" -> reason})
+      .conjFalse(Map("failure" -> reason))
   }
 
   def conjTrue(another: Map[String,Any]): HeavyBool = {
@@ -90,7 +92,6 @@ sealed abstract class HeavyBool(val because:Reason) {
     }
   }
 }
-
 
 case class HeavyTrue(override val because: Reason) extends HeavyBool(because) {}
 
@@ -124,7 +125,7 @@ object HeavyBool {
       alternative
   }
 
-  def forallM[T, C[_]](tag:String, items: C[T])( p: T => HeavyBool)(implicit ev: Foldable[C]): HeavyBool = {
+  def forallM[T, C[_]:Foldable](tag:String, items: C[T])( p: T => HeavyBool): HeavyBool = {
     import cats._
     import cats.syntax.all._
 
@@ -134,14 +135,14 @@ object HeavyBool {
         Right(HTrue) // not yet finished
       else
         Left(hb ++ Map("witness" -> item,
-                  "tag" -> tag)) // finished
+                       "tag" -> tag)) // finished
     }
 
     items.foldM(HTrue:HeavyBool)(folder).merge
   }
 
-  def existsM[T, C[_]](tag:String, items: C[T])(p: T => HeavyBool)(implicit ev: Foldable[C]): HeavyBool = {
-    !(forallM[T,C](tag, items)(x => !(p(x)))(ev))
+  def existsM[T, C[_]:Foldable](tag:String, items: C[T])(p: T => HeavyBool): HeavyBool = {
+    !(forallM[T,C](tag, items)(x => !(p(x))))
   }
 
   def assertM(a: HeavyBool):Unit = {
