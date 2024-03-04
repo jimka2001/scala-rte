@@ -28,11 +28,12 @@ object Relations {
     }.annotate("assymmetric")
   }
   def isAntisymmetric[T](gen:LazyList[T], rel:(T,T)=>Boolean) = {
-    // if a relates to b, and be relates to a, then a == b
+    // if a relates to b, and b relates to a, then a == b
     def hrel(a: T, b: T) = HeavyBool(rel(a, b))
 
     forallM("x", gen) { (x: T) =>
-      forallM("y", gen) { (y: T) => (hrel(x, y) && hrel(y, x)) ==> HeavyBool(x==y) }
+      forallM("y", gen) { (y: T) =>
+        (hrel(x, y) && hrel(y, x)) ==> HeavyBool(x==y) }
     }.annotate("antisymetric")
   }
 
@@ -47,6 +48,7 @@ object Relations {
 
   def isStronglyConnected[T](gen:LazyList[T], rel:(T,T)=>Boolean):HeavyBool = {
     def hrel(a: T, b: T) = HeavyBool(rel(a, b))
+    // forall a,b, either a relates to b or b relates to a
     forallM("a", gen){ (a:T) =>
       forallM("b", gen) {(b:T) =>
         hrel(a,b) || hrel(b,a)
