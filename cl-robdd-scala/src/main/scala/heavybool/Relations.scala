@@ -3,8 +3,8 @@ import HeavyBool._
 
 object Relations {
   def isReflexive[T](gen:LazyList[T], rel:(T,T)=>Boolean) = {
-    forallM("x", gen){(x:T) =>
-      forallM("y", gen){(y:T) => HeavyBool(rel(x,y))}}
+    // every element relates to itself
+    forallM("x", gen){(x:T) => HeavyBool(rel(x,x))}
       .annotate("reflexive")
   }
 
