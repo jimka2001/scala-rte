@@ -1,10 +1,25 @@
 package heavybool
 import HeavyBool._
+import cats.Foldable
 
-class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
+class GaussianIntModP(p: Int) extends Magma[(Int,Int), LazyList] {
+
   override def toString: String = s"GaussianModP($p)"
   val zero = (0,0)
   val one = (1,0)
+
+  override def gen(): LazyList[(Int,Int)] = {
+    def loop(u:Int,v:Int):LazyList[(Int,Int)] = {
+      if (u==p)
+        LazyList.empty
+      else if (v==p)
+        loop(u+1,0)
+      else
+        (u,v) #:: loop(u,v+1)
+    }
+    loop(0,0)
+  }
+
 
   def mod(a:Int):Int = {
     ((a % p) + p) % p
@@ -48,18 +63,6 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
     add(a,b)
   }
 
-  override def gen(): LazyList[(Int,Int)] = {
-    def loop(u:Int,v:Int):LazyList[(Int,Int)] = {
-      if (u==p)
-        LazyList.empty
-      else if (v==p)
-        loop(u+1,0)
-      else
-        (u,v) #:: loop(u,v+1)
-    }
-    loop(0,0)
-  }
-
   override def equiv(a: (Int,Int), b: (Int,Int)): HeavyBool =
     if (a == b)
       HTrue ++ Map("reason" -> "a equiv b",
@@ -85,16 +88,17 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int)] {
     else
       HTrue +| s"0 <= $x < $p and 0 <= $y < $p"
   } ++ Map("a" -> a)).annotate("member")
+
 }
 
 object testGaussianInt {
   def main(argv: Array[String]): Unit = {
 
-    for {p <- (2 to 30).view
+    for {p <- (2 to 17).view
          m = new GaussianIntModP(p)
-         f = Magma.isField[(Int,Int)](m.gen, m.member,
+         f = Magma.isField(m.gen, m.member,
                            m.add, m.mult,
-                           a => Some(m.subtract(m.zero, a)),
+                           (a:(Int,Int)) => Some(m.subtract(m.zero, a)),
                            m.mult_inv,
                            m.one, m.zero
                            ).conjFalse(Map("reason" -> s"$m not a field")) &&

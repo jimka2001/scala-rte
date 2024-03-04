@@ -5,45 +5,43 @@ import HeavyBool._
 
 class HeavyBoolSuite extends MyFunSuite {
   test("and") {
-    forallM[Int]("n",
-      LazyList.range(1,10,3),
+    forallM("n",
+            LazyList.range(1,10,3)){
       (n: Int) => HeavyBool(n % 2 != 0,
-                            List(Map("forall" -> true)))
-    ) &&
-       existsM[Int]("n", LazyList.range(1,10,3),
-      (n: Int) => HeavyBool(n % 2 != 0,
-                            List(Map("exists" -> true))))
+                            List(Map("forall" -> true)))} &&
+      existsM("n", LazyList.range(1,10,3)){
+        (n: Int) => HeavyBool(n % 2 != 0,
+                              List(Map("exists" -> true)))}
   }
 
   test("or") {
-    forallM[Int](
-      "n", LazyList.range(1,10,3),
+    forallM(  "n", LazyList.range(1,10,3)) {
       (n: Int) => HeavyBool(n % 2 != 0, List(Map("forall" -> true)))
-    ) ||
-       existsM[Int]("n", LazyList.range(1,10,3), (n: Int) =>
-        HeavyBool(n % 2 != 0, List(Map("exists" -> true))))
-  }
+    } || existsM("n", LazyList.range(1,10,3)){ (n: Int) =>
+      HeavyBool(n % 2 != 0, List(Map("exists" -> true)))
+    }}
 
   test("forall"){
-    assert(HTrue == forallM("x", LazyList(1,2,3), (x:Int) =>
+    assert(HTrue == forallM("x", LazyList(1,2,3)){ (x:Int) =>
       (if (x > 0)
         HeavyBool(true, List(Map("reason" -> "works")))
       else
-        HeavyBool(false, List(Map("reason" -> "fails"))))))
+        HeavyBool(false, List(Map("reason" -> "fails"))))
+    })
 
-    val result = forallM("x", LazyList(1,2,3), (x:Int) =>
+    val result = forallM("x", LazyList(1,2,3)){ (x:Int) =>
       (if (x > 10)
         HeavyTrue(List(Map("reason" -> "works")))
       else
-        HeavyFalse(List(Map("reason" -> "fails")))))
+        HeavyFalse(List(Map("reason" -> "fails"))))}
     assert(result.toBoolean == false)
     assert(result.because.head("witness") == 1)
   }
 
   def testCayleyTables(n:Int):Unit = {
-    import heavybool.Magma.{allUnitalCayleyTables, cayleyTable, genFinite}
+    import heavybool.Magma.{allUnitalCayleyTables, cayleyTable, genLazyFinite}
     for {add <- allUnitalCayleyTables(n)
-         str = cayleyTable(genFinite(n-1), add)
+         str = cayleyTable(genLazyFinite(n-1), add)
          } println(str)
   }
 
@@ -51,8 +49,6 @@ class HeavyBoolSuite extends MyFunSuite {
     testCayleyTables(2)
     testCayleyTables(3)
   }
-
-
 
   test("more tests") {
     for {p <- List(2, 3, 5, 7, 11)
@@ -105,9 +101,9 @@ class HeavyBoolSuite extends MyFunSuite {
       }
       g.isGroup(1, inv)
     }
-    println(existsM[Int]("f", LazyList.from(3 to 3), f))
-    println(existsM[Int]("p", LazyList.from(2 to 10), p => !f(p)))
-    println(existsM[Int]("f", LazyList.from(2 to 10), f))
+    println(existsM("f", LazyList.from(3 to 3))(f))
+    println(existsM("p", LazyList.from(2 to 10))(p => !f(p)))
+    println(existsM("f", LazyList.from(2 to 10))(f))
   }
 
   test("count groups"){
@@ -122,5 +118,18 @@ class HeavyBoolSuite extends MyFunSuite {
     findGroupsM(2)
     findGroupsM(3)
     findGroupsM(4)
+  }
+
+  test("fields") {
+    for {p <- (2 to 13).view
+         m = new GaussianIntModP(p)
+         f = Magma.isField(m.gen, m.member,
+                           m.add, m.mult,
+                           (a: (Int, Int)) => Some(m.subtract(m.zero, a)),
+                           m.mult_inv,
+                           m.one, m.zero
+                           ).conjFalse(Map("reason" -> s"$m not a field")) &&
+           HTrue +| s"$m is a field"
+         } if (List(3, 7, 11).contains(p)) assert(f.toBoolean) else assert(!(f.toBoolean))
   }
 }
