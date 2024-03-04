@@ -17,6 +17,17 @@ class ModPSuite extends MyFunSuite {
       assertM(g.isGroup(1, inv))
       assert(g.isGroup(1, inv).toBoolean)
     }
+
+    for {p <- List(4, 6, 8, 9, 10)
+         g = new MultiplicationModP(p)
+         } {
+      def inv(a: Int): Option[Int] = {
+        (1 until p).find(b => (a * b) % p == 1)
+      }
+
+      assertM(!g.isGroup(1, inv))
+      assert(!g.isGroup(1, inv).toBoolean)
+    }
   }
 
   test("test mod p") {
