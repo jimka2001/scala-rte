@@ -5,7 +5,7 @@ import cats.syntax.all._
 abstract class Magma[T,C[_]:Foldable] {
   import HeavyBool._
 
-  def gen()(implicit ev:Foldable[C]): C[T]
+  def gen(): C[T]
 
   def op(a: T, b: T): T
 

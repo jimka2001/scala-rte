@@ -8,7 +8,7 @@ class GaussianIntModP(p: Int) extends Magma[(Int,Int), LazyList] {
   val zero = (0,0)
   val one = (1,0)
 
-  override def gen()(implicit ev:Foldable[LazyList]): LazyList[(Int,Int)] = {
+  override def gen(): LazyList[(Int,Int)] = {
     def loop(u:Int,v:Int):LazyList[(Int,Int)] = {
       if (u==p)
         LazyList.empty

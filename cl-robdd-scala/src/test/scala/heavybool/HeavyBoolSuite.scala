@@ -119,4 +119,17 @@ class HeavyBoolSuite extends MyFunSuite {
     findGroupsM(3)
     findGroupsM(4)
   }
+
+  test("fields") {
+    for {p <- (2 to 13).view
+         m = new GaussianIntModP(p)
+         f = Magma.isField(m.gen, m.member,
+                           m.add, m.mult,
+                           (a: (Int, Int)) => Some(m.subtract(m.zero, a)),
+                           m.mult_inv,
+                           m.one, m.zero
+                           ).conjFalse(Map("reason" -> s"$m not a field")) &&
+           HTrue +| s"$m is a field"
+         } if (List(3, 7, 11).contains(p)) assert(f.toBoolean) else assert(!(f.toBoolean))
+  }
 }

@@ -8,7 +8,7 @@ case class DynMagma[T, C[_]:Foldable](gen1: () => C[T],
                        member1: T => Boolean) extends Magma[T, C] {
   override def toString: String = "dyn"
 
-  def gen()(implicit ev: Foldable[C]): C[T] = gen1()
+  def gen(): C[T] = gen1()
 
   def op(a: T, b: T): T = op1(a, b)
 
