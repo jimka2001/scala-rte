@@ -76,7 +76,6 @@ object Extract {
 
     def eliminate_state(transition_triples: Seq[(Int, Rte, Int)], qid: Int) = {
       type LLLL = (List[Triple], List[Triple], List[Triple], List[Triple])
-
       def f(acc: LLLL, triple: Triple): LLLL = {
         val (x_to_q, q_to_q, q_to_x, others) = acc
         val (src, _, dst) = triple
@@ -98,9 +97,17 @@ object Extract {
       // step 8
       val new_triples = for {(src, pre_label, _) <- combine_parallel(x_to_q)
                              (_, post_label, dst) <- combine_parallel(q_to_x)
-                             } yield Tuple3(src,
-                                            Cat(pre_label, Star(self_loop_label), post_label).canonicalize,
-                                            dst)
+      } yield locally{
+        val replacement = Cat(pre_label, Star(self_loop_label), post_label)
+        // if this code is being called from a unit test with a timeout
+        // when we have to explicitly check for thread interrupt
+        // if the assertion fails, we simply cause a failed unit test
+        assert(! Thread.currentThread().isInterrupted,
+               s"Thread interrupted in Extract.extractRte()")
+        Tuple3(src,
+          replacement.canonicalize,
+          dst)
+      }
 
       // return from eliminate_state
       others.reverse ++ new_triples
