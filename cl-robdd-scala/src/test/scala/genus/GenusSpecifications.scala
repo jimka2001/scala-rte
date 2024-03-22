@@ -59,7 +59,7 @@ object GenusSpecifications {
 
   // Generate a SCombination or SNot as an internal node of the SimpleTypeD
    def genInternalNode(depth: Int) = Gen.lzy {
-     val newDepth = depth - 1 // Maximmal depth of the generated subtrees
+     val newDepth = depth - 1 // Maximal depth of the generated subtrees
      implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus(newDepth))
      lazy val listGenus = Gen.listOfN[SimpleTypeD](childrenNum, Arbitrary.arbitrary[SimpleTypeD](arbitraryGen)).sample.get
 
