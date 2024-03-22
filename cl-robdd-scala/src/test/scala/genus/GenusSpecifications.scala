@@ -30,15 +30,15 @@ object GenusSpecifications {
 
   // Generate a predicate and its string representation
   def genPredicate: Gen[(Any => Boolean, String)] = {
-    def predicate(a: Any, b: Boolean): Any => Boolean = ((a: Any) => b)
+    def predicate(_a: Any, b: Boolean): Any => Boolean = (a: Any) => b
 
     for {
       anyval <- Arbitrary.arbitrary[AnyVal]
-    } yield (predicate(anyval, true), s"$anyval => true")
+    } yield (predicate(anyval, b = true), s"$anyval => true")
   }
 
   // Generate a TerminalType as a leaf of the SimpleTypeD
-  def genLeaf = {
+  def genLeaf: Gen[SimpleTypeD] = {
     Gen.lzy {
       // Choose between one of the 6 terminal types
       // STop and SEmpty have a lesser coefficient as an attempt to improve the semantic of the generated SimpleTypeD.
@@ -58,7 +58,7 @@ object GenusSpecifications {
   }
 
   // Generate a SCombination or SNot as an internal node of the SimpleTypeD
-   def genInternalNode(depth: Int) = Gen.lzy {
+   def genInternalNode(depth: Int): Gen[SimpleTypeD] = Gen.lzy {
      val newDepth = depth - 1 // Maximal depth of the generated subtrees
      implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus(newDepth))
      lazy val listGenus = Gen.listOfN[SimpleTypeD](childrenNum, Arbitrary.arbitrary[SimpleTypeD](arbitraryGen)).sample.get
@@ -87,7 +87,7 @@ object GenusSpecifications {
   //    - If a SCombination only has 1 child, try with the child
   // Implementation similar to this Ast Shrinker (https://stackoverflow.com/questions/42581883/scalacheck-shrink)
   implicit def shrinkGenus: Shrink[genus.SimpleTypeD] = Shrink {
-    case t: SCombination => {
+    case t: SCombination =>
       var s: Stream[SimpleTypeD] = SEmpty #:: STop #:: Stream.empty
 
       // If 1 child and is TerminalType, put the child in stream
@@ -96,43 +96,36 @@ object GenusSpecifications {
         // Append to the stream the SimpleTypeD with 1 child removed at each iteration
         for {
           i <- 0 until t.tds.size
-        } s = (t.create(t.tds.take(i) ++ t.tds.drop(i + 1)) #:: s)
+        } s = t.create(t.tds.take(i) ++ t.tds.drop(i + 1)) #:: s
 
         // Append to the stream the SimpleTypeD with 1 child shrunk at each iteration
         for {
           i <- 0 until t.tds.size
-        } s = (shrink(t.tds(i)).map(e => t.create(t.tds.take(i) ++ t.tds.drop(i + 1).appended(e)))) #::: s
+        } s = shrink(t.tds(i)).map(e => t.create(t.tds.take(i) ++ t.tds.drop(i + 1).appended(e))) #::: s
 
         s
       }
-    }
 
     // Try STop, SEmpty, or the child
-    case t: SNot => {
+    case t: SNot =>
       SEmpty #:: STop #:: t.s #:: Stream.Empty
-    }
 
     // Try STop, SEmpty, or shrink the content
-    case t: SEql => {
+    case t: SEql =>
       SEmpty #:: STop #:: shrink(t.a).map(SEql(_))
-    }
 
     // Try STop, SEmpty, or shrink the content
-    case t: SMember => {
+    case t: SMember =>
       SEmpty #:: STop #:: SMember(shrink(t.xs)) #:: Stream.empty
-    }
 
     // Try STop, SEmpty, or shrink the content
-    case t: SSatisfies => {
-      SEmpty #:: STop #:: (shrink(t.f).map(SSatisfies(_, t.printable)))
-    }
+    case t: SSatisfies =>
+      SEmpty #:: STop #:: shrink(t.f).map(SSatisfies(_, t.printable))
 
-    case t: SAtomic => {
+    case t: SAtomic =>
       SEmpty #:: STop #:: Stream.empty
-    }
 
-    case t => {
+    case t =>
       Stream.empty
-    }
   }
 }
