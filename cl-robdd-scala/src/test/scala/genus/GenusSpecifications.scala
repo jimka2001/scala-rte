@@ -34,7 +34,7 @@ object GenusSpecifications {
 
     for {
       anyval <- Arbitrary.arbitrary[AnyVal]
-    } yield (predicate(anyval, true), anyval + " => " + true)
+    } yield (predicate(anyval, true), s"$anyval => true")
   }
 
   // Generate a TerminalType as a leaf of the SimpleTypeD
