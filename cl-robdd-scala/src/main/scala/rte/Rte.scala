@@ -177,7 +177,6 @@ abstract class Rte {
   def derivatives(): (Vector[Rte], Vector[Seq[(SimpleTypeD, Int)]]) = {
     import adjuvant.Adjuvant.traceGraph
     def edges(rt: Rte): Seq[(SimpleTypeD, Rte)] = {
-      println(s"180: firstTypes $rt")
       val fts = rt.firstTypes
 
       val wrts = mdtd(fts)
@@ -218,7 +217,6 @@ abstract class Rte {
   def toDfa[E](exitValue: E = true): Dfa[Any, SimpleTypeD, E] = {
     //println(s"toDfa: $this")
     val (rtes, edges) = try {
-      println("220: derivatives")
       derivatives()
     }
     catch {
@@ -231,7 +229,6 @@ abstract class Rte {
                                              e.msg).mkString("\n"),
                                    rte = this)
     }
-    println(s"223: ${rtes.size} derivatives computed")
     val qids = rtes.indices.toSet
     val fids = qids.filter(i => rtes(i).nullable)
     val fmap = fids.map { i => i -> exitValue }.toMap
@@ -243,7 +240,6 @@ abstract class Rte {
                            trivial: Boolean = srcEdges.map(_._2).distinct.size == 1
                            (rt, dst) <- if (trivial) Seq((STop, srcEdges.head._2)) else srcEdges
                            } yield (src, rt, dst)).toSet
-    println(s"244: Dfa")
     Dfa(Qids = qids,
         q0id = 0,
         Fids = fids,

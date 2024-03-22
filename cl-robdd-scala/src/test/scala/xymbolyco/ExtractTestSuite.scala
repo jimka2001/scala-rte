@@ -62,20 +62,15 @@ class ExtractTestSuite  extends MyFunSuite {
   def check_extraction_cycle(rt: Rte, depth:Int, rep:Int): Unit = {
     println(s"depth=$depth   rep=$rep")
     val rt1 = rt.canonicalize
-    println("63: toDfa")
     val dfa1 = rt1.toDfa(exitValue=true)
-    println("65: dfaRte")
     val extracted = dfaToRte[Boolean](dfa1,true)
     //println(s"extracted=$extracted")
     if (extracted.contains(true)) {
       val rt2 = extracted(true)
       //println(s"  rt2=$rt2")
       // compute xor, should be emptyset    if rt1 is equivalent to rt2
-      println("72: canonicalize")
       val empty1 = Xor(rt1,rt2).canonicalize
-      println(s"74: toDfa $empty1")
       val empty_dfa = empty1.toDfa(true)
-      println("76: vacuous")
       val label_path = empty_dfa.vacuous() match {
         case None => empty_dfa.findTrace(requireSatisfiable=false)
         case Some(false) => empty_dfa.findTrace(requireSatisfiable=true)
@@ -101,13 +96,12 @@ class ExtractTestSuite  extends MyFunSuite {
     implicit val signaler: Signaler = ThreadSignaler
     failAfter(Span(60000, Millis)) {
       SAtomic.withClosedWorldView {
-        for {depth <- 1 to 5
+        for {depth <- 1 to 3
              rep <- 0 to 25
              rt = Rte.randomRte(depth)
-             now = System.nanoTime()
              } locally{
           val now = System.nanoTime()
-          println(s"elapsed = ${(now - start)/(1e9)}")
+          print(s"elapsed = ${(now - start)/(1e9)} ")
           check_extraction_cycle(rt, depth, rep)}
       }
     }

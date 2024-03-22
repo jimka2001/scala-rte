@@ -76,7 +76,6 @@ object Extract {
 
     def eliminate_state(transition_triples: Seq[(Int, Rte, Int)], qid: Int) = {
       type LLLL = (List[Triple], List[Triple], List[Triple], List[Triple])
-
       def f(acc: LLLL, triple: Triple): LLLL = {
         val (x_to_q, q_to_q, q_to_x, others) = acc
         val (src, _, dst) = triple
