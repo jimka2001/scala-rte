@@ -26,6 +26,7 @@ import genus._
 import Extract._
 import GraphViz._
 import adjuvant.MyFunSuite
+import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.concurrent.TimeLimits.failAfter
 import org.scalatest.time.{Millis, Span}
 import org.scalatest.time.SpanSugar._
@@ -36,7 +37,7 @@ class ExtractTestSuite  extends MyFunSuite {
   val ε: EmptyWord.type = EmptyWord
   val t2x: Singleton = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
   val etrue: Singleton = Singleton(SEql(true))
-  
+
   test("extraction 31"){
     check_extraction_cycle(Cat(Singleton(SEql(1)),Singleton(SEql(2))), 1, 1)
   }
@@ -61,14 +62,20 @@ class ExtractTestSuite  extends MyFunSuite {
   def check_extraction_cycle(rt: Rte, depth:Int, rep:Int): Unit = {
     println(s"depth=$depth   rep=$rep")
     val rt1 = rt.canonicalize
-    val extracted = dfaToRte[Boolean](rt1.toDfa(exitValue=true),true)
+    println("63: toDfa")
+    val dfa1 = rt1.toDfa(exitValue=true)
+    println("65: dfaRte")
+    val extracted = dfaToRte[Boolean](dfa1,true)
     //println(s"extracted=$extracted")
     if (extracted.contains(true)) {
       val rt2 = extracted(true)
       //println(s"  rt2=$rt2")
       // compute xor, should be emptyset    if rt1 is equivalent to rt2
+      println("72: canonicalize")
       val empty1 = Xor(rt1,rt2).canonicalize
+      println(s"74: toDfa $empty1")
       val empty_dfa = empty1.toDfa(true)
+      println("76: vacuous")
       val label_path = empty_dfa.vacuous() match {
         case None => empty_dfa.findTrace(requireSatisfiable=false)
         case Some(false) => empty_dfa.findTrace(requireSatisfiable=true)
@@ -90,12 +97,18 @@ class ExtractTestSuite  extends MyFunSuite {
   test("test_extract_rte") {
     // test should fail if cannot run within 60 seconds
     // perhaps need to adjust number of seconds
+    val start = System.nanoTime()
+    implicit val signaler: Signaler = ThreadSignaler
     failAfter(Span(60000, Millis)) {
       SAtomic.withClosedWorldView {
-        for {depth <- 1 to 3
+        for {depth <- 1 to 5
              rep <- 0 to 25
              rt = Rte.randomRte(depth)
-             } check_extraction_cycle(rt, depth, rep)
+             now = System.nanoTime()
+             } locally{
+          val now = System.nanoTime()
+          println(s"elapsed = ${(now - start)/(1e9)}")
+          check_extraction_cycle(rt, depth, rep)}
       }
     }
   }
