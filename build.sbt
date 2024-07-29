@@ -1,4 +1,4 @@
-name := "cl-robdd-scala"
+name := "scala-rte"
 
 version := "0.1"
 

@@ -88,6 +88,7 @@ class TypesTest extends MyFunSuite {
 
   test("reflect.getSubTypesOf"){
     val reflect = new org.reflections.Reflections()
+    assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.nonEmpty)
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
   }

@@ -53,11 +53,13 @@ class GenusCanonicalize extends MyFunSuite {
     assert(SAnd().canonicalize()
            == STop)
     // (and A A B) --> (and A B)
-    assert(SAnd(SAtomic(A),
-                SAtomic(A),
-                SAtomic(B)).canonicalize()
-           == SAnd(SAtomic(A),
-                   SAtomic(B)))
+    val left = SAnd(SAtomic(A),
+                    SAtomic(A),
+                    SAtomic(B))
+    val right = SAnd(SAtomic(A),
+                     SAtomic(B))
+    assert(left.canonicalize() == right.canonicalize(),
+           s"right=$right  left=$left")
 
     // IntersectionType(EqlType(42), AtomicType(Integer)) --> EqlType(42)
     assert(SAnd(SEql(42), intJavaType()).canonicalize()
@@ -69,7 +71,7 @@ class GenusCanonicalize extends MyFunSuite {
 
     // IntersectionType(A,TopType,B) ==> IntersectionType(A,B)
     assert(SAnd(SAtomic(A), STop, SAtomic(B)).canonicalize()
-           == SAnd(SAtomic(A), SAtomic(B)))
+           == SAnd(SAtomic(A), SAtomic(B)).canonicalize())
   }
   test("and canonicalize 2") {
     assert(SMember("1", "2", "3", "4").typep("2"))
@@ -112,7 +114,7 @@ class GenusCanonicalize extends MyFunSuite {
            == SAnd(SAtomic(A),
                     SAtomic(B),
                     SAtomic(C),
-                    SAtomic(D)))
+                    SAtomic(D)).canonicalize())
   }
   test("canonicalize children of and") {
     assert(SAnd(SMember("1")).canonicalize()
@@ -143,11 +145,11 @@ class GenusCanonicalize extends MyFunSuite {
                SEmpty,
                SAtomic(B)).canonicalize()
            == SOr(SAtomic(A),
-                  SAtomic(B)))
+                  SAtomic(B)).canonicalize())
     assert(SOr(SAtomic(A),
                SMember(),
                SAtomic(B)).canonicalize()
-           == SOr(SAtomic(A), SAtomic(B)))
+           == SOr(SAtomic(A), SAtomic(B)).canonicalize())
     assert(SOr().canonicalize() == SEmpty)
     assert(SOr(SAtomic(A)).canonicalize()
            == SAtomic(A))
@@ -155,14 +157,14 @@ class GenusCanonicalize extends MyFunSuite {
                SAtomic(A),
                SAtomic(B),
                SAtomic(A)).canonicalize()
-           == SOr(SAtomic(A), SAtomic(B)))
+           == SOr(SAtomic(A), SAtomic(B)).canonicalize())
     assert(SOr(SAtomic(A), STop).canonicalize()
            == STop)
     assert(SOr(SAtomic(A),
                SMember(1, 2, 3),
                SMember(3, 4, 5)).canonicalize()
              == SOr(SAtomic(A),
-                    SMember(1, 2, 3, 4, 5)))
+                    SMember(1, 2, 3, 4, 5)).canonicalize())
     // (or String (member 1 2 "3") (member 2 3 4 "5")) --> (or String (member 1 2 4))
     assert(SOr(classOf[String],
                SMember(1, 2, "hello"),
@@ -173,7 +175,7 @@ class GenusCanonicalize extends MyFunSuite {
     // (or (or A B) (or C D)) --> (or A B C D)
     assert(SOr(SOr(SAtomic(A), SAtomic(B)),
                SOr(SAtomic(C), SAtomic(D))).canonicalize()
-           == SOr(SAtomic(A), SAtomic(B), SAtomic(C), SAtomic(D)))
+           == SOr(SAtomic(A), SAtomic(B), SAtomic(C), SAtomic(D)).canonicalize())
   }
   test("canonicalize or 156"){
     assert(SOr(SEql(1),SAtomic(classOf[java.lang.Integer])).canonicalize() ==
@@ -191,16 +193,16 @@ class GenusCanonicalize extends MyFunSuite {
            == STop)
     // (or A (and (not A) B) ==> (or A B)
     assert(SOr(A, SAnd(!A, B)).canonicalize()
-           == SOr(A, B))
+           == SOr(A, B).canonicalize())
     // (or A (and A B)) ==> A
     assert(SOr(A, A && B).canonicalize()
            == SAtomic(A))
     // (or A (and (not A) B C) D) --> (or A (and B C) D)
     assert(SOr(A, SAnd(!A, B, C), D).canonicalize()
-           == SOr(B && C, A, D))
+           == SOr(B && C, A, D).canonicalize())
     // (or A (and A B C) D) --> (or A D)
     assert(SOr(A, SAnd(A, B, C), D).canonicalize()
-           == SOr(A, D))
+           == SOr(A, D).canonicalize())
 
     // (or X (not Y)) --> Top   if Y is subtype of X
     abstract class X
@@ -1025,7 +1027,7 @@ class GenusCanonicalize extends MyFunSuite {
     val B = SAtomic(classOf[ClassB])
     // (or A (not B)) --> STop   if B is subtype of A,    zero=STop
     assert(SOr(A,SNot(B)).conversion8()
-             == STop)
+             == STop, s"A=$A  B=$B")
     assert(SOr(B,SNot(A)).conversion8()
              == SOr(B,SNot(A)))
 
