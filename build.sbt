@@ -50,3 +50,4 @@ Test / parallelExecution := false
 // )
 
 libraryDependencies += "org.typelevel" %% "cats-core" % "2.10.0"
+libraryDependencies += "org.scalatestplus" %% "scalacheck-1-18" % "3.2.19.0" % "test"
