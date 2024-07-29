@@ -274,8 +274,9 @@ p cnf 3 2
     }
   }
   test("read dimacs benchmark files") {
-    val base = this.getClass.getResource(".").toString.drop(5) // skip "file:" 5 characters
-    val rel = "../../../../../cl-robdd/data"
+    import java.nio.file.{Files, Paths}
+
+    val res = dimacsParse.getClass.getResource(s"/dimacs-benchmarks").toURI.toString.drop(":file".length())
     // bench marks
     List("aim-100-1_6-no-1.cnf",
          "aim-50-1_6-yes1-4.cnf",
@@ -294,8 +295,9 @@ p cnf 3 2
          "zebra_v155_c1135.cnf"
          ).foreach { fname =>
 
+      assert(Files.exists(Paths.get(res)), s"file does not exist: [$res]")
       dimacsConvertFile(fname,
-                        fname => base + rel + "/" + fname,
+                        fname => res + "/" + fname,
                         fname => s"/tmp/reduced-$fname")
     }
   }
