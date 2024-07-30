@@ -28,6 +28,8 @@ import adjuvant.AdjFunSuite
 import genus.RandomType._
 import genus.Types._
 import genus.GenusImplicits
+
+
 import scala.language.implicitConversions
 
 class TypesTest extends AdjFunSuite {
@@ -94,7 +96,8 @@ class TypesTest extends AdjFunSuite {
                   classOf[Vector[Any]]
                   )}
       assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.nonEmpty,
-             s"There seems to be a problem with org.reflections.Reflections().reflect.getSubTypesOf($c), it cannot find any subtypes")
+             s"There seems to be a problem with org.reflections.Reflections().reflect.getSubTypesOf($c)," +
+               " it cannot find any subtypes")
 
 
   }
@@ -105,6 +108,15 @@ class TypesTest extends AdjFunSuite {
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
   }
+
+  test("Number has instantiatable subclass"){
+
+    import genus.SAtomic.existsInstantiatableSubclass
+    import genus.SAtomic.reflections
+    assert(reflections.getSubTypesOf(classOf[Number]).toArray.toList.nonEmpty)
+    assert(existsInstantiatableSubclass(classOf[Number]))
+  }
+
   test("Number not empty"){
     //println(classOf[Number])
     assert(SAtomic(classOf[Number]) != SEmpty)
