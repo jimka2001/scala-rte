@@ -86,8 +86,21 @@ class TypesTest extends AdjFunSuite {
     assert(SMember(0,0L,0.0).subtypep(SMember(0,0L,1,1L,1.0)).contains(false))
   }
 
+  test("reflect malfunction"){
+    val reflect = new org.reflections.Reflections(classOf[List[_]])
+    // If this test fails, there may be some problem with the initialization of
+    // the reflections library.
+    for{c <- List(classOf[List[Any]],
+                  classOf[Vector[Any]]
+                  )}
+      assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.nonEmpty,
+             s"There seems to be a problem with org.reflections.Reflections().reflect.getSubTypesOf($c), it cannot find any subtypes")
+
+
+  }
+
   test("reflect.getSubTypesOf"){
-    val reflect = new org.reflections.Reflections()
+    val reflect = new org.reflections.Reflections(classOf[List[_]])
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.nonEmpty)
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
