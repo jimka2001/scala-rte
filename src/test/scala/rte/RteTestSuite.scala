@@ -48,6 +48,21 @@ class RteTestSuite extends AdjFunSuite {
     assert(Star(SAtomic(classOf[Long])) != Star(classOf[Integer]))
   }
 
+  test("Number is not empty"){
+    assert(And(Singleton(SAtomic(classOf[Number]))) != And(Singleton(SEmpty)))
+    assert(And(classOf[Number]) != And(Singleton(SEmpty)))
+  }
+
+  test("LaTeX 1"){
+    println(And(classOf[Number]))
+    assert(And(classOf[Number]).toLaTeX()
+             == "(Number)")
+    assert(And(classOf[Number],
+               Not(SAtomic(classOf[Int])),
+               Not(SEql(44))).toLaTeX()
+             == "(Number\\wedge \\overline{Integer}\\wedge \\overline{44})")
+  }
+
   test("LaTeX") {
     Or(And(SAtomic(classOf[Integer]),
            Not(SAtomic(classOf[Long]))),

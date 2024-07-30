@@ -105,6 +105,11 @@ class TypesTest extends AdjFunSuite {
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
   }
+  test("Number not empty"){
+    //println(classOf[Number])
+    assert(SAtomic(classOf[Number]) != SEmpty)
+  }
+
   test("reflection Number"){
     // this tests that reflection has properly installed the sublcass relationships to Number
     assert(SEql(1).subtypep(SAtomic(classOf[Number])) == Some(true))
