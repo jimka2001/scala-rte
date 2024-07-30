@@ -22,11 +22,11 @@
 
 package rte
 
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 
-class StarTestSuite extends MyFunSuite {
+class StarTestSuite extends AdjFunSuite {
 
   test("canonicalize star") {
     assert(EmptyWord.*.canonicalize == EmptyWord)

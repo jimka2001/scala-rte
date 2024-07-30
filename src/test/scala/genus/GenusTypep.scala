@@ -22,12 +22,12 @@
 
 package genus
 
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import genus.RandomType.interestingValues
 import genus.Types._
 import org.scalatest.funsuite.AnyFunSuite
 
-class GenusTypep extends MyFunSuite {
+class GenusTypep extends AdjFunSuite {
   test("SAtomic types"){
     for{ v <- interestingValues }
       assert(SAtomic(v.getClass).typep(v))

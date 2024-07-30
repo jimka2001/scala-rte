@@ -25,10 +25,10 @@ package rte
 import RteImplicits._
 import adjuvant.Accumulators.withOutputToString
 import genus._
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import RandomType.randomType
 
-class RteTestSuite extends MyFunSuite {
+class RteTestSuite extends AdjFunSuite {
 
   test("implicits test") {
 

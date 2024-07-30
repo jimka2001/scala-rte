@@ -25,14 +25,14 @@ import rte._
 import genus._
 import Extract._
 import GraphViz._
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.concurrent.TimeLimits.failAfter
 import org.scalatest.time.{Millis, Span}
 import org.scalatest.time.SpanSugar._
 
 //noinspection RedundantDefaultArgument
-class ExtractTestSuite  extends MyFunSuite {
+class ExtractTestSuite  extends AdjFunSuite {
   val Σ: Sigma.type = Sigma
   val ε: EmptyWord.type = EmptyWord
   val t2x: Singleton = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))

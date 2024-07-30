@@ -22,7 +22,7 @@
 package dimacs
 
 import adjuvant.CLcompat._
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import dimacs.QmVec._
 import dimacs.dimacsParse._
 import dimacs.dimacsSimplify._
@@ -31,7 +31,7 @@ import org.scalatest.funsuite.AnyFunSuite
 import scala.collection.mutable
 
 
-class DimacsSuite extends MyFunSuite {
+class DimacsSuite extends AdjFunSuite {
   test("sample test") {
     assert(1 == 1, "sample assertion")
   }

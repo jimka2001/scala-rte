@@ -21,11 +21,11 @@
 
 package bdd
 
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import bdd.Bdd._
 import org.scalatest.funsuite.AnyFunSuite
 
-class BinaryOperationTestSuite  extends MyFunSuite {
+class BinaryOperationTestSuite  extends AdjFunSuite {
 
   def genSamples(): Set[Bdd] = {
     val bdd1 = Bdd(3, BddTrue, BddFalse)

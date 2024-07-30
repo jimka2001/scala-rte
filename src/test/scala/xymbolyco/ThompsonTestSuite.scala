@@ -21,7 +21,7 @@
 
 package xymbolyco
 
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import genus.RandomType.Abstract1
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
@@ -30,7 +30,7 @@ import xymbolyco.Minimize.minimize
 import xymbolyco.Thompson._
 
 
-class ThompsonTestSuite  extends MyFunSuite {
+class ThompsonTestSuite  extends AdjFunSuite {
 
   test("remove epsilon transitions 1") {
     val t1: SimpleTypeD = SAtomic(classOf[String])

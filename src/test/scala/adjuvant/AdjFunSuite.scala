@@ -22,7 +22,7 @@
 package adjuvant
 import adjuvant.Adjuvant.printTime
 import org.scalatest.funsuite.AnyFunSuite
-class MyFunSuite extends AnyFunSuite {
+class AdjFunSuite extends AnyFunSuite {
   import org.scalactic.source
   import org.scalatest.Tag
 

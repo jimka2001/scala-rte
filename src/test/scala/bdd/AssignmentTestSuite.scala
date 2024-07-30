@@ -21,11 +21,11 @@
 
 package bdd
 
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import bdd.Bdd._
 import org.scalatest.funsuite.AnyFunSuite
 
-class AssignmentTestSuite extends MyFunSuite {
+class AssignmentTestSuite extends AdjFunSuite {
   test("evaluate") {
     withNewBddHash {
       val bdd = And(1, Not(Or(2, 3, 4)))

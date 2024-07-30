@@ -21,7 +21,7 @@
 
 package genus
 
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import genus.GenusSpecification.arbitraryGen
 import genus.GenusSpecifications.shrinkGenus
 import genus.NormalForm.Dnf
@@ -33,7 +33,7 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.forAll
 
 // Most of the information needed to use scalatest with scalacheck is in this page: https://www.scalatest.org/user_guide/generator_driven_property_checks
 // With this method, we can integrate ScalaCheck and Scalatest. But we lose clear information about what is the original argument (before shrinking), what number of tests are passing etc.
-class GenusPBT extends MyFunSuite with Matchers with Configuration {
+class GenusPBT extends AdjFunSuite with Matchers with Configuration {
   val depth = 10
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 100000, workers = 4)
 

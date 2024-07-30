@@ -1,11 +1,11 @@
 package lbdd
 
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import org.scalatest._
 import lbdd.GraphViz._
 import org.scalatest.funsuite.AnyFunSuite
 
-class EvaluatorTestSuite extends MyFunSuite {
+class EvaluatorTestSuite extends AdjFunSuite {
 
   test("basic tests") {
     // Or truth table

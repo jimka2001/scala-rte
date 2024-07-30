@@ -22,10 +22,10 @@
 package genus
 
 import RandomType._
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import genus.Types.{atomicTypesSeq, booleanType, charJavaType, doubleJavaType, intJavaType, oddType, stringType}
 
-class GenusDisjoint extends MyFunSuite {
+class GenusDisjoint extends AdjFunSuite {
 
   test("discovered case 135") {
     SAtomic.withOpenWorldView {

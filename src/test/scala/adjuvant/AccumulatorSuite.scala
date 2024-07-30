@@ -24,7 +24,7 @@ package adjuvant
 import adjuvant.Accumulators._
 import org.scalatest.funsuite.AnyFunSuite
 
-class AccumulatorSuite extends MyFunSuite {
+class AccumulatorSuite extends AdjFunSuite {
   
   test("successor"){
     val primes = List(11,13,17,19)

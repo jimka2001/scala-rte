@@ -22,14 +22,14 @@
 package rte
 
 import adjuvant.Adjuvant.{eql, fixedPoint}
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import genus._
 import rte.RteImplicits._
 import scala.language.implicitConversions
 import rte.Rte.{rteCase,rteIfThenElse}
 
 //
-class RteCaseTestSuite extends MyFunSuite {
+class RteCaseTestSuite extends AdjFunSuite {
   test("rteCase normal"){
     // this test checks the normal behavior of rteCase
     val int = classOf[Int]

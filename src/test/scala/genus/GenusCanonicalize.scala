@@ -28,10 +28,10 @@ import org.scalatest.Assertion
 import org.scalatest.funsuite.AnyFunSuite
 import RandomType.{interestingValues, randomType}
 import adjuvant.Adjuvant.eql
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import genus.Types.{intJavaType, stringType}
 
-class GenusCanonicalize extends MyFunSuite {
+class GenusCanonicalize extends AdjFunSuite {
 
   trait TraitA
 

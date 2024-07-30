@@ -24,13 +24,13 @@ package genus
 import org.scalatest.funsuite.AnyFunSuite
 import RandomType.randomType
 import adjuvant.Adjuvant.eql
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import genus.RandomType._
 import genus.Types._
 import genus.GenusImplicits
 import scala.language.implicitConversions
 
-class TypesTest extends MyFunSuite {
+class TypesTest extends AdjFunSuite {
 
   test("SEql"){
     val z:SimpleTypeD = SEql(0)

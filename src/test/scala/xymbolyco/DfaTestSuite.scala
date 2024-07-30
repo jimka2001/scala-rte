@@ -23,11 +23,11 @@
 
 package xymbolyco
 
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import org.scalatest.funsuite.AnyFunSuite
 import xymbolyco.Minimize.trim
 
-class DfaTestSuite extends MyFunSuite {
+class DfaTestSuite extends AdjFunSuite {
 
   import bdd._
 

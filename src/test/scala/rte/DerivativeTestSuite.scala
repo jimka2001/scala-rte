@@ -25,12 +25,12 @@ package rte
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
 import RandomType.randomType
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import genus.Types._
 import xymbolyco.GraphViz.dfaView
 import xymbolyco.Profiling
 
-class DerivativeTestSuite extends MyFunSuite {
+class DerivativeTestSuite extends AdjFunSuite {
   test("nullable") {
     assert(!Sigma.nullable)
     assert(!EmptySet.nullable)

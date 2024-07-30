@@ -21,13 +21,13 @@
 
 
 package xymbolyco
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import genus.{SEql, STop, SimpleTypeD}
 import xymbolyco.GraphViz.dfaView
 import xymbolyco.Minimize.complete
 
 
-class IfThenElseTreeSuite extends MyFunSuite {
+class IfThenElseTreeSuite extends AdjFunSuite {
   test("test 6") {
     val t1: SimpleTypeD = STop
     val dfa = Dfa(Qids = Set(0, 1, 2),

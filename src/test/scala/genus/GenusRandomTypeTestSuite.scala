@@ -1,9 +1,9 @@
 package genus
 
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 
 
-class GenusRandomTypeTestSuite extends MyFunSuite {
+class GenusRandomTypeTestSuite extends AdjFunSuite {
   test("type A") {
     val data = for {depth <- Range(0, 3)
                     _ <- Range(0, num_random_tests)}

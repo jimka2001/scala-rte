@@ -37,8 +37,8 @@ trait Trait2 extends Trait1
 
 class Test3 extends Test2 with Trait2
 
-import adjuvant.MyFunSuite
-class GenusSubtypep extends MyFunSuite {
+import adjuvant.AdjFunSuite
+class GenusSubtypep extends AdjFunSuite {
   val Long: Class[lang.Long] = classOf[java.lang.Long]
   val Integer: Class[Integer] = classOf[java.lang.Integer]
   val Number: Class[Number] = classOf[java.lang.Number]

@@ -22,11 +22,11 @@
 
 package treereduce
 
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 import org.scalatest.funsuite.AnyFunSuite
 
 
-class TreeParallelReduceSuite extends MyFunSuite {
+class TreeParallelReduceSuite extends AdjFunSuite {
 
   test("parallel") {
     import treereduce.TreeParallelReduce._

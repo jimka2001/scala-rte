@@ -30,7 +30,7 @@ import adjuvant._
 import RandomType.randomType
 import genus.Types.evenType
 
-class GenusBddTest extends MyFunSuite {
+class GenusBddTest extends AdjFunSuite {
   trait Trait1
 
   trait Trait2

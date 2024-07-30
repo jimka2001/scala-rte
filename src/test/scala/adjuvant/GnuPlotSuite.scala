@@ -25,7 +25,7 @@ import adjuvant.GnuPlot._
 
 import scala.io.Source
 
-class GnuPlotSuite extends MyFunSuite {
+class GnuPlotSuite extends AdjFunSuite {
   
   test("test 1"){
     var calledCB = false

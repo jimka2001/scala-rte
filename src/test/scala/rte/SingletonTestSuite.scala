@@ -23,9 +23,9 @@ package rte
 
 import genus._
 import RandomType.randomType
-import adjuvant.MyFunSuite
+import adjuvant.AdjFunSuite
 
-class SingletonTestSuite extends MyFunSuite {
+class SingletonTestSuite extends AdjFunSuite {
   test("singleton canonicalizeOnce") {
     val x = SEql("x")
     val y = SEql("y")
