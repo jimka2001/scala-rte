@@ -86,7 +86,7 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
     if (ct.isAssignableFrom(classOf[Nothing]))
       Some(false)
     else if (wv == ClosedWorldView) {
-      // TODO, I think this check is not necessary, the factor function returns SEmpty in this case
+      // TODO, I think this check is not necessary, the factory function returns SEmpty in this case
       //   can replace with Some(true)
       assert(SAtomic.existsInstantiatableSubclass(ct))
       Some(SAtomic.existsInstantiatableSubclass(ct))
