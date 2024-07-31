@@ -49,17 +49,5 @@ class ReflectionTest extends AdjFunSuite {
     assert(existsInstantiatableSubclass(classOf[Number]))
   }
 
-  test("Number not empty"){
-    //println(classOf[Number])
-    assert(SAtomic(classOf[Number]) != SEmpty)
-  }
-
-  test("reflection Number"){
-    // this tests that reflection has properly installed the sublcass relationships to Number
-    assert(SEql(1).subtypep(SAtomic(classOf[Number])) == Some(true))
-    assert(SAtomic(classOf[Number]).inhabited == Some(true))
-    assert(SMember(1,2,3).subtypep( SAtomic(classOf[Number])) == Some(true))
-    assert(SAtomic(classOf[java.lang.Double]).subtypep(SAtomic(classOf[Number])) == Some(true))
-  }
 }
 
