@@ -1,0 +1,29 @@
+
+stages:
+  - docker
+  - test
+
+variables:
+  build_docker: 'true'
+
+# to rebuild the docker image, you must change the docker/Dockerfile (add comment etc)
+docker-build:
+  stage: docker
+  image: docker
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build --pull -t $CI_REGISTRY_IMAGE:latest docker
+    - docker push $CI_REGISTRY_IMAGE:latest
+  only:
+    changes:
+      - docker/Dockerfile
+    variables:
+      - $build_docker =~ /true/i
+
+unit-scala:
+  stage: test
+  image: $CI_REGISTRY_IMAGE:latest
+  script: 
+    - sbt sbtVersion
+    - ./bin/auto-test-scala-on-push.csh
+
