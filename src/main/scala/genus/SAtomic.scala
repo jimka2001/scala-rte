@@ -349,6 +349,8 @@ object SAtomic {
   import org.reflections.Reflections
 
   val reflections = new Reflections()
+  assert(reflections.getSubTypesOf(classOf[Number]).toArray.toList.nonEmpty,
+         "INTERNAL ERROR: Reflections API was not able to find subclasses of Number, aborting")
 }
 
 object SAtomicTest {
