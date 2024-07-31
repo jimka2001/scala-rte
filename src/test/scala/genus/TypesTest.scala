@@ -102,11 +102,16 @@ class TypesTest extends AdjFunSuite {
 
   }
 
-  test("reflect.getSubTypesOf"){
+  test("reflect.getSubTypesOf List"){
     val reflect = new org.reflections.Reflections(classOf[List[_]])
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.nonEmpty)
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
     assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
+  }
+
+  test("reflect.getSubTypesOf Number"){
+    val reflect = new org.reflections.Reflections()
+    assert(reflect.getSubTypesOf(classOf[Number]).toArray.nonEmpty)
   }
 
   test("Number has instantiatable subclass"){
