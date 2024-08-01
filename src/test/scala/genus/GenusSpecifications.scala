@@ -88,7 +88,7 @@ object GenusSpecifications {
   // Implementation similar to this Ast Shrinker (https://stackoverflow.com/questions/42581883/scalacheck-shrink)
   implicit def shrinkGenus: Shrink[genus.SimpleTypeD] = Shrink {
     case t: SCombination =>
-      var s: Stream[SimpleTypeD] = SEmpty #:: STop #:: Stream.empty
+      var s: LazyList[SimpleTypeD] = SEmpty #:: STop #:: LazyList.empty
 
       // If 1 child and is TerminalType, put the child in stream
       if (t.tds.size == 1) t.tds(0) #:: s else {
@@ -108,7 +108,7 @@ object GenusSpecifications {
 
     // Try STop, SEmpty, or the child
     case t: SNot =>
-      SEmpty #:: STop #:: t.s #:: Stream.Empty
+      SEmpty #:: STop #:: t.s #:: LazyList.empty
 
     // Try STop, SEmpty, or shrink the content
     case t: SEql =>
@@ -116,16 +116,16 @@ object GenusSpecifications {
 
     // Try STop, SEmpty, or shrink the content
     case t: SMember =>
-      SEmpty #:: STop #:: SMember(shrink(t.xs)) #:: Stream.empty
+      SEmpty #:: STop #:: SMember(shrink(t.xs)) #:: LazyList.empty
 
     // Try STop, SEmpty, or shrink the content
     case t: SSatisfies =>
       SEmpty #:: STop #:: shrink(t.f).map(SSatisfies(_, t.printable))
 
     case t: SAtomic =>
-      SEmpty #:: STop #:: Stream.empty
+      SEmpty #:: STop #:: LazyList.empty
 
     case t =>
-      Stream.empty
+      LazyList.empty
   }
 }
