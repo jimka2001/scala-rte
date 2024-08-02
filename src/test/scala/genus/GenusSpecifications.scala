@@ -80,13 +80,16 @@ object GenusSpecifications {
     )
   }
 
+  // Defining this method temporarily to help debug a compiler error or deprecation warning.
+  def lshrink[A](a:A):LazyList[A] = shrink(a).to(LazyList)
+
   //  Shrinks according to the following strategy
   //    - Try STop and SEmpty
   //    - Try removing 1 different child at each iteration
   //    - Try to shrink 1 different child at each iteration
   //    - If a SCombination only has 1 child, try with the child
   // Implementation similar to this Ast Shrinker (https://stackoverflow.com/questions/42581883/scalacheck-shrink)
-  implicit def shrinkGenus: Shrink[genus.SimpleTypeD] = Shrink {
+  implicit def shrinkGenus: Stream[genus.SimpleTypeD] = Shrink {
     case t: SCombination =>
       var s: LazyList[SimpleTypeD] = SEmpty #:: STop #:: LazyList.empty
 
@@ -101,7 +104,7 @@ object GenusSpecifications {
         // Append to the stream the SimpleTypeD with 1 child shrunk at each iteration
         for {
           i <- 0 until t.tds.size
-        } s = shrink(t.tds(i)).map(e => t.create(t.tds.take(i) ++ t.tds.drop(i + 1).appended(e))) #::: s
+        } s = lshrink(t.tds(i)).map(e => t.create(t.tds.take(i) ++ t.tds.drop(i + 1).appended(e))) #::: s
 
         s
       }
@@ -112,15 +115,15 @@ object GenusSpecifications {
 
     // Try STop, SEmpty, or shrink the content
     case t: SEql =>
-      SEmpty #:: STop #:: shrink(t.a).map(SEql(_))
+      SEmpty #:: STop #:: lshrink(t.a).map(SEql(_))
 
     // Try STop, SEmpty, or shrink the content
     case t: SMember =>
-      SEmpty #:: STop #:: SMember(shrink(t.xs)) #:: LazyList.empty
+      SEmpty #:: STop #:: SMember(lshrink(t.xs)) #:: LazyList.empty
 
     // Try STop, SEmpty, or shrink the content
     case t: SSatisfies =>
-      SEmpty #:: STop #:: shrink(t.f).map(SSatisfies(_, t.printable))
+      SEmpty #:: STop #:: lshrink(t.f).map(SSatisfies(_, t.printable))
 
     case t: SAtomic =>
       SEmpty #:: STop #:: LazyList.empty
