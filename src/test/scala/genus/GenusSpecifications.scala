@@ -80,15 +80,20 @@ object GenusSpecifications {
     )
   }
 
+  // Defining this method temporarily to help debug a compiler error or deprecation warning.
+  def lshrink[A](a:A):LazyList[A] = shrink(a).to(LazyList)
+
+  import scala.language.implicitConversions
+
   //  Shrinks according to the following strategy
   //    - Try STop and SEmpty
   //    - Try removing 1 different child at each iteration
   //    - Try to shrink 1 different child at each iteration
   //    - If a SCombination only has 1 child, try with the child
   // Implementation similar to this Ast Shrinker (https://stackoverflow.com/questions/42581883/scalacheck-shrink)
-  implicit def shrinkGenus: Shrink[genus.SimpleTypeD] = Shrink {
+  implicit def shrinkGenus(td:SimpleTypeD): LazyList[SimpleTypeD] = td match {
     case t: SCombination =>
-      var s: Stream[SimpleTypeD] = SEmpty #:: STop #:: Stream.empty
+      var s: LazyList[SimpleTypeD] = SEmpty #:: STop #:: LazyList.empty
 
       // If 1 child and is TerminalType, put the child in stream
       if (t.tds.size == 1) t.tds(0) #:: s else {
@@ -101,31 +106,31 @@ object GenusSpecifications {
         // Append to the stream the SimpleTypeD with 1 child shrunk at each iteration
         for {
           i <- 0 until t.tds.size
-        } s = shrink(t.tds(i)).map(e => t.create(t.tds.take(i) ++ t.tds.drop(i + 1).appended(e))) #::: s
+        } s = lshrink(t.tds(i)).map(e => t.create(t.tds.take(i) ++ t.tds.drop(i + 1).appended(e))) #::: s
 
         s
       }
 
     // Try STop, SEmpty, or the child
     case t: SNot =>
-      SEmpty #:: STop #:: t.s #:: Stream.Empty
+      SEmpty #:: STop #:: t.s #:: LazyList.empty
 
     // Try STop, SEmpty, or shrink the content
     case t: SEql =>
-      SEmpty #:: STop #:: shrink(t.a).map(SEql(_))
+      SEmpty #:: STop #:: lshrink(t.a).map(SEql(_))
 
     // Try STop, SEmpty, or shrink the content
     case t: SMember =>
-      SEmpty #:: STop #:: SMember(shrink(t.xs)) #:: Stream.empty
+      SEmpty #:: STop #:: SMember(lshrink(t.xs)) #:: LazyList.empty
 
     // Try STop, SEmpty, or shrink the content
     case t: SSatisfies =>
-      SEmpty #:: STop #:: shrink(t.f).map(SSatisfies(_, t.printable))
+      SEmpty #:: STop #:: lshrink(t.f).map(SSatisfies(_, t.printable))
 
     case t: SAtomic =>
-      SEmpty #:: STop #:: Stream.empty
+      SEmpty #:: STop #:: LazyList.empty
 
-    case t =>
-      Stream.empty
+    case _ =>
+      LazyList.empty
   }
 }
