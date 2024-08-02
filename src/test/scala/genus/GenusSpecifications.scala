@@ -83,13 +83,15 @@ object GenusSpecifications {
   // Defining this method temporarily to help debug a compiler error or deprecation warning.
   def lshrink[A](a:A):LazyList[A] = shrink(a).to(LazyList)
 
+  import scala.language.implicitConversions
+
   //  Shrinks according to the following strategy
   //    - Try STop and SEmpty
   //    - Try removing 1 different child at each iteration
   //    - Try to shrink 1 different child at each iteration
   //    - If a SCombination only has 1 child, try with the child
   // Implementation similar to this Ast Shrinker (https://stackoverflow.com/questions/42581883/scalacheck-shrink)
-  implicit def shrinkGenus: LazyList[genus.SimpleTypeD] = Shrink {
+  implicit def shrinkGenus(td:SimpleTypeD): LazyList[SimpleTypeD] = td match {
     case t: SCombination =>
       var s: LazyList[SimpleTypeD] = SEmpty #:: STop #:: LazyList.empty
 
@@ -128,7 +130,7 @@ object GenusSpecifications {
     case t: SAtomic =>
       SEmpty #:: STop #:: LazyList.empty
 
-    case t =>
+    case _ =>
       LazyList.empty
   }
 }
