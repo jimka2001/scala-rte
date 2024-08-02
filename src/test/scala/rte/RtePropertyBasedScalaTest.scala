@@ -46,6 +46,8 @@ object RtePropertyBasedScalaTest extends App {
       else dfa.spanningPath match {
         case Some(Left(_)) => indeterminate += 1
         case Some(Right(_)) => satisfiable += 1
+        // need this case to avoid compiler warning about missing case
+        case None => () // should not happen because if dfa is non-vacuous, there must be a spanning path
       }
     }
 
