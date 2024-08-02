@@ -89,7 +89,7 @@ object GenusSpecifications {
   //    - Try to shrink 1 different child at each iteration
   //    - If a SCombination only has 1 child, try with the child
   // Implementation similar to this Ast Shrinker (https://stackoverflow.com/questions/42581883/scalacheck-shrink)
-  implicit def shrinkGenus: Stream[genus.SimpleTypeD] = Shrink {
+  implicit def shrinkGenus: LazyList[genus.SimpleTypeD] = Shrink {
     case t: SCombination =>
       var s: LazyList[SimpleTypeD] = SEmpty #:: STop #:: LazyList.empty
 
