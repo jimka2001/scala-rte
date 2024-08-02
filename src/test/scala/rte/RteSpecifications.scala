@@ -24,7 +24,7 @@ package rte
 import genus.GenusSpecifications.naiveGenGenus
 import org.scalacheck.Shrink.shrink
 import org.scalacheck.{Arbitrary, Gen, Shrink}
-
+import scala.language.implicitConversions
 // This object contains the definition of the Rte Generator and Shrinker
 object RteSpecifications {
   val depthSimpleTypeD = 1  // depth of the rte found as child of singleton
@@ -79,9 +79,9 @@ object RteSpecifications {
   //    - If a Combination only has 1 child, try with the child
   // Implementation similar to this Ast Shrinker (https://stackoverflow.com/questions/42581883/scalacheck-shrink)
   // FIXME: Refactor subshrinkers with common behaviour
-  implicit def shrinkRte: Shrink[Rte] = Shrink {
+  implicit def shrinkRte(rte:Rte): LazyList[Rte] = rte match {
     case t: Combination => {
-      var s: Stream[Rte] = EmptySet #:: Sigma #:: Stream.empty
+      var s: LazyList[Rte] = EmptySet #:: Sigma #:: LazyList.empty
 
       // If 1 child and is TerminalType, put the child in stream
       if (t.operands.size == 1) t.operands(0) #:: s else {
@@ -94,14 +94,14 @@ object RteSpecifications {
         // Append to the stream the Rte with 1 child shrunk at each iteration
         for {
           i <- 0 until t.operands.size
-        } s = (shrink(t.operands(i)).map(e => t.create(t.operands.take(i) ++ t.operands.drop(i + 1).appended(e)))) #::: s
+        } s = (shrink(t.operands(i)).to(LazyList).map(e => t.create(t.operands.take(i) ++ t.operands.drop(i + 1).appended(e)))) #::: s
 
         s
       }
     }
 
     case t: Cat => {
-      var s: Stream[Rte] = EmptySet #:: Sigma #:: Stream.empty
+      var s: LazyList[Rte] = EmptySet #:: Sigma #:: LazyList.empty
 
       // If 1 child and is TerminalType, put the child in stream
       if (t.operands.size == 1) t.operands(0) #:: s else {
@@ -114,7 +114,7 @@ object RteSpecifications {
         // Append to the stream the Rte with 1 child shrunk at each iteration
         for {
           i <- 0 until t.operands.size
-        } s = (shrink(t.operands(i)).map(e => t.create(t.operands.take(i) ++ t.operands.drop(i + 1).appended(e)))) #::: s
+        } s = (shrink(t.operands(i)).to(LazyList).map(e => t.create(t.operands.take(i) ++ t.operands.drop(i + 1).appended(e)))) #::: s
 
         s
       }
@@ -122,17 +122,17 @@ object RteSpecifications {
 
     // Try Sigma, EmptySet, or the shrinked child
     case t:Not => {
-      EmptySet #:: Sigma #:: t.operand #:: Stream.empty
+      EmptySet #:: Sigma #:: t.operand #:: LazyList.empty
     }
 
     // Try Sigma, EmptySet, or shrink the content
     case t: Star => {
-      EmptySet #:: Sigma #:: t.operand #:: Stream.empty
+      EmptySet #:: Sigma #:: t.operand #:: LazyList.empty
     }
 
     // For other cases, nothing to shrink
     case t => {
-      Stream.empty
+      LazyList.empty
     }
   }
 }
