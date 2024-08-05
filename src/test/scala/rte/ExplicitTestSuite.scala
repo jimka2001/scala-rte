@@ -42,8 +42,10 @@ class ExplicitTestSuite extends AdjFunSuite {
     val rte1 = Cat(I, Star(Or(I, S)), S)
     val rte2 = Cat(classOf[Int], Star(Or(classOf[Int],classOf[String])), classOf[String])
     val rte3 = I ++ (I | S).* ++ S
+    val rte4 = SInt ++ (SInt | S).* ++ S // SInt is an SSatisfies type
 
-    for{r <- Seq(rte1, rte2, rte3)} {
+    // GraphViz.dfaView(Dfa.dfaXor(rte4.toDfa(),rte3.toDfa()), title="xor")
+    for{r <- Seq(rte1, rte2, rte3, rte4)} {
 
       assert(None == r.simulate(42, List(1, 2, 3, 3.2, "hello", "world")))
 
@@ -52,10 +54,23 @@ class ExplicitTestSuite extends AdjFunSuite {
                                                 "a", 4, "b", "c", 5, 6, 7,
                                                 "hello", "world")))
     }
-
-
-
-
   }
 
+  test("match 2"){
+    import Types.{evenType,oddType}
+    val rte = (evenType ++ oddType).*
+    assert(Some(42) == rte.simulate(42, List(2,3,4,5)))
+    assert(None == rte.simulate(42, List(3,4,5,6)))
+    assert(None == rte.simulate(42, List("hello",2,3,4,5,6,7)))
+  }
+  test("match 3"){
+    import Types.{evenType,oddType}
+    val S:Rte = Singleton(classOf[String])
+
+    val rte = S.? ++ (evenType ++ oddType).*
+    assert(None == rte.simulate(42, List("hello",3,4,5)))
+    assert(None == rte.simulate(42, List(3,4,5,6)))
+    assert(Some(42) == rte.simulate(42, List("hello",2,3,4,5,6,7)))
+    assert(Some(42) == rte.simulate(42, List(2,3,4,5,6,7)))
+  }
 }
