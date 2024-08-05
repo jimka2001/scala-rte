@@ -39,11 +39,11 @@ abstract class Rte {
 
   def unary_! : Rte = Not(this)
 
-  def ? : Rte = Or(this, EmptyWord)
+  def ? : Rte = Or(this, EmptyWord) // postfix operator, r.?
 
-  def * : Rte = Star(this) // postfix operator
+  def * : Rte = Star(this) // postfix operator, r.*
 
-  def + : Rte = Cat(this, Star(this)) // postfix operator
+  def + : Rte = Cat(this, Star(this)) // prefix operator,   r.+
 
   def ^(n: Short): Rte = {
     n match {
@@ -257,6 +257,13 @@ abstract class Rte {
         fMap = fmap)
   }
 
+  /*
+   * given a sequence and an exit value, determine whether the sequence
+   * matches the regular expression (RTE).  I.e., does the sequence
+   * belong to the language of the RTE.
+   * If a successful match is made, Some(exitValue) is returned,
+   * else None is returned.
+   */
   def simulate[E](exitValue: E, seq: Seq[Any]): Option[E] = {
     toDfa(exitValue).simulate(seq)
   }
