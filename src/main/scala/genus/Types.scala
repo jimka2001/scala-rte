@@ -226,14 +226,20 @@ object Types {
 
   def isPrime(x: Any): Boolean = {
     @scala.annotation.tailrec
-    def go(k: Int, y: Int): Boolean = {
-      if (k > scala.math.sqrt(y)) true
+    def go(k: Int, y: Int, upper:Int): Boolean = {
+      if (k > upper) true
       else if (y % k == 0) false
-      else go(k + 1, y)
+      // we know y is odd so it is not divisible by an even number,
+      //     so increment k to next odd number
+      else go(k + 2, y, upper)
     }
 
     x match {
-      case y: Int => go(2, y)
+      case 1 => false
+      case 2 => true
+      case 3 => true
+      case y: Int if y % 2 == 0 => false
+      case y: Int => go(3, y, scala.math.round(scala.math.sqrt(y)).toInt + 1)
       case _ => false
     }
   }

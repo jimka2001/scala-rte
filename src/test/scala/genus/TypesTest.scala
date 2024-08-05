@@ -33,7 +33,11 @@ import genus.GenusImplicits
 import scala.language.implicitConversions
 
 class TypesTest extends AdjFunSuite {
-
+  test("isPrime"){
+    val primes = Set(2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
+    for{p <- 1 to 30}
+      assert(primes.contains(p) == isPrime(p), s"wrong answer for $p got ${isPrime(p)}")
+  }
   test("SEql"){
     val z:SimpleTypeD = SEql(0)
     z match {
