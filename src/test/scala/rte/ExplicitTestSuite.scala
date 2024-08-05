@@ -26,6 +26,7 @@ import adjuvant.Adjuvant.{eql, fixedPoint}
 import genus._
 import rte.RteImplicits._
 import genus.GenusImplicits._
+import rte.Rte.rteView
 import rte.Sigma.toDfa
 import xymbolyco.{Dfa, GraphViz}
 
