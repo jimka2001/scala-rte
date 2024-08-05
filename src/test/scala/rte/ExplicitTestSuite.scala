@@ -74,4 +74,26 @@ class ExplicitTestSuite extends AdjFunSuite {
     assert(Some(42) == rte.simulate(42, List("hello",2,3,4,5,6,7)))
     assert(Some(42) == rte.simulate(42, List(2,3,4,5,6,7)))
   }
+  test("match 4"){
+
+    val rte1 = I ++ (I | S).* ++ S
+    val rte2 = I ++ S ++ I.* ++ S.?
+
+    val rte3 = rte1 & !rte2
+    // rteView(rte3, "title rte3")
+    assert(Some(42) == rte3.simulate(42, List(1,"a", "b", "c")))
+    assert(None == rte2.simulate(42, List(1,"a", "b", 3, false)))
+
+    val rte4 = rte1 & rte2
+    // rteView(rte4, "title rte4")
+    assert(Some(42) == rte4.simulate(42, List(1, "a")))
+    assert(Some(42) == rte4.simulate(42, List(1, "a", 2, "b")))
+    assert(None == rte4.simulate(42, List(1, "a", "b", "c")))
+
+    val rte5 = !rte1 & rte2
+    rteView(rte5, "title rte5")
+    assert(Some(42) == rte5.simulate(42, List(1, "a", 2, 3, 4, 5)))
+    assert(None == rte5.simulate(42, List(1, "a", 2, 3, 4, 5, false)))
+
+  }
 }
