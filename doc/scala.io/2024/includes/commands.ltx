@@ -1,0 +1,126 @@
+\newcommand*\cl{Common Lisp\xspace}
+\newcommand*\clos{\textsc{Clos}\xspace}
+\newcommand*\el{Emacs Lisp\xspace}
+\newcommand\etc{\textit{etc.}\xspace}
+\newcommand\eg{\textit{e.g.}\xspace}
+\newcommand\Eg{\textit{E.g.}\xspace}
+\newcommand\ie{\textit{i.e.}\xspace}
+\newcommand\Ie{\textit{I.e.}\xspace}
+\newcommand\etal{\textit{et al.}\xspace}
+\newcommand\rte{\lisp{rte}\xspace}
+\newcommand\vs{\textit{vs.}\xspace}
+\newcommand\gropl{Gr{\"{o}}pl\xspace}
+\newcommand\abio{Ab{\'{\i}}o\xspace}
+\newcommand\lhopital{L'H\^opital\xspace}
+\newcommand*\nodecirc[1]{%
+  \begin{tikzpicture}
+      \node[draw,circle,inner sep=1pt] {\footnotesize #1};
+   \end{tikzpicture}}
+\newcommand\lisp[1]{\texttt{#1}}
+\newcommand\bdd[1]{%
+  {\scriptsize\begin{tabular}[c]{@{}l@{}}$\Tree[#1]$\end{tabular}}}
+\newcommand*\YLR{\bdd{.Y L R }}
+
+\newcommand*{\naively}{na\"ively\xspace}
+\newcommand*{\naive}{na\"ive\xspace}
+\newcommand*{\reemphasizing}{re\"emphasizing\xspace}
+\newcommand*{\Arrow}[2]{\ensuremath{{#1} \to {#2}}}
+\newcommand*{\Perm}[2]{{#1}^{\underline{#2}}}%
+\newcommand*{\Pairs}[1]{\mathscr{P}(#1)}%
+\newcommand*{\rr}[2]{{}^{#1}\!r_{#2}}%
+\newcommand*{\RR}[2]{{}^{#1}\!R_{#2}}%
+\newcommand*{\SSx}[2]{{}^{#1}\!S_{#2}}%
+\newcommand*{\HH}[2]{{}^{#1}\!\mathscr{H}_{#2}}%
+\newcommand*{\HHb}[2]{\overline{\HH{#1}{#2}}}%
+\newcommand*{\LL}[2]{\Vert \Delta\HH{#1}{#2} \Vert_2}%
+\newcommand*{\DC}[1]{\widetilde{#1}}%
+\newcommand\numvars{n}
+\newcommand\belt{\mathcal{B}}
+\newcommand\ROBDD{{\lvert ROBDD_{\numvars} \rvert}}
+\newcommand\UOBDD{{\lvert UOBDD_{\numvars} \rvert}}
+\newenvironment{Ventry}[1]
+{\begin{list}{}{\renewcommand{\makelabel}[1]{\textsf{##1:}\hfil}
+\settowidth{\labelwidth}{\textsf{#1:}}
+\setlength{\leftmargin}{\labelwidth+\labelsep}}}
+{\end{list}}
+\newcommand\disjoint{\parallel}
+\newcommand\notdisjoint{\nparallel}
+\newcommand{\powerset}[1]{\mathbb{P}(#1)}
+\newcommand*\hmax{\mathfrak{D}}
+\newcommand*\hmin{\mathfrak{C}}
+\newcommand*\fff{\mathfrak{F}}
+\newcommand*\st{\ s.t.\ }
+\newcommand\sigalg[1]{\mathscr{B}(#1)}
+
+%% \newdefinition{#1 term}{#2 label}{#3 shortdef}{#4 longdef}
+\newcommand\newdefinition[4]{%
+\nomenclature{#1}{#3\hfill Definition~\ref{#2}, page~\pageref{#2}.}%
+\begin{definition}%
+\label{#2}%
+{#4}%
+\end{definition}%
+}
+
+%% \newnotation{#1 term}{#2 label}{#3 shortdef}{#4 longdef}
+\newcommand\newnotation[4]{%
+\nomenclature{#1}{#3\hfill Notation~\ref{#2}, page~\pageref{#2}.}%
+\begin{notation}%
+\label{#2}%
+{#4}%
+\end{notation}%
+}
+
+%% \figurehere{#1 label}{#2 caption}{#3 content}
+\newcommand\figurehere[3]{%
+{\begin{minipage}{\textwidth}% see https://tex.stackexchange.com/questions/30734/how-make-sure-two-elements-stay-on-the-same-page
+\begin{center}
+{#3}
+\captionsetup{type=figure}% see https://tex.stackexchange.com/questions/32344/issue-with-capt-of-package
+\captionof{figure}{#2}
+\label{#1}
+\end{center}
+\end{minipage}
+}
+}
+
+%% \nofigurehere{#1 label}{#2 caption}{#3 content}
+\newcommand\nofigurehere[1]{%
+{\begin{minipage}{\textwidth}
+\begin{center}
+{#1}
+\end{center}
+\end{minipage}
+}
+}
+
+
+
+%% \figurefloat{#1 placement}{#2 label}{#3 caption}{#4 content}
+\newcommand\figurefloat[4]{%
+\begin{figure}[#1]
+\centering
+{#4}
+\caption{#3}
+\label{#2}
+\end{figure}
+}
+
+\newcommand*\lrat{\mathcal{L}_{\Sigma}}
+\newcommand*\erat{\mathcal{E}_{rat}}
+% [| foo |].  sem(antics).  For math.
+
+
+%\newalgorithm{#1 caption}{#2 label}{#3 body}
+\newcommand\newalgorithm[3]{%
+\colorbox[RGB]{255,246,248}{
+\begin{algorithm}[H]
+\caption{#1}
+\label{#2}
+  #3
+\end{algorithm}
+}
+}
+
+\newcommand*\from{\colon}
+
+\newcommand*\xor{\oplus}

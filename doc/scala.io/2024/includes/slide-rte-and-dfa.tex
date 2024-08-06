@@ -1,0 +1,55 @@
+\begin{frame}
+
+  \only<1-2>{ Does:%\cite{brzozowski.64.jacm,Owens:2009:RDR:1520284.1520288}
+\\}%
+  \only<1-3>{\tt \textcolor{blue}{[13 2 6 4 "a" "an" "the" -5 2 22 222 7 8)}\\}%
+  \only<1-2>{follow the pattern: \textcolor{greeny}{$(Int \cdot ( Even^{+} ~\vee String^{+}))^{+}$} ?}%
+  \only<3->{How does a DFA work as a predicate?}
+
+
+  \only<18>{\textcolor{blue}{\LARGE Yes, it's a match!}}
+
+  \begin{columns}
+    \begin{column}{3cm}
+      \only<2>{We \textcolor{blue}{construct a \emph{deterministic} finite automaton} (DFA).}%
+
+  \only<4>{\tt (13 2 6 4 "a" "an" "the" -5 2 22 222 7 8)}%
+  \only<5>{\tt (\textcolor{greeny}{\nodecirc{13}} 2 6 4 "a" "an" "the" -5 2 22 222 7 8)}%
+  \only<6>{\tt (13 \textcolor{greeny}{\nodecirc{2}} 6 4 "a" "an" "the" -5 2 22 222 7 8)}%
+  \only<7>{\tt (13 2 \textcolor{greeny}{\nodecirc{6}} 4 "a" "an" "the" -5 2 22 222 7 8)}%
+  \only<8>{\tt (13 2 6 \textcolor{greeny}{\nodecirc{4}} "a" "an" "the" -5 2 22 222 7 8)}%
+  \only<9>{\tt (13 2 6 4 \textcolor{greeny}{\nodecirc{"a"}} "an" "the" -5 2 22 222 7 8)}%
+  \only<10>{\tt (13 2 6 4 "a" \textcolor{greeny}{\nodecirc{"an"}} "the" -5 2 22 222 7 8)}%
+  \only<11>{\tt (13 2 6 4 "a" "an" \textcolor{greeny}{\nodecirc{"the"}} -5 2 22 222 7 8)}%
+  \only<12>{\tt (13 2 6 4 "a" "an" "the" \textcolor{greeny}{\nodecirc{-5}} 2 22 222 7 8)}%
+  \only<13>{\tt (13 2 6 4 "a" "an" "the" -5 \textcolor{greeny}{\nodecirc{2}} 22 222 7 8)}%
+  \only<14>{\tt (13 2 6 4 "a" "an" "the" -5 2 \textcolor{greeny}{\nodecirc{22}} 222 7 8)}%
+  \only<15>{\tt (13 2 6 4 "a" "an" "the" -5 2 22 \textcolor{greeny}{\nodecirc{222}} 7 8)}%
+  \only<16>{\tt (13 2 6 4 "a" "an" "the" -5 2 22 222 \textcolor{greeny}{\nodecirc{7}} 8)}%
+  \only<17>{\tt (13 2 6 4 "a" "an" "the" -5 2 22 222 7 \textcolor{greeny}{\nodecirc{8}})}%
+  \only<18>{\tt (13 2 6 4 "a" "an" "the" -5 2 22 222 7 8)}%
+
+
+    \end{column}
+
+    \begin{column}{8cm}
+      \only<2-3>{\scalebox{0.9}{\input{fig-3}}} %
+      \only<4>{\scalebox{0.9}{\input{fig-3-0}}} %
+      \only<5>{\scalebox{0.9}{\input{fig-3-0-int}}} % 13 -> 1
+      \only<6>{\scalebox{0.9}{\input{fig-3-1-even}}} % 2 -> 2
+      \only<7>{\scalebox{0.9}{\input{fig-3-2-even}}} % 6 -> 2
+      \only<8>{\scalebox{0.9}{\input{fig-3-2-int}}} % 4 -> 1
+      \only<9>{\scalebox{0.9}{\input{fig-3-1-string}}} % "a" -> 3
+      \only<10>{\scalebox{0.9}{\input{fig-3-3-string}}} % "an" -> 3
+      \only<11>{\scalebox{0.9}{\input{fig-3-3-string}}} % "the" -> 3
+      \only<12>{\scalebox{0.9}{\input{fig-3-3-int}}} % -1 -> 1
+      \only<13>{\scalebox{0.9}{\input{fig-3-1-even}}} % 2 -> 2
+      \only<14>{\scalebox{0.9}{\input{fig-3-2-even}}} % 22 -> 2
+      \only<15>{\scalebox{0.9}{\input{fig-3-2-even}}} % 222 -> 2
+      \only<16>{\scalebox{0.9}{\input{fig-3-2-int}}} % 7 -> 1
+      \only<17>{\scalebox{0.9}{\input{fig-3-1-even}}} % 8 -> 2
+      \only<18>{\scalebox{0.9}{\input{fig-3-2}}} % "8" -> 2
+    \end{column}
+  \end{columns}
+\end{frame}
+

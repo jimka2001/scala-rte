@@ -18,4 +18,15 @@ project/target
 src/.idea
 src/.nrepl-port
 target
+doc/scala.io/2024/*.aux
+doc/scala.io/2024/*.fls
+doc/scala.io/2024/*.log
+doc/scala.io/2024/*.nav
+doc/scala.io/2024/*.toc
+doc/scala.io/2024/*.sta
+doc/scala.io/2024/*.snm
+doc/scala.io/2024/*.out
+doc/scala.io/2024/*.pdf
+doc/scala.io/2024/*.fdb_latexmk
+
 
