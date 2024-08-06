@@ -1,4 +1,4 @@
-# SCALA REGULAR-TYPE-EXPRESSION (RTE)
+# SCALA REGULAR-TYPE-EXPRESSIONS (RTE)
 
 ## Synopsis
 
@@ -10,7 +10,14 @@ The implementation of rational type expression is the main result of this projec
 However, several intermediate results might be useful as well, so they are made
 available.
 
+This project is an implementation of Rational Type Expressions originally implementedin Common Lisp.
+For information about this project and related publications , see [Efficient dynamic type checking of heterogeneous sequences](https://www.lrde.epita.fr/wiki/Publications/newton.16.rte.report)
 
+
+
+## API
+
+[Scala doc](target/scala-2.13/api/index.html)
 
 ## License
 
