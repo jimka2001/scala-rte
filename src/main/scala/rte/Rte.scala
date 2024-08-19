@@ -43,7 +43,7 @@ abstract class Rte {
 
   def * : Rte = Star(this) // postfix operator, r.*
 
-  def + : Rte = Cat(this, Star(this)) // prefix operator,   r.+
+  def + : Rte = Cat(this, Star(this)) // postfix operator,   r.+
 
   def ^(n: Short): Rte = {
     n match {

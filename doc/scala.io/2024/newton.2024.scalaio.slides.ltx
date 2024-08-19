@@ -9,13 +9,77 @@
 \pgfplotsset{compat=1.16}
 \usepackage{color}
 
+
 \input{colors.ltx}
 \input{commands.ltx}
-
+\title{Type Checking Hetergeneous Sequences}
+%% \titlegraphic{}
 \author{Jim E. Newton}
+\institute{EPITA Research Laboratory}
 
 \begin{document}
 
+\begin{frame}
+\titlepage
+\end{frame}
+
+
+\begin{frame}{REs}{What are Regular Type Expressions?}
+  \only<1>{A Regular Type Expression (RTE), \code{f} is an \emph{expression} designating a set, $\sem{f}$ of sequences of values.}
+  \only<2>{The set of all RTEs is recursively defined.}
+  \only<3>{A type such as \code{classOf[Int]}\\}
+  \only<3>{representing the set of all singleton sequences whose element is of type \code{Int}.\\\medskip}
+  \only<3>{\code{List(42)} $\in \sem{classOf[Int]}$.\\}
+  \only<3>{\code{List("hello")} $\not\in \sem{classOf[Int]}$.\\}
+  \only<3>{\code{List()} $\not\in \sem{classOf[Int]}$.}
+  \only<4-6>{Suppose \code{f} and \code{g} are RTEs, then\\\bigskip}
+  \only<4>{\code{f | g} is an RTE denoting\\}
+  \only<4>{the union of two two sets: $\sem{f} \cup \sem{g}$.\\\medskip}
+  \only<4>{\code{List(42)} $\in \sem{classOf[Int] | classOf[String]}$.\\}
+  \only<4>{\code{List("hello")} $\in \sem{classOf[Int] | classOf[String]}$.}
+  \only<5>{\code{f ++ g} is an RTE denoting\\}
+  \only<5>{the set of all sequences of $x$ concatentaed with $y$ where $x\in\sem{f}$ and $y\in\sem{g}$.\\\medskip}
+  \only<5>{\code{List(42,"hello")} $\in \sem{classOf[Int] ++ classOf[String]}$.}
+  \only<5>{\code{List("hello", 42)} $\in \sem{classOf[Int] ++ classOf[String]}$.}
+  \only<6>{\code{f.*} is an RTE denoting\\}
+  \only<6>{the set of finite concatenations of sequences in $\sem{f}$.\\\medskip}
+  \only<6>{\code{List()} $\in \sem{classOf[Int].*}$\\}
+  \only<6>{\code{List(42)} $\in \sem{classOf[Int].*}$\\}
+  \only<6>{\code{List(42,43,44,45,46)} $\in \sem{classOf[Int].*}$}
+  \only<7>{The RTE \code{EmptySet} represents $\emptyset$.\\}
+  \only<7>{The RTE \code{Sigma} represents the set of all singleton sequences.\\}
+  \only<7>{The RTE \code{EmptyWord} represents the set of all empty sequences.}
+\end{frame}
+
+\begin{frame}{Extended RTEs}{Extented Rational Type Expressions}
+  \only<1>{\code{Not(f)} is an RTE denoting\\}
+  \only<1>{the set of all sequences not in $\sem{f}$.}
+  \only<2>{\code{f \& g} is an RTE denoting\\}
+  \only<2>{$\sem{f \& g} = Not( Not(f) | Not(g))$\\}
+  \only<2>{\Ie, the intersection of two two sets: $\sem{f} \cap \sem{g}$.}
+  \only<3>{\code{f.+} is an RTE denoting\\}
+  \only<3>{$\sem{f.*} \cap Not(EmptyWord)$}
+  \only<3>{the set of finite non-empty, concatenations of sequences in $\sem{f}$}
+\end{frame}
+
+\begin{frame}{DFA}{What are Finite Automata?}
+\end{frame}
+
+
 \input{slide-rte-and-dfa.tex} % matching (a 1 1.0 b "a" "an" "the" -5 2 22 222 d 2/3)
+
+
+\begin{frame}{Types}{What are Types?}
+  \begin{itemize}
+  \item Types as Sets
+  \item Static
+  \item Dynamic
+  \end{itemize}
+\end{frame}
+\begin{frame}{SETS}{Simple Embedded Type System}
+\end{frame}
+\begin{frame}{5}{5}
+\end{frame}
+
 
 \end{document}
