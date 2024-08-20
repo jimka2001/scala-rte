@@ -1,0 +1,425 @@
+\section{Efficient Redundant Type Checks}
+
+\begin{frame}{Efficient Redundant Type Checks}
+\end{frame}
+
+
+\newsavebox\typecaseAbox
+\begin{lrbox}{\typecaseAbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  val N = SAtomic(classOf[Number])
+  val I = SAtomic(classOf[Int])
+
+  if SAnd(N,!I).typep(x)
+    Some(1)
+  else if I.typep(x)
+    Some(2)
+  else if (!N).typep(x)
+    Some(3)
+  else
+    None
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseBbox
+\begin{lrbox}{\typecaseBbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if SAnd(N,!I).typep(x)
+      Some(1)
+    else if I.typep(x)
+      Some(2)
+    else if (!N).typep(x)
+      Some(3)
+    else      None
+  } else {
+    if SAnd(N,!I).typep(x)
+      Some(1)
+    else if I.typep(x)
+      Some(2)
+    else if (!N).typep(x)
+      Some(3)
+    else      None
+  }
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseCbox
+\begin{lrbox}{\typecaseCbox}
+  \begin{minipage}{6cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if SAnd(STop,!I).typep(x)
+      Some(1)
+    else if I.typep(x)
+      Some(2)
+    else if (!STop).typep(x)
+      Some(3)
+    else      None
+  } else {
+    if SAnd(SEmpty,!SEmpty).typep(x)
+      Some(1)
+    else if SEmpty.typep(x)
+      Some(2)
+    else if (!SEmpty).typep(x)
+      Some(3)
+    else      None
+  }
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseDbox
+\begin{lrbox}{\typecaseDbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if (!I).typep(x)
+      Some(1)
+    else if I.typep(x)
+      Some(2)
+    else if SEmpty.typep(x)
+      Some(3)
+    else      None
+  } else {
+    if SEmpty.typep(x)
+      Some(1)
+    else if SEmpty.typep(x)
+      Some(2)
+    else if STop.typep(x)
+      Some(3)
+    else      None
+  }
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseEbox
+\begin{lrbox}{\typecaseEbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if (!I).typep(x)
+      Some(1)
+    else if I.typep(x)
+      Some(2)
+    else if false
+      Some(3)
+    else      None
+  } else {
+    if false
+      Some(1)
+    else if false
+      Some(2)
+    else if true
+      Some(3)
+    else      None
+  }
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseFbox
+\begin{lrbox}{\typecaseFbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if (!I).typep(x)
+      Some(1)
+    else if I.typep(x)
+      Some(2)
+    else      None
+  } else Some(3)
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseGbox
+\begin{lrbox}{\typecaseGbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if I.typep(x) {
+      if (!I).typep(x)
+        Some(1)
+      else if I.typep(x)
+        Some(2)
+      else None
+    } else {
+      if (!I).typep(x)
+        Some(1)
+      else if I.typep(x)
+        Some(2)
+      else      None
+    }
+  } else Some(3)
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseHbox
+\begin{lrbox}{\typecaseHbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if I.typep(x) {
+      if (!STop).typep(x)
+        Some(1)
+      else if STop.typep(x)
+        Some(2)
+      else None
+    } else {
+      if (!SEmpty).typep(x)
+        Some(1)
+      else if SEmpty.typep(x)
+        Some(2)
+      else None
+    }
+  } else Some(3)
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseIbox
+\begin{lrbox}{\typecaseIbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if I.typep(x) {
+      if SEmpty.typep(x)
+        Some(1)
+      else if STop.typep(x)
+        Some(2)
+      else      None
+    } else {
+      if STop.typep(x)
+        Some(1)
+      else if SEmpty.typep(x)
+        Some(2)
+      else      None
+    }
+  } else Some(3)
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseJbox
+\begin{lrbox}{\typecaseJbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if I.typep(x) {
+      if false
+        Some(1)
+      else if true
+        Some(2)
+      else      None
+    } else {
+      if true
+        Some(1)
+      else if false
+        Some(2)
+      else      None
+    }
+  } else Some(3)
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseKbox
+\begin{lrbox}{\typecaseKbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if I.typep(x)
+      Some(2)
+    else
+      Some(1)
+  } else Some(3)
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+
+
+\begin{frame}{Sequential Type Check}
+  In general a state in the DFA may have several transitions, each with its own type label.
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseAbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \scalebox{0.9}{\input{multiple-transitions}}
+    \end{column}    
+  \end{columns}
+
+  Some types may be checked multiple times.  We can rewrite the code to eliminate redundant checks.
+
+\end{frame}
+
+
+\begin{frame}{Rewrite: 1}
+  Introduce \code{if N.typep(x) ... else ...}.
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseAbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseBbox
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Rewrite: 2}
+  In \code{if} part, replace supertypes of \code{N} with \code{STop}.  $Int\subset Number$
+  
+  In \code{else} part, replace subtypes of \code{N} with \code{SEmpty}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseBbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseCbox
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Rewrite: 3}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \code{SAnd(STop,x)} $\to$ \code{x}\\
+      \code{!STop} $\to$ \code{SEmpty}
+      
+      \usebox\typecaseCbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \code{SAnd(SEmpty,x)} $\to$ \code{SEmpty}\\
+      \code{!SEmpty} $\to$ \code{STop}
+
+      \usebox\typecaseDbox
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Rewrite: 4}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \code{SEmpty.typep(x)} $\to$ \code{false}
+      
+      \usebox\typecaseDbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \code{STop.typep(x)} $\to$ \code{true}
+
+      \usebox\typecaseEbox
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Rewrite: 5}
+  \code{(if true x else y)} $\to$ \code{x}\\
+  \code{(if false x else y)} $\to$ \code{y}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseEbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseFbox
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Rewrite: 6}
+  Introduce \code{if I.typep(x) ... else ...}.
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseFbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseGbox
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Rewrite: 7}
+  In \code{if} part, replace supertypes of \code{I} with \code{STop} and subtypes in \code{else} part with \code{SEmpty}.
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseGbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseHbox
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}{Rewrite: 8}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \code{!STop} $\to$ \code{SEmpty}
+      \usebox\typecaseHbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \code{!SEmpty} $\to$ \code{STop}
+      \usebox\typecaseIbox
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Rewrite: 9}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \code{SEmpty.typep(x)} $\to$ \code{false}
+      \usebox\typecaseIbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \code{STop.typep(x)} $\to$ \code{true}
+      \usebox\typecaseJbox
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Rewrite: 10}
+  \code{(if true x else y)} $\to$ \code{x}\\
+  \code{(if false x else y)} $\to$ \code{y}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseJbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseKbox
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}{Rewrite: Summary}
+  Code has been rewritten so that each type check occurs no more than once.
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseAbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseKbox
+    \end{column}
+  \end{columns}
+
+  And it is clear the the code never returns \code{None}.
+
+\end{frame}
+
+

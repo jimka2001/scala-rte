@@ -1,0 +1,35 @@
+\section{History}
+\begin{frame}{History}
+\end{frame}
+
+\begin{frame}{History}
+  \begin{itemize}
+  \item Regular Type Expressions (RTEs) were introduced at 2016 European Lisp Conference, implemented in Common Lisp.
+    \url{https://www.lrde.epita.fr/wiki/Publications/newton.16.els}
+  \item Many theoretical, implementation, and performance details explained in PhD Thesis in 2018.
+    \url{https://www.lrde.epita.fr/wiki/Publications/newton.18.phd}
+  \item In mean time, extended RTEs to Scala, Clojure, and Python
+  \item Available:
+    \begin{itemize}
+    \item \url{https://github.com/jimka2001/scala-rte}
+    \item \url{https://github.com/jimka2001/clojure-rte}
+    \item \url{https://github.com/jimka2001/python-rte}
+    \item \url{https://github.com/jimka2001/cl-rte}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Requirements}
+  \begin{itemize}
+  \item Heterogeneous sequences are commonplace in dynamically typed languages
+  \item Supported also in Scala via \code{Seq[Any]}
+  \item Run-time type reflection 
+    \begin{itemize}
+    \item type membership query:\code{classOf[Int].isInstance("hello")}
+    \item subtype query: \code{classOf[Int].isAssignableFrom(classOf[String])}
+    \end{itemize}
+  \item Implementation of a Simple Embeddable Type System
+    \url{https://www.lrde.epita.fr/wiki/Publications/newton.21.els}
+  \end{itemize}
+\end{frame}

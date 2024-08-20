@@ -1,3 +1,8 @@
+\section{Regular Type Expressions}
+
+\begin{frame}{Regular Type Expressions}
+\end{frame}
+
 
 \newsavebox\exnoteabbbox
 \begin{lrbox}{\exnoteabbbox}
@@ -110,12 +115,13 @@
   \begin{minipage}{12cm}
 \begin{lstlisting}[style=scalaioScala]
   val r3:Rte = Star(Int) // or Int.*
-  val r4:Rte = Star(Str) // or Str.*
-  val r5:Rte = Star(Int | Str) 
-  
   r3.contains(List(1,2,3,4,5)) // returns true
+
+  val r4:Rte = Star(Str) // or Str.*
   r4.contains(List("a", "b", "c")) // returns true
   r4.contains(List(1, "hello", 2, 3, "world") // return false
+
+  val r5:Rte = Star(Int | Str) 
   r5.contains(List(1, "hello", 2, 3, "world") // return true
 \end{lstlisting}
   \end{minipage}
