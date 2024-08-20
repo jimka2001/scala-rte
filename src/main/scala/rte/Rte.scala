@@ -268,6 +268,18 @@ abstract class Rte {
     toDfa(exitValue).simulate(seq)
   }
 
+  /**
+    * predicate deciding whether a given sequence _matches_ the RTE this.
+    * We would like to name this method `match`, but that name is used for
+    * pattern matching.
+    */
+  def contains(seq:Seq[Any]): Boolean = {
+    simulate(true, seq) match {
+      case None => false
+      case Some(true) => true
+    }
+  }
+
   // walk this Rte and find a node which satisfies the given predicate,
   //  returning Some(x) if x satisfies the predicate, and returning None otherwise.
   def search(test: Rte => Boolean): Option[Rte] = {
