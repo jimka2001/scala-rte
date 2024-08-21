@@ -18,24 +18,39 @@
   \scalebox{1.0}{\input{venn-simple.tex}}
 
   \begin{itemize}
-  \item   Extends built-in type system of language (Scala, Python, Clojure)
-  \item   Modeled after the Common Lisp type system.
-  \item   Supports intersection, union, complement
-  \item   Supports deterministic \emph{membership check}
-  \item   Supports incomplete \emph{subtype check}
+  \item   Extends type system of language (Scala, Python, Clojure)
+  \item   Modeled on Common Lisp type system.
+  \item   Supports intersection, union, complement.
+  \item   Supports deterministic \emph{membership check}.
+  \item   Supports incomplete \emph{subtype check}.
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Genus}{Genus as Alebraic Data Type}
-  Types defined in terms of other genus types.
 
-  \bigskip
+  \begin{columns}
+
+    \begin{column}{0.4\textwidth}
   
+      %% By Watchduck author "T. Piesk", "Tilman Piesk" or
+      %% "Watchduck". - Own work, CC BY 3.0,
+      %% https://commons.wikimedia.org/w/index.php?curid=11155125
+      \includegraphics[height=6cm]{Fano_plane_Hasse_diagram} 
+    \end{column}
+    \begin{column}{0.6\textwidth}%%
+      Implements \emph{complemented lattice} of types.
+
+      \medskip
+      
   \begin{itemize}
-  \item \code{SAnd} and \code{SOr}, union and intersection
   \item \code{SEmpty} and \code{STop}, empty and universal type
+  \item \code{SAnd} and \code{SOr}, union and intersection
   \item \code{SNot} complement
   \end{itemize}
+      
+    \end{column}
+  \end{columns}
+  
 \end{frame}
 
 \newsavebox\adtbox
@@ -51,6 +66,7 @@
 
   \usebox\adtbox
 
+  Not an ADT for a \emph{silly} reason.  Scala does not support cross-file \code{sealed} classes.
 \end{frame}
 
 \begin{frame}{Genus}{Special Types}
