@@ -23,6 +23,30 @@
   \end{minipage}
 \end{lrbox}
 
+\newsavebox\typecaseITEbox
+\begin{lrbox}{\typecaseITEbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+[N & !I, Some(1),
+         [I, Some(2),
+             [!N, Some(3), None]]]
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseBabox
+\begin{lrbox}{\typecaseBabox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if ~~N.typep(x)~~ {
+    ... original code ...
+  } ~~ELSE~~ {
+    ... original code ...
+  }
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
 \newsavebox\typecaseBbox
 \begin{lrbox}{\typecaseBbox}
   \begin{minipage}{8cm}
@@ -48,6 +72,7 @@
   \end{minipage}
 \end{lrbox}
 
+
 \newsavebox\typecaseCbox
 \begin{lrbox}{\typecaseCbox}
   \begin{minipage}{6cm}
@@ -66,6 +91,31 @@
     else if SEmpty.typep(x)
       Some(2)
     else if (!SEmpty).typep(x)
+      Some(3)
+    else None
+  }
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseChbox
+\begin{lrbox}{\typecaseChbox}
+  \begin{minipage}{6cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if (~~STop~~ & !I).typep(x)
+      Some(1)
+    else if I.typep(x)
+      Some(2)
+    else if (!~~STop~~).typep(x)
+      Some(3)
+    else      None
+  } else {
+    if (~~SEmpty~~ & !~~SEmpty~~).typep(x)
+      Some(1)
+    else if ~~SEmpty~~.typep(x)
+      Some(2)
+    else if (!~~SEmpty~~).typep(x)
       Some(3)
     else None
   }
@@ -98,6 +148,31 @@
   \end{minipage}
 \end{lrbox}
 
+\newsavebox\typecaseDhbox
+\begin{lrbox}{\typecaseDhbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if (~~!I~~).typep(x)
+      Some(1)
+    else if I.typep(x)
+      Some(2)
+    else if ~~SEmpty~~.typep(x)
+      Some(3)
+    else None
+  } else {
+    if ~~SEmpty~~.typep(x)
+      Some(1)
+    else if SEmpty.typep(x)
+      Some(2)
+    else if ~~STop~~.typep(x)
+      Some(3)
+    else None
+  }
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
 \newsavebox\typecaseEbox
 \begin{lrbox}{\typecaseEbox}
   \begin{minipage}{8cm}
@@ -123,6 +198,31 @@
   \end{minipage}
 \end{lrbox}
 
+\newsavebox\typecaseEhbox
+\begin{lrbox}{\typecaseEhbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if (!I).typep(x)
+      Some(1)
+    else if I.typep(x)
+      Some(2)
+    else if ~~FALSE~~
+      Some(3)
+    else      None
+  } else {
+    if false
+      Some(1)
+    else if ~~FALSE~~
+      Some(2)
+    else if ~~TRUE~~
+      Some(3)
+    else      None
+  }
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
 \newsavebox\typecaseFbox
 \begin{lrbox}{\typecaseFbox}
   \begin{minipage}{8cm}
@@ -133,6 +233,36 @@
     else if I.typep(x)
       Some(2)
     else      None
+  } else Some(3)
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseFhbox
+\begin{lrbox}{\typecaseFhbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if (!I).typep(x)
+      Some(1)
+    else if I.typep(x)
+      Some(2)
+    else ~~None~~
+  } else ~~Some(3)~~
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseGabox
+\begin{lrbox}{\typecaseGabox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if ~~I.typep(x)~~ {
+      ... original code...
+    } ~~ELSE~~ {
+      ... original code...
+    }
   } else Some(3)
 \end{lstlisting}
   \end{minipage}
@@ -161,6 +291,7 @@
   \end{minipage}
 \end{lrbox}
 
+
 \newsavebox\typecaseHbox
 \begin{lrbox}{\typecaseHbox}
   \begin{minipage}{8cm}
@@ -184,6 +315,29 @@
   \end{minipage}
 \end{lrbox}
 
+\newsavebox\typecaseHhbox
+\begin{lrbox}{\typecaseHhbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if I.typep(x) {
+      if (!~~STop~~).typep(x)
+        Some(1)
+      else if ~~STop~~.typep(x)
+        Some(2)
+      else None
+    } else {
+      if (!~~SEmpty~~).typep(x)
+        Some(1)
+      else if ~~SEmpty~~.typep(x)
+        Some(2)
+      else None
+    }
+  } else Some(3)
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
 \newsavebox\typecaseIbox
 \begin{lrbox}{\typecaseIbox}
   \begin{minipage}{8cm}
@@ -197,6 +351,29 @@
       else      None
     } else {
       if STop.typep(x)
+        Some(1)
+      else if SEmpty.typep(x)
+        Some(2)
+      else      None
+    }
+  } else Some(3)
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseIhbox
+\begin{lrbox}{\typecaseIhbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if I.typep(x) {
+      if ~~SEmpty~~.typep(x)
+        Some(1)
+      else if STop.typep(x)
+        Some(2)
+      else      None
+    } else {
+      if ~~STop~~.typep(x)
         Some(1)
       else if SEmpty.typep(x)
         Some(2)
@@ -230,6 +407,29 @@
   \end{minipage}
 \end{lrbox}
 
+\newsavebox\typecaseJhbox
+\begin{lrbox}{\typecaseJhbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if I.typep(x) {
+      if ~~FALSE~~
+        Some(1)
+      else if ~~TRUE~~
+        Some(2)
+      else      None
+    } else {
+      if true
+        Some(1)
+      else if ~~FALSE~~
+        Some(2)
+      else      None
+    }
+  } else Some(3)
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
 \newsavebox\typecaseKbox
 \begin{lrbox}{\typecaseKbox}
   \begin{minipage}{8cm}
@@ -239,6 +439,21 @@
       Some(2)
     else
       Some(1)
+  } else Some(3)
+\end{lstlisting}
+  \end{minipage}
+\end{lrbox}
+
+
+\newsavebox\typecaseKhbox
+\begin{lrbox}{\typecaseKhbox}
+  \begin{minipage}{8cm}
+\begin{lstlisting}[style=scalaioScala]
+  if N.typep(x) {
+    if I.typep(x)
+      ~~Some(2)~~
+    else
+      ~~Some(1)~~
   } else Some(3)
 \end{lstlisting}
   \end{minipage}
@@ -258,9 +473,37 @@
   \end{columns}
 
   Some types may be checked multiple times.  We can rewrite the code to eliminate redundant checks.
-
 \end{frame}
 
+\begin{frame}{Decision Tree Structure}
+  We programmatically manipulate \code{if ... else ...} using a lazy data structure similar to the following.
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseAbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseITEbox
+    \end{column}    
+  \end{columns}
+
+  However, for this presentation, we represent the decision tree as \emph{human readable} Scala code.
+\end{frame}
+
+
+
+\begin{frame}{Rewrite: 1}
+  Introduce \code{if N.typep(x) ... else ...}.
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseAbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseBabox
+    \end{column}    
+  \end{columns}
+\end{frame}
 
 \begin{frame}{Rewrite: 1}
   Introduce \code{if N.typep(x) ... else ...}.
@@ -275,6 +518,25 @@
   \end{columns}
 \end{frame}
 
+
+
+\begin{frame}{Rewrite: 2}
+  In \code{if} part, replace supertypes of \code{N} with \code{STop}. 
+
+  In \code{else} part, replace subtypes of \code{N} with \code{SEmpty}
+
+  \begin{align*}
+    Int&\subseteq Number\\
+    Int&\subseteq Int
+  \end{align*}
+
+  We need to be able to determine subtype/supertype relations.
+
+  Failure to identify subtypes/supertypes will create \emph{correct} but \emph{inefficient} code.
+\end{frame}
+
+
+
 \begin{frame}{Rewrite: 2}
   In \code{if} part, replace supertypes of \code{N} with \code{STop}.  $Int\subset Number$
   
@@ -285,7 +547,7 @@
       \usebox\typecaseBbox
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseCbox
+      \usebox\typecaseChbox
     \end{column}    
   \end{columns}
 \end{frame}
@@ -304,7 +566,7 @@
       \code{(SEmpty \& x)} $\to$ \code{SEmpty}\\
       \code{!SEmpty} $\to$ \code{STop}
 
-      \usebox\typecaseDbox
+      \usebox\typecaseDhbox
     \end{column}    
   \end{columns}
 \end{frame}
@@ -319,7 +581,7 @@
     \begin{column}{0.5\textwidth}  %%
       \code{STop.typep(x)} $\to$ \code{true}
 
-      \usebox\typecaseEbox
+      \usebox\typecaseEhbox
     \end{column}    
   \end{columns}
 \end{frame}
@@ -333,7 +595,20 @@
       \usebox\typecaseEbox
     \end{column}
     \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseFhbox
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Rewrite: 6}
+  Introduce \code{if I.typep(x) ... else ...}.
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
       \usebox\typecaseFbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseGabox
     \end{column}    
   \end{columns}
 \end{frame}
@@ -359,7 +634,7 @@
       \usebox\typecaseGbox
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseHbox
+      \usebox\typecaseHhbox
     \end{column}    
   \end{columns}
 \end{frame}
@@ -374,7 +649,7 @@
     \end{column}
     \begin{column}{0.5\textwidth}  %%
       \code{!SEmpty} $\to$ \code{STop}
-      \usebox\typecaseIbox
+      \usebox\typecaseIhbox
     \end{column}    
   \end{columns}
 \end{frame}
@@ -388,7 +663,7 @@
     \end{column}
     \begin{column}{0.5\textwidth}  %%
       \code{STop.typep(x)} $\to$ \code{true}
-      \usebox\typecaseJbox
+      \usebox\typecaseJhbox
     \end{column}    
   \end{columns}
 \end{frame}
@@ -402,7 +677,7 @@
       \usebox\typecaseJbox
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseKbox
+      \usebox\typecaseKhbox
     \end{column}
   \end{columns}
 \end{frame}
