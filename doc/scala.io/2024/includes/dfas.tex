@@ -5,50 +5,53 @@
 
 
 \begin{frame}{DFA}{What are Finite Automata?}
+  \begin{itemize}
+  \item   Every RTE corresponds to a Deterministic Finite Automata (DFA), \code{Rte.toDfa(rte)} (theoretically exponential time)
 
-  Every RTE corresponds to a Deterministic Finite Automata (DFA).
+  \item   The DFA will recognize any sequence matching the RTE (in linear time).
 
-  The method \code{Rte.toDfa(...)} creates a DFA which will recognize any sequence matching the RTE.
-
-  Matching time is linear in sequence length, and independent of complexity of the RTE.
-
-  However, DFA generation is (theoretically) exponential in time time.
-
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Indeterminant Transitions}
-  A DFA generated from an RTE has transitions labeled by \emph{types} as per SETS.
 
-  If we can determine at construction time that a type is uninhabited, we may eliminate the
-  transition, and potentially eliminate states which are not reachable.
+  \scalebox{0.7}{\input{fig-3}}
 
-  However, since the subtype question is unanswerable, we may have transitions labeled by types
-  for which we cannot answer the habitation question.  These are called indeterminant transistions.
+   A DFA has transitions labeled by \emph{types}.
+\end{frame}
 
-  An indeterminant transition may be accessible or non-accessible.
+\begin{frame}{Indeterminant Transitions}
 
-  At run-time, given an object, we can always determine type membership.
+  \scalebox{0.8}{\input{fig-4}}
+  \begin{itemize}
 
-  Thus even DFAs with indeterminant transitions still match sequences in linear time.  
+  \item If we can determine that a type is uninhabited, we may eliminate the
+  transition and unreachable states.
+
+  \item Subtype question is unanswerable, so some transitions are \emph{indeterminant}.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Indeterminant Transitions}
+
+  \scalebox{0.8}{\input{fig-4}}
+  \begin{itemize}
+
+    \item At run-time, given an object, we can always determine type membership.
+
+    \item DFAs with indeterminant transitions nevertheless match sequences in linear time.  
+  \end{itemize}
 \end{frame}
 
 
 \begin{frame}{Uses of DFA}
   DFAs can be combined by an algebra.
 
-  \Eg., given two RTEs, we can \emph{intersect} their DFAs to create a
-  DFA which will recognize sequences which simultaneously match both
-  RTEs.
-
-  From a DFA we can generate an RTE  \code{Extract.dfaToRte(...)}.
-
-  Thus given two RTEs, we can generate an \emph{intersected} RTE with will match
-  sequence which simultaneously match both original RTEs.
-
-  In many cases we can determine whether the \emph{language} of an RTE (or DFA)
-  is inhabited or empty.
-
-  We can determine whether two RTEs are equivalent by computing the symmetric
-  difference of the to corresponding DFAs.  \Ie, are their any sequences in the
-  language of one RTE which are not in the language of the other?
+  \begin{itemize}
+  \item intersect RTE languages via intersecting the DFAs
+  \item determine equivalence (or subset-ness) of two RTEs
+  \item determine habitation and vacuity
+  \item extract RTE from DFA
+  \end{itemize}
 \end{frame}
