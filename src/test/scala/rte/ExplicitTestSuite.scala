@@ -28,6 +28,7 @@ import rte.RteImplicits._
 import genus.GenusImplicits._
 import rte.Rte.rteView
 import rte.Sigma.toDfa
+import xymbolyco.GraphViz.dfaView
 import xymbolyco.{Dfa, GraphViz}
 
 
@@ -94,6 +95,32 @@ class ExplicitTestSuite extends AdjFunSuite {
     rteView(rte5, "title rte5")
     assert(Some(42) == rte5.simulate(42, List(1, "a", 2, 3, 4, 5)))
     assert(None == rte5.simulate(42, List(1, "a", 2, 3, 4, 5, false)))
+
+  }
+  test("match 5"){
+    val data = Seq("integers", 100, 200, 300,
+                   "floats", 10.0, 20.0.toFloat,
+                   "floats",
+                   "integers", 1, 2, 3,
+                   "integers", -1, -3, -7, -8)
+    val F = SAtomic(classOf[Double]) | SAtomic(classOf[Float])
+    val I = SAtomic(classOf[Int])
+    val keyI = SEql("integers") // will be implicitly converted to Rte
+    val keyF = SEql("floats")   // will be implicitly converted to Rte
+
+    val re:Rte = ((keyI ++ I.*) | (keyF ++ F.*)).*
+
+    assert( (keyI ++ I.*).contains(Seq("integers", 100, 200, 300)))
+    assert( (keyI ++ I.*).contains(Seq("integers")))
+
+    assert( keyF.contains(Seq("floats")))
+
+    dfaView(re.toDfa(true), title="floats", dotFileCB=println, showSink=false)
+    assert( F.*.contains(Seq(1.1, 2.2, 3.3)))
+    assert( (keyF ++ F.*).contains(Seq("floats", 1.1, 2.2, 3.3)))
+    assert( (keyF ++ F.*).contains(Seq("floats")))
+
+    assert(re.contains(data))
 
   }
 }

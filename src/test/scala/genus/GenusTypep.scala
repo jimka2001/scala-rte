@@ -172,4 +172,9 @@ class GenusTypep extends AdjFunSuite {
     assert(! m_.typep(1) && ! m_.typep(2) && ! m_.typep(3))
     assert(m_.typep("test") && m_.typep(0))
   }
+  test("typep double"){
+    assert((1.1.getClass == classOf[Double]))
+    assert(SAtomic(classOf[Double]).typep(1.1))
+    assert(SAtomic(classOf[Float]).typep(1.1.toFloat))
+  }
 }

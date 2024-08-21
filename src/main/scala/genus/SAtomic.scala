@@ -74,6 +74,10 @@ case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {
         a.getClass == classOf[Integer]
       else if (ct == classOf[scala.Short])
         a.getClass == classOf[java.lang.Short]
+      else if (ct == classOf[Double])
+        a.getClass == classOf[java.lang.Double]
+      else if (ct == classOf[Float])
+        a.getClass == classOf[java.lang.Float]
       else
         false
     }
