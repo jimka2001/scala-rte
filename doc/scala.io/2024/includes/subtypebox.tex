@@ -1,0 +1,11 @@
+%% dont re-indent this file
+\begin{lstlisting}[style=scalaioScala]
+(A && B).subtypep(A || B)
+// returns Some(true)
+  
+SAtomic(classOf[String]).subtypep(SAtomic(classOf[Int]))
+// returns Some(false)
+  
+SSatisfies(primep).subtypep(SSatisfies(oddp))
+// returns None
+\end{lstlisting}

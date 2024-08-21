@@ -1,0 +1,12 @@
+
+\begin{lstlisting}[style=scalaioScala]
+abstact class SimpleTypeD {...}
+case class SNot(s: SimpleTypeD) extends SimpleTypeD {...}
+abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {...}
+case class SOr(override val tds: SimpleTypeD*) extends SCombination {...}
+case class SAnd(override val tds: SimpleTypeD*) extends SCombination {...}
+case class SAtomic(ct: Class[_]) extends SimpleTypeD with TerminalType {...}
+object SEmpty extends SimpleTypeD with TerminalType {...}
+object STop extends SimpleTypeD with TerminalType {...}
+case class SSatisfies(f: Any => Boolean, printable:String) extends SimpleTypeD with TerminalType {...}
+\end{lstlisting}

@@ -7,68 +7,35 @@
 \newsavebox\typecaseAbox
 \begin{lrbox}{\typecaseAbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  val N = SAtomic(classOf[Number])
-  val I = SAtomic(classOf[Int])
-
-  if (N & !I).typep(x)
-    Some(1)
-  else if I.typep(x)
-    Some(2)
-  else if (!N).typep(x)
-    Some(3)
-  else
-    None
-\end{lstlisting}
+    \input{typecaseAbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseITEbox
 \begin{lrbox}{\typecaseITEbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-[N & !I, Some(1),
-         [I, Some(2),
-             [!N, Some(3), None]]]
-\end{lstlisting}
+    \input{typecaseITEbox}
+  \end{minipage}
+\end{lrbox}
+
+\newsavebox\typecaseITEafterbox
+\begin{lrbox}{\typecaseITEafterbox}
+  \begin{minipage}{8cm}
+\input{typecaseITEafterbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseBabox
 \begin{lrbox}{\typecaseBabox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if ~~N.typep(x)~~ {
-    ... original code ...
-  } ~~ELSE~~ {
-    ... original code ...
-  }
-\end{lstlisting}
+\input{typecaseBabox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseBbox
 \begin{lrbox}{\typecaseBbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if (N & !I).typep(x)
-      Some(1)
-    else if I.typep(x)
-      Some(2)
-    else if (!N).typep(x)
-      Some(3)
-    else      None
-  } else {
-    if (N & !I).typep(x)
-      Some(1)
-    else if I.typep(x)
-      Some(2)
-    else if (!N).typep(x)
-      Some(3)
-    else      None
-  }
-\end{lstlisting}
+    \input{typecaseBbox}
   \end{minipage}
 \end{lrbox}
 
@@ -76,218 +43,70 @@
 \newsavebox\typecaseCbox
 \begin{lrbox}{\typecaseCbox}
   \begin{minipage}{6cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if (STop & !I).typep(x)
-      Some(1)
-    else if I.typep(x)
-      Some(2)
-    else if (!STop).typep(x)
-      Some(3)
-    else      None
-  } else {
-    if (SEmpty & !SEmpty).typep(x)
-      Some(1)
-    else if SEmpty.typep(x)
-      Some(2)
-    else if (!SEmpty).typep(x)
-      Some(3)
-    else None
-  }
-\end{lstlisting}
+\input{typecaseCbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseChbox
 \begin{lrbox}{\typecaseChbox}
   \begin{minipage}{6cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if (~~STop~~ & !I).typep(x)
-      Some(1)
-    else if I.typep(x)
-      Some(2)
-    else if (!~~STop~~).typep(x)
-      Some(3)
-    else      None
-  } else {
-    if (~~SEmpty~~ & !~~SEmpty~~).typep(x)
-      Some(1)
-    else if ~~SEmpty~~.typep(x)
-      Some(2)
-    else if (!~~SEmpty~~).typep(x)
-      Some(3)
-    else None
-  }
-\end{lstlisting}
+\input{typecaseChbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseDbox
 \begin{lrbox}{\typecaseDbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if (!I).typep(x)
-      Some(1)
-    else if I.typep(x)
-      Some(2)
-    else if SEmpty.typep(x)
-      Some(3)
-    else None
-  } else {
-    if SEmpty.typep(x)
-      Some(1)
-    else if SEmpty.typep(x)
-      Some(2)
-    else if STop.typep(x)
-      Some(3)
-    else None
-  }
-\end{lstlisting}
+    \input{typecaseDbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseDhbox
 \begin{lrbox}{\typecaseDhbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if (~~!I~~).typep(x)
-      Some(1)
-    else if I.typep(x)
-      Some(2)
-    else if ~~SEmpty~~.typep(x)
-      Some(3)
-    else None
-  } else {
-    if ~~SEmpty~~.typep(x)
-      Some(1)
-    else if SEmpty.typep(x)
-      Some(2)
-    else if ~~STop~~.typep(x)
-      Some(3)
-    else None
-  }
-\end{lstlisting}
+    \input{typecaseDhbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseEbox
 \begin{lrbox}{\typecaseEbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if (!I).typep(x)
-      Some(1)
-    else if I.typep(x)
-      Some(2)
-    else if false
-      Some(3)
-    else      None
-  } else {
-    if false
-      Some(1)
-    else if false
-      Some(2)
-    else if true
-      Some(3)
-    else      None
-  }
-\end{lstlisting}
+    \input{typecaseEbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseEhbox
 \begin{lrbox}{\typecaseEhbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if (!I).typep(x)
-      Some(1)
-    else if I.typep(x)
-      Some(2)
-    else if ~~FALSE~~
-      Some(3)
-    else      None
-  } else {
-    if false
-      Some(1)
-    else if ~~FALSE~~
-      Some(2)
-    else if ~~TRUE~~
-      Some(3)
-    else      None
-  }
-\end{lstlisting}
+    \input{typecaseEhbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseFbox
 \begin{lrbox}{\typecaseFbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if (!I).typep(x)
-      Some(1)
-    else if I.typep(x)
-      Some(2)
-    else      None
-  } else Some(3)
-\end{lstlisting}
+    \input{typecaseFbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseFhbox
 \begin{lrbox}{\typecaseFhbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if (!I).typep(x)
-      Some(1)
-    else if I.typep(x)
-      Some(2)
-    else ~~None~~
-  } else ~~Some(3)~~
-\end{lstlisting}
+    \input{typecaseFhbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseGabox
 \begin{lrbox}{\typecaseGabox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if ~~I.typep(x)~~ {
-      ... original code...
-    } ~~ELSE~~ {
-      ... original code...
-    }
-  } else Some(3)
-\end{lstlisting}
+\input{typecaseGabox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseGbox
 \begin{lrbox}{\typecaseGbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if I.typep(x) {
-      if (!I).typep(x)
-        Some(1)
-      else if I.typep(x)
-        Some(2)
-      else None
-    } else {
-      if (!I).typep(x)
-        Some(1)
-      else if I.typep(x)
-        Some(2)
-      else      None
-    }
-  } else Some(3)
-\end{lstlisting}
+    \input{typecaseGbox}
   \end{minipage}
 \end{lrbox}
 
@@ -295,152 +114,49 @@
 \newsavebox\typecaseHbox
 \begin{lrbox}{\typecaseHbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if I.typep(x) {
-      if (!STop).typep(x)
-        Some(1)
-      else if STop.typep(x)
-        Some(2)
-      else None
-    } else {
-      if (!SEmpty).typep(x)
-        Some(1)
-      else if SEmpty.typep(x)
-        Some(2)
-      else None
-    }
-  } else Some(3)
-\end{lstlisting}
+    \input{typecaseHbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseHhbox
 \begin{lrbox}{\typecaseHhbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if I.typep(x) {
-      if (!~~STop~~).typep(x)
-        Some(1)
-      else if ~~STop~~.typep(x)
-        Some(2)
-      else None
-    } else {
-      if (!~~SEmpty~~).typep(x)
-        Some(1)
-      else if ~~SEmpty~~.typep(x)
-        Some(2)
-      else None
-    }
-  } else Some(3)
-\end{lstlisting}
+    \input{typecaseHhbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseIbox
 \begin{lrbox}{\typecaseIbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if I.typep(x) {
-      if SEmpty.typep(x)
-        Some(1)
-      else if STop.typep(x)
-        Some(2)
-      else      None
-    } else {
-      if STop.typep(x)
-        Some(1)
-      else if SEmpty.typep(x)
-        Some(2)
-      else      None
-    }
-  } else Some(3)
-\end{lstlisting}
+    \input{typecaseIbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseIhbox
 \begin{lrbox}{\typecaseIhbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if I.typep(x) {
-      if ~~SEmpty~~.typep(x)
-        Some(1)
-      else if STop.typep(x)
-        Some(2)
-      else      None
-    } else {
-      if ~~STop~~.typep(x)
-        Some(1)
-      else if SEmpty.typep(x)
-        Some(2)
-      else      None
-    }
-  } else Some(3)
-\end{lstlisting}
+    \input{typecaseIhbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseJbox
 \begin{lrbox}{\typecaseJbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if I.typep(x) {
-      if false
-        Some(1)
-      else if true
-        Some(2)
-      else      None
-    } else {
-      if true
-        Some(1)
-      else if false
-        Some(2)
-      else      None
-    }
-  } else Some(3)
-\end{lstlisting}
+    \input{typecaseJbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseJhbox
 \begin{lrbox}{\typecaseJhbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if I.typep(x) {
-      if ~~FALSE~~
-        Some(1)
-      else if ~~TRUE~~
-        Some(2)
-      else      None
-    } else {
-      if true
-        Some(1)
-      else if ~~FALSE~~
-        Some(2)
-      else      None
-    }
-  } else Some(3)
-\end{lstlisting}
+    \input{typecaseJhbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\typecaseKbox
 \begin{lrbox}{\typecaseKbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if I.typep(x)
-      Some(2)
-    else
-      Some(1)
-  } else Some(3)
-\end{lstlisting}
+    \input{typecaseKbox}
   \end{minipage}
 \end{lrbox}
 
@@ -448,14 +164,7 @@
 \newsavebox\typecaseKhbox
 \begin{lrbox}{\typecaseKhbox}
   \begin{minipage}{8cm}
-\begin{lstlisting}[style=scalaioScala]
-  if N.typep(x) {
-    if I.typep(x)
-      ~~Some(2)~~
-    else
-      ~~Some(1)~~
-  } else Some(3)
-\end{lstlisting}
+    \input{typecaseKhbox}
   \end{minipage}
 \end{lrbox}
 
@@ -520,19 +229,18 @@
 
 
 
-\begin{frame}{Rewrite: 2}
-  In \code{if} part, replace supertypes of \code{N} with \code{STop}. 
-
-  In \code{else} part, replace subtypes of \code{N} with \code{SEmpty}
+\begin{frame}{Recognizing Subtypes}
+  \centering
 
   \begin{align*}
     Int&\subseteq Number\\
     Int&\subseteq Int
   \end{align*}
 
-  We need to be able to determine subtype/supertype relations.
+  \scalebox{0.8}{\input{tikz-number.tex}}
 
-  Failure to identify subtypes/supertypes will create \emph{correct} but \emph{inefficient} code.
+
+  Failure to identify subtypes/supertypes will lead to \emph{correct} but \emph{inefficient} code.
 \end{frame}
 
 
@@ -698,5 +406,19 @@
   And it is clear the the code never returns \code{None}.
 
 \end{frame}
+
+\begin{frame}{Decision Tree, Before and After}
+  Viewing the \code{if ... else ...} before and after as decision trees.
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseITEbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseITEafterbox
+    \end{column}
+  \end{columns}
+\end{frame}
+
 
 

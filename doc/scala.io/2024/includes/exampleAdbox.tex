@@ -1,0 +1,9 @@
+%% dont re-indent this file
+\begin{lstlisting}[style=scalaioScala]
+val F = SAtomic(classOf[Double]) | SAtomic(classOf[Float])
+val I = SAtomic(classOf[Int])
+val keyM = Singleton(SEql("C"))
+val keyC = Singleton(SEql("M"))
+
+val re:Rte = ((keyC ++ I.*) | (keyM ++ F.*)).*
+\end{lstlisting}

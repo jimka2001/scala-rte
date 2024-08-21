@@ -7,24 +7,10 @@
 \end{frame}
 
 
-\newsavebox\exnoteabbbox
-\begin{lrbox}{\exnoteabbbox}
-  \begin{minipage}{7cm}
-    \begin{lstlisting}[style=scalaioScala]
-    \end{lstlisting}
-  \end{minipage}
-\end{lrbox}
-
 \newsavebox\exnotebox
 \begin{lrbox}{\exnotebox}
   \begin{minipage}{7cm}
-    \begin{lstlisting}[style=scalaioScala]
-      val I = classOf[Int]
-      val S = classOf[String]
-      val B = classOf[Boolean]
-
-      I.* ++ (S | B).*
-    \end{lstlisting}
+    \input{exnotebox}
   \end{minipage}
 \end{lrbox}
 
@@ -51,20 +37,7 @@
 \newsavebox\leafbox
 \begin{lrbox}{\leafbox}
   \begin{minipage}{12cm}
-    \begin{lstlisting}[style=scalaioScala]
-    EmpySet   // empty set of sequences.
-    Sigma     // singleton sequences.
-    EmptyWord // empty sequences.
-
-    // singleton sequences of Int and of String
-    val Int:Rte = Singleton(classOf[Int])    
-    val Str:Rte = Singleton(classOf[String])
-
-    Int.contains(List(42))      // returns true
-    Int.contains(List("hello")) // returns false
-    Str.contains(List("hello")) // returns true
-    Str.contains(List())        // returns true
-    \end{lstlisting}
+    \input{leafbox}
   \end{minipage}
 \end{lrbox}
 
@@ -75,39 +48,23 @@
 \newsavebox\orbox
 \begin{lrbox}{\orbox}
   \begin{minipage}{12cm}
-    \begin{lstlisting}[style=scalaioScala]
-      val r1:Rte = Or(EmptyWord, Int, Str)
-      val re:Rte = EmptyWord | Int | Str
-      
-      re.contains(List(42)) // returns true
-      re.contains(List("hello")) // returns true
-      re.contains(List(42, "hello")) // returns false
-
-    \end{lstlisting}
+    \input{orbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\catbox
 \begin{lrbox}{\catbox}
   \begin{minipage}{12cm}
-    \begin{lstlisting}[style=scalaioScala]
-      val r1:Rte = EmptyWord | Int | str
-      val r2:Rte = Cat(Int, Str, r1)
-      val r2:Rte = Int ++ str ++ r1
-
-      r2.contains(List(42, "hello")) // returns true
-      r2.contains(List(42, "hello", 42)) // returns true
-      r2.contains(List("hello", 42)) // returns false
-    \end{lstlisting}
+    \input{catbox}
   \end{minipage}
 \end{lrbox}
 
 
-\begin{frame}{Or}{Recursive Union}
+\begin{frame}{Recursive}{Union, Or}
   \usebox\orbox
  \end{frame}
 
-\begin{frame}{Cat}{Recursive Concatenation}
+\begin{frame}{Recursive}{Concatenation}
   \usebox\catbox
  \end{frame}
 
@@ -116,22 +73,12 @@
 \newsavebox\starbox
 \begin{lrbox}{\starbox}
   \begin{minipage}{12cm}
-\begin{lstlisting}[style=scalaioScala]
-  val r3:Rte = Star(Int) // or Int.*
-  r3.contains(List(1,2,3,4,5)) // returns true
-
-  val r4:Rte = Star(Str) // or Str.*
-  r4.contains(List("a", "b", "c")) // returns true
-  r4.contains(List(1, "hello", 2, 3, "world") // return false
-
-  val r5:Rte = Star(Int | Str) 
-  r5.contains(List(1, "hello", 2, 3, "world") // return true
-\end{lstlisting}
+    \input{starbox}
   \end{minipage}
 \end{lrbox}
 
 
-\begin{frame}{Star}{Star Operator}
+\begin{frame}{Recursive}{Repetition, Star}
   \usebox\starbox
 \end{frame}
 
@@ -139,23 +86,11 @@
 \newsavebox\extendedbox
 \begin{lrbox}{\extendedbox}
   \begin{minipage}{12cm}
-\begin{lstlisting}[style=scalaioScala]
-  // set complement, sequences NOT matching re
-  !re 
-
-  // one or more
-  re.+ == re ++ re.*
-
-  // optional, zero or one
-  re.? == EmptyWord | re
-
-  // intersection, Demorgan's equality
-  r1 & r2 ==  !(!r1 | !r2)
-\end{lstlisting}
+  \input{extendedbox}
   \end{minipage}
 \end{lrbox}
 
-\begin{frame}{Extended RTEs}{Extented Rational Type Expressions}
+\begin{frame}{Extended RTEs}{Mostly Syntax Sugar}
   \usebox\extendedbox
 \end{frame}
 
@@ -163,60 +98,30 @@
 \newsavebox\exampleAbox
 \begin{lrbox}{\exampleAbox}
   \begin{minipage}{12cm}
-\begin{lstlisting}[style=scalaioScala]
-  val data = Seq("C", 100, 200, 300,
-                   "M", 10.0, 20.0,
-                   "M",
-                   "C", 1, 2, 3,
-                   "C", -1, -3, -7, -8)
-\end{lstlisting}
+    \input{exampleAbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\exampleAbbox
 \begin{lrbox}{\exampleAbbox}
   \begin{minipage}{12cm}
-\begin{lstlisting}[style=scalaioScala]
-  val data = Seq("C", 100, 200, 300,
-                   "M", 10.0, 20.0,
-                   "M",
-                   "C", 1, 2, 3,
-                   "C", -1, -3, -7, -8)
-
-  val F = SAtomic(classOf[Double]) | SAtomic(classOf[Float])
-  val I = SAtomic(classOf[Int])
-  val keyM = Singleton(SEql("M"))
-  val keyC = Singleton(SEql("C"))
-
-  val re:Rte = ((keyC ++ I.*) | (keyM ++ F.*)).*
-
-  re.contains(data) // returns true
-\end{lstlisting}
+    \input{exampleAbbox}
   \end{minipage}
 \end{lrbox}
 
 \newsavebox\exampleAcbox
 \begin{lrbox}{\exampleAcbox}
   \begin{minipage}{12cm}
-\begin{lstlisting}[style=scalaioScala]
-  val bad  = Seq("C", 100, 200, 300,
-                  "M", 10.0, 20.0,
-                  "M",
-                  "C", 1, ~~2.0~~, 3, // VIOLATES PATTERN
-                  "C", -1, -3, -7, -8)
-
-  val F = SAtomic(classOf[Double]) | SAtomic(classOf[Float])
-  val I = SAtomic(classOf[Int])
-  val keyM = Singleton(SEql("C"))
-  val keyC = Singleton(SEql("M"))
-
-  val re:Rte = ((keyC ++ I.*) | (keyM ++ F.*)).*
-
-  re.contains(~~bad~~) // returns false
-\end{lstlisting}
+    \input{exampleAcbox}
   \end{minipage}
 \end{lrbox}
 
+\newsavebox\exampleAdbox
+\begin{lrbox}{\exampleAdbox}
+  \begin{minipage}{12cm}
+    \input{exampleAdbox}
+  \end{minipage}
+\end{lrbox}
 
 
 \begin{frame}{Example}{An RTE to match}
@@ -237,12 +142,9 @@
   \usebox\exampleAcbox
 \end{frame}
 
-\begin{frame}{Example}{DFA, with sink state}
-  \includegraphics[width=0.9\textwidth]{example1.pdf}
-\end{frame}
-
-
-\begin{frame}{Example}{DFA, omitting sink state}
+\begin{frame}{Example}{DFA}
+  \usebox\exampleAdbox
+  
   \includegraphics[width=0.9\textwidth]{example2.pdf}
 \end{frame}
 
