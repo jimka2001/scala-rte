@@ -14,17 +14,23 @@
 \end{frame}
 
 \begin{frame}{SETS}{Simple Embedded Type System}
-  Type system which extends the built-in type system language (Scala, Python, Clojure)
 
-  Modeled after the Common Lisp Type system.
+  \scalebox{1.0}{\input{venn-simple.tex}}
 
-  Supports intersection, union, complement
-
-  Supports deterministic membership check and incomplete subtype check
-
+  \begin{itemize}
+  \item   Extends built-in type system of language (Scala, Python, Clojure)
+  \item   Modeled after the Common Lisp type system.
+  \item   Supports intersection, union, complement
+  \item   Supports deterministic \emph{membership check}
+  \item   Supports incomplete \emph{subtype check}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Genus}{Genus as Alebraic Data Type}
+  Types defined in terms of other genus types.
+
+  \bigskip
+  
   \begin{itemize}
   \item \code{SAnd} and \code{SOr}, union and intersection
   \item \code{SEmpty} and \code{STop}, empty and universal type
@@ -32,26 +38,71 @@
   \end{itemize}
 \end{frame}
 
+\newsavebox\adtbox
+\begin{lrbox}{\adtbox}
+  \begin{minipage}{11cm}
+    \input{adtbox}
+  \end{minipage}
+\end{lrbox}
+
+
+
+\begin{frame}{ADT}{quasi Algebraic Data Type}
+
+  \usebox\adtbox
+
+\end{frame}
+
 \begin{frame}{Genus}{Special Types}
+  Encapsulates built-in type system.
+
+  \bigskip
+  
   \begin{itemize}
-  \item \code{SAtomic} encapsulates built-in type \code{Class[\_]} \eg, \code{classOf[Int]}.
-  \item \code{SMember} and \code{SEql}, explicit types, encapsulates designated values
-  \item \code{SSatisfies} encapsulates any predicate: \code{Any => Boolean}.
+  \item \code{SAtomic} encapsulates built-in type \code{Class[\_]}\\
+    \eg, \code{SAtomic(classOf[Int])}.
+  \item \code{SMember} and \code{SEql}, explicit types, encapsulates designated values\\
+    \eg, \code{SEql("hello")}, \code{SMember(1,2,3)}
+  \item \code{SSatisfies} encapsulates any predicate: \code{Any => Boolean}\\
+    \eg, \code{SSatisfies(primep)}.
   \end{itemize}
 \end{frame}
 
 
+\newsavebox\membershipbox
+\begin{lrbox}{\membershipbox}
+  \begin{minipage}{11cm}
+    \input{membershipbox}
+  \end{minipage}
+\end{lrbox}
+
+\begin{frame}{Membership}
+  Type membership question is always answerable.
+
+  \usebox\membershipbox
+\end{frame}
+
+\newsavebox\subtypebox
+\begin{lrbox}{\subtypebox}
+  \begin{minipage}{11cm}
+\input{subtypebox}
+  \end{minipage}
+\end{lrbox}
+
+
+
 \begin{frame}{Subtype}
-  The question of type membership is always answerable.
 
-  The question of subtype is sometimes unanswerable. 
+  Subtype question sometimes unanswerable; \code{subtypep} returns \code{None}
 
-  The \code{subtypep} method returns \code{Option[Boolean]} with
-  \code{None} meaning that the subtype question could not be answered.
+  \usebox\subtypebox
+
+  Unanswerable because:
   \begin{itemize}
-  \item Unaswerable because impossible \eg \code{SSatisfies}
-  \item Unanswerable because code is necessarily incomplete.
-  \item Types may be created (by dynamically loaded JVM libraries) after DFA has been constructed.
+  \item Impossible to compute, \eg \code{SSatisfies}.
+  \item Code is incomplete.
+  \item JVM supports run-time loaded classes.
+  \item No dependable way of finding subtypes in JVM $> 8.x$.
   \end{itemize}
 
 \end{frame}
