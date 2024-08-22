@@ -175,6 +175,6 @@ class GenusTypep extends AdjFunSuite {
   test("typep double"){
     assert((1.1.getClass == classOf[Double]))
     assert(SAtomic(classOf[Double]).typep(1.1))
-    assert(SAtomic(classOf[Float]).typep(1.1.toFloat))
+    assert(SAtomic(classOf[Float]).typep(1.1F))
   }
 }
