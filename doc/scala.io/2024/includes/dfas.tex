@@ -20,29 +20,6 @@
    A DFA has transitions labeled by \emph{types}.
 \end{frame}
 
-\begin{frame}{Indeterminant Transitions}
-
-  \scalebox{0.8}{\input{fig-4}}
-  \begin{itemize}
-
-  \item If we can determine that a type is uninhabited, we may eliminate the
-  transition and unreachable states.
-
-  \item Subtype question is unanswerable, so some transitions are \emph{indeterminant}.
-  \end{itemize}
-\end{frame}
-
-
-\begin{frame}{Indeterminant Transitions}
-
-  \scalebox{0.8}{\input{fig-4}}
-  \begin{itemize}
-
-    \item At run-time, given an object, we can always determine type membership.
-
-    \item DFAs with indeterminant transitions nevertheless match sequences in linear time.  
-  \end{itemize}
-\end{frame}
 
 
 \begin{frame}{Uses of DFA}
