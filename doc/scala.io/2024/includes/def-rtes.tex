@@ -1,37 +1,12 @@
-\section{Regular Type Expressions}
-
-\begin{frame}{Regular Type Expressions}
-  \centering
-  
-  \includegraphics[width=0.9\textwidth]{regexp.png}
-\end{frame}
 
 
-\newsavebox\exnotebox
-\begin{lrbox}{\exnotebox}
-  \begin{minipage}{7cm}
-    \input{exnotebox}
-  \end{minipage}
-\end{lrbox}
+\begin{frame}{\code{Rte} class quasi-AST}
+  \scalebox{0.6}{\input{rte-ast}}
 
+  \medskip
 
-\begin{frame}{RTEs}{What are Regular Type Expressions?}
-  \begin{itemize}
-  \item A Regular Type Expression (RTE) is an \emph{expression} designating a set  of finite sequences.
-  \item Mathematical notation
-    \[Int^* \cdot (String \vee Boolean)^*\]
-  \item Scala notation\\
-    \usebox\exnotebox
-  \end{itemize}
-\end{frame}
+  Not an ADT for a \emph{silly} reason.  Scala does not support cross-file \code{sealed} classes.
 
-\begin{frame}{levels}{Three levels of RTE}
-  The set of all RTEs is recursively defined.
-  \begin{itemize}
-  \item leaf level
-  \item recursive
-  \item extended
-  \end{itemize}
 \end{frame}
 
 \newsavebox\leafbox
@@ -41,7 +16,7 @@
   \end{minipage}
 \end{lrbox}
 
-\begin{frame}{Leaf}
+\begin{frame}{\code{Rte} subclasses}{Terminal}
   \usebox\leafbox
 \end{frame}
 
@@ -52,6 +27,21 @@
   \end{minipage}
 \end{lrbox}
 
+\newsavebox\andbox
+\begin{lrbox}{\andbox}
+  \begin{minipage}{12cm}
+    \input{andbox}
+  \end{minipage}
+\end{lrbox}
+
+
+\begin{frame}{\code{Rte} subclasses}{Union, Or}
+  \usebox\orbox
+ \end{frame}
+
+
+
+
 \newsavebox\catbox
 \begin{lrbox}{\catbox}
   \begin{minipage}{12cm}
@@ -60,11 +50,7 @@
 \end{lrbox}
 
 
-\begin{frame}{Recursive}{Union, Or}
-  \usebox\orbox
- \end{frame}
-
-\begin{frame}{Recursive}{Concatenation}
+\begin{frame}{\code{Rte} subclasses}{Concatenation}
   \usebox\catbox
  \end{frame}
 
@@ -77,10 +63,27 @@
   \end{minipage}
 \end{lrbox}
 
+\newsavebox\notbox
+\begin{lrbox}{\notbox}
+  \begin{minipage}{12cm}
+    \input{notbox}
+  \end{minipage}
+\end{lrbox}
 
-\begin{frame}{Recursive}{Repetition, Star}
+
+\begin{frame}{\code{Rte} subclasses}{Repetition, Kleene Star}
   \usebox\starbox
 \end{frame}
+
+\begin{frame}{\code{Rte} subclasses}{Inversion, Not}
+  \usebox\notbox
+
+  Matches any sequence other than what is matched by a given \code{re}.
+\end{frame}
+
+\begin{frame}{\code{Rte} subclasses}{Intersection, And}
+  \usebox\andbox
+ \end{frame}
 
 
 \newsavebox\extendedbox
@@ -95,56 +98,6 @@
 \end{frame}
 
 
-\newsavebox\exampleAbox
-\begin{lrbox}{\exampleAbox}
-  \begin{minipage}{12cm}
-    \input{exampleAbox}
-  \end{minipage}
-\end{lrbox}
-
-\newsavebox\exampleAbbox
-\begin{lrbox}{\exampleAbbox}
-  \begin{minipage}{12cm}
-    \input{exampleAbbox}
-  \end{minipage}
-\end{lrbox}
-
-\newsavebox\exampleAcbox
-\begin{lrbox}{\exampleAcbox}
-  \begin{minipage}{12cm}
-    \input{exampleAcbox}
-  \end{minipage}
-\end{lrbox}
-
-\newsavebox\exampleAdbox
-\begin{lrbox}{\exampleAdbox}
-  \begin{minipage}{12cm}
-    \input{exampleAdbox}
-  \end{minipage}
-\end{lrbox}
 
 
-\begin{frame}{Example}{An RTE to match}
-  \usebox\exampleAbox
-
-  \begin{itemize}
-  \item Keyword strings \code{"C"} and \code{"M"}
-  \item \code{"C"} followed by zero or more \code{Int} values
-  \item \code{"M"} followed by zero or more values, \code{Double} or \code{Float}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Example}{Successful match}
-  \usebox\exampleAbbox
-\end{frame}
-
-\begin{frame}{Example}{Does not match}
-  \usebox\exampleAcbox
-\end{frame}
-
-\begin{frame}{Example}{DFA}
-  \usebox\exampleAdbox
-  
-  \includegraphics[width=0.9\textwidth]{example2.pdf}
-\end{frame}
 

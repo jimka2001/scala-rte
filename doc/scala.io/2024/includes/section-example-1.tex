@@ -1,0 +1,58 @@
+\newsavebox\exampleAbox
+\begin{lrbox}{\exampleAbox}
+  \begin{minipage}{12cm}
+    \input{exampleAbox}
+  \end{minipage}
+\end{lrbox}
+
+
+
+\begin{frame}{Example 1}{An RTE to match}
+  \usebox\exampleAbox
+
+  \begin{itemize}
+  \item Keyword strings \code{"C"} (counts) and \code{"M"} (measurements)
+  \item \code{"C"} followed by zero or more \code{Int} values
+  \item \code{"M"} followed by zero or more values, \code{Double} or \code{Float}
+  \end{itemize}
+\end{frame}
+
+\newsavebox\exampleAbbox
+\begin{lrbox}{\exampleAbbox}
+  \begin{minipage}{12cm}
+    \input{exampleAbbox}
+  \end{minipage}
+\end{lrbox}
+
+
+
+\begin{frame}{Example 1}{Successful match}
+  \usebox\exampleAbbox
+\end{frame}
+
+\newsavebox\exampleAcbox
+\begin{lrbox}{\exampleAcbox}
+  \begin{minipage}{12cm}
+    \input{exampleAcbox}
+  \end{minipage}
+\end{lrbox}
+
+
+
+\begin{frame}{Example 1}{Does not match}
+  \usebox\exampleAcbox
+\end{frame}
+
+\newsavebox\exampleAdbox
+\begin{lrbox}{\exampleAdbox}
+  \begin{minipage}{12cm}
+    \input{exampleAdbox}
+  \end{minipage}
+\end{lrbox}
+
+
+\begin{frame}{Example 1}{DFA}
+  \usebox\exampleAdbox
+  
+  \includegraphics[width=0.9\textwidth]{example2.pdf}
+\end{frame}

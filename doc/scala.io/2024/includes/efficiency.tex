@@ -233,6 +233,23 @@
 
 
 
+
+\begin{frame}{Rewrite: 2}
+  In \code{if} part, replace supertypes of \code{N} with \code{STop}. 
+  
+  In \code{else} part, replace subtypes of \code{N} with \code{SEmpty}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseBbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \usebox\typecaseChbox
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+
 \begin{frame}{Recognizing Subtypes}
   \centering
 
@@ -247,22 +264,6 @@
   Failure to identify subtypes/supertypes will lead to \emph{correct} but \emph{inefficient} code.
 \end{frame}
 
-
-
-\begin{frame}{Rewrite: 2}
-  In \code{if} part, replace supertypes of \code{N} with \code{STop}.  $Int\subset Number$
-  
-  In \code{else} part, replace subtypes of \code{N} with \code{SEmpty}
-
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \usebox\typecaseBbox
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseChbox
-    \end{column}    
-  \end{columns}
-\end{frame}
 
 
 

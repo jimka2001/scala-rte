@@ -1,14 +1,8 @@
 %% dont re-indent this file
 \begin{lstlisting}[style=scalaioScala]
-// set complement, sequences NOT matching re
-!re 
-
 // one or more
 re.+ == re ++ re.*
 
 // optional, zero or one
 re.? == EmptyWord | re
-
-// intersection, Demorgan's equality
-r1 & r2 ==  !(!r1 | !r2)
 \end{lstlisting}
