@@ -1,0 +1,89 @@
+\section{Determinism}
+
+% Int and Int (classic case)
+\begin{frame}{Classic Non-determinism}
+  \scalebox{0.8}{\input{fig-nfa}}
+
+  Classic \emph{non-determinism}: state with two exiting transitions with same label.
+
+\end{frame}
+
+\begin{frame}{Non-determinism by subtype}
+  \begin{columns}
+    \begin{column}{0.4\textwidth}
+      \centering
+
+    \begin{align*}
+    Int&\subseteq Number\\
+    Int &\cap Number \neq \emptyset
+  \end{align*}
+  \scalebox{0.8}{\input{tikz-int-double.tex}}
+    \end{column}%
+    \begin{column}{0.6\textwidth}
+      \only<1>{\scalebox{0.65}{\input{fig-nfa-subtype}}}%
+      \only<2>{\scalebox{0.65}{\input{fig-nfa-subtype-disjoint}}}%
+      \only<3>{\scalebox{0.65}{\input{fig-nfa-subtype-disjoint-simple}}}%
+      \only<4>{\scalebox{0.65}{\input{fig-nfa-subtype-simple}}}%
+    \end{column}
+
+  \end{columns}
+  \only<3-4>{We can \emph{decide} that state \nodecirc{3} is unreachable.}
+\end{frame}
+
+
+
+\newsavebox\oddbox
+\begin{lrbox}{\oddbox}
+  \begin{minipage}{11cm}
+    \input{codeOddp}
+  \end{minipage}
+\end{lrbox}
+
+\begin{frame}{Definition of Odd type}
+  \usebox\oddbox
+\end{frame}
+
+
+% Int and Number and Odd
+% Partition into Int & Odd, Int & !Odd, !Int & Odd, !Int & !Odd
+% We know Int & Odd = Odd
+%         !Int & Odd = empty
+%         !Int & !Odd = !Int
+
+\begin{frame}{Non-determinism by \code{SSatisfies}}
+  \begin{columns}
+    \begin{column}{0.35\textwidth}
+      \centering
+      
+      \begin{align*}
+        Int&\subseteq Number\\
+        Odd&\subseteq Int &\text{unknown}\\
+        Odd&~\cap~ !Int = \emptyset &\text{unknown}
+      \end{align*}
+      \scalebox{0.8}{\input{tikz-int-odd.tex}}
+    \end{column}%
+    \begin{column}{0.7\textwidth}
+      \only<1>{\scalebox{0.6}{\input{fig-nfa-satisfies}}}%
+      \only<2>{\scalebox{0.6}{\input{fig-nfa-satisfies-intersections}}}%
+      \only<3>{\scalebox{0.6}{\input{fig-nfa-satisfies-intersections-simple}}}%
+    \end{column}
+  \end{columns}
+  \only<3>{States \nodecirc{4} and \nodecirc{6} are unreachable, but we cannot \emph{decide} this \emph{unsatisfiability}.}
+
+\end{frame}
+
+
+
+
+% Double and Odd + Double and Even
+
+
+% classes A and B
+% if A and B are final, then they are disjoint
+% if A and B are abstract, there MIGHT be a common subclass
+% if A and B are in a subtype relation, then either A &! B or B & !A is empty
+
+
+\begin{frame}
+  
+\end{frame}
