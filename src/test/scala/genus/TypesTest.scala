@@ -281,6 +281,18 @@ class TypesTest extends AdjFunSuite {
       }
     }
     val sodd = SSatisfies(oddp , "odd")
+    assert(sodd.typep(7) == true)
+    assert(sodd.typep(6) == false)
+    assert(sodd.typep(7.0) == false)
+    assert(sodd.typep("hello") == false)
+
+    assert(sodd.subtypep(SAtomic(classOf[Int])) == None)
+    assert(SAtomic(classOf[Int]).subtypep(sodd) == None)
+    assert(sodd.subtypep(STop) == Some(true))
+    assert(SEmpty.subtypep(sodd) == Some(true))
+
+    assert(SAtomic(classOf[Int]).subtypep(SAtomic(classOf[Number])) == Some(true))
+
     for {(a: SimpleTypeD, b: SimpleTypeD, lt: Option[Boolean], gt: Option[Boolean], eq: Option[Boolean]) <-
            Seq((t1, t1, Some(true), Some(true), Some(true)),
                // A < B = None    B < A = None
