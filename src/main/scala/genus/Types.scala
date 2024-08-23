@@ -91,10 +91,12 @@ object Types {
     case _ => false
   }
 
-  // Given a set of type designators, return a newly computed Seq of triples:
-  //    (td:SimpleTypeD,factors:List[SimpleTypeD],disjoints:List[SimpleTypeD])
+  // Given a set of type designators, return a newly computed Map which denotes a Seq of triples:
+  //    (td:SimpleTypeD,factors:Set[SimpleTypeD],disjoints:Set[SimpleTypeD])
+  //    The return value is a Map whose keys are the values of td:SimpleTypeD
+  //         and the value of a key is a 2-tuple of (factors,disjoints)
   // indicating type designators which implement the Maximal Disjoint Type Decomposition.
-  // I.e., the computed list (the list of all the td components) designates a set all of whose
+  // I.e., the computed list (the list of all the td components) designates a set, all of whose
   // elements are mutually disjoint.
   // Two values of td, i.e., x and y, have the property that if x and y
   // are disjoint, and if z in in the given set, tds, of type designators
