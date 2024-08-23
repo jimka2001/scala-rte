@@ -27,7 +27,7 @@ import adjuvant.Adjuvant.eql
 
 import scala.annotation.tailrec
 
-abstract class SLiteral(val xs:Vector[(SimpleTypeD,Any)]) extends SimpleTypeD {
+abstract class SLiteral(val xs:Vector[(SimpleTypeD,Any)]) extends STerminal {
   override def toMachineReadable():String = xs.mkString("SMember(", ",", ")")
 
   override def typep(a: Any): Boolean = xs.exists{case (td,b) => td.typep(a) && a == b}

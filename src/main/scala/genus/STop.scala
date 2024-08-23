@@ -3,7 +3,7 @@ package genus
 ;
 
 /** The super type, super type of all types. */
-object STop extends SimpleTypeD with TerminalType {
+object STop extends STerminal {
   override def toString = "STop"
 
   override def toLaTeX(): String = "\\Sigma"

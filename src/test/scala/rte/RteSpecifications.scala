@@ -30,7 +30,7 @@ object RteSpecifications {
   val depthSimpleTypeD = 1  // depth of the rte found as child of singleton
   val childLimit = 5        // limit to the number of child of an internal node
 
-  // Generate a TerminalType as a leaf of the Rte
+  // Generate a STerminal as a leaf of the Rte
   def genLeaf = {
     // Choose between one of the 6 terminal types
     Gen.frequency(
@@ -83,7 +83,7 @@ object RteSpecifications {
     case t: Combination => {
       var s: LazyList[Rte] = EmptySet #:: Sigma #:: LazyList.empty
 
-      // If 1 child and is TerminalType, put the child in stream
+      // If 1 child and is STerminal, put the child in stream
       if (t.operands.size == 1) t.operands(0) #:: s else {
 
         // Append to the stream the Rte with 1 child removed at each iteration
@@ -103,7 +103,7 @@ object RteSpecifications {
     case t: Cat => {
       var s: LazyList[Rte] = EmptySet #:: Sigma #:: LazyList.empty
 
-      // If 1 child and is TerminalType, put the child in stream
+      // If 1 child and is STerminal, put the child in stream
       if (t.operands.size == 1) t.operands(0) #:: s else {
 
         // Append to the stream the Rte with 1 child removed at each iteration

@@ -339,8 +339,8 @@ class GenusCanonicalize extends AdjFunSuite {
     import NormalForm._
     def baseCase(td:SimpleTypeD):Boolean = {
       td match {
-        case _:TerminalType => true
-        case SNot(_:TerminalType) => true
+        case _:STerminal => true
+        case SNot(_:STerminal) => true
         case _ => false
       }
     }

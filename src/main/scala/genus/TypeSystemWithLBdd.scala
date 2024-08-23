@@ -31,7 +31,7 @@ import scala.util.DynamicVariable
 
 object TypeSystemWithLBdd {
 
-  type TYPE_HASH = scala.collection.mutable.Map[TerminalType, Int]
+  type TYPE_HASH = scala.collection.mutable.Map[STerminal, Int]
   val maybeHash = new DynamicVariable[Option[TYPE_HASH]](None)
   val numAllocations = new DynamicVariable[Int](0)
 
@@ -40,7 +40,7 @@ object TypeSystemWithLBdd {
 
     //import scala.collection.JavaConverters._
     import scala.jdk.CollectionConverters._
-    new WeakValueHashMap[TerminalType, Int].asScala
+    new WeakValueHashMap[STerminal, Int].asScala
   }
 
   def withNewTypeHash[A](code: => A): A = {
@@ -59,7 +59,7 @@ object TypeSystemWithLBdd {
     * @param at the atomic type from which we want to create a LBdd
     * @return the created LBdd
     */
-  protected def typeAsLBdd[T <: TerminalType](at: T): LBdd = {
+  protected def typeAsLBdd[T <: STerminal](at: T): LBdd = {
     maybeHash.value match {
       case None => sys.error("typeAsLBdd: Called outside dynamic extent of withNewTypeHash(...)")
       case Some(hash) =>

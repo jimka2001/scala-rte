@@ -28,7 +28,7 @@ import genus.Types.cmpTypeDesignators
  *
  * @param a the object defining the type
  */
-case class SEql(a: (SimpleTypeD,Any)) extends SLiteral(Vector(a)) with TerminalType {
+case class SEql(a: (SimpleTypeD,Any)) extends SLiteral(Vector(a)) {
 
   override def toString: String = {
     s"SEql(${a._2} /* " +

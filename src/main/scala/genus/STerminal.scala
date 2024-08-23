@@ -21,7 +21,9 @@
 
 package genus
 
-/** Trait representing types that have to be stored in the HashMap in the
- * LBdd representation.
- */
-trait TerminalType
+/**
+  * Abstract class grouping all subclasses of SimpleTypeD
+  * which do not encapsulate another SimpleTypeD
+  */
+abstract class STerminal extends SimpleTypeD
+

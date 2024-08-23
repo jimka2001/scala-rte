@@ -45,7 +45,7 @@ case class GenusBdd(td:SimpleTypeD,tdToInt:mutable.Map[SimpleTypeD,Int]) {
     td match {
       case SEmpty => BddFalse
       case STop => BddTrue
-      case _:TerminalType => Bdd(tdToInt.getOrElseUpdate(td.canonicalize(), tdToInt.size + 1))
+      case _:STerminal => Bdd(tdToInt.getOrElseUpdate(td.canonicalize(), tdToInt.size + 1))
       case SNot(td) => Not(toBdd(td))
       case SAnd(tds@_*) => And(tds.map(toBdd): _*)
       case SOr(tds@_*) => Or(tds.map(toBdd): _*)

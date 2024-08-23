@@ -37,7 +37,7 @@ object GenusSpecifications {
     } yield (predicate(anyval, b = true), s"$anyval => true")
   }
 
-  // Generate a TerminalType as a leaf of the SimpleTypeD
+  // Generate a STerminal as a leaf of the SimpleTypeD
   def genLeaf: Gen[SimpleTypeD] = {
     Gen.lzy {
       // Choose between one of the 6 terminal types
@@ -95,7 +95,7 @@ object GenusSpecifications {
     case t: SCombination =>
       var s: LazyList[SimpleTypeD] = SEmpty #:: STop #:: LazyList.empty
 
-      // If 1 child and is TerminalType, put the child in stream
+      // If 1 child and is STerminal, put the child in stream
       if (t.tds.size == 1) t.tds(0) #:: s else {
 
         // Append to the stream the SimpleTypeD with 1 child removed at each iteration

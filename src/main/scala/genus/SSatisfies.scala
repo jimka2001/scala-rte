@@ -25,7 +25,7 @@ package genus
  *
  * @param f a function taking an object Any and returning a Boolean defining the type
  */
-case class SSatisfies(f   : Any => Boolean, printable:String) extends SimpleTypeD with TerminalType {
+case class SSatisfies(f   : Any => Boolean, printable:String) extends STerminal {
   override def typep(a: Any): Boolean = f(a)
 
   override def toString: String = printable + "?"

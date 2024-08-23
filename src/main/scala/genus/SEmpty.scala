@@ -23,7 +23,7 @@
 package genus
 
 /** The empty type, subtype of all types. */
-object SEmpty extends SimpleTypeD with TerminalType {
+object SEmpty extends STerminal {
   override def toString = "SEmpty"
   override def toDot():String = "SEmpty"
   override def toLaTeX():String = "\\emptyset"
