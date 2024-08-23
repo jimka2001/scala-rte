@@ -129,19 +129,19 @@
       \only<4>{\scalebox{0.8}{\input{fig-G-E}}}%
       \only<5>{\scalebox{0.8}{\input{fig-E-F}}}%
 
-  \only<1>{\[\textcolor{blue}{A\cap B = \emptyset}\] Both are \code{final}; they have no common \emph{inhabited} subclass.}%
-  \only<2>{\[\textcolor{blue}{C\cap D = unknown}\] We do not know whether some class inherits from both.}%
-  \only<3>{\[\textcolor{blue}{C\cap D = unknown}\] JVM might run-time load another library which creates a common subclass of \code{C} and \code{D}}
-  \only<4>{\[\textcolor{blue}{G\subset E}\] Explicit subtype relation.}
-  \only<5>{\[\textcolor{blue}{E\cap F \neq \emptyset}\] \code{G} inherits from \code{E} and \code{F}.
+  \only<1>{{\LARGE \[\textcolor{blue}{A\cap B = \emptyset}\]} Both are \code{final}; they have no common \emph{inhabited} subclass.}%
+  \only<2>{{\LARGE \[\textcolor{blue}{C\cap D = unknown}\]} We do not know whether some class inherits from both.}%
+  \only<3>{{\LARGE \[\textcolor{blue}{C\cap D = unknown}\]} JVM might run-time load another library which creates a common subclass of \code{C} and \code{D}}
+  \only<4>{{\LARGE \[\textcolor{blue}{G\subset E}\]} Explicit subtype relation.}
+  \only<5>{{\LARGE \[\textcolor{blue}{E\cap F \neq \emptyset}\]} \code{G} inherits from \code{E} and \code{F}.
 
     \medskip
     
-    However, after Java 8, we cannot compute subclasses.
+    Java $>8.x$, cannot compute subclasses.
 
     \medskip
     
-    The library \url{github.com/ronmamo/reflections} is no longer maintained.}
+    \url{github.com/ronmamo/reflections} no longer maintained.}
 
     \end{column}%
   \end{columns}
