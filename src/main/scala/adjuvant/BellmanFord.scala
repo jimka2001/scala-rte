@@ -41,12 +41,13 @@ object BellmanFord {
           Map(source -> source))
   }
 
+  // returns a path ordered from the source to v.
   def reconstructPath[V](pred: Map[V, V], v: V): List[V] = {
     def recur(path: List[V]): List[V] = {
       path match {
         case Nil => throw new Error(s"empty path not supported")
-        case v :: _ if v == pred(v) => path.reverse
-        case v :: _ => pred(v) :: path
+        case v :: _ if v == pred(v) => path
+        case v :: _ => recur(pred(v) :: path)
       }
     }
 
