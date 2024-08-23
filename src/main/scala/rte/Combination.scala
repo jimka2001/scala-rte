@@ -145,16 +145,16 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     // And(<{1,2,3,4}>,<{4,5,6,7}>,Not(<{10,11,12,13}>,Not(<{12,13,14,15}>)))
     //   --> And(<{3,4}>,Not(<{10,11,12,13,14,15}>))
     val members = operands.collect{
-      case s@Singleton(_:SMemberImpl) => s
+      case s@Singleton(_:SLiteral) => s
     }
     val notMembers = operands.collect{
-      case s@Not(Singleton(_:SMemberImpl)) => s
+      case s@Not(Singleton(_:SLiteral)) => s
     }
     if (members.size <= 1 && notMembers.size <= 1)
       this
     else{
       val newMember:Rte = members
-        .collect{case Singleton(mi:SMemberImpl) => mi.xs }
+        .collect{case Singleton(mi:SLiteral) => mi.xs }
         .reduceOption(setOperation) match {
         case None => one
         case Some(pairs:Seq[_]) => {
@@ -166,7 +166,7 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
         }
       }
       val newNotMember:Rte = notMembers
-        .collect{case Not(Singleton(mi:SMemberImpl)) => mi.xs }
+        .collect{case Not(Singleton(mi:SLiteral)) => mi.xs }
         .reduceOption(setDualOperation) match {
         case None => one
         case Some(pairs:Seq[_]) => {
@@ -181,8 +181,8 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
       //   this is accomplished by replacing every SMember/SEql with the one we derive here
       //   and then use uniquify to remove duplicates without changing order.
       create(uniquify(operands.map{
-        case Singleton(_:SMemberImpl) => newMember
-        case Not(Singleton(_:SMemberImpl)) => newNotMember
+        case Singleton(_:SLiteral) => newMember
+        case Not(Singleton(_:SLiteral)) => newNotMember
         case r => r
       }))
     }
@@ -235,9 +235,9 @@ abstract class Combination(val operands:Seq[Rte]) extends Rte {
     //  {...} deleting elements, x, for which SOr(X,SNot(Y)).typep(x) is true
 
     operands.collectFirst {
-      case s@Singleton(_: SMemberImpl) => s
+      case s@Singleton(_: SLiteral) => s
     } match {
-      case Some(s@Singleton(m: SMemberImpl)) =>
+      case Some(s@Singleton(m: SLiteral)) =>
         val singletonRtes = searchReplace(operands, s, Seq()).collect {
           case s:Singleton => s
           case n@Not(Singleton(_)) => n

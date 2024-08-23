@@ -76,7 +76,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
       Some(false)
     } else if (tds.size > 1 && tds.forall{
       case SNot(SAtomic(_)) => true
-      case SNot(_:SMemberImpl) => true
+      case SNot(_:SLiteral) => true
       case SAtomic(_) => true
       case _ => false
     } && numNonInterface <= 1 ) {
@@ -163,7 +163,7 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     // SAnd(SMember(42,43,44), A, B, C)
     //  ==> SMember(42,44)
     tds.find(memberp) match {
-      case Some(m:SMemberImpl) =>
+      case Some(m:SLiteral) =>
         createMemberFromPairs(m.xs.filter { case (_: SimpleTypeD, b: Any) => typep(b) })
       case _ => this
     }

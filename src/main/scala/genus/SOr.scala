@@ -103,8 +103,8 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
 
     // SOr(SNot(SMember(42,43,44,"a","b")), String)
     //  ==> SNot(SMember(42,43,44))
-    tds.collectFirst{case SNot(m:SMemberImpl) => m} match {
-      case Some(m:SMemberImpl) =>
+    tds.collectFirst{case SNot(m:SLiteral) => m} match {
+      case Some(m:SLiteral) =>
         def f(pair:(SimpleTypeD,Any)):Boolean = typep(pair._2)
         SNot(createMemberFromPairs(m.xs.filterNot(f)))
       case _ => this

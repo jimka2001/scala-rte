@@ -29,7 +29,7 @@ import genus.Types.createMember
  *
  * @param xs var-arg, the members of the type
  */
-case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SMemberImpl(xs) with TerminalType {
+case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SLiteral(xs) with TerminalType {
   override def toString: String = xs.map {
     case (td: SAtomic, a: Any) => a.toString + " /* " + td.shortTypeName() + "*/"
     case (_, a: Any) => a.toString + " /* ??? */"

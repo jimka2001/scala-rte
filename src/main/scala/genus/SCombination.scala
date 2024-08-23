@@ -256,18 +256,18 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     //   --> SOr(x,!{-1,1,2,3,4})   // union of non-member
 
     val notMembers = tds.collect{
-      case nc@SNot(_:SMemberImpl)  => nc
+      case nc@SNot(_:SLiteral)  => nc
     }
     if (notMembers.size <= 1)
       this
     else {
       val newNotMember = SNot(createMemberFromPairs(notMembers.map {
-        case SNot(td:SMemberImpl) => td.xs
+        case SNot(td:SLiteral) => td.xs
         case _ => throw new Exception("scalac is not smart enough to know this will never happen")
       }.reduce(dualCombinator[(SimpleTypeD,Any)])))
 
       create(uniquify(tds.map{
-        case SNot(_:SMemberImpl) => newNotMember
+        case SNot(_:SLiteral) => newNotMember
         case td => td
       }))
     }
@@ -278,7 +278,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     // (and (member 1 2 3) (member 2 3 4 5)) --> (member 2 3)
 
     val members = tds.collect{
-      case m:SMemberImpl => m
+      case m:SLiteral => m
     }
     if (members.size <= 1)
       this
@@ -286,7 +286,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       val newMember = createMemberFromPairs(members.map(_.xs).reduce(combinator[(SimpleTypeD, Any)]))
 
       create(uniquify(tds.map{
-        case _:SMemberImpl => newMember
+        case _:SLiteral => newMember
         case td => td
       }))
     }
@@ -299,10 +299,10 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       xs.filter(x => !ys.contains(x))
     }
     val member = tds.collectFirst {
-      case m: SMemberImpl => m
+      case m: SLiteral => m
     }
     val notMember = tds.collectFirst {
-      case SNot(m: SMemberImpl) => m
+      case SNot(m: SLiteral) => m
     }
     // Here we have a case for SAnd and SOr,
     //   ideally it should be treated in an OO way, but I'm
@@ -312,8 +312,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         //    SAnd({1,2,3,a},SNot({1,2,3,b})
         // --> SAnd({a}                    )
         create(tds.flatMap {
-          case SNot(n2: SMemberImpl) if eql(n2.xs, n.xs) => Seq()
-          case m2:SMemberImpl if m2 == m=>
+          case SNot(n2: SLiteral) if eql(n2.xs, n.xs) => Seq()
+          case m2:SLiteral if m2 == m=>
             Seq(createMemberFromPairs(diffPairs(m.xs,n.xs)))
           case td => Seq(td)
         })
@@ -321,8 +321,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
         //    SOr({1,2,3,a},SNot({1,2,3,b})
         // --> SOr(        ,SNot({b})
         create(tds.flatMap {
-          case m2: SMemberImpl if eql(m2,m) => Seq()
-          case SNot(n2: SMemberImpl) if n2 == n =>
+          case m2: SLiteral if eql(m2,m) => Seq()
+          case SNot(n2: SLiteral) if n2 == n =>
             Seq(SNot(createMemberFromPairs(diffPairs(n.xs,m.xs))))
           case td => Seq(td)
         })
@@ -337,8 +337,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
     // (and Double (not (member 1.0 2.0 "a" "b"))) --> (and Double (not (member 1.0 2.0)))
 
     val fewer: Seq[SimpleTypeD] = tds.flatMap {
-      case _: SMemberImpl => Seq()
-      case SNot(_: SMemberImpl) => Seq()
+      case _: SLiteral => Seq()
+      case SNot(_: SLiteral) => Seq()
       case td => Seq(td)
     }
     // stricter in the case of SOr, but laxer in the case of SAnd
@@ -347,8 +347,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
       stricter.typep(pair._2)
     }
     val newargs = tds.map {
-      case m: SMemberImpl => createMemberFromPairs(comboFilter(m.xs, f))
-      case SNot(m: SMemberImpl) => SNot(createMemberFromPairs(comboFilter(m.xs, f)))
+      case m: SLiteral => createMemberFromPairs(comboFilter(m.xs, f))
+      case SNot(m: SLiteral) => SNot(createMemberFromPairs(comboFilter(m.xs, f)))
       case td => td
     }
     create(newargs)
