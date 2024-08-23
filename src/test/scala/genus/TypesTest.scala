@@ -33,8 +33,8 @@ import genus.GenusImplicits
 import scala.language.implicitConversions
 
 class TypesTest extends AdjFunSuite {
-  val SInt = SSatisfies(Types.intp,"Int")
-  val SDouble = SSatisfies(Types.doublep,"Double")
+  val SInt = SSatisfies(Types.intp,"SInt")
+  val SDouble = SSatisfies(Types.doublep,"SDouble")
 
   test("isPrime"){
     val primes = Set(2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
@@ -228,31 +228,39 @@ class TypesTest extends AdjFunSuite {
          } triangle_inequality(t1,t2,t3)
   }
   test("mdtd") {
-    // Set(String, Int?, [= -1], [= 1])
     val str = SAtomic(classOf[String])
+    val int = SAtomic(classOf[Int])
     val m = mdtd(Set(str,
-                     SInt,
+                     int,
                      SEql(-1),
                      SEql(1)))
 
-    val expected = Map(SAnd(str, SInt) ->
-                         (Set(SNot(SEql(1)), SNot(SEql(-1)), SInt, str, STop),
-                           Set(SEql(1), SEql(-1), SNot(SInt), SNot(str), SEmpty)),
-                       SAnd(str, SNot(SInt)) ->
-                         (Set(SNot(SEql(1)), SNot(SEql(-1)), SNot(SInt), str, STop),
-                           Set(SEql(1), SEql(-1), SInt, SNot(str), SEmpty)),
-                       SEql(-1) ->
-                         (Set(SNot(SEql(1)), SEql(-1), SInt, SNot(str), STop),
-                           Set(SEql(1), SNot(SEql(-1)), SNot(SInt), str, SEmpty)),
-                       SEql(1) ->
-                         (Set(SEql(1), SNot(SEql(-1)), SInt, SNot(str), STop),
-                           Set(SNot(SEql(1)), SEql(-1), SNot(SInt), str, SEmpty)),
-                       SAnd(SInt, SNot(str), SNot(SMember(-1, 1))) ->
-                         (Set(SNot(SEql(1)), SNot(SEql(-1)), SInt, !str, STop),
-                           Set(SEql(1), SEql(-1), SNot(SInt), str, SEmpty)),
-                       SAnd(SNot(str), SNot(SInt)) ->
-                         (Set(!SEql(1), SNot(SEql(-1)), SNot(SInt), SNot(str), STop),
-                           Set(SEql(1), SEql(-1), SInt, str, SEmpty)))
+    // the set of keys of m are all mutually disjoint types (SimpleTypeD)
+    //   whose union in the same as the union of str, int, SEql(-1), SEql(1).
+    // corresponding to each key, td, is a pair (factors, disjoints)
+    //    where td is a subset of each factor
+    //    and td is disjoint with each disjoint
+    val expected = Map(SEql(-1 ) -> (Set(!SEql(1 ), STop, SEql(-1 ), int, !str),
+                                     Set(!int, SEql(1 ), SEmpty, !SEql(-1 ), str)),
+                       SEql(1 ) -> (Set(STop, SEql(1), int, !SEql(-1 ), !str),
+                                    Set(!SEql(1 ), SEql(-1 ), !int, SEmpty, str)),
+                       SAnd(!int,!str) -> (Set(!SEql(1), STop, !int, !SEql(-1), !str),
+                                           Set(SEql(-1), SEql(1), int, SEmpty, str)),
+                       SAnd(int,!SMember(-1, 1)) -> (Set(!SEql(1), STop, int, !SEql(-1), !str),
+                         Set(SEql(-1 ), !int, SEql(1 ), SEmpty, str)),
+                       str -> (Set(!SEql(1), STop, !int, !SEql(-1), str),
+                         Set(SEql(-1 ), SEql(1 ), int, SEmpty, !str)))
+
+    if (m != expected){
+      for {(a, e) <- m.zip(expected)
+           } if ( a == e) {
+        println(s"     SAME: $a")
+      } else {
+        println(s"DIFFERENT:")
+        println(s"         : a=$a")
+        println(s"         : e=$e")
+      }
+    }
     for {(a, e) <- m.zip(expected)} assert(a == e)
     assert(m == expected)
   }
