@@ -130,10 +130,10 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   type MaybePath = Option[Either[Path, Path]]
   lazy val spanningPath: MaybePath = findSpanningPath()
 
-  // witness is None if there is no spanning path
+  // spanningTrace is None if there is no spanning path
   //      Some(Right(List[L])) if there is a satisfiable path, List[L] are the labels
-  //      Some(Left(List[L])) if there is a path but some label is indeterminate.
   lazy val witness:Option[Either[List[L],List[L]]] = spanningPath match {
+  //      Some(Left(List[L])) if there is a path, but some label is indeterminate.
     case None => None
     case Some(Right(p)) => Some(Right(findTrace(true).getOrElse(List[L]())))
     case Some(Left(p)) => Some(Left(findTrace(false).getOrElse(List[L]())))
@@ -144,7 +144,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //   if the Option[Boolean] is Some(true) then the path passes through only satisfiable
   //       transitions, i.e., transitions for which the label is satisfiable
   //   If the Option[Boolean] is None, then the path passes through at least one
-  //       indeterminate transitions, i.e., the label.inhabited returned None, dont-know.
+  //       indeterminate transition, i.e., the label.inhabited returned None, dont-know.
   def findSpanningPathMap():Map[E,(Option[Boolean],Path)] = {
     import adjuvant.BellmanFord.{shortestPath,reconstructPath}
     import scala.Double.PositiveInfinity
@@ -169,6 +169,12 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
                                    case Some(false) => None // non-satisfiable
                                  }} yield edge)
 
+    // returns a pair (which will contribute to a Map entry)
+    //   which maps a state id to a pair of (Option[Boolean], Path)
+    //   where the path is a list of consecutive states from q0 to the state in question.
+    //   if no such path exists, then the Option[Boolean] is Some(false) and the path is List()
+    //   if Option[Boolean] is Some(true) then the path passes through no indeterminate states
+    //   if Option[Boolean] is None then the path passes through at least one indeterminate state
     def maybePath(q:State[Σ, L, E]):(Int,(Option[Boolean],Path)) = {
       if (d(q) < numStates) // satisfiable path
         q.id -> (Some(true),reconstructPath[State[Σ, L, E]](p, q))
@@ -178,7 +184,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
         q.id -> (None,reconstructPath(p, q)) // non determinate
     }
 
-    // m is the map from final state to shortest path for that state
+    // m is the map from final state to shortest path from q0 to that state
     val m:Map[Int,(Option[Boolean],Path)] = F.map(maybePath).toMap
 
     def bestPath(pairs:Seq[(Option[Boolean],Path)]):(Option[Boolean],Path) = {
