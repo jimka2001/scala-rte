@@ -32,6 +32,8 @@ import adjuvant.AdjFunSuite
 import genus.Types.{intJavaType, stringType}
 
 class GenusCanonicalize extends AdjFunSuite {
+  val SInt = SSatisfies(Types.intp,"Int")
+  val SDouble = SSatisfies(Types.doublep,"Double")
 
   trait TraitA
 

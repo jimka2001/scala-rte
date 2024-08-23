@@ -30,6 +30,8 @@ import rte.RteImplicits._
 
 //noinspection RedundantDefaultArgument
 class AndTestSuite extends AdjFunSuite {
+  val SInt = SSatisfies(Types.intp,"Int")
+  val SDouble = SSatisfies(Types.doublep,"Double")
   test("implicits") {
     assert(And(SEql(1)) == And(Singleton(SEql(1))))
   }

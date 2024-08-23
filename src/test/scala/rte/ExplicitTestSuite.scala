@@ -39,7 +39,8 @@ class ExplicitTestSuite extends AdjFunSuite {
   //val Y = Singleton(SEql(1))
   val ε = EmptyWord
   val ∅ = EmptySet
-
+  val SInt = SSatisfies(Types.intp,"Int")
+  val SDouble = SSatisfies(Types.doublep,"Double")
   test("match 1") {
     val rte1 = Cat(I, Star(Or(I, S)), S)
     val rte2 = Cat(classOf[Int], Star(Or(classOf[Int],classOf[String])), classOf[String])

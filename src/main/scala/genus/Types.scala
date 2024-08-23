@@ -245,4 +245,20 @@ object Types {
   }
 
   def primeType(): SSatisfies = SSatisfies(isPrime)
+
+  // TODO intp and oddp are useful for testing, but should be removed from library
+  // TODO similar for SInt and SDouble
+  def intp(a: Any): Boolean = {
+    a match {
+      case _: Int => true
+      case _ => false
+    }
+  }
+
+  def doublep(a: Any): Boolean = {
+    a match {
+      case _: Double => true
+      case _ => false
+    }
+  }
 }

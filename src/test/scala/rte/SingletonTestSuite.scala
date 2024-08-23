@@ -26,6 +26,8 @@ import RandomType.randomType
 import adjuvant.AdjFunSuite
 
 class SingletonTestSuite extends AdjFunSuite {
+  val SInt = SSatisfies(Types.intp,"Int")
+  val SDouble = SSatisfies(Types.doublep,"Double")
   test("singleton canonicalizeOnce") {
     val x = SEql("x")
     val y = SEql("y")

@@ -241,6 +241,8 @@ object SAnd {
   def main(argv:Array[String]):Unit = {
     // SAnd(SMember(42,43,44), A, B, C)
     //  ==> SMember(42,44)
+
+    val SInt = SSatisfies(Types.intp,"Int")
     println(SAnd(SMember(42,43,44,"a","b","c"),SInt).conversionD1())
     println(SAnd(SMember(42,43,44,"a","b","c"),SInt).conversion16())
     println(SOr(SMember(42,43,44,"a","b","c"),SInt).conversion16())

@@ -33,6 +33,9 @@ import genus.GenusImplicits
 import scala.language.implicitConversions
 
 class TypesTest extends AdjFunSuite {
+  val SInt = SSatisfies(Types.intp,"Int")
+  val SDouble = SSatisfies(Types.doublep,"Double")
+
   test("isPrime"){
     val primes = Set(2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
     for{p <- 1 to 30}

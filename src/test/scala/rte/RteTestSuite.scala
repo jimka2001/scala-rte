@@ -29,7 +29,8 @@ import adjuvant.AdjFunSuite
 import RandomType.randomType
 
 class RteTestSuite extends AdjFunSuite {
-
+  val SInt = SSatisfies(Types.intp,"Int")
+  val SDouble = SSatisfies(Types.doublep,"Double")
   test("implicits test") {
 
     assert(Not(SAtomic(classOf[Integer])) == Not(classOf[Integer]))
@@ -281,8 +282,8 @@ class RteTestSuite extends AdjFunSuite {
 
   test("rteCase") {
     assert(classOf[String].isInstance("hello"))
-    assert(SSatisfies.intp(1))
-    assert(SSatisfies.doublep(1.1))
+    assert(Types.intp(1))
+    assert(Types.doublep(1.1))
     assert(SInt.typep(1))
     assert(! SInt.typep(1.0))
     assert(! SDouble.typep(1))

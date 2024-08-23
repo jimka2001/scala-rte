@@ -46,19 +46,4 @@ case class SSatisfies(f   : Any => Boolean, printable:String) extends STerminal 
 
 object SSatisfies {
   def apply(f:Any=>Boolean):SSatisfies = new SSatisfies(f, f.toString)
-  def intp(a:Any):Boolean = {
-    a match {
-      case _:Int => true
-      case _ => false
-    }
-  }
-  def doublep(a:Any):Boolean = {
-    a match {
-      case _:Double => true
-      case _ => false
-    }
-  }
 }
-
-object SInt extends SSatisfies(SSatisfies.intp,"Int")
-object SDouble extends SSatisfies(SSatisfies.doublep,"Double")
