@@ -24,7 +24,6 @@ package padl
 import adjuvant.Adjuvant.{existingFile, filterFile}
 import genus.{SAnd, SAtomic, SEmpty, SEql, SNot, SOr, SSatisfies, STop, SimpleTypeD}
 import genus.Types.{evenType, oddType}
-import rte.Rte.{Eql, sigmaStar}
 import rte.{And, Cat, Not, Or, Permute, Plus, Rte, Singleton, Star}
 import xymbolyco.{Dfa, GraphViz, Thompson}
 import xymbolyco.GraphViz.{dfaView, multiLineString}

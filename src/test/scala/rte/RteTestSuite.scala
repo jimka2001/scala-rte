@@ -156,15 +156,14 @@ class RteTestSuite extends AdjFunSuite {
     trait Trait1
     trait Trait2
     trait Trait3 extends Trait2
-
     abstract class Abstract1
     abstract class Abstract2 extends Trait3
     val r1 = Or(Or(Cat(Sigma,Sigma,Star(Sigma)),EmptyWord),
-                Or(Rte.Atomic(classOf[Abstract1]),
-                   Cat(Rte.Atomic(classOf[Abstract2]),
-                  Rte.Member(4,5,6))))
-    val r2 = Or(Or(Cat(Rte.Eql(0),Rte.Member(1,2,3,4)),Star(Rte.Eql(-1))),
-                Not(Or(Rte.Eql(0),Rte.Member("a","b","c"))))
+                Or(Atomic(classOf[Abstract1]),
+                   Cat(Atomic(classOf[Abstract2]),
+                  Member(4,5,6))))
+    val r2 = Or(Or(Cat(Eql(0),Member(1,2,3,4)),Star(Eql(-1))),
+                Not(Or(Eql(0),Member("a","b","c"))))
     
     val rt1 = Not(And(r1,r2)).canonicalize
     val rt2 = Or(Not(r1),Not(r2))
@@ -189,22 +188,21 @@ class RteTestSuite extends AdjFunSuite {
 
     abstract class Abstract1
     abstract class Abstract2 extends Trait3
-    val string = Rte.Atomic(classOf[java.lang.String])
+    val string = Atomic(classOf[java.lang.String])
     val integer = Singleton(SAtomic(classOf[java.lang.Integer]))
     val number = Singleton(SAtomic(classOf[java.lang.Number]))
     val r1 = Or(string,
-                Rte.Eql(0),
+                Eql(0),
                 //Rte.Atomic(classOf[Abstract2]),
-                Rte.Atomic(classOf[Trait2]),
+                Atomic(classOf[Trait2]),
                 Star(integer),
-                Rte.Atomic(classOf[Trait3]),
+                Atomic(classOf[Trait3]),
                 number
                 )
-    val r2 = Cat(Or(Rte.Eql(1),
+    val r2 = Cat(Or(Eql(1),
                     Not(number)),
                  Rte.sigmaStar
                  )
-
 
     val rt1 = Not(And(r1,r2)).canonicalize
     val rt2 = Or(Not(r1),Not(r2))

@@ -301,18 +301,6 @@ object Rte {
 
   val flattenSingletonTypes =  false
 
-  def Member(xs: Any*): Rte = {
-    Singleton(SMember(xs: _*))
-  }
-
-  def Eql(x: Any): Rte = {
-    Singleton(SEql(x))
-  }
-
-  def Atomic(ct: Class[_]): Rte = {
-    Singleton(SAtomic(ct))
-  }
-
   def isAnd(rt: Rte): Boolean = rt match {
     case And(Seq(_*)) => true
     case _ => false
