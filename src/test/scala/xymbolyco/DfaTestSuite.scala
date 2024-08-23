@@ -372,4 +372,56 @@ class DfaTestSuite extends AdjFunSuite {
     s.simulate(Seq(-2)).contains(20)
     s.simulate(Seq(0)).isEmpty
   }
+
+  test("spanning path"){
+    import genus.{SAnd, SAtomic, SEql, SOr, SSatisfies, SimpleTypeD}
+    import rte.{Or, Rte, Singleton, Xor}
+    val data1 = Seq("XY", 1, 0.5F, 2, 0.8F, 5, 1.2F, 7, 0.4F, // 1 or more x,y where x is integer and y is float
+                    "M", 0.1, 0.3, 4.5, // 1 or more double or float all positive
+                    "C", 1, 5, 7, 8, // 1 ore more ints, all positive
+                    "C", 2, 5, 3,
+                    "M", 0.5, 1.2
+                    )
+    val D:SimpleTypeD = SAtomic(classOf[Double])
+    val F:SimpleTypeD = SAtomic(classOf[Float])
+    val DF:Rte = Singleton(SOr(F, D))
+
+    def positive(x:Any):Boolean = {
+      x match {
+        case a:Int => a > 0
+        case _ => false
+      }
+    }
+    val IPos:Rte = Singleton(SAnd(SAtomic(classOf[Int]),
+                                  SSatisfies(positive, "IPos")))
+    val M:Rte = Singleton(SEql("M"))
+    val C:Rte = Singleton(SEql("C"))
+    val XY:Rte = Singleton(SEql("XY"))
+
+    val XYclause:Rte = XY ++ (Singleton(SAtomic(classOf[Int])) ++ DF).+
+    val Mclause:Rte = M ++ DF.+
+    val Cclause:Rte = C ++ IPos.+
+
+    //assert(Mclause.contains(Seq("M", 0.5F, 0.8, 1.2F, 0.4F)))
+    //assert(XYclause.contains(Seq("XY", 1, 0.5F, 2, 0.8F, 5, 1.2F, 7, 0.4F)))
+    //assert(Cclause.contains(Seq("C", 2, 5, 3)))
+
+    val pattern1:Rte = Or(XYclause, Mclause, Cclause).*
+
+    val pattern2:Rte = ((XY ++ (IPos ++ DF).+) | (M ++ DF.+) | (C ++ IPos.+)).*
+
+    assert(true == pattern1.contains(data1))
+    assert(true == pattern2.contains(data1))
+    val diff = Xor(pattern2 ,pattern1)
+    val dfa = diff.toDfa(exitValue=true)
+    val Some(Left(qs)) = dfa.spanningPath
+    assert(qs.length == 4)
+
+    val Some(Left(tds)) = dfa.spanningTrace
+    assert(tds.length == 3)
+
+    val m = dfa.findSpanningPathMap()
+    val (x, qs2) = m(true)
+    assert(qs == qs2)
+  }
 }
