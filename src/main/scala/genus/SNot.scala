@@ -29,7 +29,7 @@ import genus.Types.cmpTypeDesignators
  *
  * @param s the type we want to get the complement
  */
-case class SNot(s: SimpleTypeD) extends SimpleTypeD {
+case class SNot(s: SimpleTypeD) extends SNode {
   override def toString:String = "!" + s.toString
   override def toDot():String = "!" + s.toDot()
   override def toMachineReadable():String = "SNot("+ s.toMachineReadable() + ")"

@@ -31,7 +31,7 @@ import genus.Types.{cmpTypeDesignators, compareSequence, createMemberFromPairs}
 // the two classes (SAnd and SOr).  In some cases factoring the code
 // out means replacing SEmpty with STop, or vice versa, and
 // replacing subtypep with supertypep, etc.
-abstract class SCombination(val tds: SimpleTypeD*) extends SimpleTypeD {
+abstract class SCombination(val tds: SimpleTypeD*) extends SNode {
   def create(tds: Seq[SimpleTypeD]): SimpleTypeD
 
   def createDual(tds: Seq[SimpleTypeD]): SimpleTypeD

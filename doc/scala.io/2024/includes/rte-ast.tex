@@ -9,22 +9,21 @@
   every node/.style = {shape=rectangle, rounded corners,
     draw, align=center,
     top color=white, bottom color=blue!20}]]
-    \tikzstyle{level 1}=[sibling distance=60mm]
+    \tikzstyle{level 1}=[sibling distance=80mm]
     \tikzstyle{level 2}=[sibling distance=20mm]
     \tikzstyle{level 3}=[sibling distance=10mm]
   \node {Rte}
-    child { [fill] circle (2pt)
+    child { node {RteNode}
       child { node {Combination} 
         child { node {And} }
         child { node {Or} } }
+      child { node {Star} }
+      child { node {Not} }
       child { node {Cat} } }
-    child { [fill] circle (2pt)
+    child { node {RteTerminal}
       child { node {Singleton} }
-      child { node  {Not} }
-      child { node {Star} } }
-    child { [fill] circle (2pt)
       child { node {Sigma} }
       child { node {EmptySet} }
-      child { node [right=1mm] {EmptyWord} } } ;
+      child { node [right=-6mm] {EmptyWord} } } ;
 \end{tikzpicture}
 \end{document}

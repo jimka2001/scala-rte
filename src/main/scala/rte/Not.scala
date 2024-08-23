@@ -22,7 +22,7 @@
 package rte
 import genus._
 
-case class Not(operand:Rte) extends Rte {
+case class Not(operand:Rte) extends RteNode {
   override def toLaTeX():String = "\\overline{" ++  operand.toLaTeX() ++ "}"
   override def toDot():String = "!" + operand.toDot()
   override def toMachineReadable():String = "Not(" + operand.toMachineReadable() + ")"

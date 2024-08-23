@@ -26,7 +26,7 @@ import genus._
 
 import scala.annotation.tailrec
 
-final case class Cat(operands: Seq[Rte]) extends Rte {
+final case class Cat(operands: Seq[Rte]) extends RteNode {
   override def toLaTeX(): String = "(" ++ operands.map(_.toLaTeX()).mkString("\\cdot ") ++ ")"
   override def toString: String = operands.map(_.toString).mkString("Cat(", ",", ")")
   override def toDot(): String = operands.map(_.toDot()).mkString("Cat(", ",", ")")

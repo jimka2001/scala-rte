@@ -287,6 +287,14 @@ abstract class Rte {
   }
 }
 
+// abstract class for grouping subclasses of Rte which do not
+//   encapsulate other Rte instances
+abstract class RteTerminal extends Rte
+
+// abstract class for grouping subclasses of Rte which DO
+//    encapsulate other Rte instances
+abstract class RteNode extends Rte
+
 object Rte {
 
   val sigmaStar: Rte = Star(Sigma)

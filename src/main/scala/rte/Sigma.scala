@@ -22,7 +22,7 @@
 package rte
 import genus._
 
-object Sigma extends Rte {
+object Sigma extends RteTerminal {
   override def toLaTeX():String = "\\Sigma{}"
   override def toString:String = "Sigma" //"Σ"
   override def toMachineReadable():String = "Sigma"

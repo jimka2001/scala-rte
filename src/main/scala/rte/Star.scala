@@ -24,7 +24,7 @@ package rte
 import adjuvant.Adjuvant.findSimplifier
 import genus._
 
-case class Star(operand:Rte) extends Rte {
+case class Star(operand:Rte) extends RteNode {
   override def toLaTeX(): String = "(" ++ operand.toLaTeX() ++ ")^{*}"
   override def toDot():String = "Star(" ++ operand.toDot() ++ ")"
   override def toMachineReadable():String = "Star(" + operand.toMachineReadable() + ")"

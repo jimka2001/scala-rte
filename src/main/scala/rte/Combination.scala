@@ -26,7 +26,7 @@ import adjuvant.Adjuvant.{findSimplifier, searchReplace, uniquify}
 import genus.Types.createMemberFromPairs
 import genus._
 
-abstract class Combination(val operands:Seq[Rte]) extends Rte {
+abstract class Combination(val operands:Seq[Rte]) extends RteNode {
   val zero:Rte
   val one:Rte
   def create(operands: Seq[Rte]):Rte

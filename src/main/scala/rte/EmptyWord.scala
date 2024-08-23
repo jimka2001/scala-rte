@@ -22,7 +22,7 @@
 package rte
 import genus._
 
-object EmptyWord extends Rte {
+object EmptyWord extends RteTerminal {
   override def toLaTeX():String = "\\varepsilon "
   override def toString:String = "EmptyWord" //"ε"
   override def toDot():String = "EmptyWord"
