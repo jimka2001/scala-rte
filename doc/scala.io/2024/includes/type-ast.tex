@@ -18,13 +18,12 @@
         child { node {SAnd} }
         child { node {SOr} } }
       child { node {SNot} } }
-    child { [fill] circle (2pt)
-      child { node {SAtomic} }
-      child { node {SSatisfies} }
+    child { node {STerminal}
+      child { node [right=-3mm] {SAtomic} }
+      child { node [right=-3mm] {SSatisfies} }
       child { node [right=-3mm] {SLiteral}
         child { node {SEql} }
-        child { node {SMember} } } }
-    child { [fill] circle (2pt)
+        child { node {SMember} } }
       child { node {STop} }
       child { node {SEmpty} } } ;
 \end{tikzpicture}
