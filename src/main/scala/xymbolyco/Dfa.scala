@@ -101,7 +101,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
           val labels = for { Transition(_, label, dst) <- q1.transitions
                              if dst == q2
                              } yield label
-          assert(labels.isEmpty, "expecting at least one transition between $q1 and $q2")
+          assert(labels.nonEmpty, "expecting at least one transition between $q1 and $q2")
           List(labels.reduce(labeler.combineLabels))
         case _ => List()
       }.toList
@@ -132,11 +132,11 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
 
   // spanningTrace is None if there is no spanning path
   //      Some(Right(List[L])) if there is a satisfiable path, List[L] are the labels
-  lazy val witness:Option[Either[List[L],List[L]]] = spanningPath match {
   //      Some(Left(List[L])) if there is a path, but some label is indeterminate.
+  lazy val spanningTrace:Option[Either[List[L],List[L]]] = spanningPath match {
     case None => None
-    case Some(Right(p)) => Some(Right(findTrace(true).getOrElse(List[L]())))
-    case Some(Left(p)) => Some(Left(findTrace(false).getOrElse(List[L]())))
+    case Some(Right(_)) => Some(Right(findTrace(true).getOrElse(List[L]())))
+    case Some(Left(_)) => Some(Left(findTrace(false).getOrElse(List[L]())))
   }
 
   // Compute a Map from exit-value to (Path,Option[Boolean])) which denotes the shortest path
@@ -159,16 +159,14 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     //    at most uses every state, thus has a length of num-states - 1.
     //    This means Bellman Ford will always prefer satisfiable paths to
     //    indeterminate paths.
-    val (d,p) = shortestPath(states,
-                             q0,
-                             for{q<-states
-                                 Transition(src,lab,dst) <- q.transitions
-                                 edge <- labeler.inhabited(lab) match {
-                                   case None => Some(((src,dst),numStates)) // indeterminate
-                                   case Some(true) => Some(((src,dst),1.0)) // satisfiable
-                                   case Some(false) => None // non-satisfiable
-                                 }} yield edge)
-
+    val edges = for{q<-states
+                    Transition(src,lab,dst) <- q.transitions
+                    edge <- labeler.inhabited(lab) match {
+                      case None => Some(((src,dst),numStates)) // indeterminate
+                      case Some(true) => Some(((src,dst),1.0)) // satisfiable
+                      case Some(false) => None // non-satisfiable
+                    }} yield edge
+    val (d,p) = shortestPath(states, q0, edges) // Bellman Ford
     // returns a pair (which will contribute to a Map entry)
     //   which maps a state id to a pair of (Option[Boolean], Path)
     //   where the path is a list of consecutive states from q0 to the state in question.
@@ -176,12 +174,14 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     //   if Option[Boolean] is Some(true) then the path passes through no indeterminate states
     //   if Option[Boolean] is None then the path passes through at least one indeterminate state
     def maybePath(q:State[Σ, L, E]):(Int,(Option[Boolean],Path)) = {
-      if (d(q) < numStates) // satisfiable path
-        q.id -> (Some(true),reconstructPath[State[Σ, L, E]](p, q))
-      else if (d(q) == PositiveInfinity) // not-satisfiable
-        q.id -> (Some(false),List())
-      else
-        q.id -> (None,reconstructPath(p, q)) // non determinate
+      (q.id,
+        if (d(q) < numStates) // satisfiable path
+          (Some(true), reconstructPath[State[Σ, L, E]](p, q))
+        else if (d(q) == PositiveInfinity) // not-satisfiable
+          (Some(false),List())
+        else
+          (None, reconstructPath(p, q)) // non determinate
+      )
     }
 
     // m is the map from final state to shortest path from q0 to that state
