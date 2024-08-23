@@ -61,7 +61,7 @@ class ExplicitTestSuite extends AdjFunSuite {
 
   test("match 2"){
     import Types.{evenType,oddType}
-    val rte = (evenType ++ oddType).*
+    val rte = (evenType() ++ oddType()).*
     assert(Some(42) == rte.simulate(42, List(2,3,4,5)))
     assert(None == rte.simulate(42, List(3,4,5,6)))
     assert(None == rte.simulate(42, List("hello",2,3,4,5,6,7)))
@@ -70,7 +70,7 @@ class ExplicitTestSuite extends AdjFunSuite {
     import Types.{evenType,oddType}
     val S:Rte = Singleton(classOf[String])
 
-    val rte = S.? ++ (evenType ++ oddType).*
+    val rte = S.? ++ (evenType() ++ oddType()).*
     assert(None == rte.simulate(42, List("hello",3,4,5)))
     assert(None == rte.simulate(42, List(3,4,5,6)))
     assert(Some(42) == rte.simulate(42, List("hello",2,3,4,5,6,7)))
