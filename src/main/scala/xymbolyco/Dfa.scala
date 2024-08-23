@@ -85,20 +85,24 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     }
   }
 
-  // take a path which is a list of states (assumed to be states
+  // Take a path which is a list of states (assumed to be states
   //   that follow some computation path from q0 to some final
   //   state), and return a list of labels corresponding to the
   //   transitions from one state to the next along the path.
   //   The list of labels is length 1 fewer than the list of states.
+  // If there are multiple transitions possible between two consecutive
+  //   states, then their labels are combined with labeler.combineLabels.
+  // If pathToLabels is called with a list of states which are not all consecutive,
+  //   an exception will be thrown.
   def pathToLabels(path:Path):List[L] = {
       path.tails.flatMap {
         case q1 :: q2 :: _ =>
-          val Some(Transition(_, label, _)) = q1.transitions.find {
-            case Transition(_, _, dst)
-              if dst == q2  => true
-            case _ => false
-          }
-          List(label)
+          // filter all transitions from q1 to q2, accumulate their labels
+          val labels = for { Transition(_, label, dst) <- q1.transitions
+                             if dst == q2
+                             } yield label
+          assert(labels.isEmpty, "expecting at least one transition between $q1 and $q2")
+          List(labels.reduce(labeler.combineLabels))
         case _ => List()
       }.toList
   }
@@ -126,6 +130,15 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   type MaybePath = Option[Either[Path, Path]]
   lazy val spanningPath: MaybePath = findSpanningPath()
 
+  // witness is None if there is no spanning path
+  //      Some(Right(List[L])) if there is a satisfiable path, List[L] are the labels
+  //      Some(Left(List[L])) if there is a path but some label is indeterminate.
+  lazy val witness:Option[Either[List[L],List[L]]] = spanningPath match {
+    case None => None
+    case Some(Right(p)) => Some(Right(findTrace(true).getOrElse(List[L]())))
+    case Some(Left(p)) => Some(Left(findTrace(false).getOrElse(List[L]())))
+  }
+
   // Compute a Map from exit-value to (Path,Option[Boolean])) which denotes the shortest path
   //   from q0 to a final state with that exit value.
   //   if the Option[Boolean] is Some(true) then the path passes through only satisfiable
@@ -141,7 +154,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     //    path from q0 to each final state.  We do this by associating weights
     //    to each edge.  A satisfiable transition, has weight=1.  A uninhabited
     //    transition has weight = infinity.
-    //    A indeterminate state has weight = 2*number-of-states.  Why?  Because
+    //    An indeterminate state has weight = 2*number-of-states.  Why?  Because
     //    if there is a path going only though satisfiable transitions, then it
     //    at most uses every state, thus has a length of num-states - 1.
     //    This means Bellman Ford will always prefer satisfiable paths to
@@ -202,6 +215,8 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //   4) there is a path, but it passes through a transition which
   //        is not satisfiable
   //        return None
+  // This method is final because it is expensive to call.
+  //   it is already called lazily in the lazy var spanningPath,
   private def findSpanningPath():MaybePath = {
     val m: Map[E, (Option[Boolean], Path)] = findSpanningPathMap()
 
