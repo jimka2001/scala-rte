@@ -313,6 +313,7 @@ object Rte {
 
   def isPlus(rt: Rte): Boolean = rt match {
     case Cat(Seq(x, Star(y))) => x == y
+    case Cat(Seq(Star(y), x)) => x == y
     case _ => false
   }
 
