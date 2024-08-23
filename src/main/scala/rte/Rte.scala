@@ -37,22 +37,18 @@ abstract class Rte {
 
   def ++(r: Rte): Rte = Cat(this, r)
 
+  def -(r: Rte): Rte = AndNot(this, r)
+
   def unary_! : Rte = Not(this)
 
-  def ? : Rte = Or(this, EmptyWord) // postfix operator, r.?
+  def ? : Rte = Optional(this) // postfix operator, r.?
 
   def * : Rte = Star(this) // postfix operator, r.*
 
-  def + : Rte = Cat(this, Star(this)) // postfix operator,   r.+
+  def + : Rte = Plus(this) // postfix operator,   r.+
 
-  def ^(n: Short): Rte = {
-    n match {
-      case 0 => EmptyWord
-      case 1 => this
-      case i if i > 1 => Cat(Seq.fill(n)(this.canonicalize))
-      case i if i < 0 => throw new Error("^ operator does not work with negative numbers: $n")
-    }
-  }
+  def ^(n: Short): Rte = Exponent(this, n)
+
 
   // can this and that be proven to be equivalent?
   def ~=(that: Rte): Boolean = {

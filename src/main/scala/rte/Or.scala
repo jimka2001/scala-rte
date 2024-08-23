@@ -194,7 +194,3 @@ object Or {
   }
 }
 
-object Xor {
-  def apply(a:Rte, b:Rte):Rte = Or(And(a,Not(b)),
-                                   And(Not(a),b))
-}
