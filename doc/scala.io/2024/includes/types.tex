@@ -21,8 +21,8 @@
   \item   Extends type system of language (Scala, Python, Clojure)
   \item   Modeled on Common Lisp type system.
   \item   Supports intersection, union, complement.
-  \item   Supports deterministic \emph{membership check}.
-  \item   Supports incomplete \emph{subtype check}.
+  \item   Supports deterministic \Emph{membership check}.
+  \item   Supports incomplete \Emph{subtype check}.
   \end{itemize}
 \end{frame}
 
@@ -31,7 +31,7 @@
 
   \medskip
 
-  Not an ADT for a \emph{silly} reason.  Scala does not support cross-file \code{sealed} classes.
+  Not an ADT for a \Emph{silly} reason.  Scala does not support cross-file \code{sealed} classes.
 
 \end{frame}
 
@@ -48,7 +48,7 @@
       \includegraphics[height=6cm]{Fano_plane_Hasse_diagram} 
     \end{column}
     \begin{column}{0.6\textwidth}%%
-      \emph{Complemented lattice} of types.
+      \Emph{Complemented lattice} of types.
 
       \medskip
       
@@ -96,8 +96,8 @@
   \end{minipage}
 \end{lrbox}
 
-\begin{frame}{Membership}
-  Type membership question is always answerable.
+\begin{frame}{\code{SimpleTypeD} Membership}
+  Type membership question is \Emph{always answerable}.
 
   \usebox\membershipbox
 \end{frame}
@@ -111,9 +111,9 @@
 
 
 
-\begin{frame}{Subtype}
+\begin{frame}{\code{SimpleTypeD} Subtype}
 
-  Subtype question sometimes unanswerable; \code{subtypep} returns \code{None}
+  Subtype question \Emph{sometimes unanswerable}; \code{subtypep} returns \code{None}
 
   \usebox\subtypebox
 

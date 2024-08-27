@@ -175,7 +175,7 @@
 
 
 \begin{frame}{Sequential Type Check}
-  In general a state in the DFA may have several transitions, each with its own type label.
+  In general a state in the DFA may have several \Emph{disjoint} transitions, each with its own type label.
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \usebox\typecaseAbox
@@ -185,7 +185,7 @@
     \end{column}    
   \end{columns}
 
-  Some types may be checked multiple times.  We can rewrite the code to eliminate redundant checks.
+  Some types may be checked multiple times.  We can rewrite the code to \Emph{eliminate redundant checks}.
 \end{frame}
 
 \begin{frame}{Decision Tree Structure}
@@ -200,7 +200,7 @@
     \end{column}    
   \end{columns}
 
-  However, for this presentation, we represent the decision tree as \emph{human readable} Scala code.
+  However, for this presentation, we represent the decision tree as \Emph{human readable} Scala code.
 \end{frame}
 
 
@@ -261,7 +261,7 @@
   \scalebox{0.8}{\input{tikz-number.tex}}
 
 
-  Failure to identify subtypes/supertypes will lead to \emph{correct} but \emph{inefficient} code.
+  Failure to identify subtypes/supertypes will lead to \Emph{correct} but \Emph{inefficient} code.
 \end{frame}
 
 

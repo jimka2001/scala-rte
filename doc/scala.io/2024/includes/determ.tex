@@ -8,7 +8,7 @@
 \begin{frame}{Classic Non-determinism}
   \scalebox{0.8}{\input{fig-nfa}}
 
-  Classic \emph{non-determinism}: state with two exiting transitions with same label.
+  Classic \Emph{non-determinism}: state with two exiting transitions with same label.
 
 \end{frame}
 
@@ -30,7 +30,7 @@
       \only<4>{\scalebox{0.65}{\input{fig-nfa-subtype-simple}}}%
     \end{column}
   \end{columns}
-  \only<3-4>{We can \emph{decide} that state \nodecirc{3} is unreachable.}
+  \only<3-4>{We can \Emph{decide} that state \nodecirc{3} is unreachable.}
 \end{frame}
 
 
@@ -71,7 +71,7 @@
       \only<3>{\scalebox{0.6}{\input{fig-nfa-satisfies-intersections-simple}}}%
     \end{column}
   \end{columns}
-  \only<3>{States \nodecirc{4} and \nodecirc{6} are unreachable, but we cannot \emph{decide} this \emph{unsatisfiability}.}
+  \only<3>{States \nodecirc{4} and \nodecirc{6} are unreachable, but we cannot \Emph{decide} this \Emph{unsatisfiability}.}
 
 \end{frame}
 
@@ -112,7 +112,7 @@
 
     \item We can always determine type membership.
 
-    \item DFAs even with indeterminant transitions \emph{correctly} match sequences in linear time.  
+    \item DFAs even with indeterminant transitions \Emph{correctly} match sequences in linear time.  
   \end{itemize}
 \end{frame}
 
@@ -128,7 +128,7 @@
       \only<4>{\scalebox{0.8}{\input{fig-G-E}}}%
       \only<5>{\scalebox{0.8}{\input{fig-E-F}}}%
 
-  \only<1>{{\LARGE \[\textcolor{blue}{A\cap B = \emptyset}\]} Both are \code{final}; they have no common \emph{inhabited} subclass.}%
+  \only<1>{{\LARGE \[\textcolor{blue}{A\cap B = \emptyset}\]} Both are \code{final}; they have no common \Emph{inhabited} subclass.}%
   \only<2>{{\LARGE \[\textcolor{blue}{C\cap D = unknown}\]} We do not know whether some class inherits from both.}%
   \only<3>{{\LARGE \[\textcolor{blue}{C\cap D = unknown}\]} JVM might run-time load another library which creates a common subclass of \code{C} and \code{D}}
   \only<4>{{\LARGE \[\textcolor{blue}{G\subset E}\]} Explicit subtype relation.}
