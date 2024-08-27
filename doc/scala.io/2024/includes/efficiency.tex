@@ -206,7 +206,7 @@
 
 
 \begin{frame}{Rewrite: 1}
-  Introduce \code{if N.typep(x) ... else ...}.
+  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -219,7 +219,7 @@
 \end{frame}
 
 \begin{frame}{Rewrite: 1}
-  Introduce \code{if N.typep(x) ... else ...}.
+  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -235,9 +235,9 @@
 
 
 \begin{frame}{Rewrite: 2}
-  In \code{if} part, replace supertypes of \code{N} with \code{STop}. 
+  In \code{if} part: \colorbox{pink!30}{Supertypes of \code{N} $\to$ \code{STop} }
   
-  In \code{else} part, replace subtypes of \code{N} with \code{SEmpty}
+  In \code{else} part: \colorbox{pink!30}{Subtypes of \code{N} $\to$ \code{SEmpty}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -270,14 +270,14 @@
 \begin{frame}{Rewrite: 3}
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \code{(STop \& x)} $\to$ \code{x}\\
-      \code{!STop} $\to$ \code{SEmpty}
+      \colorbox{pink!30}{\code{(STop \& x)} $\to$ \code{x}}\\
+      \colorbox{pink!30}{\code{!STop} $\to$ \code{SEmpty}}
       
       \usebox\typecaseCbox
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \code{(SEmpty \& x)} $\to$ \code{SEmpty}\\
-      \code{!SEmpty} $\to$ \code{STop}
+      \colorbox{pink!30}{\code{(SEmpty \& x)} $\to$ \code{SEmpty}}\\
+      \colorbox{pink!30}{\code{!SEmpty} $\to$ \code{STop}}
 
       \usebox\typecaseDhbox
     \end{column}    
@@ -287,12 +287,12 @@
 \begin{frame}{Rewrite: 4}
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \code{SEmpty.typep(x)} $\to$ \code{false}
+      \colorbox{pink!30}{\code{SEmpty.typep(x)} $\to$ \code{false}}
       
       \usebox\typecaseDbox
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \code{STop.typep(x)} $\to$ \code{true}
+      \colorbox{pink!30}{\code{STop.typep(x)} $\to$ \code{true}}
 
       \usebox\typecaseEhbox
     \end{column}    
@@ -300,8 +300,8 @@
 \end{frame}
 
 \begin{frame}{Rewrite: 5}
-  \code{(if true x else y)} $\to$ \code{x}\\
-  \code{(if false x else y)} $\to$ \code{y}
+  \colorbox{pink!30}{\code{(if true x else y)} $\to$ \code{x}}\\
+  \colorbox{pink!30}{\code{(if false x else y)} $\to$ \code{y}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -314,7 +314,7 @@
 \end{frame}
 
 \begin{frame}{Rewrite: 6}
-  Introduce \code{if I.typep(x) ... else ...}.
+  Introduce \colorbox{pink!30}{\code{if I.typep(x) ... else ...}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -327,7 +327,7 @@
 \end{frame}
 
 \begin{frame}{Rewrite: 6}
-  Introduce \code{if I.typep(x) ... else ...}.
+  Introduce \colorbox{pink!30}{\code{if I.typep(x) ... else ...}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -340,7 +340,8 @@
 \end{frame}
 
 \begin{frame}{Rewrite: 7}
-  In \code{if} part, replace supertypes of \code{I} with \code{STop} and subtypes in \code{else} part with \code{SEmpty}.
+  In \code{if} part: \colorbox{pink!30}{Supertypes of \code{I} $\to$ \code{STop}}\\
+  In \code{else} part: \colorbox{pink!30}{Subtypes of \code{I} $\to$ \code{SEmpty}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -357,11 +358,11 @@
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \code{!STop} $\to$ \code{SEmpty}
+      \colorbox{pink!30}{\code{!STop} $\to$ \code{SEmpty}}
       \usebox\typecaseHbox
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \code{!SEmpty} $\to$ \code{STop}
+      \colorbox{pink!30}{\code{!SEmpty} $\to$ \code{STop}}
       \usebox\typecaseIhbox
     \end{column}    
   \end{columns}
@@ -371,19 +372,19 @@
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \code{SEmpty.typep(x)} $\to$ \code{false}
+      \colorbox{pink!30}{\code{SEmpty.typep(x)} $\to$ \code{false}}
       \usebox\typecaseIbox
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \code{STop.typep(x)} $\to$ \code{true}
+      \colorbox{pink!30}{\code{STop.typep(x)} $\to$ \code{true}}
       \usebox\typecaseJhbox
     \end{column}    
   \end{columns}
 \end{frame}
 
 \begin{frame}{Rewrite: 10}
-  \code{(if true x else y)} $\to$ \code{x}\\
-  \code{(if false x else y)} $\to$ \code{y}
+  \colorbox{pink!30}{\code{(if true x else y)} $\to$ \code{x}}\\
+  \colorbox{pink!30}{\code{(if false x else y)} $\to$ \code{y}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
