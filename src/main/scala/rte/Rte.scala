@@ -260,8 +260,8 @@ abstract class Rte {
    * If a successful match is made, Some(exitValue) is returned,
    * else None is returned.
    */
-  def simulate[E](exitValue: E, seq: Seq[Any]): Option[E] = {
-    toDfa(exitValue).simulate(seq)
+  def simulate[E](exitValue: E, seq: Seq[Any], verbose:Boolean=false): Option[E] = {
+    toDfa(exitValue).simulate(seq, verbose=verbose)
   }
 
   /**
@@ -269,8 +269,8 @@ abstract class Rte {
     * We would like to name this method `match`, but that name is used for
     * pattern matching.
     */
-  def contains(seq:Seq[Any]): Boolean = {
-    simulate(true, seq) match {
+  def contains(seq:Seq[Any], verbose:Boolean=false): Boolean = {
+    simulate(true, seq, verbose=verbose) match {
       case None => false
       case Some(true) => true
     }

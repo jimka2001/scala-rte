@@ -78,9 +78,11 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
 
   override def toString: String = Serialize.serializeToString(dfa = this)
 
-  def findReachableFinal(seq: IterableOnce[Σ]): Option[State[Σ, L, E]] = {
+  def findReachableFinal(seq: IterableOnce[Σ], verbose:Boolean=false): Option[State[Σ, L, E]] = {
     val init: Option[State[Σ, L, E]] = Some(q0)
     seq.iterator.foldLeft(init) { (mq, s) =>
+      if(verbose)
+        println(s"mq=$mq s=$s [${s.getClass()}] --> ${mq.flatMap(_.successor(s))}")
       mq.flatMap(_.successor(s))
     }
   }
@@ -232,9 +234,9 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     foundTrue.orElse(foundNone)
   }
 
-  def simulate(seq: IterableOnce[Σ]): Option[E] = {
+  def simulate(seq: IterableOnce[Σ], verbose:Boolean=false): Option[E] = {
     for {
-      d <- findReachableFinal(seq)
+      d <- findReachableFinal(seq, verbose=verbose)
       if F.contains(d)
     } yield exitValue(d)
   }
