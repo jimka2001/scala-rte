@@ -2,9 +2,9 @@
 \begin{lstlisting}[style=scalaioScala]
 (A && B).subtypep(A || B)  // returns Some(true)
   
-val Str = SAtomic(classOf[String])
-val Int = SAtomic(classOf[Int])
-val Num = SAtomic(classOf[Number])
+val Str:SimpleTypeD = SAtomic(classOf[String])
+val Int:SimpleTypeD = SAtomic(classOf[Int])
+val Num:SimpleTypeD = SAtomic(classOf[Number])
 
 Str.subtypep(Int)  // returns Some(false)
 Int.subtypep(Num)  // returns Some(true)

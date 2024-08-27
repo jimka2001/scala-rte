@@ -1,8 +1,8 @@
 %% dont re-indent this file
 \begin{lstlisting}[style=scalaioScala]
-val I = classOf[Int]
-val F = classOf[Float]
-val D = classOf[Double]
+val I:Rte = Atomic(classOf[Int])
+val F:Rte = Atomic(classOf[Float])
+val D:Rte = Atomic(classOf[Double])
 
-(I ++ (D | F).+).*
+val re:Rte = (I ++ (D | F).+).*
 \end{lstlisting}
