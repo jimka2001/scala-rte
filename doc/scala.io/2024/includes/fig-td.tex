@@ -11,11 +11,11 @@
   \node[state,accepting,rounded rectangle] (2) [above right=7mm and 30mm of 1] {$2$};
   \node[state,accepting,rounded rectangle] (3) [below right=7mm and 30mm of 1] {$3$};
   \path[->] (0) edge node {$Int$} (1);
-  \path[->] (1) edge[bend left=15]  node[pos=.8] {$Number \wedge~!Int$} (2);
-  \path[->] (1) edge[bend right=15] node[swap] {$String \vee Boolean$} (3);
+  \path[->] (1) edge[bend left=15]  node[pos=.8] {$Number \cap~!Int$} (2);
+  \path[->] (1) edge[bend right=15] node[swap] {$String \cup Boolean$} (3);
   \path[->] (2) edge[bend left=15]  node {$Int$} (1);
-  \path[->] (2) edge[loop above]    node {$Number \wedge~!Int$} (2);
+  \path[->] (2) edge[loop above]    node {$Number \cap~!Int$} (2);
   \path[->] (3) edge[bend right=15] node[swap] {$Int$} (1);
-  \path[->] (3) edge[loop below]    node {$String \vee Boolean$} (3);
+  \path[->] (3) edge[loop below]    node {$String \cup Boolean$} (3);
 \end{tikzpicture}
 \end{document}
