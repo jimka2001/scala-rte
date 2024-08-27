@@ -47,7 +47,7 @@ abstract class Rte {
 
   def + : Rte = Plus(this) // postfix operator,   r.+
 
-  def ^(n: Short): Rte = Exponent(this, n)
+  def ^(n: Short): Rte = Exponent(this, n) //  r^4 = r ++ r ++ r ++ r
 
 
   // can this and that be proven to be equivalent?
