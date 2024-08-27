@@ -13,15 +13,15 @@
 \end{frame}
 
 \begin{frame}{Non-determinism by subtype}
-  \begin{columns}
+  \begin{columns}[T]
     \begin{column}{0.4\textwidth}
       \centering
-
-    \begin{align*}
-    Int&\subseteq Number\\
-    Int &\cap Number \neq \emptyset
-  \end{align*}
-  \scalebox{0.8}{\input{tikz-int-double.tex}}
+      
+      \begin{align*}
+        Int&\subseteq Number\\
+        Int &\cap Number \neq \emptyset
+      \end{align*}%
+      \scalebox{0.8}{\input{tikz-int-double.tex}}
     \end{column}%
     \begin{column}{0.6\textwidth}
       \only<1>{\scalebox{0.65}{\input{fig-nfa-subtype}}}%
@@ -29,7 +29,6 @@
       \only<3>{\scalebox{0.65}{\input{fig-nfa-subtype-disjoint-simple}}}%
       \only<4>{\scalebox{0.65}{\input{fig-nfa-subtype-simple}}}%
     \end{column}
-
   \end{columns}
   \only<3-4>{We can \emph{decide} that state \nodecirc{3} is unreachable.}
 \end{frame}
@@ -55,7 +54,7 @@
 %         !Int & !Odd = !Int
 
 \begin{frame}{Non-determinism by \code{SSatisfies}}
-  \begin{columns}
+  \begin{columns}[T]
     \begin{column}{0.35\textwidth}
       \centering
       
@@ -119,7 +118,7 @@
 
 
 \begin{frame}{Non-determinism with classes}
-  \begin{columns}
+  \begin{columns}[T]
     \begin{column}{0.5\textwidth}
       \usebox\classbox  
     \end{column}%

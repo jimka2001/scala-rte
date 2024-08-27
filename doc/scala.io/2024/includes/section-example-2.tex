@@ -1,37 +1,33 @@
-\begin{frame}{Example 2}{Type Checking a Sequence}
+\begin{frame}[t]{Example 2}{Type Checking a Sequence}
 \end{frame}
 
-\begin{frame}{Example 2}{How does a DFA work as a predicate?}
+\begin{frame}[t]{Example 2}{How does a DFA work as a predicate?}
 
-  \only<1-2>{ Does:%\cite{brzozowski.64.jacm,Owens:2009:RDR:1520284.1520288}
-\\}%
   \only<1-3>{\tt \textcolor{blue}{[13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}\\}%
-  \only<1-2>{follow the pattern: \textcolor{greeny}{$(Int \cdot ( Double^{+} ~\vee String^{+}))^{+}$} ?}%
-
-  \only<18>{\textcolor{greeny}{\LARGE Yes, it's a match!}}
-  \only<4-17>{\textcolor{orange}{\LARGE Does it a match?}}
-
+  \only<4>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
+  \only<5>{\tt [\colorbox{orange!30}{\Large 13} 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
+  \only<6>{\tt [13 \colorbox{orange!30}{\Large 2.0} 6 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
+  \only<7>{\tt [13 2.0 \colorbox{orange!30}{\Large 6.0} 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
+  \only<8>{\tt [13 2.0 6.0 \colorbox{orange!30}{\Large 4} "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
+  \only<9>{\tt [13 2.0 6.0 4 \colorbox{orange!30}{\Large "a"} "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
+  \only<10>{\tt [13 2.0 6.0 4 "a" \colorbox{orange!30}{\Large "an"} "the" -5 2.0 3.0 4.0 7 8.0]}%
+  \only<11>{\tt [13 2.0 6.0 4 "a" "an" \colorbox{orange!30}{\Large "the"} -5 2.0 3.0 4.0 7 8.0]}%
+  \only<12>{\tt [13 2.0 6.0 4 "a" "an" "the" \colorbox{orange!30}{\Large -5} 2.0 3.0 4.0 7 8.0]}%
+  \only<13>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 \colorbox{orange!30}{\Large 2.0} 3.0 4.0 7 8.0]}%
+  \only<14>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 \colorbox{orange!30}{\Large 3.0} 4.0 7 8.0]}%
+  \only<15>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 \colorbox{orange!30}{\Large 4.0} 7 8.0]}%
+  \only<16>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 \colorbox{orange!30}{\Large 7} 8.0]}%
+  \only<17>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 \colorbox{orange!30}{\Large 8.0}]}%
+  \only<18>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
+  \only<1-2>{ Does the sequence follow the pattern: \textcolor{greeny}{$(Int \cdot ( Double^{+} ~\vee String^{+}))^{+}$} ?}%
+  \only<4-18>{\vspace{\fill}
+    \null
+    \vfill}
   \begin{columns}
     \begin{column}{3cm}
       \only<2>{We \textcolor{blue}{construct a \emph{deterministic} finite automaton} (DFA).}%
-
-  \only<4>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
-  \only<5>{\tt [\textcolor{greeny}{\nodecirc{13}} 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
-  \only<6>{\tt [13 \textcolor{greeny}{\nodecirc{2.0}} 6 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
-  \only<7>{\tt [13 2.0 \textcolor{greeny}{\nodecirc{6.0}} 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
-  \only<8>{\tt [13 2.0 6.0 \textcolor{greeny}{\nodecirc{4}} "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
-  \only<9>{\tt [13 2.0 6.0 4 \textcolor{greeny}{\nodecirc{"a"}} "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
-  \only<10>{\tt [13 2.0 6.0 4 "a" \textcolor{greeny}{\nodecirc{"an"}} "the" -5 2.0 3.0 4.0 7 8.0]}%
-  \only<11>{\tt [13 2.0 6.0 4 "a" "an" \textcolor{greeny}{\nodecirc{"the"}} -5 2.0 3.0 4.0 7 8.0]}%
-  \only<12>{\tt [13 2.0 6.0 4 "a" "an" "the" \textcolor{greeny}{\nodecirc{-5}} 2.0 3.0 4.0 7 8.0]}%
-  \only<13>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 \textcolor{greeny}{\nodecirc{2.0}} 3.0 4.0 7 8.0]}%
-  \only<14>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 \textcolor{greeny}{\nodecirc{3.0}} 4.0 7 8.0]}%
-  \only<15>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 \textcolor{greeny}{\nodecirc{4.0}} 7 8.0]}%
-  \only<16>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 \textcolor{greeny}{\nodecirc{7}} 8.0]}%
-  \only<17>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 \textcolor{greeny}{\nodecirc{8.0}}]}%
-  \only<18>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
-
-
+      \only<4-17>{\textcolor{orange}{\LARGE Does it a match?}}%
+      \only<18>{\textcolor{greeny}{\LARGE Yes, it's a match!}}
     \end{column}
 
     \begin{column}{8cm}

@@ -7,7 +7,7 @@
 \begin{document}
 \begin{tikzpicture}[automaton, auto]
   \node[state,initial,rounded rectangle,fill=yellow] (0) {$0$};
-  \node[state,rounded rectangle] (1) [right=20mm of 0] {$1$};
+  \node[state,rounded rectangle,fill=yellow] (1) [right=20mm of 0] {$1$};
   \node[state,accepting,rounded rectangle] (2) [above right=7mm and 30mm of 1] {$2$};
   \node[state,accepting,rounded rectangle] (3) [below right=7mm and 30mm of 1] {$3$};
   \path[->] (0) edge[orange, line width=3] node {$Int$} (1);
