@@ -1,8 +1,6 @@
 package scalaio
 
-import genus.SAtomic
 import rte.{Atomic, Eql, Rte}
-import rte.RteImplicits.classToRte
 
 object Example1 {
   val data = Seq("C", 100, 200, 300,

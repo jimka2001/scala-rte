@@ -4,8 +4,9 @@ import genus.{SAnd, SAtomic, SEql, SOr, SSatisfies, SimpleTypeD}
 import rte.{Or, Rte, Xor}
 import rte.RteImplicits.tdToRte
 import xymbolyco.GraphViz.dfaView
+import xymbolyco.Minimize.minimize
 
-object ScalaIo2024 {
+object Demo {
   val data1 = Seq("XY", 1, 0.5F, 2, 0.8F, 5, 1.2F, 7, 0.4F, // 1 or more x,y where x is integer and y is float
                   "M", 0.1, 0.3, 4.5, // 1 or more double or float all positive
                   "C", 1, 5, 7, 8, // 1 ore more ints, all positive
@@ -33,12 +34,14 @@ object ScalaIo2024 {
 
   val pattern1:Rte = (XYclause | Mclause | Cclause).*
   val pattern2:Rte = ((XY ++ (IPos ++ DF).+) | (M ++ DF.+) | (C ++ IPos.+)).*
-
+  val labels = Seq(SInt, M, C, XY)
   println(pattern1.contains(data1))
   println(pattern2.contains(data1))
   val diff = Xor(pattern2 ,pattern1)
   val dfa = diff.toDfa(exitValue=true)
-  dfaView(dfa, title="data", showSink=false)
+  dfaView(pattern1.toDfa(), title="pattern 1", showSink=false, abbrev=true, givenLabels=labels)
+  dfaView(pattern2.toDfa(), title="pattern 2", showSink=false, abbrev=true, givenLabels=labels)
+  dfaView(dfa, title="xor", showSink=false, abbrev=true, givenLabels=labels)
 
   println(dfa.spanningTrace)
   println(pattern1.contains(Seq("XY", -1, 1.0)))
