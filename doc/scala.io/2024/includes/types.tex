@@ -1,4 +1,3 @@
-
 \begin{frame}{Types: \code{genus}}
   \centering
   
@@ -13,6 +12,46 @@
   \end{itemize}
 \end{frame}
 
+
+
+\newsavebox\tdast
+\begin{lrbox}{\tdast}
+  \begin{minipage}{11cm}
+    \input{tdast}
+  \end{minipage}
+\end{lrbox}
+
+
+\begin{frame}{Example \code{SimpleTypeD} Expression Tree}
+  \usebox\tdast
+
+  \medskip
+
+  \centering
+
+  \scalebox{0.7}{\input{td-ast}}
+  \begin{itemize}
+  \item A type designator is an expression tree (AST).
+  \item Each node is an instance of class \code{SimpleTypeD}.
+  \item Leaf nodes interface to Scala classes via \code{SAtomic(...)}.
+  \item .. and to literal Scala values via \code{SEql(...)}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{\code{SimpleTypeD} class quasi-ADT}
+  \scalebox{0.8}{\input{type-adt}}
+
+  \medskip
+
+  Not an ADT for a \Emph{silly} reason.
+
+  Scala does not support cross-file \code{sealed} classes.
+\end{frame}
+
+
+
+
 \begin{frame}{SETS}{Simple Embedded Type System}
 
   \scalebox{1.0}{\input{venn-simple.tex}}
@@ -26,24 +65,11 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{\code{SimpleTypeD} class quasi-ADT}
-  \scalebox{0.8}{\input{type-adt}}
 
-  \medskip
-
-  Not an ADT for a \Emph{silly} reason.
-
-  Scala does not support cross-file \code{sealed} classes.
-\end{frame}
-
-
-\begin{frame}{SimpleTypeD}{As quasi-Alebraic Data Type}
-
+\begin{frame}{SETS}
   \begin{columns}
-
     \begin{column}{0.4\textwidth}
-  
-      %% By Watchduck author "T. Piesk", "Tilman Piesk" or
+        %% By Watchduck author "T. Piesk", "Tilman Piesk" or
       %% "Watchduck". - Own work, CC BY 3.0,
       %% https://commons.wikimedia.org/w/index.php?curid=11155125
       \includegraphics[height=6cm]{Fano_plane_Hasse_diagram} 

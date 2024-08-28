@@ -1,0 +1,9 @@
+%% dont re-indent this file
+\begin{lstlisting}[style=scalaioScala]
+val Int:SimpleTypeD      = SAtomic(classOf[Int])
+val Double:SimpleTypeD = SAtomic(classOf[Double])
+val Float:SimpleTypeD  = SAtomic(classOf[Float])
+
+val re:Rte = Singleton(Int) ++ (Singleton(Double) 
+                                   | Singleton(Float)).*
+\end{lstlisting}
