@@ -1,6 +1,6 @@
 package scalaio
 
-import genus.{SAnd, SAtomic, SEql, SOr, SSatisfies, SimpleTypeD}
+import genus.{SAnd, SAtomic, SEql, SNot, SOr, SSatisfies, SimpleTypeD}
 import rte.{Or, Rte, Xor}
 import rte.RteImplicits.tdToRte
 import xymbolyco.GraphViz.dfaView
@@ -48,5 +48,9 @@ object Demo {
   println(pattern2.contains(Seq("XY", -1, 1.0)))
 
   def main(argv:Array[String]):Unit = {
+    import genus.Types.{evenType,oddType}
+
+    println(SAnd(evenType(),SNot(oddType())).inhabited)
+
   }
 }
