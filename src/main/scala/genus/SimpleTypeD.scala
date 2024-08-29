@@ -106,11 +106,21 @@ abstract class SimpleTypeD { // SimpleTypeD
   // same computation not be done twice.
   protected def inhabitedDown: Option[Boolean] = None
 
-  lazy val inhabited: Option[Boolean] = inhabitedDown
+  lazy val inhabited: Option[Boolean] = inhabitedDown match {
+    case computed@Some(_) => computed
+    case None if sampleValues.nonEmpty => Some(true)
+    case _ => None
+  }
 
   protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
+    import genus.RandomType.interestingValues
+
     if (inhabited.contains(false)) // an empty type is disjoint to every other type
       Some(true)
+    else if (t.inhabited.contains(false))
+      Some(true)
+    else if (t.sampleValues.exists((v:Any) => sampleValues.contains(v)))
+      Some(false)
     else
       None
   }
