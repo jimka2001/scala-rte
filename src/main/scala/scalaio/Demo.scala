@@ -44,13 +44,17 @@ object Demo {
   dfaView(dfa, title="xor", showSink=false, abbrev=true, givenLabels=labels)
 
   println(dfa.spanningTrace)
+  dfa.spanningTrace match {
+    case None => ()
+    case Some(e) => println(e.map(span => span.map {
+      (td: SimpleTypeD) =>
+        if (td.sampleValues.nonEmpty) td.sampleValues.head else "unknown"
+    }))
+  }
   println(pattern1.contains(Seq("XY", -1, 1.0)))
   println(pattern2.contains(Seq("XY", -1, 1.0)))
 
   def main(argv:Array[String]):Unit = {
-    import genus.Types.{evenType,oddType}
-
-    println(SAnd(evenType(),SNot(oddType())).inhabited)
 
   }
 }
