@@ -25,6 +25,7 @@ import scala.language.implicitConversions
 import java.lang
 import scala.annotation.tailrec
 import NormalForm._
+import genus.Types.{evenType, oddType}
 
 object RandomType {
 
@@ -67,12 +68,6 @@ object RandomType {
   //    classOf[A] && classOf[B]
   implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
 
-  def evenp(a: Any): Boolean = {
-    a match {
-      case a: Int => a % 2 != 0 // because e.g., -5 % 2 = -1, rather than 1
-      case _ => false
-    }
-  }
 
   // The following definitions are defined as functions rather than
   //   simply as values, because the SAtomic constructor caches
@@ -90,7 +85,8 @@ object RandomType {
     SEql(true),
     SEql(false),
     SMember(false, true),
-    SSatisfies(evenp, "even"),
+    evenType(),
+    oddType(),
     SMember("a", "b", "c"),
     SAtomic(classOf[lang.Number]),
     SAtomic(classOf[String]),
