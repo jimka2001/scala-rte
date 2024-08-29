@@ -134,4 +134,6 @@ case class SNot(s: SimpleTypeD) extends SNode {
   override def searchReplaceDown(search: SimpleTypeD, replace: SimpleTypeD): SimpleTypeD = {
     SNot(s.searchReplaceInType(search, replace))
   }
+  override lazy val sampleValues:Set[Any] = interestingValues.filter(v => ! s.sampleValues.contains(v)).toSet
+
 }

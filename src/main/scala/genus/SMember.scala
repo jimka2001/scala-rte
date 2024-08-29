@@ -47,6 +47,8 @@ case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SLiteral(
   override def toMachineReadable(): String = xs.map {
     case (_, a: Any) => a.toString
   }.mkString("SMember(", ", ", ")")
+
+  override lazy val sampleValues:Set[Any] = xs.map(_._2).toSet
 }
 
 object SMember {

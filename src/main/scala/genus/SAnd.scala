@@ -228,6 +228,10 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     //     )
     computeNf()
   }
+  override lazy val sampleValues:Set[Any] = if (tds.isEmpty)
+    Set[Any]()
+  else
+    tds.map(_.sampleValues).reduce(_.intersect(_))
 }
 
 object SAnd {

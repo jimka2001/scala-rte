@@ -263,4 +263,9 @@ abstract class SimpleTypeD { // SimpleTypeD
   def searchReplaceDown(search: SimpleTypeD, replace: SimpleTypeD): SimpleTypeD = {
     this
   }
+
+  lazy val sampleValues:Set[Any] = locally{
+    import genus.RandomType.interestingValues
+
+    interestingValues.filter(typep(_))}.toSet
 }

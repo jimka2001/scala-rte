@@ -157,6 +157,8 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
     //     )
     computeNf()
   }
+  override lazy val sampleValues:Set[Any] = tds.foldLeft(Set[Any]{})((acc:Set[Any],item:SimpleTypeD) => acc ++ item.sampleValues)
+
 }
 
 object SOr {

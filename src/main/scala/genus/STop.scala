@@ -1,6 +1,5 @@
 package genus
 
-;
 
 /** The super type, super type of all types. */
 object STop extends STerminal {
@@ -34,4 +33,10 @@ object STop extends STerminal {
 
   // comparing STop to itself must return false
   override def cmpToSameClassObj(t: SimpleTypeD): Boolean = false
+
+  override lazy val sampleValues:Set[Any] = locally{
+    import genus.RandomType.interestingValues;
+
+    interestingValues.toSet
+  }
 }

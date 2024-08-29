@@ -78,6 +78,7 @@ case class SEql(a: (SimpleTypeD,Any)) extends SLiteral(Vector(a)) {
       case _ => super.cmpToSameClassObj(t)  // throws an exception
     }
   }
+  override lazy val sampleValues:Set[Any] = Set(a._2)
 }
 
 object SEql {

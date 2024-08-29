@@ -38,4 +38,6 @@ object SEmpty extends STerminal {
   override def subtypep(t: SimpleTypeD): Option[Boolean] = Some(true)
 
   override def cmpToSameClassObj(t:SimpleTypeD):Boolean = false
+
+  override lazy val sampleValues:Set[Any] = Set[Any]()
 }
