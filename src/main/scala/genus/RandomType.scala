@@ -115,12 +115,15 @@ object RandomType {
     1L, 0L, -1L, 1000L, 1000000L, // these values causes problems reported in issue #7
     3.14, 2.17, -math.sqrt(2),
     3.14d, 2.17d,
-    3.14f, 2.17f,
+    3.14f, 2.17f, -3.14f, -2.17f,
     'a', 'b', 'c',
     true, false,
     "a", "b", "c", "d", "",
     new Class1X,
-    new Class2X
+    new Class2X,
+    new ADT1,
+    new ADT2,
+    new ADT3
     )
 
   // here we have 3 functions called randomType, however all three take different arguments in addition to
