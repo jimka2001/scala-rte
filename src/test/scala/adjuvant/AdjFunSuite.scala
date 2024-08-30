@@ -31,8 +31,6 @@ class AdjFunSuite extends AnyFunSuite {
     case Some(_) => 100 // if in ci/cd pipeline
   }
 
-  println(s"because CI_REGISTRY_IMAGE=${sys.env.get("CI_REGISTRY_IMAGE")}, num_random_tests=$num_random_tests")
-
   override def test(testName: String, testTags: Tag*)(testFun: => Any /* Assertion */)(implicit pos: source.Position):Unit = {
     super.test(testName,testTags : _*)(locally{
       import java.time.LocalDateTime
