@@ -48,7 +48,7 @@ object Demo {
     case None => ()
     case Some(e) => println(e.map(span => span.map {
       (td: SimpleTypeD) =>
-        if (td.sampleValues.nonEmpty) td.sampleValues.head else "unknown"
+        if (td.sampleValues.nonEmpty) Some(td.sampleValues.head) else None
     }))
   }
   println(pattern1.contains(Seq("XY", -1, 1.0)))

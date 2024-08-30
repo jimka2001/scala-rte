@@ -23,13 +23,13 @@
 package genus
 
 import adjuvant.AdjFunSuite
-import genus.RandomType.interestingValues
+import genus.RandomType.getInterestingValues
 import genus.Types._
 import org.scalatest.funsuite.AnyFunSuite
 
 class GenusTypep extends AdjFunSuite {
   test("SAtomic types"){
-    for{ v <- interestingValues }
+    for{ v <- getInterestingValues(true) }
       assert(SAtomic(v.getClass).typep(v))
   }
   test("AtomicType any and nothing") {

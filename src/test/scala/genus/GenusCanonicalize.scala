@@ -26,7 +26,7 @@ import genus.RandomType._
 import genus.NormalForm._
 import org.scalatest.Assertion
 import org.scalatest.funsuite.AnyFunSuite
-import RandomType.{interestingValues, randomType}
+import RandomType.{getInterestingValues, randomType}
 import adjuvant.Adjuvant.eql
 import adjuvant.AdjFunSuite
 import genus.Types.{intJavaType, stringType}
@@ -378,7 +378,7 @@ class GenusCanonicalize extends AdjFunSuite {
   }
 
   def check_type(td:SimpleTypeD):Unit= {
-    for {v <- interestingValues
+    for {v <- getInterestingValues(true)
          cnf = td.canonicalize(Some(Cnf))
          dnf = td.canonicalize(Some(Dnf))
          } {

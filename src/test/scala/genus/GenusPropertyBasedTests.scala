@@ -26,7 +26,7 @@ import org.scalacheck.Prop.{classify, forAll, propBoolean}
 import genus.GenusSpecifications.naiveGenGenus
 import genus.GenusSpecifications.shrinkGenus
 import genus.NormalForm.Dnf
-import genus.RandomType.{Class1X, Class2X}
+import genus.RandomType.getInterestingValues
 
 object GenusPropertyBasedTests extends App {
   val genusList = for {
@@ -115,18 +115,7 @@ object GenusSpecification extends Properties("Genus") {
     val cnf = t.canonicalize(Some(Cnf))
     val dnf = t.canonicalize(Some(Dnf))
 
-    val interestingValues: Vector[Any] = Vector(
-      -1, -1, 0, 1, 2, 3, 4, 5, 6,
-      1L, 0L, -1L, 1000L, 1000000L,
-      3.14, 2.17, -math.sqrt(2),
-      3.14d, 2.17d,
-      3.14f, 2.17f,
-      'a', 'b', 'c',
-      true, false,
-      "a", "b", "c", "d", "",
-      new Class1X,
-      new Class2X
-    )
+    val interestingValues: Set[Any] = getInterestingValues(true)
 
     // TODO: Generate randomly values passed to typep
     t.typep(interestingValues) == cnf.typep(interestingValues) && t.typep(interestingValues) == dnf.typep(interestingValues)
