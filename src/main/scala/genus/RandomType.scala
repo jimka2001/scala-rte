@@ -72,7 +72,11 @@ object RandomType {
   //   simply as values, because the SAtomic constructor caches
   //   objects depending on the world view.
 
-
+  def mystery(a:Any):Boolean = {
+    // This function returns false, but the purpose of the function is to
+    //  model a predicate for which we do not know whether it is satisfiable.
+    false
+  }
   def interestingTypes(): Vector[SimpleTypeD] = Vector(
     STop,
     SEmpty,
@@ -86,6 +90,7 @@ object RandomType {
     SMember(false, true),
     evenType(),
     oddType(),
+    SSatisfies(mystery, "mystery"),
     SMember("a", "b", "c"),
     SAtomic(classOf[lang.Number]),
     SAtomic(classOf[String]),
@@ -109,7 +114,17 @@ object RandomType {
     SAtomic(classOf[ADT_abstr])
     )
 
-  val interestingValuesAsImplications:Boolean = false
+  // The idea of this variable is (if true) the certain sample values
+  //   can be used to aid in logical reasoning.  For example, we don't know in
+  //   general if SSatisfies(f) and SSatisfies(g) are disjoint.  However, if a
+  //   witness value, w, is provided such that f(w) = g(w) = true, then we know
+  //   that both types are inhabited and moreover that they are NOT disjoint.
+  //   Disadvantage of this approach is that the set of sample values is necessarily
+  //   small, and run-time checks take more time.   It is a matter of ongoing
+  //   research as to whether such a check is beneficial.
+  //   The purpose of the interesting-values-implication branch is to
+  //   persue this investigation.
+  val interestingValuesAsImplications:Boolean = true
 
   def getInterestingValues(asImplication:Boolean = interestingValuesAsImplications):Set[Any] = {
     if (asImplication)
@@ -119,7 +134,7 @@ object RandomType {
   }
 
   val interestingValues: Vector[Any] = Vector(
-    -1, -1, 0, 1, 2, 3, 4, 5, 6,
+    -1, -2, 0, 1, 2, 3, 4, 5, 6,
     1L, 0L, -1L, 1000L, 1000000L, // these values causes problems reported in issue #7
     3.14, 2.17, -math.sqrt(2),
     3.14d, 2.17d,
