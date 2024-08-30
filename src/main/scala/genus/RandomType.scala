@@ -25,7 +25,7 @@ import scala.language.implicitConversions
 import java.lang
 import scala.annotation.tailrec
 
-import genus.Types.{evenType, oddType, mysteryType}
+import genus.Types.{evenType, oddType}
 
 object RandomType {
 
@@ -72,8 +72,12 @@ object RandomType {
   //   simply as values, because the SAtomic constructor caches
   //   objects depending on the world view.
 
-
-  private def interestingTypes(): Vector[SimpleTypeD] = Vector(
+  def mystery(a:Any):Boolean = {
+    // This function returns false, but the purpose of the function is to
+    //  model a predicate for which we do not know whether it is satisfiable.
+    false
+  }
+  def interestingTypes(): Vector[SimpleTypeD] = Vector(
     STop,
     SEmpty,
     SMember(1, 2, 3, 4),
@@ -86,7 +90,7 @@ object RandomType {
     SMember(false, true),
     evenType(),
     oddType(),
-    mysteryType(),
+    SSatisfies(mystery, "mystery"),
     SMember("a", "b", "c"),
     SAtomic(classOf[lang.Number]),
     SAtomic(classOf[String]),
@@ -119,7 +123,7 @@ object RandomType {
   //   small, and run-time checks take more time.   It is a matter of ongoing
   //   research as to whether such a check is beneficial.
   //   The purpose of the interesting-values-implication branch is to
-  //   pursue this investigation.
+  //   persue this investigation.
   val interestingValuesAsImplications:Boolean = true
 
   def getInterestingValues(asImplication:Boolean = interestingValuesAsImplications):Set[Any] = {
