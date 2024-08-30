@@ -27,6 +27,7 @@ import adjuvant.Accumulators.withOutputToString
 import genus._
 import adjuvant.AdjFunSuite
 import RandomType.randomType
+import genus.Types.mysteryType
 
 class RteTestSuite extends AdjFunSuite {
   val SInt = SSatisfies(Types.intp, "Int")
@@ -369,9 +370,9 @@ class RteTestSuite extends AdjFunSuite {
     import scala.language.implicitConversions
     import rte.RteImplicits._
 
-    assert(Star(Cat(classOf[Int], Star(classOf[String]), evenType())).isomorphic(Not(evenType()))
+    assert(Star(Cat(classOf[Int], Star(classOf[String]), mysteryType())).isomorphic(Not(mysteryType()))
              == None)
-    assert((Star(Cat(classOf[Int], Star(classOf[String]), evenType())) ~= Not(evenType()))
+    assert((Star(Cat(classOf[Int], Star(classOf[String]), mysteryType())) ~= Not(mysteryType()))
              == false)
   }
 

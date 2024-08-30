@@ -286,13 +286,8 @@ class TypesTest extends AdjFunSuite {
     }
     val t1 = SSatisfies(f,"f")
     val t2 = SSatisfies(g,"g")
-    def oddp(a:Any):Boolean = {
-      a match {
-        case a:Int => a % 2 != 0 // because e.g., -5 % 2 = -1, rather than 1
-        case _ => false
-      }
-    }
-    val sodd = SSatisfies(oddp , "odd")
+
+    val sodd = oddType()
     assert(sodd.typep(7) == true)
     assert(sodd.typep(6) == false)
     assert(sodd.typep(7.0) == false)

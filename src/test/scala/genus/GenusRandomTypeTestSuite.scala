@@ -11,9 +11,10 @@ class GenusRandomTypeTestSuite extends AdjFunSuite {
     assert(data.contains(None) && data.contains(Some(true)) && !data.contains(Some(false)))
   }
   test("type B") {
-    val data = for {depth <- Range(0, 3)
+    val types = for {depth <- Range(0, 3)
                     _ <- Range(0, num_random_tests)}
-      yield RandomType.randomType(depth, Some(true)).inhabited
+      yield RandomType.randomType(depth, Some(true))
+    val data = types.map(_.inhabited)
     assert(data.contains(None) && data.contains(Some(true)) && data.contains(Some(false)))
   }
   test("type C") {
