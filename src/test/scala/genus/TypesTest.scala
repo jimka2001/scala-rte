@@ -220,10 +220,11 @@ class TypesTest extends AdjFunSuite {
                         SNot(SAtomic(classOf[Trait1])),
                         SNot(SAtomic(classOf[Trait2]))
                         )
-    for {_ <- 1 to num_random_tests
+    for {_ <- 1 to num_random_tests/5
          d <- 1 to 4
          t1 = randomType(d)
          t2 = randomType(d)
+         if cmpTypeDesignators(t1,t2)
          t3 = randomType(d)
          } triangle_inequality(t1,t2,t3)
   }

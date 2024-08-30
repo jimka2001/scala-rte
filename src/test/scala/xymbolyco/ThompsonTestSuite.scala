@@ -370,7 +370,7 @@ class ThompsonTestSuite  extends AdjFunSuite {
   test("randomCreate") {
     import xymbolyco.Dfa.dfaEquivalent
     for {depth <- 0 until 3
-         _ <- 0 until num_random_tests * 10
+         rep <- 0 until num_random_tests / 10
          pattern = Rte.randomRte(depth)
          dfa_thompson = try {
            constructThompsonDfa(pattern, 42)

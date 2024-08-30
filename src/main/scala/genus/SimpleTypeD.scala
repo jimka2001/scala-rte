@@ -113,8 +113,6 @@ abstract class SimpleTypeD { // SimpleTypeD
   }
 
   protected def disjointDown(t: SimpleTypeD): Option[Boolean] = {
-    import genus.RandomType.interestingValues
-
     if (inhabited.contains(false)) // an empty type is disjoint to every other type
       Some(true)
     else if (t.inhabited.contains(false))
@@ -274,8 +272,5 @@ abstract class SimpleTypeD { // SimpleTypeD
     this
   }
 
-  lazy val sampleValues:Set[Any] = locally{
-    import genus.RandomType.interestingValues
-
-    interestingValues.filter(typep(_))}.toSet
+  lazy val sampleValues:Set[Any] = genus.RandomType.getInterestingValues().filter(typep(_))
 }

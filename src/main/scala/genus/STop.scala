@@ -34,9 +34,5 @@ object STop extends STerminal {
   // comparing STop to itself must return false
   override def cmpToSameClassObj(t: SimpleTypeD): Boolean = false
 
-  override lazy val sampleValues:Set[Any] = locally{
-    import genus.RandomType.interestingValues;
-
-    interestingValues.toSet
-  }
+  override lazy val sampleValues:Set[Any] = genus.RandomType.getInterestingValues()
 }

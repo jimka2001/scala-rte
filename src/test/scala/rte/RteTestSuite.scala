@@ -29,8 +29,8 @@ import adjuvant.AdjFunSuite
 import RandomType.randomType
 
 class RteTestSuite extends AdjFunSuite {
-  val SInt = SSatisfies(Types.intp,"Int")
-  val SDouble = SSatisfies(Types.doublep,"Double")
+  val SInt = SSatisfies(Types.intp, "Int")
+  val SDouble = SSatisfies(Types.doublep, "Double")
   test("implicits test") {
 
     assert(Not(SAtomic(classOf[Integer])) == Not(classOf[Integer]))
@@ -49,12 +49,12 @@ class RteTestSuite extends AdjFunSuite {
     assert(Star(SAtomic(classOf[Long])) != Star(classOf[Integer]))
   }
 
-  test("Number is not empty"){
+  test("Number is not empty") {
     assert(And(Singleton(SAtomic(classOf[Number]))) != And(Singleton(SEmpty)))
     assert(And(classOf[Number]) != And(Singleton(SEmpty)))
   }
 
-  test("LaTeX 1"){
+  test("LaTeX 1") {
     println(And(classOf[Number]))
     assert(And(classOf[Number]).toLaTeX()
              == "(Number)")
@@ -78,7 +78,7 @@ class RteTestSuite extends AdjFunSuite {
                Not(SEql(44))).toLaTeX()
              == "(Number\\wedge \\overline{Integer}\\wedge \\overline{44})")
     assert(Or(Singleton(SAtomic(classOf[String])),
-              Singleton(SMember(1,2,3))).toLaTeX()
+              Singleton(SMember(1, 2, 3))).toLaTeX()
              == "(String\\vee \\{1 ,2 ,3\\})")
   }
 
@@ -99,7 +99,7 @@ class RteTestSuite extends AdjFunSuite {
       assert((r1 ^ 2).canonicalize ~= Cat(r1, r1).canonicalize,
              s"\nr1= $r1" +
                s"\n  (r1 ^ 2).canonicalize= " + (r1 ^ 2).canonicalize +
-               s"\n  Cat(r1, r1).canonicalize= "+ Cat(r1, r1).canonicalize)
+               s"\n  Cat(r1, r1).canonicalize= " + Cat(r1, r1).canonicalize)
       assert((r1 ^ 3).canonicalize ~= Cat(r1, r1, r1).canonicalize)
     }
   }
@@ -122,11 +122,11 @@ class RteTestSuite extends AdjFunSuite {
     assert(Sigma.canonicalize == Sigma)
     assert(EmptyWord.canonicalize == EmptyWord)
   }
-  test("discovered 102"){
+  test("discovered 102") {
     val t1 = SEql(0)
     val t2 = SEql(0L)
     assert(Singleton(SAnd(t1, t2)).canonicalize == And(Singleton(t1), Singleton(t2)).canonicalize)
-    assert(Singleton(SOr(t1, t2)).canonicalize == Singleton(SMember(0,0L)))
+    assert(Singleton(SOr(t1, t2)).canonicalize == Singleton(SMember(0, 0L)))
     println(Or(Singleton(t1), Singleton(t2)).canonicalize)
     assert(Singleton(SOr(t1, t2)).canonicalize == Or(Singleton(t1), Singleton(t2)).canonicalize)
     val s = Singleton(SNot(t1))
@@ -150,7 +150,7 @@ class RteTestSuite extends AdjFunSuite {
         assert(s3.canonicalize == And(Not(t1), Sigma).canonicalize)
     }
   }
-  test("discovered case 108"){
+  test("discovered case 108") {
     //r1 = Or(Or(Cat(Σ,Σ,(Σ)*),ε),Or(<Abstract1$1>,Cat(<Abstract2$1>,<{4,5,6}>)))
     //r2 = Or(Or(Cat(<[= 0]>,<{1,2,3,4}>),(<[= -1]>)*),Not(Or(<[= 0]>,<{a,b,c}>)))
     trait Trait1
@@ -158,28 +158,28 @@ class RteTestSuite extends AdjFunSuite {
     trait Trait3 extends Trait2
     abstract class Abstract1
     abstract class Abstract2 extends Trait3
-    val r1 = Or(Or(Cat(Sigma,Sigma,Star(Sigma)),EmptyWord),
+    val r1 = Or(Or(Cat(Sigma, Sigma, Star(Sigma)), EmptyWord),
                 Or(Atomic(classOf[Abstract1]),
                    Cat(Atomic(classOf[Abstract2]),
-                  Member(4,5,6))))
-    val r2 = Or(Or(Cat(Eql(0),Member(1,2,3,4)),Star(Eql(-1))),
-                Not(Or(Eql(0),Member("a","b","c"))))
-    
-    val rt1 = Not(And(r1,r2)).canonicalize
-    val rt2 = Or(Not(r1),Not(r2))
+                       Member(4, 5, 6))))
+    val r2 = Or(Or(Cat(Eql(0), Member(1, 2, 3, 4)), Star(Eql(-1))),
+                Not(Or(Eql(0), Member("a", "b", "c"))))
+
+    val rt1 = Not(And(r1, r2)).canonicalize
+    val rt2 = Or(Not(r1), Not(r2))
 
     import xymbolyco.GraphViz.dfaToPng
-    withOutputToString{printer =>
-      xymbolyco.Serialize.serialize(rt1.toDfa(),printer)
+    withOutputToString { printer =>
+      xymbolyco.Serialize.serialize(rt1.toDfa(), printer)
     }
-    dfaToPng(rt1.toDfa(), title="debug", abbrev = true)
-    dfaToPng(Not(rt1).toDfa(), title="not rt1", abbrev=true)
-    dfaToPng(xymbolyco.Minimize.minimize(rt1.toDfa()), title="minimized", abbrev = true)
+    dfaToPng(rt1.toDfa(), title = "debug", abbrev = true)
+    dfaToPng(Not(rt1).toDfa(), title = "not rt1", abbrev = true)
+    dfaToPng(xymbolyco.Minimize.minimize(rt1.toDfa()), title = "minimized", abbrev = true)
     val cano: Rte = Or(And(rt1, Not(rt2)),
-                       And(rt2,Not(rt1))).canonicalize
-    dfaToPng(cano.toDfa(), title="cano", abbrev = true)
+                       And(rt2, Not(rt1))).canonicalize
+    dfaToPng(cano.toDfa(), title = "cano", abbrev = true)
   }
-  test("discovered case 109 infinite loop"){
+  test("discovered case 109 infinite loop") {
     // r1 = Or(Or(Or(<java.lang.String>,<[= 0]>),Or(<Abstract2$1>,<Trait2$1>)),Or((<java.lang.Integer>)*,Or(<Trait3$1>,<java.lang.Number>)))
     // r2 = Cat(Or(Or(<[Member 1,2,3,4]>,<SEmpty>),Not(<java.lang.Number>)),Not(And(<[Member 4,5,6]>,<Abstract2$1>)))
     trait Trait1
@@ -204,18 +204,18 @@ class RteTestSuite extends AdjFunSuite {
                  Rte.sigmaStar
                  )
 
-    val rt1 = Not(And(r1,r2)).canonicalize
-    val rt2 = Or(Not(r1),Not(r2))
+    val rt1 = Not(And(r1, r2)).canonicalize
+    val rt2 = Or(Not(r1), Not(r2))
 
     import xymbolyco.GraphViz.dfaToPng
 
-    withOutputToString{printer =>
-      xymbolyco.Serialize.serialize(rt1.toDfa(),printer)
+    withOutputToString { printer =>
+      xymbolyco.Serialize.serialize(rt1.toDfa(), printer)
     }
-    dfaToPng(rt1.toDfa(), title="debug", abbrev = true)
-    dfaToPng(Not(rt1).toDfa(), title="not rt1", abbrev=true)
-   Or(And(rt1,Not(rt2)),
-       And(rt2,Not(rt1))).toDfa()
+    dfaToPng(rt1.toDfa(), title = "debug", abbrev = true)
+    dfaToPng(Not(rt1).toDfa(), title = "not rt1", abbrev = true)
+    Or(And(rt1, Not(rt2)),
+       And(rt2, Not(rt1))).toDfa()
     //Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize
 
 
@@ -227,17 +227,17 @@ class RteTestSuite extends AdjFunSuite {
     assert(Not(EmptyWord).canonicalize == Cat(Sigma, Star(Sigma)))
     assert(Not(EmptySet).canonicalize == Star(Sigma))
     for {depth <- 0 to 2
-         _ <- 1 to num_random_tests/2
+         _ <- 1 to num_random_tests / 2
          r1 = Rte.randomRte(depth)
          r2 = Rte.randomRte(depth)
          } {
 
       assert(Not(Not(r1)).canonicalize ~= r1.canonicalize)
-      if (! (Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize)) {
+      if (!(Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize)) {
         val a = Not(And(r1, r2)).canonicalize
         val b = Or(Not(r1), Not(r2)).canonicalize
-        xymbolyco.GraphViz.dfaToPng(Or(And(a,Not(b)),
-                                      And(b,Not(a))).toDfa(),"de-morgan",abbrev=true)
+        xymbolyco.GraphViz.dfaToPng(Or(And(a, Not(b)),
+                                       And(b, Not(a))).toDfa(), "de-morgan", abbrev = true)
         assert(Not(And(r1, r2)).canonicalize ~= Or(Not(r1), Not(r2)).canonicalize,
                s"\nr1=$r1  \nr2=$r2" +
                  s"\n  Not(And(r1, r2)) = Not(And($r1, $r2)) = " + Not(And(r1, r2)).canonicalize +
@@ -248,7 +248,7 @@ class RteTestSuite extends AdjFunSuite {
     }
   }
 
-  test("de morgan 245"){
+  test("de morgan 245") {
     // Not.apply(And.apply(r1, r2)(scala.this.DummyImplicit.dummyImplicit)).canonicalize.
     //     ~=(Or.apply(Not.apply(r1), Not.apply(r2))(scala.this.DummyImplicit.dummyImplicit).canonicalize)
     //     was false
@@ -258,7 +258,7 @@ class RteTestSuite extends AdjFunSuite {
     //   Or(Not(r1), Not(r2)) = Or(Not(Or(<[Member a,b,c]>,<Trait3$1>)), Not(<Trait1$1>)) = Or(And(Not(<[Member a,b,c]>),Not(<Trait3$1>)),Not(<Trait1$1>))
     trait Trait1
     trait Trait2
-    val r1 = Or(Singleton(SMember(1,2,3)),Singleton(SAtomic(classOf[Trait1])))
+    val r1 = Or(Singleton(SMember(1, 2, 3)), Singleton(SAtomic(classOf[Trait1])))
     val r2 = Singleton(SAtomic(classOf[Trait2]))
     val a = Not(And(r1, r2)).canonicalize
     val b = Or(Not(r1), Not(r2)).canonicalize
@@ -266,14 +266,14 @@ class RteTestSuite extends AdjFunSuite {
     assert(a ~= b)
   }
 
-  test("de morgan 272"){
+  test("de morgan 272") {
 
     val r1 = Cat(Singleton(SAtomic(classOf[java.lang.Number])), Singleton(SEql(0)))
     val r2 = Sigma
     val a = Not(And(r1, r2)).canonicalize
     val b = Or(Not(r1), Not(r2)).canonicalize
 
-    assert(And(a,Not(b)).canonicalize ~= EmptySet)
+    assert(And(a, Not(b)).canonicalize ~= EmptySet)
 
     assert(a ~= b)
   }
@@ -283,15 +283,15 @@ class RteTestSuite extends AdjFunSuite {
     assert(Types.intp(1))
     assert(Types.doublep(1.1))
     assert(SInt.typep(1))
-    assert(! SInt.typep(1.0))
-    assert(! SDouble.typep(1))
+    assert(!SInt.typep(1.0))
+    assert(!SDouble.typep(1))
     assert(SDouble.typep(1.0))
-    val arbitrate = Rte.rteCase( Seq(Star(classOf[String]) -> 1,
-                               Cat(Star(classOf[String]),Singleton(SEql(1))) -> 2,
-                               Cat(Star(classOf[String]),Singleton(SEql(-1))) -> 3,
-                               Cat(Star(classOf[String]),Singleton(SEql(0))) -> 4,
-                               Cat(Star(classOf[String]),Singleton(SInt)) -> 5
-                               ))
+    val arbitrate = Rte.rteCase(Seq(Star(classOf[String]) -> 1,
+                                    Cat(Star(classOf[String]), Singleton(SEql(1))) -> 2,
+                                    Cat(Star(classOf[String]), Singleton(SEql(-1))) -> 3,
+                                    Cat(Star(classOf[String]), Singleton(SEql(0))) -> 4,
+                                    Cat(Star(classOf[String]), Singleton(SInt)) -> 5
+                                    ))
     assert(arbitrate(Seq("hello")).contains(1))
     assert(arbitrate(List()).contains(1))
     assert(arbitrate(List("hello", "world", 1)).contains(2))
@@ -354,38 +354,46 @@ class RteTestSuite extends AdjFunSuite {
     assert(c3 == 1)
   }
 
-  test("search"){
-    val rte:Rte = Star(And(Cat(Or(Not(Singleton(SEql(1))),
-                                  Singleton(SEql(2)))),
-                           Or(Singleton(SEql(3)),Singleton(SEql(3)))))
+  test("search") {
+    val rte: Rte = Star(And(Cat(Or(Not(Singleton(SEql(1))),
+                                   Singleton(SEql(2)))),
+                            Or(Singleton(SEql(3)), Singleton(SEql(3)))))
     rte.search(Rte.isSingleton) match {
-      case Some(Singleton(SEql((_,x)))) => assert(x == 1)
+      case Some(Singleton(SEql((_, x)))) => assert(x == 1)
       case _ => fail()
     }
   }
-  
-  test("isomorphic"){
+
+  test("isomorphic") {
     import Types.evenType
     import scala.language.implicitConversions
     import rte.RteImplicits._
 
-    assert(Star(Cat(classOf[Int],Star(classOf[String]),evenType())).isomorphic(Not(evenType()))
+    assert(Star(Cat(classOf[Int], Star(classOf[String]), evenType())).isomorphic(Not(evenType()))
              == None)
     assert((Star(Cat(classOf[Int], Star(classOf[String]), evenType())) ~= Not(evenType()))
              == false)
   }
 
-  test("spanning paths"){
+  test("spanning paths") {
     import xymbolyco.Dfa.dfaUnion
-    for{n <- 0 to 10
-        rte1 = Rte.randomRte(4)
-        rte2 = Rte.randomRte(4)
-        rte3 = Rte.randomRte(4)
-        dfa1 = Cat(rte1,Star(rte2),Not(rte2),rte3).toDfa(1)
-        dfa2 = Cat(rte2,Star(rte3),Not(rte3),rte1).toDfa(2)
-        dfa3 = Cat(rte3,Star(rte1),Not(rte1),rte2).toDfa(3)
-        dfa4 = dfaUnion(dfaUnion(dfa1,dfa2),dfa3)
-        } println(dfa4.findSpanningPathMap())
-  }
+    var lostValues: Set[Int] = Set()
 
+    def arbitrate(a: Int, b: Int): Int = {
+      lostValues = lostValues + b
+      a
+    }
+
+    for {n <- 0 to 10
+         rte1 = Rte.randomRte(4)
+         rte2 = Rte.randomRte(4)
+         rte3 = Rte.randomRte(4)
+         dfa1 = Cat(rte1, Star(rte2), Not(rte2), rte3).toDfa(1)
+         dfa2 = Cat(rte2, Star(rte3), Not(rte3), rte1).toDfa(2)
+         dfa3 = Cat(rte3, Star(rte1), Not(rte1), rte2).toDfa(3)
+         dfa4 = dfaUnion(dfaUnion(dfa1, dfa2, arbitrate = arbitrate),
+                         dfa3, arbitrate = arbitrate)
+         } println(dfa4.findSpanningPathMap())
+    println(lostValues)
+  }
 }

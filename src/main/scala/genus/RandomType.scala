@@ -110,6 +110,15 @@ object RandomType {
     SAtomic(classOf[ADT_abstr])
     )
 
+  val interestingValuesAsImplications:Boolean = false
+
+  def getInterestingValues(asImplication:Boolean = interestingValuesAsImplications):Set[Any] = {
+    if (asImplication)
+      interestingValues.toSet
+    else
+      Set[Any]()
+  }
+
   val interestingValues: Vector[Any] = Vector(
     -1, -1, 0, 1, 2, 3, 4, 5, 6,
     1L, 0L, -1L, 1000L, 1000000L, // these values causes problems reported in issue #7

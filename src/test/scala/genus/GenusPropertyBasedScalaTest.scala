@@ -25,7 +25,7 @@ import adjuvant.AdjFunSuite
 import genus.GenusSpecification.arbitraryGen
 import genus.GenusSpecifications.shrinkGenus
 import genus.NormalForm.Dnf
-import genus.RandomType.{Class1X, Class2X}
+import genus.RandomType.{Class1X, Class2X, getInterestingValues}
 import org.scalacheck.Prop.propBoolean
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Configuration
@@ -106,18 +106,7 @@ class GenusPBT extends AdjFunSuite with Matchers with Configuration {
       val cnf = t.canonicalize(Some(Cnf))
       val dnf = t.canonicalize(Some(Dnf))
 
-      val interestingValues: Vector[Any] = Vector(
-        -1, -1, 0, 1, 2, 3, 4, 5, 6,
-        1L, 0L, -1L, 1000L, 1000000L,
-        3.14, 2.17, -math.sqrt(2),
-        3.14d, 2.17d,
-        3.14f, 2.17f,
-        'a', 'b', 'c',
-        true, false,
-        "a", "b", "c", "d", "",
-        new Class1X,
-        new Class2X
-      )
+      val interestingValues: Set[Any] = getInterestingValues(true)
 
       // TODO: Generate randomly values passed to typep
       t.typep(interestingValues) should be(cnf.typep(interestingValues))
