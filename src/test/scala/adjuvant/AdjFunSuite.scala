@@ -35,8 +35,10 @@ class AdjFunSuite extends AnyFunSuite {
 
   override def test(testName: String, testTags: Tag*)(testFun: => Any /* Assertion */)(implicit pos: source.Position):Unit = {
     super.test(testName,testTags : _*)(locally{
+      import java.time.LocalDateTime
+
       val start = System.nanoTime()
-      println("[ starting " + testName)
+      println("[ starting " + testName + "at " + LocalDateTime.now())
       var finished = false
       try{
         testFun
