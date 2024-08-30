@@ -279,7 +279,7 @@ class TypesTest extends AdjFunSuite {
 
   test("typeEquivalent fixed"){
     def f(_a:Any):Boolean = {
-      true
+      false
     }
     def g(_a:Any):Boolean = {
       true
