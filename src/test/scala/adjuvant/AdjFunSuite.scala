@@ -38,7 +38,7 @@ class AdjFunSuite extends AnyFunSuite {
       import java.time.LocalDateTime
 
       val start = System.nanoTime()
-      println("[ starting " + testName + "at " + LocalDateTime.now())
+      println("[ starting " + testName + " at " + LocalDateTime.now())
       var finished = false
       try{
         testFun
