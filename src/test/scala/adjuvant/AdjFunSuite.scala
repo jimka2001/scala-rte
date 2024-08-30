@@ -47,10 +47,16 @@ class AdjFunSuite extends AnyFunSuite {
       finally{
         val end = System.nanoTime()
         if (finished)
-          println("] finished " + testName + ": " + printTime(end-start))
+          println("] finished " + testName + ": " + printTime(end-start) + " total time: " + printTime(AdjFunSuite.elapsed()))
         else
           println("] aborted " + testName + ": " + printTime(end - start))
       }
     })(pos)
   }
+}
+
+object AdjFunSuite {
+  val testsStarted:Long = System.nanoTime()
+
+  def elapsed():Long = System.nanoTime() - testsStarted
 }
