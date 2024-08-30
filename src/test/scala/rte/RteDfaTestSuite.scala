@@ -77,7 +77,7 @@ class RteDfaTestSuite extends AdjFunSuite {
   }
   test("dfa trim") {
     for {depth <- 5 to 6
-         _ <- 1 to num_random_tests/10 // rep
+         _ <- 1 to 10
          dfa = Rte.randomRte(depth).toDfa()
          } {
       xymbolyco.Minimize.removeNonAccessible(dfa)
