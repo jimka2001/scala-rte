@@ -24,11 +24,10 @@ package genus
 import scala.language.implicitConversions
 import java.lang
 import scala.annotation.tailrec
-import NormalForm._
+
 import genus.Types.{evenType, oddType}
 
 object RandomType {
-
 
   // the following classes have no instantiatable subclass
   trait Trait1
@@ -199,81 +198,5 @@ object RandomType {
       } else 0)))
       g()
     }
-  }
-
-  def sanityTest(): Unit = {
-    val a = 2
-    val t = SAtomic(classOf[Int])
-
-    println("type of a = " + a.getClass)
-    println("class of Int = " + classOf[Int])
-
-    println(t.typep(a))
-    class Abstract1
-    class Abstract2
-    trait Trait1
-    trait Trait2
-    trait Trait3
-    val t1 = SAnd(SAtomic(classOf[Trait1]),
-                  SOr(SAtomic(classOf[Abstract1]),
-                      SAtomic(classOf[Abstract2])),
-                  SAtomic(classOf[Trait2]))
-    val t2 = SAnd(SAtomic(classOf[Trait1]),
-                  SNot(SOr(SAtomic(classOf[Abstract1]),
-                           SAtomic(classOf[Abstract2]))),
-                  SAtomic(classOf[Trait2]))
-    println(t1)
-    println(t2)
-    println(t2.canonicalize(nf = Some(Dnf)))
-    println(t1.canonicalize())
-    println(t1.canonicalize(nf = Some(Dnf)))
-    println(SNot(t1).canonicalize(nf = Some(Dnf)))
-    (0 to 10).foreach { i =>
-      val t = randomType(6)
-      println(s"$i:" + t)
-      println("   " + t.canonicalize())
-    }
-
-    println(t1 || t2)
-    println(t1 && t2)
-    println(t1 ^^ t2)
-    println(t1 - t2)
-    println(!t1)
-
-    println(classOf[String] || classOf[Integer])
-  }
-
-  def test179() = {
-    import genus.SAtomic.{withClosedWorldView, withOpenWorldView}
-
-    class A
-    trait B
-    trait C
-    class D extends A with B with C
-    withClosedWorldView {
-      val rte = SAnd(classOf[D], SNot(SAnd(classOf[B], classOf[C])))
-
-      println("xxxxxx -> " + rte.inhabited)
-    }
-  }
-
-  def test192() = {
-    case class Box(value: Any)
-    println(SAtomic(classOf[scala.runtime.RichInt]).typep(1))
-    println(SAtomic(classOf[Int]).typep(Box(1).value))
-    println(SAtomic(classOf[java.lang.Integer]).typep(Box(1).value))
-    println(SAtomic(classOf[java.lang.Integer]).typep(1)) // works
-    println(SAtomic(classOf[Integer]).typep(1)) // works
-    println(classOf[java.lang.Integer].isInstance(1)) // works
-    println(classOf[Int].isInstance(1))
-    println(1.isInstanceOf[Int])
-    println(1.isInstanceOf[Any])
-    println(classOf[Any].isInstance(1))
-    println(classOf[java.lang.Object].isInstance(1))
-  }
-
-  def main(args: Array[String]): Unit = {
-    test179()
-    //test192()
   }
 }
