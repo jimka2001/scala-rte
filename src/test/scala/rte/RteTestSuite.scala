@@ -28,6 +28,8 @@ import genus._
 import adjuvant.AdjFunSuite
 import RandomType.randomType
 import genus.Types.mysteryType
+import xymbolyco.Dfa
+import xymbolyco.GraphViz.dfaView
 
 class RteTestSuite extends AdjFunSuite {
   val SInt = SSatisfies(Types.intp, "Int")
@@ -366,12 +368,18 @@ class RteTestSuite extends AdjFunSuite {
   }
 
   test("isomorphic") {
-    import Types.evenType
     import scala.language.implicitConversions
     import rte.RteImplicits._
 
-    assert(Star(Cat(classOf[Int], Star(classOf[String]), mysteryType())).isomorphic(Not(mysteryType()))
-             == None)
+    val r1:Rte = Star(Cat(classOf[Int],
+                          Star(classOf[String]),
+                          mysteryType()))
+    val r2:Rte = Not(mysteryType())
+    val dfa:Dfa[Any, SimpleTypeD, Boolean] = Xor(r1,r2).toDfa(true)
+    // println(dfa.spanningPath)
+    // println(dfa.spanningTrace)
+    // dfaView(dfa, title="xor r1 r2")
+    assert(r1.isomorphic(r2) == Some(false)) // every spanning path contains mysteryType in its transition label
     assert((Star(Cat(classOf[Int], Star(classOf[String]), mysteryType())) ~= Not(mysteryType()))
              == false)
   }
