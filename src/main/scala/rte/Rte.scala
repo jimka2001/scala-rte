@@ -69,14 +69,12 @@ abstract class Rte {
   //         As a last resort if it has final states, then there is still a chance
   //         that those final states are not accessible because of the satisfiability
   //         of the transitions.
-  //         So we call dfa.findSpanningPath(satisfiable), passing along the
-  //         value of satisfiable given to isomorphic(that,satisfiable).
-  //   If we can determine that the two Rtes accept the same language, then
-  //     return Some(true)
-  //   If we can determine that the two Rtes DO NOT accept the same language,
-  //     return Some(false)
-  //   If every path from q0 to a final state traverses at least one transition,(q,td,q')
-  //     for which td.inhabited == None, then return None.
+  //         So we call dfa.spanningPath.
+  // RETURNS:
+  //   Some(true) if we can determine that the two Rtes accept the same language
+  //   Some(false) if we can determine that the two Rtes DO NOT accept the same language.
+  //   None, if every path from q0 to a final state traverses at least one transition,(q,td,q')
+  //     for which td.inhabited == None (i.e. inhabited = dont-know), then return None.
   def isomorphic(that: Rte): Option[Boolean] = {
     (this, that) match {
       case (x, y) if x == y => Some(true)
