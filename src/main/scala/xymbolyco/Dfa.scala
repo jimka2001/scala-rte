@@ -152,14 +152,14 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     import scala.Double.PositiveInfinity
     val numStates:Double = 2 * Q.size.toDouble
     val states = Q.toSeq
-    // We use the Bellman Ford shortest path algorithm to find the shortest
+    // We use the Bellman Ford or Dijkstra shortest path algorithm to find the shortest
     //    path from q0 to each final state.  We do this by associating weights
     //    to each edge.  A satisfiable transition, has weight=1.  A uninhabited
     //    transition has weight = infinity.
     //    An indeterminate state has weight = 2*number-of-states.  Why?  Because
     //    if there is a path going only though satisfiable transitions, then it
     //    at most uses every state, thus has a length of num-states - 1.
-    //    This means Bellman Ford will always prefer satisfiable paths to
+    //    This means the graph search will always prefer satisfiable paths to
     //    indeterminate paths.
     val edges = for{q<-states
                     Transition(src,lab,dst) <- q.transitions
