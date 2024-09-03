@@ -29,6 +29,7 @@ import adjuvant.AdjFunSuite
 import RandomType.randomType
 import genus.Types.mysteryType
 import xymbolyco.Dfa
+import xymbolyco.Extract.{dfaToRte, extractRte}
 import xymbolyco.GraphViz.dfaView
 
 class RteTestSuite extends AdjFunSuite {
@@ -387,22 +388,30 @@ class RteTestSuite extends AdjFunSuite {
   test("spanning paths") {
     import xymbolyco.Dfa.dfaUnion
     var lostValues: Set[Int] = Set()
-
+    val depth=3
     def arbitrate(a: Int, b: Int): Int = {
       lostValues = lostValues + b
       a
     }
-
     for {n <- 0 to 10
-         rte1 = Rte.randomRte(4)
-         rte2 = Rte.randomRte(4)
-         rte3 = Rte.randomRte(4)
+         rte1 = Rte.randomRte(depth)
+         rte2 = Rte.randomRte(depth)
+         rte3 = Rte.randomRte(depth)
          dfa1 = Cat(rte1, Star(rte2), Not(rte2), rte3).toDfa(1)
          dfa2 = Cat(rte2, Star(rte3), Not(rte3), rte1).toDfa(2)
-         dfa3 = Cat(rte3, Star(rte1), Not(rte1), rte2).toDfa(3)
-         dfa4 = dfaUnion(dfaUnion(dfa1, dfa2, arbitrate = arbitrate),
-                         dfa3, arbitrate = arbitrate)
-         } println(dfa4.findSpanningPathMap())
-    println(lostValues)
+         dfau = dfaUnion(dfa1, dfa2, arbitrate = arbitrate)
+         } {
+      println("======================")
+      println(f"depth=$depth n=$n")
+      println(f"rte1=$rte1")
+      println(f"rte2=$rte2")
+      println(f"rte3=$rte3")
+      //println(f"dfa1=" + dfaToRte(dfa1,1))
+      //println(f"dfa2=" + dfaToRte(dfa2,2))
+      //println(f"dfa4= states=${dfau.Qids.size}  transitions=${dfau.protoDelta.size}")
+
+      dfau.findSpanningPathMap()
+    }
+    println(f"lostValues = $lostValues")
   }
 }
