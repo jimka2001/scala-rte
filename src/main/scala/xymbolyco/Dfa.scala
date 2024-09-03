@@ -175,7 +175,8 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       path match {
         case List() => 0.0
         case _::Nil => 0.0
-        case st1::st2::states => edge_weights_map.getOrElse((st1,st2), PositiveInfinity) + path_weight(st2::states)
+        case st1::st2::states =>
+          edge_weights_map.getOrElse((st1,st2), PositiveInfinity) + path_weight(st2::states)
       }
     }
     val (d,p) = shortestPath(states, q0, edge_weights) // Bellman Ford or Dikjstra
@@ -199,8 +200,13 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     // m is the map from final state to shortest path from q0 to that state
     val m:Map[Int,(Option[Boolean],Path)] = F.map(maybePath).toMap
 
+    // given a sequence of designators (Option[Boolean], Path) each indicating some
+    //   path to a final state (presumably all the final states have the same
+    //   exit value) find the path with the smallest weight.  This will be
+    //   a satisfiable path if such exists, if not, it will be a path with the
+    //   lest number of indeterminant types.
     def bestPath(pairs:Seq[(Option[Boolean],Path)]):(Option[Boolean],Path) = {
-      pairs.fold((Some(false),List())) { (acc, path) =>
+      pairs.reduce{ (acc, path) =>
         (acc, path) match {
           case ((ob, path1), (_, path2)) if path_weight(path1) < path_weight(path2) => (ob, path1)
           case (_, (ob, path2)) => (ob, path2)

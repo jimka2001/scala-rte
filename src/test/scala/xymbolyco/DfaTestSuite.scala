@@ -373,6 +373,16 @@ class DfaTestSuite extends AdjFunSuite {
     s.simulate(Seq(0)).isEmpty
   }
 
+  test("spanning path 0"){
+    import rte.{And,Not,Star,Singleton}
+    import genus.SAtomic
+    // this test checks the normal behavior of rteCase
+    val int = Singleton(SAtomic(classOf[Int]))
+    val str = Singleton(SAtomic(classOf[String]))
+    val dfa = And(Star(str), Not(Star(int))).toDfa(1)
+    assert( dfa.spanningPath != None)
+  }
+
   test("spanning path"){
     import genus.{SAnd, SAtomic, SEql, SOr, SSatisfies, SimpleTypeD}
     import rte.{Or, Rte, Singleton, Xor}
