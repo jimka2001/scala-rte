@@ -59,7 +59,7 @@ object BellmanFord {
     sizedSet[Int](finals, () => r.nextInt(num))
   }
 
-  def Dijkstra[V](vertices: Seq[V],
+  def dijkstra[V](vertices: Seq[V],
                   source: V,
                   edges: Seq[((V, V), Double)]): (Map[V, Double], Map[V, V]) = {
     implicit val myOrdering: Ordering[(V, Double)] = Ordering.by { case (_, d) => d }

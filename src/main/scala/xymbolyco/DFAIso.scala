@@ -42,7 +42,7 @@ object DFAIso {
                                                 } yield newedge
     //creating a Map of vertices to their "cost" and a Map of vertices to their parent with the lowest cost
     // the function can be replaced by any other function that does the same job, Dijkstra/ Bellman-Ford
-    val xormap = Dijkstra(xor.Qids.toSeq, xor.q0id, edges.toSeq)
+    val xormap = dijkstra(xor.Qids.toSeq, xor.q0id, edges.toSeq)
     //creating a map to determine wether each state is reachable or not
     // ( by transitions being satisfiable, undeterministic or unsatisfiable)
     val reachableMap: Map[Int, Option[Boolean]] = xor.fMap.map(x => if (xormap._1(x._1) < xor.Q.size.toDouble) x._1 -> Some(false)
@@ -84,7 +84,7 @@ object DFAIso {
     val edges: Set[((Int, Int), Double)] = for {edge <- xor.protoDelta
                                                 newedge = ((edge._1, edge._3), edgecost(xor.Q.size, edge._2))
                                                 } yield newedge
-    val xormap = Dijkstra(xor.Qids.toSeq, xor.q0id, edges.toSeq)
+    val xormap = dijkstra(xor.Qids.toSeq, xor.q0id, edges.toSeq)
     val x: Map[Int, Double] = xormap._1
     for (i <- xor.fMap.keys) {
       if (x(i) < xor.Q.size.toDouble) {
