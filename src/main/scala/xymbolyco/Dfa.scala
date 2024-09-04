@@ -152,23 +152,34 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     import scala.Double.PositiveInfinity
     val numStates:Double = 2 * Q.size.toDouble
     val states = Q.toSeq
-    // We use the Bellman Ford shortest path algorithm to find the shortest
+    // We use the Bellman Ford or Dijkstra shortest path algorithm to find the shortest
     //    path from q0 to each final state.  We do this by associating weights
     //    to each edge.  A satisfiable transition, has weight=1.  A uninhabited
     //    transition has weight = infinity.
     //    An indeterminate state has weight = 2*number-of-states.  Why?  Because
     //    if there is a path going only though satisfiable transitions, then it
     //    at most uses every state, thus has a length of num-states - 1.
-    //    This means Bellman Ford will always prefer satisfiable paths to
+    //    This means the graph search will always prefer satisfiable paths to
     //    indeterminate paths.
-    val edges = for{q<-states
-                    Transition(src,lab,dst) <- q.transitions
-                    edge <- labeler.inhabited(lab) match {
-                      case None => Some(((src,dst),numStates)) // indeterminate
-                      case Some(true) => Some(((src,dst),1.0)) // satisfiable
-                      case Some(false) => None // non-satisfiable
-                    }} yield edge
-    val (d,p) = shortestPath(states, q0, edges) // Bellman Ford
+    val edge_weights: Seq[((State[Σ, L, E], State[Σ, L, E]), Double)] =
+      for{q<-states
+          Transition(src,lab,dst) <- q.transitions
+          edge <- labeler.inhabited(lab) match {
+            case None => Some(((src,dst),numStates)) // indeterminate
+            case Some(true) => Some(((src,dst),1.0)) // satisfiable
+            case Some(false) => None // non-satisfiable
+          }} yield edge
+    val edge_weights_map = edge_weights.toMap
+
+    def path_weight(path:Path):Double = {
+      path match {
+        case List() => 0.0
+        case _::Nil => 0.0
+        case st1::st2::states =>
+          edge_weights_map.getOrElse((st1,st2), PositiveInfinity) + path_weight(st2::states)
+      }
+    }
+    val (d,p) = shortestPath(states, q0, edge_weights) // Bellman Ford or Dikjstra
     // returns a pair (which will contribute to a Map entry)
     //   which maps a state id to a pair of (Option[Boolean], Path)
     //   where the path is a list of consecutive states from q0 to the state in question.
@@ -189,14 +200,16 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     // m is the map from final state to shortest path from q0 to that state
     val m:Map[Int,(Option[Boolean],Path)] = F.map(maybePath).toMap
 
+    // given a sequence of designators (Option[Boolean], Path) each indicating some
+    //   path to a final state (presumably all the final states have the same
+    //   exit value) find the path with the smallest weight.  This will be
+    //   a satisfiable path if such exists, if not, it will be a path with the
+    //   lest number of indeterminant types.
     def bestPath(pairs:Seq[(Option[Boolean],Path)]):(Option[Boolean],Path) = {
-      pairs.fold((Some(false),List())) { (acc, path) =>
+      pairs.reduce{ (acc, path) =>
         (acc, path) match {
-          case ((Some(true),_), _) => acc
-          case (_,(Some(true),_)) => path
-          case ((None,_),_) => acc
-          case (_,(None,_)) => path
-          case _ => acc
+          case ((ob, path1), (_, path2)) if path_weight(path1) < path_weight(path2) => (ob, path1)
+          case (_, (ob, path2)) => (ob, path2)
         }
       }
     }

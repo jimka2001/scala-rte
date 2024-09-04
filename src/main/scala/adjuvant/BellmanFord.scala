@@ -13,9 +13,12 @@ import adjuvant.Adjuvant.sizedSet
 import scala.collection.mutable
 
 object BellmanFord {
-  def shortestPath[V](vertices: Seq[V],
-                      source: V,
-                      edges: Seq[((V, V), Double)]): (Map[V, Double], Map[V, V]) = {
+
+
+  def bellmanFord[V](vertices: Seq[V],
+                     source: V,
+                     edges: Seq[((V, V), Double)]
+                    ): (Map[V, Double], Map[V, V]) = {
     import scala.Double.PositiveInfinity
     def recur(k: Int, d: Map[V, Double], p: Map[V, V]): (Map[V, Double], Map[V, V]) = {
       def dist(v: V) = d.getOrElse(v, PositiveInfinity)
@@ -59,7 +62,7 @@ object BellmanFord {
     sizedSet[Int](finals, () => r.nextInt(num))
   }
 
-  def Dijkstra[V](vertices: Seq[V],
+  def dijkstra[V](vertices: Seq[V],
                   source: V,
                   edges: Seq[((V, V), Double)]): (Map[V, Double], Map[V, V]) = {
     implicit val myOrdering: Ordering[(V, Double)] = Ordering.by { case (_, d) => d }
@@ -75,7 +78,7 @@ object BellmanFord {
     // queue has been reached
     while (pq1.head._2 != Double.PositiveInfinity) {
       val current = pq1.dequeue()
-      //not treat a vertex if we have already treated it with a better path
+      // not treat a vertex if we have already treated it with a better path
       if (current._2 < distancemap(current._1)) {
         distancemap += current
         for (i <- edgess(current._1)) {
@@ -91,4 +94,9 @@ object BellmanFord {
     }
     (distancemap, bestpredecessor)
   }
+
+  def shortestPath[V](vertices: Seq[V],
+                      source: V,
+                      edges: Seq[((V, V), Double)]
+                     ): (Map[V, Double], Map[V, V]) = dijkstra(vertices, source, edges)
 }

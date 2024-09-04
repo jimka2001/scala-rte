@@ -431,8 +431,8 @@ class AndTestSuite extends AdjFunSuite {
   test("discovered case 432"){
     val r1 = Star(Not(Sigma))
     val r2 = Not(Sigma)
-    assert(! (r1 ~= EmptyWord))
-    assert( r1 ~= r2)
+    assert(! (r1 ~= EmptyWord), s"r1=$r1")
+    assert( r1 ~= r2, s"r1=$r1, r2=$r2")
   }
   test("and conversion3"){
     assert(And(And(),EmptySet,And()).conversionC3() == EmptySet)

@@ -25,25 +25,51 @@ import adjuvant.Adjuvant.{eql, fixedPoint}
 import adjuvant.AdjFunSuite
 import genus._
 import rte.RteImplicits._
+
 import scala.language.implicitConversions
-import rte.Rte.{rteCase,rteIfThenElse}
+import rte.Rte.{rteCase, rteIfThenElse}
+import xymbolyco.GraphViz.dfaView
 
 //
 class RteCaseTestSuite extends AdjFunSuite {
-  test("rteCase normal"){
+
+  test("rteCase normal 0a") {
+    // this test checks the normal behavior of rteCase
+    val int = classOf[Int]
+    val str = classOf[String]
+    val dfa = And(Star(str), Not(Star(int))).toDfa(1)
+    val v = dfa.vacuous()
+    dfaView(dfa, "normal 0a")
+    assert( v == Some(false))
+  }
+
+  test("rteCase normal 0b") {
     // this test checks the normal behavior of rteCase
     val int = classOf[Int]
     val str = classOf[String]
     val f = rteCase(Seq((Star(int), 1),
-                        (Star(str), 2),
-                        (Cat(Star(int), Star(str)), 3),
-                        (Cat(int, str), 0)))
-
-    assert(f(List(1, 2, 3, 4, 5)) == Some(1))
-    assert(f(Vector(1,2,3,4)) == Some(1))
-
+                        (Star(str), 2)))
+    val dfa = And(Star(str), Not(Or(Star(int)))).toDfa(1)
+    val v = dfa.vacuous()
+    assert( v == Some(false))
     assert(f(List("one", "two", "three", "four")) == Some(2))
-    assert(f(Vector("one", "two", "three", "four")) == Some(2))
+  }
+
+  test("rteCase normal"){
+      // this test checks the normal behavior of rteCase
+      val int = classOf[Int]
+      val str = classOf[String]
+      val f = rteCase(Seq((Star(int), 1),
+                          (Star(str), 2),
+                          (Cat(Star(int), Star(str)), 3),
+                          (Cat(int, str), 0)))
+
+      assert(f(List(1, 2, 3, 4, 5)) == Some(1))
+      assert(f(Vector(1,2,3,4)) == Some(1))
+
+      assert(f(List("one", "two", "three", "four")) == Some(2))
+      assert(f(Vector("one", "two", "three", "four")) == Some(2))
+
 
 
     assert(f(List(1, 2, "three", "four")) == Some(3))

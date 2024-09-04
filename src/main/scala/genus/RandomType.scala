@@ -24,11 +24,10 @@ package genus
 import scala.language.implicitConversions
 import java.lang
 import scala.annotation.tailrec
-import NormalForm._
+
 import genus.Types.{evenType, oddType}
 
 object RandomType {
-
 
   // the following classes have no instantiatable subclass
   trait Trait1
@@ -73,7 +72,11 @@ object RandomType {
   //   simply as values, because the SAtomic constructor caches
   //   objects depending on the world view.
 
-
+  def mystery(a:Any):Boolean = {
+    // This function returns false, but the purpose of the function is to
+    //  model a predicate for which we do not know whether it is satisfiable.
+    false
+  }
   def interestingTypes(): Vector[SimpleTypeD] = Vector(
     STop,
     SEmpty,
@@ -87,6 +90,7 @@ object RandomType {
     SMember(false, true),
     evenType(),
     oddType(),
+    SSatisfies(mystery, "mystery"),
     SMember("a", "b", "c"),
     SAtomic(classOf[lang.Number]),
     SAtomic(classOf[String]),
@@ -110,7 +114,17 @@ object RandomType {
     SAtomic(classOf[ADT_abstr])
     )
 
-  val interestingValuesAsImplications:Boolean = false
+  // The idea of this variable is (if true) the certain sample values
+  //   can be used to aid in logical reasoning.  For example, we don't know in
+  //   general if SSatisfies(f) and SSatisfies(g) are disjoint.  However, if a
+  //   witness value, w, is provided such that f(w) = g(w) = true, then we know
+  //   that both types are inhabited and moreover that they are NOT disjoint.
+  //   Disadvantage of this approach is that the set of sample values is necessarily
+  //   small, and run-time checks take more time.   It is a matter of ongoing
+  //   research as to whether such a check is beneficial.
+  //   The purpose of the interesting-values-implication branch is to
+  //   persue this investigation.
+  val interestingValuesAsImplications:Boolean = true
 
   def getInterestingValues(asImplication:Boolean = interestingValuesAsImplications):Set[Any] = {
     if (asImplication)
@@ -120,7 +134,7 @@ object RandomType {
   }
 
   val interestingValues: Vector[Any] = Vector(
-    -1, -1, 0, 1, 2, 3, 4, 5, 6,
+    -1, -2, 0, 1, 2, 3, 4, 5, 6,
     1L, 0L, -1L, 1000L, 1000000L, // these values causes problems reported in issue #7
     3.14, 2.17, -math.sqrt(2),
     3.14d, 2.17d,
@@ -144,7 +158,7 @@ object RandomType {
   // when the filter is set to Some(true) every type will be accepted and there are no restrictions
   // when the filter is set to some (false ) the only types that are accepted are those that are not proven to be uninhabited
   // when the filter is set to None, the on ly types that are accepted are those that are proven to be inhabited ( which means
-  // that the types that are untederminately inhabited will be rejected, and those that are proven to be uninhabited will also be rejected)
+  // that the types that are indeterminately inhabited will be rejected, and those that are proven to be uninhabited will also be rejected)
   //this function then calls the 2nd function if the filter is set to be different than Some(true) with a filter function
 
 
@@ -160,8 +174,8 @@ object RandomType {
     }
   }
 
-  // this function still takes a depth for the simpletypeD, an "avoid" boolean, and a filter function that will be given as an argument
-  // the function takes a simpletypeD as an argument and return a boolean according to some restrictions. While the boolean is not true
+  // this function still takes a depth for the simpleTypeD, an "avoid" boolean, and a filter function that will be given as an argument
+  // the function takes a simpleTypeD as an argument and return a boolean according to some restrictions. While the boolean is not true
   // the second function will call itself.
   def randomType(depth: Int, filter: SimpleTypeD => Boolean, avoid: Boolean): SimpleTypeD = {
     @tailrec
@@ -199,81 +213,5 @@ object RandomType {
       } else 0)))
       g()
     }
-  }
-
-  def sanityTest(): Unit = {
-    val a = 2
-    val t = SAtomic(classOf[Int])
-
-    println("type of a = " + a.getClass)
-    println("class of Int = " + classOf[Int])
-
-    println(t.typep(a))
-    class Abstract1
-    class Abstract2
-    trait Trait1
-    trait Trait2
-    trait Trait3
-    val t1 = SAnd(SAtomic(classOf[Trait1]),
-                  SOr(SAtomic(classOf[Abstract1]),
-                      SAtomic(classOf[Abstract2])),
-                  SAtomic(classOf[Trait2]))
-    val t2 = SAnd(SAtomic(classOf[Trait1]),
-                  SNot(SOr(SAtomic(classOf[Abstract1]),
-                           SAtomic(classOf[Abstract2]))),
-                  SAtomic(classOf[Trait2]))
-    println(t1)
-    println(t2)
-    println(t2.canonicalize(nf = Some(Dnf)))
-    println(t1.canonicalize())
-    println(t1.canonicalize(nf = Some(Dnf)))
-    println(SNot(t1).canonicalize(nf = Some(Dnf)))
-    (0 to 10).foreach { i =>
-      val t = randomType(6)
-      println(s"$i:" + t)
-      println("   " + t.canonicalize())
-    }
-
-    println(t1 || t2)
-    println(t1 && t2)
-    println(t1 ^^ t2)
-    println(t1 - t2)
-    println(!t1)
-
-    println(classOf[String] || classOf[Integer])
-  }
-
-  def test179() = {
-    import genus.SAtomic.{withClosedWorldView, withOpenWorldView}
-
-    class A
-    trait B
-    trait C
-    class D extends A with B with C
-    withClosedWorldView {
-      val rte = SAnd(classOf[D], SNot(SAnd(classOf[B], classOf[C])))
-
-      println("xxxxxx -> " + rte.inhabited)
-    }
-  }
-
-  def test192() = {
-    case class Box(value: Any)
-    println(SAtomic(classOf[scala.runtime.RichInt]).typep(1))
-    println(SAtomic(classOf[Int]).typep(Box(1).value))
-    println(SAtomic(classOf[java.lang.Integer]).typep(Box(1).value))
-    println(SAtomic(classOf[java.lang.Integer]).typep(1)) // works
-    println(SAtomic(classOf[Integer]).typep(1)) // works
-    println(classOf[java.lang.Integer].isInstance(1)) // works
-    println(classOf[Int].isInstance(1))
-    println(1.isInstanceOf[Int])
-    println(1.isInstanceOf[Any])
-    println(classOf[Any].isInstance(1))
-    println(classOf[java.lang.Object].isInstance(1))
-  }
-
-  def main(args: Array[String]): Unit = {
-    test179()
-    //test192()
   }
 }

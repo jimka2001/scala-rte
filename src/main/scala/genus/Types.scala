@@ -240,6 +240,14 @@ object Types {
 
   def oddType(): SSatisfies = SSatisfies(isOdd, "odd")
 
+  def mysteryType(): SSatisfies =   SSatisfies(mystery, "mystery")
+
+  private def mystery(a:Any):Boolean = {
+    // This function returns false, but the purpose of the function is to
+    //  model a predicate for which we do not know whether it is satisfiable.
+    false
+  }
+
   def isPrime(x: Any): Boolean = {
     @scala.annotation.tailrec
     def go(k: Int, y: Int, upper: Int): Boolean = {

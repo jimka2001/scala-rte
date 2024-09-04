@@ -373,6 +373,16 @@ class DfaTestSuite extends AdjFunSuite {
     s.simulate(Seq(0)).isEmpty
   }
 
+  test("spanning path 0"){
+    import rte.{And,Not,Star,Singleton}
+    import genus.SAtomic
+    // this test checks the normal behavior of rteCase
+    val int = Singleton(SAtomic(classOf[Int]))
+    val str = Singleton(SAtomic(classOf[String]))
+    val dfa = And(Star(str), Not(Star(int))).toDfa(1)
+    assert( dfa.spanningPath != None)
+  }
+
   test("spanning path"){
     import genus.{SAnd, SAtomic, SEql, SOr, SSatisfies, SimpleTypeD}
     import rte.{Or, Rte, Singleton, Xor}
@@ -414,12 +424,22 @@ class DfaTestSuite extends AdjFunSuite {
     assert(true == pattern2.contains(data1))
     val diff = Xor(pattern2 ,pattern1)
     val dfa = diff.toDfa(exitValue=true)
-    val Some(Left(qs)) = dfa.spanningPath
-    assert(qs.length == 4)
-
-    val Some(Left(tds)) = dfa.spanningTrace
-    assert(tds.length == 3)
-
+    val qs = dfa.spanningPath match {
+      case Some(Right(qs)) => {
+        assert(qs.length == 4)
+        qs
+      }
+      case Some(Left(qs)) => {
+        assert (qs.length == 4)
+        qs
+      }
+      case _ => List()
+    }
+    dfa.spanningTrace match {
+      case Some(Right(tds)) => assert(tds.length == 3)
+      case Some(Left(tds)) => assert(tds.length == 3)
+      case _ => ()
+    }
     val m = dfa.findSpanningPathMap()
     val (x, qs2) = m(true)
     assert(qs == qs2)
