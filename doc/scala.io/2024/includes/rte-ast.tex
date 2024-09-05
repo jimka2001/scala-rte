@@ -13,10 +13,10 @@
     \tikzstyle{level 2}=[sibling distance=80mm]
     \tikzstyle{level 3}=[sibling distance=40mm]
   \node {Cat}
-    child { node [bottom color=blue!20] {Singleton(Int)}}
+    child { node [bottom color=blue!20] {Atomic(Int)}}
     child { node {Star}
       child { node {Or} 
-        child { node [bottom color=blue!20] {Singleton(Double)} }
-        child { node [bottom color=blue!20] {Singleton(Float)} } } } ;
+        child { node [bottom color=blue!20] {Atomic(Double)} }
+        child { node [bottom color=blue!20] {Atomic(Float)} } } } ;
 \end{tikzpicture}
 \end{document}

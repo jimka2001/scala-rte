@@ -1,13 +1,17 @@
 \section{Regular Type Expressions by Example}
 
+{  %% chapter slide
+  \setbeamercolor{background canvas}{bg=chaptercolor}
 \begin{frame}{Examples}{Regular Type Expressions}
   \centering
   
   \includegraphics[width=0.9\textwidth]{regexp.png}
 \end{frame}
+}
+
 \begin{frame}[t]{Regular Expressions}
 
-  We'd like to recognize sequences with regular patterns.
+  We'd like to recognize sequences with  \Emph{regular patterns}.
 
   \medskip
   
@@ -75,7 +79,7 @@
 
 \newsavebox\exnotebox
 \begin{lrbox}{\exnotebox}
-  \begin{minipage}{7cm}
+  \begin{minipage}{6.5cm}
     \input{exnotebox}
   \end{minipage}
 \end{lrbox}
@@ -85,9 +89,8 @@
   \begin{itemize}
   \item An RTE is an \Emph{expression} designating a set  of finite sequences
   \item ... based on regular patterns in the \Emph{types} of their content.
-  \item Mathematical notation
-    \[(Int \cdot (Double \cup Float)^+)^*\]
-  \item Scala notation\\
-    \usebox\exnotebox
+  \item Mathematical notation: $(Int \cdot (Double \cup Float)^+)^*$
+  \item Scala notation ~ Expression Tree\\
+        \usebox\exnotebox{}\raisebox{-15mm}{\scalebox{0.5}{\input{strex-scala}}}%
   \end{itemize}
 \end{frame}

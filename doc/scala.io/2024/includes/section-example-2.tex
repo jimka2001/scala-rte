@@ -1,12 +1,9 @@
-\begin{frame}[t]{Example 2}{Type Checking a Sequence}
-\end{frame}
-
 \begin{frame}[t]{Example 2}{How does a DFA work as a predicate?}
 
   \only<1-3>{\tt \textcolor{blue}{[13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}\\}%
   \only<4>{\tt [13 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
   \only<5>{\tt [\colorbox{orange!30}{\Large 13} 2.0 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
-  \only<6>{\tt [13 \colorbox{orange!30}{\Large 2.0} 6 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
+  \only<6>{\tt [13 \colorbox{orange!30}{\Large 2.0} 6.0 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
   \only<7>{\tt [13 2.0 \colorbox{orange!30}{\Large 6.0} 4 "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
   \only<8>{\tt [13 2.0 6.0 \colorbox{orange!30}{\Large 4} "a" "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
   \only<9>{\tt [13 2.0 6.0 4 \colorbox{orange!30}{\Large "a"} "an" "the" -5 2.0 3.0 4.0 7 8.0]}%
@@ -25,8 +22,8 @@
     \vfill}
   \begin{columns}
     \begin{column}{0.2\textwidth}
-      \only<2>{We \textcolor{blue}{construct a \Emph{deterministic} finite automaton} (DFA).}%
-      \only<4-17>{\textcolor{orange}{\LARGE Does it a match?}}%
+      \only<2>{We \textcolor{blue}{construct~a \Emph{deterministic} finite automaton} (DFA).}%
+      \only<4-17>{\textcolor{orange}{\LARGE Does it match?}}%
       \only<18>{\textcolor{greeny}{\LARGE Yes, it's a match!}}
     \end{column}
 

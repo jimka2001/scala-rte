@@ -1,18 +1,22 @@
 
 
 
-\begin{frame}{Deterministic Finite Automata: \code{xymbolyco}}
+{  \setbeamercolor{background canvas}{bg=sectioncolor}
+\begin{frame}{Library: \code{xymbolyco}}{Deterministic Finite Automata}
   \centering
   %%By Photographer: Blake Griffin - Finite Automata and Dom Price, CC BY-SA 3.0, https://en.wikipedia.org/w/index.php?curid=47875021
   \includegraphics[width=0.7\textwidth]{fa-band.jpg}
 \end{frame}
-
+}
 
 \begin{frame}{DFA}{What are Finite Automata?}
-  \begin{itemize}
-  \item   Every RTE corresponds to a Deterministic Finite Automata (DFA), \code{Rte.toDfa(rte)} (theoretically exponential time)
+  % https://medium.com/learning-data/understanding-algorithmic-time-efficiency-in-sql-queries-616176a85d02
+  \includegraphics[width=0.4\textwidth]{complexity.png}
 
-  \item   The DFA will recognize any sequence matching the RTE (in linear time).
+  \begin{itemize}
+  \item   Every RTE corresponds to a Deterministic Finite Automata (DFA), \code{Rte.toDfa(rte)}, \Emph{$O(2^n)$}.
+
+  \item   The DFA recognizes a sequence matching the RTE, \Emph{$O(n)$}.
 
   \end{itemize}
 \end{frame}
