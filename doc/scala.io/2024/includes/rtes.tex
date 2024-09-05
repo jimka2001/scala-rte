@@ -5,11 +5,22 @@
   
   \includegraphics[width=0.9\textwidth]{regexp.png}
 \end{frame}
-\begin{frame}[t]{String REs}
+\begin{frame}[t]{Regular Expressions}
 
   We'd like to recognize sequences with regular patterns.
+
+  \medskip
   
-  [ \textcolor{greeny}{1},
+  \only<1,2>{\LARGE [ {1}, {2},
+      {2.3},
+      {9.3},
+      {3},
+      {1.5F},
+      {6.5},
+      {4.8F},
+      {2},
+      {2.3}]}%
+  \only<4,5>{{\LARGE [ \textcolor{greeny}{1},
     \textcolor{blue}{2.3},
     \textcolor{blue}{9.3},
     \quad \textcolor{greeny}{3},
@@ -17,22 +28,28 @@
     \textcolor{blue}{6.5},
     \textcolor{blue}{4.8F},
     \quad \textcolor{greeny}{2},
-    \textcolor{blue}{2.3}]
+    \textcolor{blue}{2.3}]}}%
+  \only<3>{{\Large [ \textcolor{greeny}{1},
+    \textcolor{blue}{$\underbrace{2.3, 9.3}_{\text{floating point}}$},
+    \quad \textcolor{greeny}{3},
+    \textcolor{blue}{$\underbrace{1.5F, 6.5, 4.8F}_{\text{floating point}}$},
+    \quad \textcolor{greeny}{2},
+    \textcolor{blue}{$\underbrace{2.3}_{\text{floating point}}$}]}}%
 
-  \medskip
-  \only<2->{
+  \bigskip 
+
+  \only<2>{What's the pattern?}%  
+  \only<4->{
+  {\Large String-based \textcolor{blue}{regular expressions}}
   \begin{itemize}
-  \item We generalize string-based \textcolor{blue}{regular expressions}
- to arbitrary sequences.
-  \item To match a string like: {\tt "\textcolor{greeny}{i}\textcolor{blue}{D}\textcolor{blue}{D}\textcolor{greeny}{i}\textcolor{blue}{F}\textcolor{blue}{D}\textcolor{blue}{F}\textcolor{greeny}{i}\textcolor{blue}{D}"},
-  \item ... we use a RE such as: $(i\cdot (D\vee F)^+)^*$,
-  \item ... which has surface syntax: \code{"(i(D|F)+)*"}.
-  \end{itemize}
-  }
+  \item Match strings like: {\tt "\textcolor{greeny}{i}\textcolor{blue}{D}\textcolor{blue}{D}\textcolor{greeny}{i}\textcolor{blue}{F}\textcolor{blue}{D}\textcolor{blue}{F}\textcolor{greeny}{i}\textcolor{blue}{D}"},
+  \item ... we use surface syntax: \code{"(i(D|F)+)*"}.
+  \item ... representing expression: $(i\cdot (D\vee F)^+)^*$,
+  \end{itemize}%
 
-  \bigskip
-
-  \only<3>{
+  \scalebox{0.6}{\input{strex}}%
+  }%
+  \only<5>{
   {\Large We propose \textcolor{greeny}{Rational Type Expressions (RTEs)}}
   \bigskip
   
