@@ -197,7 +197,7 @@ class ThompsonTestSuite  extends AdjFunSuite {
                     (3, STop, 3)))
   }
   test("Epsilon") {
-    val dfa = constructThompsonDfa(EmptyWord, 42)
+    val dfa = constructThompsonDfa(EmptySeq, 42)
     assert(dfa.simulate(Seq()) == Some(42))
     assert(dfa.simulate(Seq(1, 2, 3)) == None)
   }
@@ -312,9 +312,9 @@ class ThompsonTestSuite  extends AdjFunSuite {
   test("discovered case 309") {
     val t2x: Rte = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
     val Σ = Sigma
-    val ε = EmptyWord
+    val ε = EmptySeq
 
-    for {pattern <- Seq(EmptyWord,
+    for {pattern <- Seq(EmptySeq,
                         Star(EmptySet),
                         Star(t2x),
                         And(Star(t2x),
@@ -329,7 +329,7 @@ class ThompsonTestSuite  extends AdjFunSuite {
   test("equivalence check") {
     val t2x: Rte = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
     val Σ = Sigma
-    val ε = EmptyWord
+    val ε = EmptySeq
     for {pattern <- Seq[Rte]( // And((<SAtomic:Trait2X>)*,Or(Cat(Σ,Σ,(Σ)*),ε))
                               And(Star(t2x),
                                   Or(Cat(Σ, Σ, Star(Σ)),

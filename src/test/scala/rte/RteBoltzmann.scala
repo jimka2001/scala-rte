@@ -51,7 +51,7 @@ class RteBoltzmann(var size: Int, stdDepth: Int) {
 
   def genLeaf(): Gen[Rte] = Gen.lzy {
     val weights = Array(oracle.emptyset, oracle.epsilon, oracle.sigma, oracle.std)
-    val gens = Array[Rte](EmptySet, EmptyWord, Sigma, Singleton(naiveGenGenus(stdDepth).sample.get))
+    val gens = Array[Rte](EmptySet, EmptySeq, Sigma, Singleton(naiveGenGenus(stdDepth).sample.get))
 
     var i = 0
     var found = false

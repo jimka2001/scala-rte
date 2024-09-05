@@ -35,7 +35,7 @@ object RteSpecifications {
     // Choose between one of the 6 terminal types
     Gen.frequency(
       (1, EmptySet),
-      (1, EmptyWord),
+      (1, EmptySeq),
       (1, Sigma),
       (1, Singleton(Gen.lzy(naiveGenGenus(depthSimpleTypeD)).sample.get)),
     )

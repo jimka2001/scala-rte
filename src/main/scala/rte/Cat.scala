@@ -41,7 +41,7 @@ final case class Cat(operands: Seq[Rte]) extends RteNode {
 
   def firstTypes: Set[SimpleTypeD] = {
     operands match {
-      case Seq() => EmptyWord.firstTypes
+      case Seq() => EmptySeq.firstTypes
       case Seq(r) => r.firstTypes
       case Seq(r, rs@_*) =>
         if (r.nullable)
@@ -60,9 +60,9 @@ final case class Cat(operands: Seq[Rte]) extends RteNode {
   }
 
   def conversion4(): Rte = {
-    // remove EmptyWord and flatten Cat(Cat(...)...)
+    // remove EmptySeq and flatten Cat(Cat(...)...)
     create(operands.flatMap {
-      case EmptyWord => Seq()
+      case EmptySeq => Seq()
       case Cat(Seq(rs@_*)) => rs
       case r => Seq(r)
     })
@@ -135,7 +135,7 @@ final case class Cat(operands: Seq[Rte]) extends RteNode {
 
   def derivativeDown(wrt: SimpleTypeD, factors: List[SimpleTypeD], disjoints: List[SimpleTypeD]): Rte = {
     operands.toList match {
-      case Nil => EmptyWord.derivative(Some(wrt), factors, disjoints)
+      case Nil => EmptySeq.derivative(Some(wrt), factors, disjoints)
       case rt :: Nil => rt.derivative(Some(wrt), factors, disjoints)
       case head :: tail =>
         lazy val term1: Rte = Cat(head.derivative(Some(wrt), factors, disjoints) :: tail)
@@ -166,7 +166,7 @@ object Cat {
 
   def createCat(operands: Seq[Rte]): Rte = {
     operands match {
-      case Seq() => EmptyWord
+      case Seq() => EmptySeq
       case Seq(rt) => rt
       case _ => Cat(operands)
     }

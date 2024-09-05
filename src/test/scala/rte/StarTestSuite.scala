@@ -29,8 +29,8 @@ import org.scalatest.funsuite.AnyFunSuite
 class StarTestSuite extends AdjFunSuite {
 
   test("canonicalize star") {
-    assert(EmptyWord.*.canonicalize == EmptyWord)
-    assert(EmptySet.*.canonicalize == EmptyWord)
+    assert(EmptySeq.*.canonicalize == EmptySeq)
+    assert(EmptySet.*.canonicalize == EmptySeq)
 
     for {depth <- 0 to 5
          _ <- 1 to num_random_tests
@@ -47,8 +47,8 @@ class StarTestSuite extends AdjFunSuite {
     }
   }
   test("star conversion1"){
-    assert(Star(EmptyWord).conversion1() == EmptyWord)
-    assert(Star(EmptySet).conversion1() == EmptyWord)
+    assert(Star(EmptySeq).conversion1() == EmptySeq)
+    assert(Star(EmptySet).conversion1() == EmptySeq)
     val a = Singleton(SEql("a"))
     assert(Star(Star(a)).conversion1() == Star(a))
   }

@@ -50,7 +50,7 @@ case class Singleton(td:SimpleTypeD) extends RteTerminal {
       // i.e. convert an Rte of a complement type to a complement Rte
       //  However, the complement Rte matches the empty sequence and also
       //    sequences of length two or more; therefore to be correct we
-      //    must intersect with Sigma to filter away empty word and
+      //    must intersect with Sigma to filter away empty sequence and
       //    words of length greater than one.
       case SNot(operand) => And(Not(Singleton(operand)),
                                 Sigma)
@@ -73,14 +73,14 @@ case class Singleton(td:SimpleTypeD) extends RteTerminal {
     //   the same thing.  However, sometimes this is impossible as retrieving factors
     //   after canonicalization is difficult or impossible.
     wrt match {
-      case `td` => EmptyWord
-      case STop => EmptyWord
-      case _: SimpleTypeD if factors.contains(td) => EmptyWord
+      case `td` => EmptySeq
+      case STop => EmptySeq
+      case _: SimpleTypeD if factors.contains(td) => EmptySeq
       case _: SimpleTypeD if disjoints.contains(td) => EmptySet
       case td2: SimpleTypeD if td2.disjoint(td).contains(true) => EmptySet
-      case td2: SimpleTypeD if td2.subtypep(td).contains(true) => EmptyWord
+      case td2: SimpleTypeD if td2.subtypep(td).contains(true) => EmptySeq
       case SAnd(tds@_*) if tds.contains(SNot(td)) => EmptySet
-      case SAnd(tds@_*) if tds.contains(td) => EmptyWord
+      case SAnd(tds@_*) if tds.contains(td) => EmptySeq
       case _ => throw new CannotComputeDerivative(Seq("cannot compute derivative of ",
                                                       s" this = $this",
                                                       s" wrt = $wrt",

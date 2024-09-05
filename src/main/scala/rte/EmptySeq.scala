@@ -22,11 +22,11 @@
 package rte
 import genus._
 
-object EmptyWord extends RteTerminal {
+object EmptySeq extends RteTerminal {
   override def toLaTeX():String = "\\varepsilon "
-  override def toString:String = "EmptyWord" //"ε"
-  override def toDot():String = "EmptyWord"
-  override def toMachineReadable():String = "EmptyWord"
+  override def toString:String = "EmptySeq" //"ε"
+  override def toDot():String = "EmptySeq"
+  override def toMachineReadable():String = "EmptySeq"
 
   def nullable:Boolean = true
   def firstTypes:Set[SimpleTypeD] = Set.empty

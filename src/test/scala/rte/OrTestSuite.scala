@@ -36,18 +36,18 @@ class OrTestSuite extends AdjFunSuite {
     class TestD2 // disjoint from TestD1
     val trd1 = Singleton(genus.SAtomic(classOf[TestD1]))
     val r1 = Star(trd1)
-    val r2 = EmptyWord
+    val r2 = EmptySeq
     val r3 = trd1 // Not(Not(trd1))
-    assert(Or(EmptyWord, Cat(r2, r3, Star(Cat(r2, r3)))).canonicalize
-             == Or(EmptyWord, Star(Cat(r2, r3))).canonicalize)
-    assert(Or(EmptyWord, Cat(r1, Star(Cat(r1)))).canonicalize
-             == Or(EmptyWord, Star(Cat(r1))).canonicalize)
+    assert(Or(EmptySeq, Cat(r2, r3, Star(Cat(r2, r3)))).canonicalize
+             == Or(EmptySeq, Star(Cat(r2, r3))).canonicalize)
+    assert(Or(EmptySeq, Cat(r1, Star(Cat(r1)))).canonicalize
+             == Or(EmptySeq, Star(Cat(r1))).canonicalize)
 
-    assert(Or(EmptyWord, Cat(r1, r3, Star(Cat(r1, r3)))).canonicalize
-             == Or(EmptyWord, Star(Cat(r1, r3))).canonicalize)
+    assert(Or(EmptySeq, Cat(r1, r3, Star(Cat(r1, r3)))).canonicalize
+             == Or(EmptySeq, Star(Cat(r1, r3))).canonicalize)
 
-    assert(Or(EmptyWord, Cat(r1, r2, r3, Star(Cat(r1, r2, r3)))).canonicalize
-             == Or(EmptyWord, Star(Cat(r1, r2, r3))).canonicalize)
+    assert(Or(EmptySeq, Cat(r1, r2, r3, Star(Cat(r1, r2, r3)))).canonicalize
+             == Or(EmptySeq, Star(Cat(r1, r2, r3))).canonicalize)
   }
 
   test("canonicalize or 58") {
@@ -150,11 +150,11 @@ class OrTestSuite extends AdjFunSuite {
       // (:or A B (:* B) C)
       // --> (:or A (:* B) C)
 
-      assert(Or(EmptyWord, Cat(r3, Star(r3))).canonicalize
-               ~= Or(EmptyWord, Star(r3)).canonicalize,
-             "" + Or(EmptyWord, Cat(r3, Star(r3))).canonicalize
+      assert(Or(EmptySeq, Cat(r3, Star(r3))).canonicalize
+               ~= Or(EmptySeq, Star(r3)).canonicalize,
+             "" + Or(EmptySeq, Cat(r3, Star(r3))).canonicalize
                + " not isomorphic with "
-               + Or(EmptyWord, Star(r3)).canonicalize)
+               + Or(EmptySeq, Star(r3)).canonicalize)
     }
   }
 
@@ -176,8 +176,8 @@ class OrTestSuite extends AdjFunSuite {
       //  --> Or(:epsilon,Star(Cat(X,Y,Z)))
       locally {
 
-        assert(Or(EmptyWord, Cat(r1, r2, r3, Star(Cat(r1, r2, r3)))).canonicalize
-                 ~= Or(EmptyWord, Star(Cat(r1, r2, r3))).canonicalize,
+        assert(Or(EmptySeq, Cat(r1, r2, r3, Star(Cat(r1, r2, r3)))).canonicalize
+                 ~= Or(EmptySeq, Star(Cat(r1, r2, r3))).canonicalize,
                s"r1=$r1 r2=$r2  r3=$r3")
       }
       // Or(Star(A),Cat(X,Y,Z,Star(Cat(X,Y,Z))))
@@ -197,17 +197,17 @@ class OrTestSuite extends AdjFunSuite {
 
       // (:or A :epsilon B (:cat X (:* X)) C)
       //   --> (:or A :epsilon B (:* X) C )
-      assert(Or(r1, EmptyWord, r2, Cat(r3, Star(r3)), r4).canonicalize
-               ~= Or(r1, EmptyWord, r2, Star(r3), r4).canonicalize,
-             "" + Or(r1, EmptyWord, r2, Cat(r3, Star(r3)), r4).canonicalize
+      assert(Or(r1, EmptySeq, r2, Cat(r3, Star(r3)), r4).canonicalize
+               ~= Or(r1, EmptySeq, r2, Star(r3), r4).canonicalize,
+             "" + Or(r1, EmptySeq, r2, Cat(r3, Star(r3)), r4).canonicalize
                + " not isomorphic with "
-               + Or(r1, EmptyWord, r2, Star(r3), r4).canonicalize)
-      assert(Or(r1, EmptyWord, r2, r3.+, r4).canonicalize
-               ~= Or(r1, EmptyWord, r2, Star(r3), r4).canonicalize)
+               + Or(r1, EmptySeq, r2, Star(r3), r4).canonicalize)
+      assert(Or(r1, EmptySeq, r2, r3.+, r4).canonicalize
+               ~= Or(r1, EmptySeq, r2, Star(r3), r4).canonicalize)
 
       // (:or A :epsilon B (:* X) C)
       //   --> (:or A B (:* X) C)
-      assert(Or(r1, EmptyWord, r2, Star(r3), r4).canonicalize ~=
+      assert(Or(r1, EmptySeq, r2, Star(r3), r4).canonicalize ~=
                Or(r1, r2, Star(r3), r4).canonicalize)
 
       // remove subset
@@ -217,7 +217,7 @@ class OrTestSuite extends AdjFunSuite {
   }
 
   test("or 415") {
-    assert(Or(EmptyWord, Cat(Star(Sigma), Sigma, Star(Sigma))).canonicalize
+    assert(Or(EmptySeq, Cat(Star(Sigma), Sigma, Star(Sigma))).canonicalize
              == Star(Sigma))
   }
   test("canonicalize or 315") {
@@ -333,9 +333,9 @@ class OrTestSuite extends AdjFunSuite {
                      Singleton(SEql(true))),
                  Not(Singleton(SAtomic(classOf[Integer]))))
     val r2 = Or(ra,
-                Or(Or(Cat(Sigma, Sigma, Star(Sigma)), EmptyWord), EmptyWord))
+                Or(Or(Cat(Sigma, Sigma, Star(Sigma)), EmptySeq), EmptySeq))
     val r3 = Singleton(STop)
-    val r4 = And(Star(Star(Singleton(SEql(false)))), EmptyWord)
+    val r4 = And(Star(Star(Singleton(SEql(false)))), EmptySeq)
 
     ///And(r2,r3).canonicalizeDebug(10,List("a",1,0,true,false))
 
@@ -431,13 +431,13 @@ class OrTestSuite extends AdjFunSuite {
 
     // (:or A :epsilon B (:cat X (:* X)) C)
     //   --> (:or A :epsilon B (:* X) C )
-    assert(Or(A, EmptyWord, B, Cat(X, Star(X)), C).conversionO8(true)
-             == Or(A, EmptyWord, B, Star(X), C))
+    assert(Or(A, EmptySeq, B, Cat(X, Star(X)), C).conversionO8(true)
+             == Or(A, EmptySeq, B, Star(X), C))
 
     // (:or :epsilon (:cat X (:* X)))
     //   --> (:or :epsilon (:* X))
-    assert(Or(EmptyWord, Cat(X, Star(X))).conversionO8(true)
-             == Or(EmptyWord, Star(X)))
+    assert(Or(EmptySeq, Cat(X, Star(X))).conversionO8(true)
+             == Or(EmptySeq, Star(X)))
 
     // (:or (:* C) (:cat X (:* X)))
     //   --> (:or (:* C) (:* X))
@@ -459,8 +459,8 @@ class OrTestSuite extends AdjFunSuite {
 
     // (:or A :epsilon B (:cat X Y Z (:* (:cat X Y Z))) C)
     //   --> (:or A :epsilon B (:* (:cat X Y Z)) C )
-    assert(Or(A, EmptyWord, B, Cat(X, Y, Z, Star(Cat(X, Y, Z))), C).conversionO9(true)
-             == Or(A, EmptyWord, B, Star(Cat(X, Y, Z)), C))
+    assert(Or(A, EmptySeq, B, Cat(X, Y, Z, Star(Cat(X, Y, Z))), C).conversionO9(true)
+             == Or(A, EmptySeq, B, Star(Cat(X, Y, Z)), C))
 
     // (:or B* (:cat X Y Z (:* (:cat X Y Z))))
     //   --> (:or B* (:* (:cat X Y Z)))
@@ -474,10 +474,10 @@ class OrTestSuite extends AdjFunSuite {
     val B = Singleton(SEql("B"))
     val C = Singleton(SEql("C"))
     val X = Singleton(SEql("X"))
-    assert(Or(A, EmptyWord, B, Star(X), C).conversionO10()
+    assert(Or(A, EmptySeq, B, Star(X), C).conversionO10()
              == Or(A, B, Star(X), C))
-    assert(Or(A, EmptyWord, B, C).conversionO10()
-             == Or(A, EmptyWord, B, C))
+    assert(Or(A, EmptySeq, B, C).conversionO10()
+             == Or(A, EmptySeq, B, C))
   }
   test("or conversion11b") {
     // if Sigma is in the operands, then filter out all singletons

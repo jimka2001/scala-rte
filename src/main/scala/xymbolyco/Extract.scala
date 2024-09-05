@@ -56,11 +56,11 @@ object Extract {
                                       } yield (tr.source.id, Singleton(tr.label), tr.destination.id)
 
     // step 3
-    val new_initial_transitions = Seq((-1, EmptyWord, 0))
+    val new_initial_transitions = Seq((-1, EmptySeq, 0))
     val nindexToState = (for {(q, id) <- dfa.F.zipWithIndex} yield -2 - id -> q).toMap
     // step 4
     val new_final_transitions = for {(id, q) <- nindexToState
-                                     } yield (q.id, EmptyWord, id)
+                                     } yield (q.id, EmptySeq, id)
 
     def combine_parallel_labels(operands: Seq[Rte]): Rte =
       Or.createOr(operands).canonicalize

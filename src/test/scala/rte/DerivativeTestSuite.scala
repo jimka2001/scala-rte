@@ -86,21 +86,21 @@ class DerivativeTestSuite extends AdjFunSuite {
   test("derivative special cases") {
     //import genus.STop
     assert(EmptySet.derivative1(Some(STop)) == EmptySet)
-    assert(Sigma.derivative1(Some(STop)) == EmptyWord)
-    assert(EmptyWord.derivative1(Some(STop)) == EmptySet)
-    assert(Singleton(STop).derivative1(Some(STop)) == EmptyWord)
+    assert(Sigma.derivative1(Some(STop)) == EmptySeq)
+    assert(EmptySeq.derivative1(Some(STop)) == EmptySet)
+    assert(Singleton(STop).derivative1(Some(STop)) == EmptySeq)
     assert(Singleton(SEmpty).derivative1(Some(STop)) == EmptySet)
 
     assert(EmptySet.derivative1(Some(SEmpty)) == EmptySet)
     assert(Sigma.derivative1(Some(SEmpty)) == EmptySet)
-    assert(EmptyWord.derivative1(Some(SEmpty)) == EmptySet)
+    assert(EmptySeq.derivative1(Some(SEmpty)) == EmptySet)
     assert(Singleton(STop).derivative1(Some(SEmpty)) == EmptySet)
     assert(Singleton(SEmpty).derivative1(Some(SEmpty)) == EmptySet)
 
-    // deriv wrt EmptyWord
+    // deriv wrt EmptySeq
     assert(EmptySet.derivative1(None) == EmptySet)
     assert(Sigma.derivative1(None) == Sigma)
-    assert(EmptyWord.derivative1(None) == EmptyWord)
+    assert(EmptySeq.derivative1(None) == EmptySeq)
     assert(Singleton(STop).derivative1(None) == Sigma)
     assert(Singleton(SEmpty).derivative1(None) == EmptySet)
   }
@@ -113,7 +113,7 @@ class DerivativeTestSuite extends AdjFunSuite {
          } {
       td.inhabited match {
         case Some(true) =>
-          assert (Sigma.derivative1(Some(td) ) == EmptyWord)
+          assert (Sigma.derivative1(Some(td) ) == EmptySeq)
         case Some(false) =>
           assert (Sigma.derivative1(Some(td) ) == EmptySet)
         case None => ()
@@ -126,7 +126,7 @@ class DerivativeTestSuite extends AdjFunSuite {
          td = randomType(depth)
          } {
       assert(EmptySet.derivative1(Some(td)) == EmptySet)
-      assert(EmptyWord.derivative1(Some(td)) == EmptySet)
+      assert(EmptySeq.derivative1(Some(td)) == EmptySet)
     }
   }
   test("random derivative 3") {
@@ -136,7 +136,7 @@ class DerivativeTestSuite extends AdjFunSuite {
          rt = Singleton(td)
          } {
       if (td.inhabited.contains(true))
-        assert(rt.derivative1(Some(STop)) == EmptyWord,
+        assert(rt.derivative1(Some(STop)) == EmptySeq,
                s"failed deriv of $rt wrt Some(STop)")
       else if (td.inhabited.contains(false))
         assert(rt.derivative1(Some(STop)) == EmptySet,
@@ -162,7 +162,7 @@ class DerivativeTestSuite extends AdjFunSuite {
       val c = rt.canonicalize
       val dc = d.canonicalize
       assert(dc ~= c,
-             s": deriv of $rt wrt EmptyWord/None returned $d" +
+             s": deriv of $rt wrt EmptySeq/None returned $d" +
                s"\n   expecting $rt which reduces to $c")
     }
   }
@@ -186,7 +186,7 @@ class DerivativeTestSuite extends AdjFunSuite {
     val i = Singleton(SAtomic(classOf[Integer]))
     val s = Singleton(SAtomic(classOf[String]))
     val rt = And(Or(Star(And(Sigma,Not(i))),
-                    EmptyWord),
+                    EmptySeq),
                  Star(Star(Or(Or(z,f),Star(s)))))
     val ft= rt.firstTypes
     //println(s"rt=$rt")

@@ -95,10 +95,10 @@ class RteTestSuite extends AdjFunSuite {
       assert((r1 & r2) == And(r1, r2))
       assert(r1 ++ r2 == Cat(r1, r2)) // check that reversing the arguments works correctly
       assert(!r1 == Not(r1))
-      assert(r1.? == Or(r1, EmptyWord))
+      assert(r1.? == Or(r1, EmptySeq))
       assert(r1.* == Star(r1))
       assert(r1.+ == Cat(r1, Star(r1)))
-      assert((r1 ^ 0) == EmptyWord)
+      assert((r1 ^ 0) == EmptySeq)
       assert((r1 ^ 1) == r1)
       assert((r1 ^ 2).canonicalize ~= Cat(r1, r1).canonicalize,
              s"\nr1= $r1" +
@@ -124,7 +124,7 @@ class RteTestSuite extends AdjFunSuite {
 
     assert(EmptySet.canonicalize == EmptySet)
     assert(Sigma.canonicalize == Sigma)
-    assert(EmptyWord.canonicalize == EmptyWord)
+    assert(EmptySeq.canonicalize == EmptySeq)
   }
   test("discovered 102") {
     val t1 = SEql(0)
@@ -162,7 +162,7 @@ class RteTestSuite extends AdjFunSuite {
     trait Trait3 extends Trait2
     abstract class Abstract1
     abstract class Abstract2 extends Trait3
-    val r1 = Or(Or(Cat(Sigma, Sigma, Star(Sigma)), EmptyWord),
+    val r1 = Or(Or(Cat(Sigma, Sigma, Star(Sigma)), EmptySeq),
                 Or(Atomic(classOf[Abstract1]),
                    Cat(Atomic(classOf[Abstract2]),
                        Member(4, 5, 6))))
@@ -226,9 +226,9 @@ class RteTestSuite extends AdjFunSuite {
   }
   test("canonicalize not de morgan") {
     assert(Not(Sigma).canonicalize == Or(Cat(Sigma, Sigma, Star(Sigma)),
-                                         EmptyWord))
+                                         EmptySeq))
     assert(Not(Star(Sigma)).canonicalize == EmptySet)
-    assert(Not(EmptyWord).canonicalize == Cat(Sigma, Star(Sigma)))
+    assert(Not(EmptySeq).canonicalize == Cat(Sigma, Star(Sigma)))
     assert(Not(EmptySet).canonicalize == Star(Sigma))
     for {depth <- 0 to 2
          _ <- 1 to num_random_tests / 2

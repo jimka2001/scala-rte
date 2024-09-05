@@ -37,7 +37,7 @@ class ExplicitTestSuite extends AdjFunSuite {
   val S:Rte = Singleton(classOf[String])
   //val X = Singleton(SEql(-1))
   //val Y = Singleton(SEql(1))
-  val ε = EmptyWord
+  val ε = EmptySeq
   val ∅ = EmptySet
   val SInt = SSatisfies(Types.intp,"Int")
   val SDouble = SSatisfies(Types.doublep,"Double")

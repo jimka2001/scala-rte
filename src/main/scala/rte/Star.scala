@@ -42,8 +42,8 @@ case class Star(operand:Rte) extends RteNode {
 
   def conversion1():Rte = {
     this match {
-      case Star(EmptyWord) => EmptyWord
-      case Star(EmptySet) => EmptyWord
+      case Star(EmptySeq) => EmptySeq
+      case Star(EmptySet) => EmptySeq
       // x** -> x*
       case Star(s@Star(_)) => s
       case _ => this
@@ -108,8 +108,8 @@ object Star{
     operand match {
       case Sigma => sigmaStar
       case Star(_) => operand
-      case EmptyWord => operand
-      case EmptySet => EmptyWord
+      case EmptySeq => operand
+      case EmptySet => EmptySeq
       case _ => Star(operand)
     }
   }

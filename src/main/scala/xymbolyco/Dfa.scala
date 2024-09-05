@@ -352,7 +352,7 @@ object TestMe {
   def main(argv:Array[String]):Unit = {
     // val Test2 = classOf[TestAc]
     val Σ = Sigma
-    // val ε = EmptyWord
+    // val ε = EmptySeq
     val ∅ = EmptySet
     val e = SEql(1)
     val rt1 = Cat(Star(Σ), Star(Singleton(e)))

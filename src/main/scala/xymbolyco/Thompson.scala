@@ -6,7 +6,7 @@ import genus.Types.mdtd
 import genus.{RandomType, SAnd, SNot, SOr, STop, SimpleTypeD}
 import rte.And.createAnd
 import rte.Cat.createCat
-import rte.{And, Cat, EmptySet, EmptyWord, Not, Or, Rte, Sigma, Singleton, Star}
+import rte.{And, Cat, EmptySet, EmptySeq, Not, Or, Rte, Sigma, Singleton, Star}
 import rte.Or.createOr
 import xymbolyco.GraphViz.dfaView
 //import gnuplot.GnuPlot.gnuPlot
@@ -95,7 +95,7 @@ object Thompson {
     lazy val in = count()
     lazy val out = count()
     rte match {
-      case EmptyWord =>
+      case EmptySeq =>
         (in, out, Seq((in, None, out)))
       case EmptySet =>
         (in, out, Seq())
@@ -133,7 +133,7 @@ object Thompson {
       // Cat might have 0 or more rts, we need to handle 4 cases.
       case Cat(rtes) =>
         constructVarArgsTransitions(rtes,
-                                    EmptyWord,
+                                    EmptySeq,
                                     (rte1: Rte, rte2: Rte) => Cat(rte1, rte2),
                                     createCat,
                                     (rte1: Rte, rte2: Rte) => {

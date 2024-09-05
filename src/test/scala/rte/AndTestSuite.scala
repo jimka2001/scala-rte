@@ -55,7 +55,7 @@ class AndTestSuite extends AdjFunSuite {
     val S = Singleton(SAtomic(classOf[String]))
     //val X = Singleton(SEql(-1))
     //val Y = Singleton(SEql(1))
-    val ε = EmptyWord
+    val ε = EmptySeq
 
     val rte4 = Or(And(Or(Cat(Star(S), I), ε),
                       Cat(Star(S), I)),
@@ -89,7 +89,7 @@ class AndTestSuite extends AdjFunSuite {
     val S = Singleton(SAtomic(classOf[String]))
     val X = Singleton(SEql(-1))
     val Y = Singleton(SEql(1))
-    val rte1 = And(Or(Cat(Star(S), I), EmptyWord),
+    val rte1 = And(Or(Cat(Star(S), I), EmptySeq),
                    Not(Cat(Star(S), X)),
                    Not(Cat(Star(S), Y)),
                    Not(Star(S)))
@@ -162,7 +162,7 @@ class AndTestSuite extends AdjFunSuite {
       assert(And(r1, r2, r1).canonicalize == And(r1, r2).canonicalize ||
                And(r1, r2, r1).canonicalize == And(r2, r1).canonicalize
              )
-      assert(And(r1, Sigma, r2, EmptyWord).canonicalize == EmptySet)
+      assert(And(r1, Sigma, r2, EmptySeq).canonicalize == EmptySet)
       assert(And(r1, EmptySet, r2).canonicalize == EmptySet)
 
       assert(And(And(r1, r2), r3).canonicalize ~= And(r1, And(r2, r3)).canonicalize,
@@ -267,7 +267,7 @@ class AndTestSuite extends AdjFunSuite {
     //      // r3=Not(<{a,b,c}>)
     // r4=(<[= -1]>)*
     val r1 = Singleton(STop)
-    val r2 = Or(Cat(Sigma, Sigma, Star(Sigma)), EmptyWord)
+    val r2 = Or(Cat(Sigma, Sigma, Star(Sigma)), EmptySeq)
     val r3 = Not(Singleton(SMember("a", "b", "c")))
     // Or( Cat(Σ,Σ,(Σ)*), Not(<{a,b,c}>))
     //   --> Not(<{a,b,c}>)
@@ -431,7 +431,7 @@ class AndTestSuite extends AdjFunSuite {
   test("discovered case 432"){
     val r1 = Star(Not(Sigma))
     val r2 = Not(Sigma)
-    assert(! (r1 ~= EmptyWord), s"r1=$r1")
+    assert(! (r1 ~= EmptySeq), s"r1=$r1")
     assert( r1 ~= r2, s"r1=$r1, r2=$r2")
   }
   test("and conversion3"){
@@ -466,15 +466,15 @@ class AndTestSuite extends AdjFunSuite {
   }
 
   test("and conversionA7"){
-    assert(And(EmptyWord,Singleton(SEql(1))).conversionA7()
+    assert(And(EmptySeq,Singleton(SEql(1))).conversionA7()
            == EmptySet)
   }
   
   test("and conversion8"){
-    // if operands contains EmptyWord, then the intersection is either EmptyWord or EmptySet
-    assert(And(EmptyWord,Star(Singleton(SEql(1)))).conversionA8()
-             == EmptyWord)
-    assert(And(EmptyWord,Singleton(SEql(1))).conversionA8()
+    // if operands contains EmptySeq, then the intersection is either EmptySeq or EmptySet
+    assert(And(EmptySeq,Star(Singleton(SEql(1)))).conversionA8()
+             == EmptySeq)
+    assert(And(EmptySeq,Singleton(SEql(1))).conversionA8()
              == EmptySet)
   }
   test("and conversion9"){

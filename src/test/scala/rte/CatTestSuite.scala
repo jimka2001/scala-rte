@@ -38,7 +38,7 @@ class CatTestSuite extends AdjFunSuite {
 
 
   test("canonicalize cat") {
-    assert(Cat().canonicalize == EmptyWord)
+    assert(Cat().canonicalize == EmptySeq)
     for {depth <- 0 to 4
          _ <- 1 to num_random_tests
          r1 = Rte.randomRte(depth)
@@ -49,9 +49,9 @@ class CatTestSuite extends AdjFunSuite {
       assert(Cat(r1, EmptySet).canonicalize == EmptySet)
       assert(Cat(r1, EmptySet, r2).canonicalize == EmptySet)
 
-      assert(Cat(EmptyWord, r1).canonicalize == r1.canonicalize)
-      assert(Cat(r1, EmptyWord).canonicalize == r1.canonicalize)
-      assert(Cat(r1, EmptyWord, r2).canonicalize == Cat(r1, r2).canonicalize)
+      assert(Cat(EmptySeq, r1).canonicalize == r1.canonicalize)
+      assert(Cat(r1, EmptySeq).canonicalize == r1.canonicalize)
+      assert(Cat(r1, EmptySeq, r2).canonicalize == Cat(r1, r2).canonicalize)
 
       assert(Cat(Cat(r1, r2), Cat(r1, r2)).canonicalize == Cat(r1, r2, r1, r2).canonicalize,
              s"r1=$r1   r2=$r2")
@@ -97,11 +97,11 @@ class CatTestSuite extends AdjFunSuite {
            == EmptySet)
   }
   test("cat conversion4"){
-    // remove EmptyWord and flatten Cat(Cat(...)...)
+    // remove EmptySeq and flatten Cat(Cat(...)...)
     val a = Singleton(SEql("a"))
     val x = Singleton(SEql("x"))
 
-    assert(Cat(a,EmptyWord,a,Cat(a,x),x).conversion4()
+    assert(Cat(a,EmptySeq,a,Cat(a,x),x).conversion4()
            == Cat(a,a,a,x,x).conversion4())
   }
   test("cat conversion5"){

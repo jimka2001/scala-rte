@@ -63,18 +63,18 @@ case class And(override val operands:Seq[Rte]) extends Combination(operands) {
   def nullable:Boolean = operands.forall{_.nullable} // TODO should be lazy
 
   def conversionA7():Rte = {
-    if (operands.contains(EmptyWord) && matchesOnlySingletons)
+    if (operands.contains(EmptySeq) && matchesOnlySingletons)
       EmptySet
     else
       this
   }
 
   def conversionA8():Rte = {
-    // if operands contains EmptyWord, then the intersection is either EmptyWord or EmptySet
-    if (! operands.contains(EmptyWord))
+    // if operands contains EmptySeq, then the intersection is either EmptySeq or EmptySet
+    if (! operands.contains(EmptySeq))
       this
     else if ( operands.forall(_.nullable) )
-      EmptyWord
+      EmptySeq
     else
       EmptySet
   }

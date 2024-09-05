@@ -34,7 +34,7 @@ import org.scalatest.time.SpanSugar._
 //noinspection RedundantDefaultArgument
 class ExtractTestSuite  extends AdjFunSuite {
   val Σ: Sigma.type = Sigma
-  val ε: EmptyWord.type = EmptyWord
+  val ε: EmptySeq.type = EmptySeq
   val t2x: Singleton = Singleton(SAtomic(classOf[genus.RandomType.Trait2X]))
   val etrue: Singleton = Singleton(SEql(true))
 

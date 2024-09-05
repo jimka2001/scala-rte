@@ -293,7 +293,7 @@ object Rte {
 
   val sigmaStar: Rte = Star(Sigma)
   val sigmaSigmaStarSigma: Rte = Cat(Sigma, Sigma, sigmaStar)
-  val notSigma: Rte = Or(sigmaSigmaStarSigma, EmptyWord)
+  val notSigma: Rte = Or(sigmaSigmaStarSigma, EmptySeq)
   val notEpsilon: Rte = Cat(Sigma, sigmaStar)
   val sigmaSigmaStar: Rte = notEpsilon
 
@@ -449,7 +449,7 @@ object Rte {
 
   //here we are passing along an avoidEmpty boolean that will be true when we do not wish there to be :
   // any ANDs or NOTs in the RTE, and that any of the SimpleTypeDs will not be empty either
-  // this way we are also excluding the EmptyWord, EmptySet, and notSigma explicitly, while also not allowing
+  // this way we are also excluding the EmptySeq, EmptySet, and notSigma explicitly, while also not allowing
   // the recursive call for the randomTypeD to create any EmptyTypes
   def randomRte(depth: Int, avoidEmpty: Boolean = true): Rte = {
     import scala.util.Random
@@ -459,7 +459,7 @@ object Rte {
                            Sigma,
                            sigmaStar,
                            notSigma,
-                           EmptyWord,
+                           EmptySeq,
                            EmptySet)
     val generators: Seq[() => Rte] = Vector(
       () => rteVector(random.nextInt(rteVector.length - (if (avoidEmpty) 3 else 0))),

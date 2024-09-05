@@ -101,8 +101,8 @@ case class Or(override val operands:Seq[Rte]) extends Combination(operands) {
   def conversionO10():Rte = {
     // (:or A :epsilon B (:* X) C)
     //   --> (:or A B (:* X) C)
-    if (operands.contains(EmptyWord) && operands.exists(r => r != EmptyWord && r.nullable))
-      create(operands.filterNot(_ == EmptyWord))
+    if (operands.contains(EmptySeq) && operands.exists(r => r != EmptySeq && r.nullable))
+      create(operands.filterNot(_ == EmptySeq))
     else
       this
   }

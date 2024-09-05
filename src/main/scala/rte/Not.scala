@@ -36,7 +36,7 @@ case class Not(operand:Rte) extends RteNode {
       case Sigma => Rte.notSigma
       case Singleton(STop) => Rte.notSigma
       case Rte.sigmaStar => EmptySet
-      case EmptyWord => Rte.notEpsilon
+      case EmptySeq => Rte.notEpsilon
       case EmptySet => Rte.sigmaStar
       case Singleton(SEmpty) => Rte.sigmaStar
 

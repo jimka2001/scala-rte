@@ -32,5 +32,5 @@ object Sigma extends RteTerminal {
   def firstTypes:Set[SimpleTypeD] = Set(STop)
   def inhabited:Option[Boolean] = Some(true)
   override def canonicalizeOnce:Rte = this
-  def derivativeDown(wrt:SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte = EmptyWord
+  def derivativeDown(wrt:SimpleTypeD, factors:List[SimpleTypeD], disjoints:List[SimpleTypeD]):Rte = EmptySeq
 }

@@ -35,13 +35,13 @@ object Xor extends RteSyntaxSugar {
 }
 
 object Optional extends RteSyntaxSugar {
-  def apply(a:Rte):Rte = Or(a, EmptyWord)
+  def apply(a:Rte):Rte = Or(a, EmptySeq)
 }
 
 object Exponent extends RteSyntaxSugar {
   def apply(a:Rte, n:Short): Rte = {
     n match {
-      case 0 => EmptyWord
+      case 0 => EmptySeq
       case 1 => a
       case i if i > 1 => Cat(Seq.fill(n)(a.canonicalize))
       case i if i < 0 => throw new Error("^ operator does not work with negative numbers: $n")
