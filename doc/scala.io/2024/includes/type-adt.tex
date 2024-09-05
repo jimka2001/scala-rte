@@ -12,16 +12,16 @@
     \tikzstyle{level 1}=[sibling distance=60mm]
     \tikzstyle{level 2}=[sibling distance=20mm]
     \tikzstyle{level 3}=[sibling distance=15mm]
-  \node {SimpleTypeD}
-    child { node {SNode}
-      child { node {SCombination} 
+  \node [bottom color=orange!20] {SimpleTypeD}
+    child { node [bottom color=orange!20] {SNode}
+      child { node [bottom color=orange!20] {SCombination} 
         child { node {SAnd} }
         child { node {SOr} } }
       child { node {SNot} } }
-    child { node {STerminal}
+    child { node [bottom color=orange!20] {STerminal}
       child { node [text height=20pt, right=0mm, top color=white, bottom color=red!20] {SAtomic\\Scala Type } }
       child { node [right=2mm] {SSatisfies} }
-      child { node [right=2mm] {SLiteral}
+      child { node [right=2mm] [bottom color=orange!20] {SLiteral}
         child { node {SEql} }
         child { node {SMember} } }
       child { node [right=2mm] {STop} }

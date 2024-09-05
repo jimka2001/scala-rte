@@ -13,10 +13,10 @@
     \tikzstyle{level 2}=[sibling distance=40mm]
     \tikzstyle{level 3}=[sibling distance=40mm]
   \node {SOr}
-    child { node {SAtomic(classOf[Double])} }
+    child { node [bottom color=blue!20] {SAtomic(classOf[Double])} }
     child { node {SAnd}
-      child { node {SAtomic(classOf[Int])} }
+      child { node [bottom color=blue!20] {SAtomic(classOf[Int])} }
       child { node {SNot} 
-        child { node {SEql("X")} } } } ;
+        child { node [bottom color=blue!20] {SEql("X")} } } } ;
 \end{tikzpicture}
 \end{document}
