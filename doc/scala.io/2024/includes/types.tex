@@ -1,18 +1,11 @@
 {  \setbeamercolor{background canvas}{bg=sectioncolor}
-\begin{frame}{Library: \code{genus}}{Types}
+\begin{frame}{Library: \code{genus}}{Types: Theoretical problem \textnumero 3, Type lattice}
   \centering
   
     \includegraphics[height=7.5cm]{typing.png}
 \end{frame}
 }
 
-\begin{frame}{Types}{What are Types?}
-  \begin{itemize}
-  \item Types as Sets
-  \item Static
-  \item Dynamic
-  \end{itemize}
-\end{frame}
 
 
 
@@ -42,7 +35,7 @@
 
 
 \begin{frame}{\code{SimpleTypeD} class quasi-ADT}
-  \scalebox{0.8}{\input{type-adt}}
+  \scalebox{0.9}{\input{type-adt}}
 
   \medskip
 
@@ -52,6 +45,13 @@
 \end{frame}
 
 
+\begin{frame}{Types}{What are Types?}
+  \begin{itemize}
+  \item Types as Sets
+  \item Static
+  \item Dynamic
+  \end{itemize}
+\end{frame}
 
 
 \begin{frame}{SETS}{Simple Embedded Type System}
@@ -68,15 +68,15 @@
 \end{frame}
 
 
-\begin{frame}{SETS}
+\begin{frame}{SETS}{Lattice}
   \begin{columns}
-    \begin{column}{0.4\textwidth}
+    \begin{column}{0.35\textwidth}
         %% By Watchduck author "T. Piesk", "Tilman Piesk" or
       %% "Watchduck". - Own work, CC BY 3.0,
       %% https://commons.wikimedia.org/w/index.php?curid=11155125
       \includegraphics[height=6cm]{Fano_plane_Hasse_diagram} 
     \end{column}
-    \begin{column}{0.6\textwidth}%%
+    \begin{column}{0.65\textwidth}%%
       \Emph{Complemented lattice} of types.
 
       \medskip
@@ -85,12 +85,13 @@
   \item \code{SEmpty} and \code{STop}, empty and universal type
   \item \code{SAnd} and \code{SOr}, union and intersection
   \item \code{SNot} complement
-  \item \eg, \code{SAnd(Number,SNot(Int)) = Number \& !Int}
-  \end{itemize}
-      
+  \end{itemize}      
     \end{column}
   \end{columns}
   
+  \eg: \code{SOr(String, SAnd(Number,SNot(Int))) = String | (Number \& !Int)}
+
+
 \end{frame}
 
 \newsavebox\adtbox

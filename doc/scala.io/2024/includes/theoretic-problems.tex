@@ -1,6 +1,5 @@
 \section{Theoretical Challenges}
 
-
 {  \setbeamercolor{background canvas}{bg=sectioncolor}
   \begin{frame}{Theoretical Challenges}
       
@@ -10,44 +9,73 @@
 \end{frame}
 }
 
-\begin{frame}{Problem 1}{DFA Construction}
+\begin{frame}{Problem \textnumero 1}{DFA Construction}
   Given an RTE, generate a Non-deterministic finite automaton.
 
+  \medskip
+  
   Challenge: Brzozowski derivative does not consider overlapping types, subtypes, nor indeterminant transitions.
 
-  We do not address this technique in the current expose.
+  \medskip
+  
+  See \emph{Type-Checking of Heterogeneous Sequences in Common Lisp}, \url{http://www.lrde.epita.fr/dload/papers/newton.16.els.pdf}
 
-  See \url{http://www.lrde.epita.fr/dload/papers/newton.16.els.pdf}
+  \medskip
 
+  Addressed in \code{rte} library, seen later.
 \end{frame}
 
-\begin{frame}{Problem 2}{Type Lattice}
-  Embed a dynamic type system into an existing programming language
+\begin{frame}{Problem \textnumero 2}{Type partition}
+  Compute a partition of a given set of type designators,
 
-  Support type lattice, intersection, union, complement
+  \medskip
+  
+  ... even (especially) when subtype relation is unknown.
 
-  Support predicate types
+  \medskip
+  
+  MDTD: Maximal disjoint type decomposition
+
+  \medskip
+  
+  See \emph{An Elegant and Fast Algorithm for Partitioning Types}, Page 24-32 \url{https://www.european-lisp-symposium.org/static/proceedings/2023.pdf}
+
+  \medskip
+  
+  Addressed in \code{genus} library, seen later.
+\end{frame}
+
+\begin{frame}{Problem \textnumero 3}{Type Lattice}
+  Embed a dynamic type system into an existing programming language.
+
+  \medskip
+  
+  Support type lattice: intersection, union, complement.
+
+  \medskip
+  
+  Support predicate types.
+
+  \medskip  
 
   SETS: Simple embeddable type system.
   See \url{https://www.lrde.epita.fr/wiki/Publications/newton.21.els}
-\end{frame}
 
-\begin{frame}{Problem 3}{Type partition}
-  Given a set of type designators, partition the types.
-
-  Even (especially) when subtype relation is unknown.
-
-  MDTD: Maximal disjoint type decomposition
-
-  See \emph{An Elegant and Fast Algorithm for Partitioning Types}, Page 24-32 \url{https://www.european-lisp-symposium.org/static/proceedings/2023.pdf}
-
+  \medskip
+  
+  Addressed in \code{genus} library, seen later.
 \end{frame}
 
 
-\begin{frame}{Problem 4}{Redundant Type Check}
-  Select correct transition avoiding redundant type checks.
+\begin{frame}{Problem \textnumero 4}{Redundant Type Check}
+  Select correct transition, avoiding redundant type checks.
 
-  \scalebox{0.7}{\input{multiple-transitions}}
+  \medskip
 
+  \scalebox{0.85}{\input{multiple-transitions}}
+
+  \medskip
+  
+  Addressed in \code{xymbolyco} library, seen later.
 \end{frame}
 
