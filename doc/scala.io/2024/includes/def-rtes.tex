@@ -11,18 +11,22 @@
 \begin{frame}{Library: \code{rte}}{Rational Type Expressions}
  \centering
   %% https://x.com/nixcraft/status/1370499922470965251
-  \includegraphics[width=0.6\textwidth]{relib.png}
+  \includegraphics[height=0.8\textheight]{relib.png}
 \end{frame}
 }
 
 \begin{frame}{Example RTE Expression Tree}
-  \usebox\rteast
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \usebox\rteast
+    \end{column}%
+    \begin{column}{0.45\textwidth}
+      \scalebox{0.7}{\input{rte-ast}}
+    \end{column}
+  \end{columns} 
 
   \medskip
 
-  \centering
-
-  \scalebox{0.7}{\input{rte-ast}}
   \begin{itemize}
   \item An RTE is an expression tree (abstract syntax
     tree, AST),

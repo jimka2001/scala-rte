@@ -5,7 +5,7 @@
 \begin{frame}{Deterministic vs non-deterministic}
   \centering
   
-  \includegraphics[width=0.75\textwidth]{determ.png} 
+  \includegraphics[height=0.85\textheight]{determ.png} 
 \end{frame}
 }
 
@@ -21,20 +21,20 @@
 
 \begin{frame}{Non-determinism by subtype}
   \begin{columns}[T]
-    \begin{column}{0.35\textwidth}
+    \begin{column}{0.4\textwidth}
       \centering
       
       \begin{align*}
         Int&\subseteq Number\\
         Int &\cap Number \neq \emptyset
       \end{align*}%
-      \scalebox{0.8}{\input{tikz-int-double.tex}}%
+      \scalebox{0.8}{\input{tikz-int-double}}%
     \end{column}%
-    \begin{column}{0.65\textwidth}
+    \begin{column}{0.6\textwidth}
       \only<1>{\scalebox{0.9}{\input{fig-nfa-subtype}}}%
       \only<2>{\scalebox{0.9}{\input{fig-nfa-subtype-disjoint}}}%
       \only<3>{\scalebox{0.8}{\input{fig-nfa-subtype-disjoint-simple}}}%
-      \only<4>{\scalebox{0.9}{\input{fig-nfa-subtype-simple}}}%
+      \only<4>{\scalebox{0.8}{\input{fig-nfa-subtype-simple}}}%
     \end{column}
   \end{columns}
   \only<3-4>{We can \Emph{decide} that state \nodecirc{3} is unreachable.}
@@ -74,11 +74,11 @@
     \end{column}%
     \begin{column}{0.7\textwidth}
       \only<1>{\scalebox{0.9}{\input{fig-nfa-satisfies}}}%
-      \only<2>{\scalebox{0.72}{\input{fig-nfa-satisfies-intersections}}}%
-      \only<3>{\scalebox{0.6}{\input{fig-nfa-satisfies-intersections-simple}}}%
+      \only<2>{\scalebox{0.8}{\input{fig-nfa-satisfies-intersections}}}%
+      \only<3>{\scalebox{0.74}{\input{fig-nfa-satisfies-intersections-simple}}}%
     \end{column}
   \end{columns}
-  \only<3>{\Emph{Unreachable} states \nodecirc{4} and \nodecirc{6}, but cannot \Emph{undecidable}.}
+  \only<3>{\Emph{Unreachable} states \nodecirc{4} and \nodecirc{6}, but \Emph{undecidable}.}
 \end{frame}
 
 
@@ -100,25 +100,36 @@
   \end{minipage}
 \end{lrbox}
 
-\begin{frame}{Indeterminant Transitions}
+\begin{frame}{Unsatisfiable Transitions}
+
+  \scalebox{0.8}{\input{fig-4-unsat}}
+  \begin{itemize}
+  \item   If we determine a type is empty, then the transistion is \Emph{unsatifiable}.
+  \item Thus we \Emph{can eliminate} the transition and unreachable states.
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Indeterminant Transitions}{Build-time}
 
   \scalebox{0.8}{\input{fig-4}}
 
-  If we determine a type is empty, we eliminate the
-  transition and unreachable states.
+  \begin{itemize}
+  \item   If we cannot determine whether a type is empty, the transition may
+    \Emph{still be unsatisfiable}. 
+  \item  However, we \Emph{cannot eliminate}    the transition and unreachable states.
+  \end{itemize}
 \end{frame}
 
 
-\begin{frame}{Indeterminant Transitions}
+\begin{frame}{Indeterminant Transitions}{Run-time}
 
   \scalebox{0.8}{\input{fig-4}}
 
-  At run-time:
   \begin{itemize}
-
-    \item We can always determine type membership.
-
-    \item DFAs even with indeterminant transitions \Emph{correctly} match sequences in linear time.  
+    \item We \Emph{can always} determine type membership.
+    \item DFAs with indeterminant transitions \Emph{correctly}
+      match sequences in $O(n)$.
   \end{itemize}
 \end{frame}
 

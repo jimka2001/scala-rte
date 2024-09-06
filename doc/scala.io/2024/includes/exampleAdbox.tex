@@ -1,9 +1,9 @@
 %% dont re-indent this file
 \begin{lstlisting}[style=scalaioScala]
-val F:Rte = Atomic(classOf[Double]) | Atomic(classOf[Float])
-val I:Rte = Atomic(classOf[Int])
-val keyM:Rte = Eql("C")
-val keyC:Rte = Eql("M")
+val F = Atomic(classOf[Double]) | Atomic(classOf[Float])
+val I = Atomic(classOf[Int])
+val keyM = Eql("M")
+val keyC = Eql("C")
 
 val re:Rte = ((keyC ++ I.*) | (keyM ++ F.*)).*
 \end{lstlisting}
