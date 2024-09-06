@@ -44,14 +44,20 @@
 
   \only<2>{What's the pattern?}%  
   \only<4->{
-  {\Large String-based \textcolor{blue}{regular expressions}}
-  \begin{itemize}
-  \item Match strings like: {\tt "\textcolor{greeny}{i}\textcolor{blue}{D}\textcolor{blue}{D}\textcolor{greeny}{i}\textcolor{blue}{F}\textcolor{blue}{D}\textcolor{blue}{F}\textcolor{greeny}{i}\textcolor{blue}{D}"},
-  \item ... we use surface syntax: \code{"(i(D|F)+)*"}.
-  \item ... representing expression: $(i\cdot (D\vee F)^+)^*$,
-  \end{itemize}%
+    {\Large String-based \textcolor{blue}{regular expressions}}
+    \begin{columns}
+      \begin{column}{0.65\textwidth}
+        \begin{itemize}
+        \item Match strings like: {\tt "\textcolor{greeny}{i}\textcolor{blue}{D}\textcolor{blue}{D}\textcolor{greeny}{i}\textcolor{blue}{F}\textcolor{blue}{D}\textcolor{blue}{F}\textcolor{greeny}{i}\textcolor{blue}{D}"},
+        \item ... we use surface syntax: \code{"(i(D|F)+)*"}.
+        \item ... representing expression: $(i\cdot (D\vee F)^+)^*$,
+        \end{itemize}%
+      \end{column}%
+      \begin{column}{0.35\textwidth}
+        \only<4>{\scalebox{0.7}{\input{strex}}}
+      \end{column}%
+    \end{columns}
   }%
-  \only<4>{\centering \scalebox{0.6}{\input{strex}}}%
   \only<5>{
 
     \medskip
@@ -86,12 +92,19 @@
 
 
 \begin{frame}{RTEs}{What are Regular Type Expressions?}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
   \begin{itemize}
   \item An RTE is an \Emph{expression} designating a set  of finite sequences
-  \item ... based on regular patterns in the \Emph{types} of their content.
+  \item Describes regular \emph{type patterns} sequence content.
   \item RE-matching is a \Emph{set membership} check.
   \item Mathematical notation: $(Int \cdot (Double \cup Float)^+)^*$
-  \item Scala notation ~ Expression Tree\\
-        \usebox\exnotebox{}\raisebox{-15mm}{\scalebox{0.5}{\input{strex-scala}}}%
+  \item Scala notation\\
+    \usebox\exnotebox
   \end{itemize}
+    \end{column}%
+    \begin{column}{0.45\textwidth}
+      \scalebox{0.7}{\input{strex-scala}}
+    \end{column}%
+  \end{columns}%
 \end{frame}
