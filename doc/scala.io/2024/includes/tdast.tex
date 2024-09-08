@@ -1,7 +1,6 @@
 %% dont re-indent this file
 \begin{lstlisting}[style=scalaioScala]
-val Int:SimpleTypeD      = SAtomic(classOf[Int])
-val Double:SimpleTypeD = SAtomic(classOf[Double])
-
+val Int      = SAtomic(classOf[Int])
+val Double = SAtomic(classOf[Double])
 val td:SimpleTypeD = SOr(Double, SAnd(Int, SNot(SEql("X"))))
 \end{lstlisting}
