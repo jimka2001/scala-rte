@@ -4,7 +4,7 @@
   \tikzstyle{automaton}=[shorten >=1pt, >={Stealth[bend,round]}, initial text=]
 
 \begin{document}
-\begin{tikzpicture}[automaton, auto]
+\begin{tikzpicture}[automaton, auto, thick]
   \node[state,initial,rounded rectangle] (0) {$0$};
   \node[state,rounded rectangle] (1) [right=20mm of 0] {$1$};
   \node[state,accepting,thick,rounded rectangle,fill=yellow] (2) [above right=7mm and 30mm of 1] {$2$};

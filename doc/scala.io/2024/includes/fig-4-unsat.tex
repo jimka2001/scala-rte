@@ -5,7 +5,7 @@
   \tikzstyle{accepting}=[double]
 
 \begin{document}
-\begin{tikzpicture}[automaton, auto]
+\begin{tikzpicture}[automaton, auto, thick]
   \node[state,color=green,text=black,initial,rounded rectangle] (0) {$0$};
   \node[state,color=red,text=black,rounded rectangle] (1) [right=35mm of 0] {$1$};
   \node[state,color=red,text=black,accepting,rounded rectangle] (2) [above right=7mm and 30mm of 1] {$2$};
