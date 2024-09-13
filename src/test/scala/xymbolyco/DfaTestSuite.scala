@@ -444,4 +444,30 @@ class DfaTestSuite extends AdjFunSuite {
     val (x, qs2) = m(true)
     assert(qs == qs2)
   }
+  test("complement"){
+    import rte.{Rte,Not}
+    import xymbolyco.GraphViz.dfaView
+    import xymbolyco.Dfa.dfaXor
+    // we should get equivalent Dfas if we build a Dfa from a negated rte
+    // or if we build the Dfa, then negate it.
+    for {depth <- 2 to 4
+         n <- 0 to 50
+         rte1 = Rte.randomRte(depth)
+         rte2 = Not(rte1)
+         dfa1 = rte1.toDfa().negate(true)
+         dfa2 = rte2.toDfa()
+         xor = dfaXor(dfa1,dfa2)
+         empty = xor.vacuous()
+         } {
+      if (empty == Some(false) || empty == None) {
+
+        println(s"depth=$depth n=$n rte1=$rte1")
+        dfaView(dfa1, title = "dfa1: negated dfa")
+        dfaView(dfa2, title = "dfa2: dfa of negated rte")
+        dfaView(xor, title = "xor of dfa1 and dfa2")
+      }
+      assert(empty == Some(true) || empty == None,
+             s"depth=$depth n=$n rte1=$rte1")
+    }
+  }
 }

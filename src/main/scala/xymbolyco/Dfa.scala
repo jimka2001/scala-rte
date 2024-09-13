@@ -32,6 +32,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
                  val protoDelta:Set[(Int,L,Int)],
                  val labeler:Labeler[Σ,L],
                  val fMap:Map[Int,E]) {
+
   // q0id is in Qids
   require(Qids.contains(q0id))
   // each element of Fids is in Qids
@@ -255,6 +256,9 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   }
 
   def vacuous():Option[Boolean] = {
+    // returns Some(true) if the language of the dfa is proven to be empty
+    // returns Some(false) if the language is proven to be inhabited
+    // returns None if it cannot be proven
     if (Q.isEmpty)
       Some(true)
     else if (F.isEmpty)
@@ -270,6 +274,19 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     for{ q <- Q
          if q.isSinkState
          } yield q.id
+  }
+  def negate(exitValue:E):Dfa[Σ,L,E] = {
+    val negatedFids = Qids.diff(Fids)
+    Dfa(Qids = Qids,
+        q0id = q0id,
+        Fids = negatedFids,
+        protoDelta = protoDelta,
+        labeler = labeler,
+        // build new fMap, keeping all the old values,
+        // and adding any new q -> value which is not found with q -> exitValue
+        fMap = (for{q <- negatedFids
+                    } yield (q -> exitValue)).toMap ++ fMap
+        )
   }
 }
 

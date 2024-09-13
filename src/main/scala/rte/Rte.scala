@@ -271,6 +271,7 @@ abstract class Rte {
     simulate(true, seq, verbose=verbose) match {
       case None => false
       case Some(true) => true
+      case Some(false) => throw new Exception("internal error")
     }
   }
 
