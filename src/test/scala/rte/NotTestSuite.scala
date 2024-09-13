@@ -30,7 +30,7 @@ class NotTestSuite extends AdjFunSuite {
     assert(Not(Sigma).canonicalizeOnce == Rte.notSigma)
     assert(Not(Singleton(STop)).canonicalizeOnce == Rte.notSigma)
     assert(Not(Star(Sigma)).canonicalizeOnce == EmptySet)
-    assert(Not(EmptySeq).canonicalizeOnce == Rte.notEpsilon)
+    assert(Not(EmptySeq).canonicalizeOnce == Rte.notEmptySeq)
     assert(Not(EmptySet).canonicalizeOnce == Star(Sigma))
     assert(Not(Singleton(SEmpty)).canonicalizeOnce == Star(Sigma))
     val x = Singleton(SEql("x"))

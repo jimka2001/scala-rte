@@ -196,7 +196,7 @@ class ThompsonTestSuite  extends AdjFunSuite {
                     (2, STop, 3),
                     (3, STop, 3)))
   }
-  test("Epsilon") {
+  test("EmptySeq") {
     val dfa = constructThompsonDfa(EmptySeq, 42)
     assert(dfa.simulate(Seq()) == Some(42))
     assert(dfa.simulate(Seq(1, 2, 3)) == None)

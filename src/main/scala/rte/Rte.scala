@@ -295,8 +295,8 @@ object Rte {
   val sigmaStar: Rte = Star(Sigma)
   val sigmaSigmaStarSigma: Rte = Cat(Sigma, Sigma, sigmaStar)
   val notSigma: Rte = Or(sigmaSigmaStarSigma, EmptySeq)
-  val notEpsilon: Rte = Cat(Sigma, sigmaStar)
-  val sigmaSigmaStar: Rte = notEpsilon
+  val notEmptySeq: Rte = Cat(Sigma, sigmaStar)
+  val sigmaSigmaStar: Rte = notEmptySeq
 
   val flattenSingletonTypes =  false
 
@@ -456,7 +456,7 @@ object Rte {
     import scala.util.Random
     val random = new Random
 
-    val rteVector = Vector(notEpsilon,
+    val rteVector = Vector(notEmptySeq,
                            Sigma,
                            sigmaStar,
                            notSigma,
