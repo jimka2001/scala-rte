@@ -151,12 +151,12 @@ abstract class Rte {
     derivative(wrt, List[SimpleTypeD](), List[SimpleTypeD]())
 
   def derivative(wrt: Option[SimpleTypeD], factors: List[SimpleTypeD], disjoints: List[SimpleTypeD]): Rte = {
-    val raw = wrt match {
+    // factors are known supertypes of the tyep in wrt
+    wrt match {
       case None => this
       case Some(td) if td.inhabited.contains(false) => EmptySet
       case Some(td) => derivativeDown(td, factors, disjoints)
     }
-    raw
   }
 
   def derivativeDown(wrt: SimpleTypeD, factors: List[SimpleTypeD], disjoints: List[SimpleTypeD]): Rte
@@ -174,7 +174,7 @@ abstract class Rte {
       val fts = rt.firstTypes
 
       val wrts = mdtd(fts)
-      def check_for_thread_interrupt() = {
+      def check_for_thread_interrupt(): Unit = {
         // if this code is being called from a unit test with a timeout
         // when we have to explicitly check for thread interrupt
         // if the assertion fails, we simply cause a failed unit test
