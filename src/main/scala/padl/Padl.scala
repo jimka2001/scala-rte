@@ -24,7 +24,7 @@ package padl
 import adjuvant.Adjuvant.{existingFile, filterFile}
 import genus.{SAnd, SAtomic, SEmpty, SEql, SNot, SOr, SSatisfies, STop, SimpleTypeD}
 import genus.Types.{evenType, oddType}
-import rte.{And, Cat, Not, Or, Permute, Plus, Rte, Singleton, Star}
+import rte.{And, Cat, Eql, Not, Or, Permute, Plus, Rte, Singleton, Star}
 import xymbolyco.{Dfa, GraphViz, Thompson}
 import xymbolyco.GraphViz.{dfaView, multiLineString}
 import xymbolyco.Minimize.minimize
@@ -165,10 +165,20 @@ object Padl {
 
   }
 
+  def example3(): Unit = {
+    val a:Rte = Eql("a")
+    val b:Rte = Eql("b")
+    val s:Rte = a++a | b++b
+
+    dfaView(s.toDfa(), title="positive-s")
+    dfaView(Not(s).toDfa(), title="not s")
+  }
+
   def main(argv: Array[String]): Unit = {
 
     //example1()
-    example2()
+    //example2()
+    example3()
     //example2min()
   }
 
