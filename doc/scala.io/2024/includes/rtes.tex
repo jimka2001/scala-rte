@@ -83,28 +83,18 @@
 
 
 
-\newsavebox\exnotebox
-\begin{lrbox}{\exnotebox}
-  \begin{minipage}{6.5cm}
-    \input{exnotebox}
-  \end{minipage}
-\end{lrbox}
+{  \setbeamercolor{background canvas}{bg=sectioncolor}
+\begin{frame}{Library: \code{rte}}{RTE Representation: Challenge \textnumero 1}
+
+  How to represent an RTE in Scala?
 
 
-\begin{frame}{RTEs}{What are Regular Type Expressions?}
-  \begin{columns}
-    \begin{column}{0.55\textwidth}
+  \medskip
+  
   \begin{itemize}
-  \item An RTE is an \Emph{expression} designating a set  of finite sequences
-  \item Describes regular \emph{type patterns} sequence content.
-  \item RE-matching is a \Emph{set membership} check.
-  \item Mathematical notation: $(Int \cdot (Double \cup Float)^+)^*$
-  \item Scala notation\\
-    \usebox\exnotebox
+  \item Surface syntax: declarative, expressive, composable
+  \item Programmatic interface: reflective, algebraic manipulation
   \end{itemize}
-    \end{column}%
-    \begin{column}{0.45\textwidth}
-      \scalebox{0.7}{\input{strex-scala}}
-    \end{column}%
-  \end{columns}%
 \end{frame}
+}
+

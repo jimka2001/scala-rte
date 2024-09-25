@@ -9,6 +9,16 @@
 \end{frame}
 }
 
+\begin{frame}{Challenges of the Project}
+  \begin{enumerate}
+  \item RTE Representation:   How to represent an RTE in Scala?
+  \item DFA Construction:  How to constuct DFA from RTE?
+  \item Type Lattice: How to represent union, intersection, complement types?
+  \item Type Partitioning: How to enforce determinism?
+  \item Efficiency:  How to avoid redundant type checks at run-time?
+  \end{enumerate}
+\end{frame}
+
 \begin{frame}{Problem \textnumero 1}{DFA Construction}
   Given an RTE, generate a deterministic finite automaton.
 
