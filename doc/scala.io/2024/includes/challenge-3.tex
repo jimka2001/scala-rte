@@ -1,0 +1,163 @@
+
+{  \setbeamercolor{background canvas}{bg=sectioncolor}
+\begin{frame}{Challenge \textnumero 3}{Type Lattice}
+
+  How to support types like $Int\cap\overline{Number}$ in Scala?
+
+  \begin{itemize}
+  \item   Support \Emph{type lattice}
+  \item Embed a dynamic type system into an existing programming language.
+  \item Library: \code{genus}
+  \end{itemize}
+
+\end{frame}
+}
+
+
+
+\newsavebox\tdast
+\begin{lrbox}{\tdast}
+  \begin{minipage}{11cm}
+    \input{tdast}
+  \end{minipage}
+\end{lrbox}
+
+
+\begin{frame}{Example \code{SimpleTypeD} Expression Tree}
+  \usebox\tdast
+
+  \medskip
+
+  \centering
+
+  \scalebox{0.7}{\input{td-ast}}
+  \begin{itemize}
+  \item A type designator is an expression tree (AST).
+  \item Each node is an instance of class \code{SimpleTypeD}.
+  \item Leaf nodes interface to Scala classes via \code{SAtomic(...)}.
+  \item .. and to literal Scala values via \code{SEql(...)}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{\code{SimpleTypeD} class quasi-ADT}
+  \scalebox{0.9}{\input{type-adt}}
+
+  \medskip
+
+  Not an ADT for a \Emph{silly} reason.
+
+  Scala does not support cross-file \code{sealed} classes.
+\end{frame}
+
+
+%% \begin{frame}{Types}{What are Types?}
+%%   \begin{itemize}
+%%   \item Types as Sets
+%%   \item Static
+%%   \item Dynamic
+%%   \end{itemize}
+%% \end{frame}
+
+
+%% \begin{frame}{SETS}{Simple Embedded Type System}
+
+%%   \scalebox{1.0}{\input{venn-simple.tex}}
+
+%%   \begin{itemize}
+%%   \item   Extends type system of language (Scala, Python, Clojure)
+%%   \item   Supports intersection, union, complement.
+%%   \item   Supports \Emph{Boolean membership check}.
+%%   \item   Supports \Emph{semi-Boolean subtype check}.
+%%   \end{itemize}
+%% \end{frame}
+
+
+%% \begin{frame}{SETS}{Lattice}
+%%   \begin{columns}
+%%     \begin{column}{0.35\textwidth}
+%%         %% By Watchduck author "T. Piesk", "Tilman Piesk" or
+%%       %% "Watchduck". - Own work, CC BY 3.0,
+%%       %% https://commons.wikimedia.org/w/index.php?curid=11155125
+%%       \includegraphics[height=6cm]{Fano_plane_Hasse_diagram} 
+%%     \end{column}
+%%     \begin{column}{0.65\textwidth}%%
+%%       \Emph{Complemented lattice} of types.
+
+%%       \medskip
+      
+%%   \begin{itemize}
+%%   \item \code{SEmpty} and \code{STop}, empty and universal type
+%%   \item \code{SAnd} and \code{SOr}, union and intersection
+%%   \item \code{SNot} complement
+%%   \end{itemize}      
+%%     \end{column}
+%%   \end{columns}
+  
+%%   \eg: \code{SOr(String, SAnd(Number,SNot(Int))) = String | (Number \& !Int)}
+
+
+%% \end{frame}
+
+%% \newsavebox\adtbox
+%% \begin{lrbox}{\adtbox}
+%%   \begin{minipage}{11cm}
+%%     \input{adtbox}
+%%   \end{minipage}
+%% \end{lrbox}
+
+
+
+
+
+
+%% \begin{frame}{SimpleTypeD}{Interface to built-in type system}
+  
+%%   \begin{itemize}
+%%   \item \code{SAtomic} encapsulates built-in type \code{Class[\_]}\\
+%%     \eg, \code{SAtomic(classOf[Int])}.
+%%   \item \code{SMember} and \code{SEql}, explicit types, encapsulates designated values\\
+%%     \eg, \code{SEql("hello")}, \code{SMember(1,2,3)}
+%%   \item \code{SSatisfies} encapsulates any predicate: \code{Any => Boolean}\\
+%%     \eg, \code{SSatisfies(primep)}.
+%%   \end{itemize}
+%% \end{frame}
+
+
+\newsavebox\membershipbox
+\begin{lrbox}{\membershipbox}
+  \begin{minipage}{11cm}
+    \input{membershipbox}
+  \end{minipage}
+\end{lrbox}
+
+\begin{frame}{\code{SimpleTypeD} Membership}
+  \emph{Boolean} type membership question is \Emph{always answerable}.
+
+  \usebox\membershipbox
+\end{frame}
+
+\newsavebox\subtypebox
+\begin{lrbox}{\subtypebox}
+  \begin{minipage}{11cm}
+\input{subtypebox}
+  \end{minipage}
+\end{lrbox}
+
+
+
+\begin{frame}{\code{SimpleTypeD} Subtype}
+
+  \emph{Semi-Boolean} Subtype predicate \Emph{sometimes unanswerable}.
+
+  \usebox\subtypebox
+
+  Unanswerable because:
+  \begin{itemize}
+  \item Impossible to compute, \eg \code{SSatisfies}.
+  \item Code is incomplete.
+  \item JVM supports run-time loaded classes.
+  \item No dependable way of finding subtypes in JVM $> 8.x$.
+  \end{itemize}
+
+\end{frame}

@@ -1,12 +1,10 @@
 %% dont re-indent this file
 \begin{lstlisting}[style=scalaioScala]
-(A && B).subtypep(A || B)  // returns Some(true)
-  
 val Str:SimpleTypeD = SAtomic(classOf[String])
 val Int:SimpleTypeD = SAtomic(classOf[Int])
 val Num:SimpleTypeD = SAtomic(classOf[Number])
 
 Str.subtypep(Int)  // returns Some(false)
 Int.subtypep(Num)  // returns Some(true)
-SSatisfies(primep).subtypep(Int) // returns None
+SSatisfies(oddp).subtypep(Int) // returns None
 \end{lstlisting}

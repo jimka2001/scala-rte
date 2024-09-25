@@ -1,9 +1,16 @@
 %% dont re-indent this file
 \begin{lstlisting}[style=scalaioScala]
-// one or more
-re.+ == re ++ re.*
+// binary infix operators
+r1 & r2 == And(r1,r2)
+r1 | r2 == Or(r1,r2)
+r1 ++ r2 == Cat(r1,r2)
 
-// optional, zero or one
+// complement (unary)
+!re == Not(re)
+
+// one/zero or more, optional
+re.* == Star(re)
+re.+ == re ++ re.*
 re.? == EmptySeq | re
 
 // exponent, n-times

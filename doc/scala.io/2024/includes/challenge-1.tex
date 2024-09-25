@@ -1,0 +1,234 @@
+
+
+
+{  \setbeamercolor{background canvas}{bg=sectioncolor}
+\begin{frame}{RTE Representation: Challenge \textnumero 1}
+
+  How to represent an RTE in Scala?
+
+
+  \medskip
+  
+  \begin{itemize}
+  \item Surface syntax: declarative, expressive, composable
+  \item Programmatic interface: reflective, algebraic manipulation
+  \item Library: \code{rte}
+  \end{itemize}
+\end{frame}
+}
+
+\newsavebox\exnotebox
+\begin{lrbox}{\exnotebox}
+  \begin{minipage}{6.5cm}
+    \input{exnotebox}
+  \end{minipage}
+\end{lrbox}
+
+
+\begin{frame}{RTEs}{What are Regular Type Expressions?}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+  \begin{itemize}
+  \item Mathematical notation: $(Int \cdot (Double \cup Float)^+)^*$
+  \item Scala notation\\
+    \usebox\exnotebox
+  \item Leaf nodes interface to Scala Type System
+  \end{itemize}
+    \end{column}%
+    \begin{column}{0.45\textwidth}
+      \scalebox{0.7}{\input{strex-scala}}
+    \end{column}%
+  \end{columns}%
+\end{frame}
+
+
+\newsavebox\exampleAbox
+\begin{lrbox}{\exampleAbox}
+  \begin{minipage}{12cm}
+    \input{exampleAbox}
+  \end{minipage}
+\end{lrbox}
+
+
+
+\begin{frame}{Example 2}{An RTE to match}
+  \usebox\exampleAbox
+
+  \begin{itemize}
+  \item Keyword strings \code{"C"} (counts) and \code{"M"} (measurements)
+  \item \code{"C"} followed by zero or more \code{Int} values
+  \item \code{"M"} followed by zero or more values, \code{Double} or \code{Float}
+  \end{itemize}
+\end{frame}
+
+\newsavebox\exampleAbbox
+\begin{lrbox}{\exampleAbbox}
+  \begin{minipage}{12cm}
+    \input{exampleAbbox}
+  \end{minipage}
+\end{lrbox}
+
+
+
+\begin{frame}{Example 2}{Successful match}
+  \usebox\exampleAbbox
+\end{frame}
+
+\newsavebox\exampleAcbox
+\begin{lrbox}{\exampleAcbox}
+  \begin{minipage}{12cm}
+    \input{exampleAcbox}
+  \end{minipage}
+\end{lrbox}
+
+
+
+\begin{frame}{Example 2}{Does not match}
+  \usebox\exampleAcbox
+\end{frame}
+
+\newsavebox\exampleAdbox
+\begin{lrbox}{\exampleAdbox}
+  \begin{minipage}{12cm}
+    \input{exampleAdbox}
+  \end{minipage}
+\end{lrbox}
+
+
+%% \begin{frame}{Example 2}{DFA}
+%%   \usebox\exampleAdbox
+  
+%%   \includegraphics[height=0.5\textheight,trim = {1.8cm 1.0cm 0 3.5cm}, clip]{example2.pdf}
+%% \end{frame}
+
+
+%% \newsavebox\rteast
+%% \begin{lrbox}{\rteast}
+%%   \begin{minipage}{11cm}
+%%     \input{rteast}
+%%   \end{minipage}
+%% \end{lrbox}
+
+
+%% \begin{frame}{Example RTE Expression Tree}
+%%   \begin{columns}[T]
+%%     \begin{column}{0.55\textwidth}
+%%       \usebox\rteast
+%%     \end{column}%
+%%     \begin{column}{0.45\textwidth}
+%%       \scalebox{0.7}{\input{rte-ast}}
+%%     \end{column}
+%%   \end{columns} 
+  
+%%   \medskip
+  
+%%   \begin{itemize}
+%%   \item An RTE is an expression tree (abstract syntax
+%%     tree, AST),
+%%   \item Each node is an instance of class \code{Rte}.
+%%   \item Leaf nodes interface to Scala classes via \code{Atomic(...)}.
+%%   \end{itemize}
+%% \end{frame}
+
+\begin{frame}{\code{Rte} class quasi-ADT}
+  \scalebox{0.9}{\input{rte-adt}}
+
+  \medskip
+
+  \begin{itemize}
+  \item RTE nodes (and leafs) defined by the class hierarchy \code{Rte}
+  \item The \code{Singleton} class interfaces to the type system.
+  \item \code{SimpleTypeD} is an abstraction of Scala/Java class (later)
+  \item Not an ADT for a \Emph{silly} reason, (single file  \code{sealed} classes).
+  \end{itemize}
+\end{frame}
+
+%% \newsavebox\leafbox
+%% \begin{lrbox}{\leafbox}
+%%   \begin{minipage}{12cm}
+%%     \input{leafbox}
+%%   \end{minipage}
+%% \end{lrbox}
+
+%% \begin{frame}{\code{Rte} subclasses}{Terminal}
+%%   \usebox\leafbox
+%% \end{frame}
+
+%% \newsavebox\orbox
+%% \begin{lrbox}{\orbox}
+%%   \begin{minipage}{12cm}
+%%     \input{orbox}
+%%   \end{minipage}
+%% \end{lrbox}
+
+%% \newsavebox\andbox
+%% \begin{lrbox}{\andbox}
+%%   \begin{minipage}{12cm}
+%%     \input{andbox}
+%%   \end{minipage}
+%% \end{lrbox}
+
+
+%% \begin{frame}{\code{Rte} subclasses}{Union, Or}
+%%   \usebox\orbox
+%%  \end{frame}
+
+
+
+
+%% \newsavebox\catbox
+%% \begin{lrbox}{\catbox}
+%%   \begin{minipage}{12cm}
+%%     \input{catbox}
+%%   \end{minipage}
+%% \end{lrbox}
+
+
+%% \begin{frame}{\code{Rte} subclasses}{Concatenation}
+%%   \usebox\catbox
+%%  \end{frame}
+
+
+
+%% \newsavebox\starbox
+%% \begin{lrbox}{\starbox}
+%%   \begin{minipage}{12cm}
+%%     \input{starbox}
+%%   \end{minipage}
+%% \end{lrbox}
+
+%% \newsavebox\notbox
+%% \begin{lrbox}{\notbox}
+%%   \begin{minipage}{12cm}
+%%     \input{notbox}
+%%   \end{minipage}
+%% \end{lrbox}
+
+
+%% \begin{frame}{\code{Rte} subclasses}{Repetition, Kleene Star}
+%%   \usebox\starbox
+%% \end{frame}
+
+%% \begin{frame}{\code{Rte} subclasses}{Inversion, Not}
+%%   \usebox\notbox
+
+%%   \bigskip
+
+%%   Matches any sequence other than what is matched by a given \code{re}.
+%% \end{frame}
+
+%% \begin{frame}{\code{Rte} subclasses}{Intersection, And}
+%%   \usebox\andbox
+%%  \end{frame}
+
+
+\newsavebox\extendedbox
+\begin{lrbox}{\extendedbox}
+  \begin{minipage}{12cm}
+  \input{extendedbox}
+  \end{minipage}
+\end{lrbox}
+
+\begin{frame}{Extended RTEs}{Some Syntax Sugar}
+  \usebox\extendedbox
+\end{frame}
