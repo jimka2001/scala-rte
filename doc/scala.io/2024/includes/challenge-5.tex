@@ -252,84 +252,130 @@
   \end{columns}
 \end{frame}
 
-
-
-
-\begin{frame}{Rewrite: 2}
-  In \code{if} part: \colorbox{pink!30}{Supertypes of \code{N} $\to$ \code{STop} }
-  
-  In \code{else} part: \colorbox{pink!30}{Subtypes of \code{N} $\to$ \code{SEmpty}}
+\begin{frame}{Rewrite: 1}
+  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \usebox\typecaseBbox
+      \usebox\typecaseAbox
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseChbox
+      \usebox\typecaseBbox
     \end{column}    
   \end{columns}
 \end{frame}
 
 
-\begin{frame}{Recognizing Subtypes}
-  \centering
+\def\myLeftArrow{\smash{
+  \begin{tikzpicture}[baseline=-2mm]
+    \useasboundingbox (-2,0);
+    \node[single arrow,draw=black,fill=red!10,minimum width=5cm,minimum height=5cm,shape border rotate=180] at (0,-1) {};
+  \end{tikzpicture}
+}}
 
-  \begin{align*}
-    Int&\subseteq Number\\
-    Int&\subseteq Int
-  \end{align*}
+\begin{frame}{Rewrite: 1}
+  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
 
-  \scalebox{0.8}{\input{tikz-number.tex}}
-
-
-  Failure to identify subtypes/supertypes will lead to \Emph{correct} but \Emph{inefficient} code.
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+    \only<2,3>{\usebox\typecaseBbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+    \only<1>{\usebox\typecaseBbox}%%
+    \only<2>{\myLeftArrow\vfill}
+    \end{column}    
+  \end{columns}
 \end{frame}
+
+
+
+
+\begin{frame}{Rewrite: 2}
+  \begin{tabular}{ll}
+  In \code{then} part: \colorbox{pink!30}{Supertypes of \code{N} $\to$ \code{STop}}. &
+  In \code{else} part: \colorbox{pink!30}{Subtypes of \code{N} $\to$ \code{SEmpty}}.
+  \end{tabular}
+  
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \only<1,2>{\usebox\typecaseBbox}%
+      \only<4>{\usebox\typecaseChbox}%
+      \only<5>{\usebox\typecaseCbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+      \only<2,3>{\usebox\typecaseChbox}
+      \only<4>{\myLeftArrow\vfill}
+    \end{column}    
+  \end{columns}
+\end{frame}
+
+%% \begin{frame}{Recognizing Subtypes}
+%%   \centering
+
+%%   \begin{align*}
+%%     Int&\subseteq Number\\
+%%     Int&\subseteq Int
+%%   \end{align*}
+
+%%   \scalebox{0.8}{\input{tikz-number.tex}}
+
+
+%%   Failure to identify subtypes/supertypes will lead to \Emph{correct} but \Emph{inefficient} code.
+%% \end{frame}
 
 
 
 
 \begin{frame}{Rewrite: 3}
+  \begin{tabular}{ll}
+    \colorbox{pink!30}{\code{(STop \& x)} $\to$ \code{x}} &       \colorbox{pink!30}{\code{(SEmpty \& x)} $\to$ \code{SEmpty}}\\
+    \colorbox{pink!30}{\code{!STop} $\to$ \code{SEmpty}} &       \colorbox{pink!30}{\code{!SEmpty} $\to$ \code{STop}}    
+  \end{tabular}
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \colorbox{pink!30}{\code{(STop \& x)} $\to$ \code{x}}\\
-      \colorbox{pink!30}{\code{!STop} $\to$ \code{SEmpty}}
-      
-      \usebox\typecaseCbox
+      \only<1,2>{\usebox\typecaseCbox}%
+      \only<4>{\usebox\typecaseDhbox}%
+      \only<5>{\usebox\typecaseDbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \colorbox{pink!30}{\code{(SEmpty \& x)} $\to$ \code{SEmpty}}\\
-      \colorbox{pink!30}{\code{!SEmpty} $\to$ \code{STop}}
-
-      \usebox\typecaseDhbox
+      \only<2,3>{\usebox\typecaseDhbox}%
+      \only<4>{\myLeftArrow\vfill}
     \end{column}    
   \end{columns}
 \end{frame}
 
 \begin{frame}{Rewrite: 4}
+  \begin{tabular}{ll}
+    \colorbox{pink!30}{\code{SEmpty.typep(x)} $\to$ \code{false}} & 
+    \colorbox{pink!30}{\code{STop.typep(x)} $\to$ \code{true}}
+  \end{tabular}
   \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \colorbox{pink!30}{\code{SEmpty.typep(x)} $\to$ \code{false}}
-      
-      \usebox\typecaseDbox
+    \begin{column}{0.5\textwidth}      
+      \only<1,2>{\usebox\typecaseDbox}%
+      \only<4>{\usebox\typecaseEhbox}%
+      \only<5>{\usebox\typecaseEbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \colorbox{pink!30}{\code{STop.typep(x)} $\to$ \code{true}}
-
-      \usebox\typecaseEhbox
+      \only<2,3>{\usebox\typecaseEhbox}%
+      \only<4>{\myLeftArrow\vfill}
     \end{column}    
   \end{columns}
 \end{frame}
 
 \begin{frame}{Rewrite: 5}
-  \colorbox{pink!30}{\code{(if true x else y)} $\to$ \code{x}}\\
-  \colorbox{pink!30}{\code{(if false x else y)} $\to$ \code{y}}
-
+  \begin{tabular}{ll}
+    \colorbox{pink!30}{\code{(if true x else y)} $\to$ \code{x}} &     
+    \colorbox{pink!30}{\code{(if false x else y)} $\to$ \code{y}}
+  \end{tabular}
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \usebox\typecaseEbox
+      \only<1,2>{\usebox\typecaseEbox}%
+      \only<4>{\usebox\typecaseFhbox}%
+      \only<5>{\usebox\typecaseFbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseFhbox
+      \only<2,3>{\usebox\typecaseFhbox}%
+      \only<4>{\myLeftArrow\vfill}
     \end{column}    
   \end{columns}
 \end{frame}
@@ -339,80 +385,88 @@
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \usebox\typecaseFbox
+      \only<1,2,3>{\usebox\typecaseFbox}%
+      \only<5,6>{\usebox\typecaseGbox}
     \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseGabox
-    \end{column}    
-  \end{columns}
-\end{frame}
 
-\begin{frame}{Rewrite: 6}
-  Introduce \colorbox{pink!30}{\code{if I.typep(x) ... else ...}}
-
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \usebox\typecaseFbox
-    \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseGbox
+      \only<2>{\usebox\typecaseGabox}
+      \only<3,4>{\usebox\typecaseGbox}%
+      \only<5>{\myLeftArrow\vfill}
     \end{column}    
   \end{columns}
 \end{frame}
 
 \begin{frame}{Rewrite: 7}
-  In \code{if} part: \colorbox{pink!30}{Supertypes of \code{I} $\to$ \code{STop}}\\
-  In \code{else} part: \colorbox{pink!30}{Subtypes of \code{I} $\to$ \code{SEmpty}}
+  \begin{tabular}{ll}
+  In \code{then} part: \colorbox{pink!30}{Supertypes of \code{I} $\to$ \code{STop}}.&
+  In \code{else} part: \colorbox{pink!30}{Subtypes of \code{I} $\to$ \code{SEmpty}}.
+  \end{tabular}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \usebox\typecaseGbox
+      \only<1,2>{\usebox\typecaseGbox}%
+      \only<4>{\usebox\typecaseHhbox}%
+      \only<5>{\usebox\typecaseHbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseHhbox
+      \only<2,3>{\usebox\typecaseHhbox}%
+      \only<4>{\myLeftArrow\vfill}
     \end{column}    
   \end{columns}
 \end{frame}
 
 
 \begin{frame}{Rewrite: 8}
-
+  \begin{tabular}{ll}
+      \colorbox{pink!30}{\code{!STop} $\to$ \code{SEmpty}} &    
+      \colorbox{pink!30}{\code{!SEmpty} $\to$ \code{STop}}
+  \end{tabular}
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \colorbox{pink!30}{\code{!STop} $\to$ \code{SEmpty}}
-      \usebox\typecaseHbox
+      \only<1,2>{\usebox\typecaseHbox}%
+      \only<4>{\usebox\typecaseIhbox}%
+      \only<5>{\usebox\typecaseIbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \colorbox{pink!30}{\code{!SEmpty} $\to$ \code{STop}}
-      \usebox\typecaseIhbox
+      \only<2,3>{\usebox\typecaseIhbox}%
+      \only<4>{\myLeftArrow\vfill}
     \end{column}    
   \end{columns}
 \end{frame}
 
 \begin{frame}{Rewrite: 9}
-
+  \begin{tabular}{ll}
+    \colorbox{pink!30}{\code{SEmpty.typep(x)} $\to$ \code{false}} &
+    \colorbox{pink!30}{\code{STop.typep(x)} $\to$ \code{true}}  
+  \end{tabular}
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \colorbox{pink!30}{\code{SEmpty.typep(x)} $\to$ \code{false}}
-      \usebox\typecaseIbox
+      \only<1,2>{\usebox\typecaseIbox}%
+      \only<4>{\usebox\typecaseJhbox}%
+      \only<5>{\usebox\typecaseJbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \colorbox{pink!30}{\code{STop.typep(x)} $\to$ \code{true}}
-      \usebox\typecaseJhbox
+      \only<2,3>{\usebox\typecaseJhbox}%
+      \only<4>{\myLeftArrow\vfill}
     \end{column}    
   \end{columns}
 \end{frame}
 
 \begin{frame}{Rewrite: 10}
-  \colorbox{pink!30}{\code{(if true x else y)} $\to$ \code{x}}\\
-  \colorbox{pink!30}{\code{(if false x else y)} $\to$ \code{y}}
-
+  \begin{tabular}{ll}
+  \colorbox{pink!30}{\code{(if true x else y)} $\to$ \code{x}}
+& \colorbox{pink!30}{\code{(if false x else y)} $\to$ \code{y}}
+  \end{tabular}
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \usebox\typecaseJbox
+      \only<1,2>{\usebox\typecaseJbox}%
+      \only<4>{\usebox\typecaseKhbox}%
+      \only<5>{\usebox\typecaseKbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseKhbox
+      \only<2,3>{\usebox\typecaseKhbox}%
+      \only<4>{\myLeftArrow\vfill}
     \end{column}
   \end{columns}
 \end{frame}
