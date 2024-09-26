@@ -1,3 +1,5 @@
+\section{Determinism}
+
 {  %% chapter slide
   \setbeamercolor{background canvas}{bg=chaptercolor}
 \begin{frame}{Challenge \textnumero 4}{Deterministic State Machines}
@@ -69,13 +71,11 @@
   \begin{columns}[T]
     \begin{column}{0.35\textwidth}
       \centering
-      
       \begin{align*}
-        Int&\subseteq Number\\
         Odd&\subseteq Int &\text{unknown}\\
         Odd&~\cap~ !Int = \emptyset &\text{unknown}
       \end{align*}
-      \scalebox{0.9}{\input{tikz-int-odd.tex}}%
+      \scalebox{1.0}{\input{tikz-int-odd.tex}}%
     \end{column}%
     \begin{column}{0.7\textwidth}
       \only<1>{\scalebox{0.9}{\input{fig-nfa-satisfies}}}%
@@ -115,19 +115,19 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Indeterminant Transitions}{Build-time}
+\begin{frame}{Indeterminant Transitions}
 
   \scalebox{0.8}{\input{fig-4}}
 
   \begin{itemize}
-  \item   If we cannot determine whether a type is empty, the transition may
+  \item   If we cannot determine a type is empty, the transition may
     \Emph{still be unsatisfiable}. 
   \item  However, we \Emph{cannot eliminate}    the transition and unreachable states.
   \end{itemize}
 \end{frame}
 
 
-\begin{frame}{Indeterminant Transitions}{Run-time}
+\begin{frame}{Indeterminant Transitions}
 
   \scalebox{0.8}{\input{fig-4}}
 

@@ -1,5 +1,6 @@
+\section{Embedding a Type System}
 
-{  \setbeamercolor{background canvas}{bg=sectioncolor}
+{  \setbeamercolor{background canvas}{bg=chaptercolor}
 \begin{frame}{Challenge \textnumero 3}{Type Lattice}
 
   How to support types like $Int\cap\overline{Number}$ in Scala?
@@ -8,6 +9,7 @@
   \item   Support \Emph{type lattice}
   \item Embed a dynamic type system into an existing programming language.
   \item Library: \code{genus}
+  \item Compute membership and subtype predicates.
   \end{itemize}
 
 \end{frame}
@@ -131,7 +133,7 @@
   \end{minipage}
 \end{lrbox}
 
-\begin{frame}{\code{SimpleTypeD} Membership}
+\begin{frame}{Type Membership Predicate}
   \emph{Boolean} type membership question is \Emph{always answerable}.
 
   \usebox\membershipbox
@@ -146,7 +148,7 @@
 
 
 
-\begin{frame}{\code{SimpleTypeD} Subtype}
+\begin{frame}{Subtype Predicate}
 
   \emph{Semi-Boolean} Subtype predicate \Emph{sometimes unanswerable}.
 
