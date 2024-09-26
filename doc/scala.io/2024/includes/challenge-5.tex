@@ -198,7 +198,7 @@
 \end{frame}
 
 \begin{frame}{Decision Tree Structure}
-  We programmatically manipulate \code{if ... else ...} using a lazy data structure similar to the following.
+  We programmatically manipulate \code{if ... else ...} using a lazy, \code{Ite} data structure similar to the following.
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -209,10 +209,22 @@
     \end{column}    
   \end{columns}
 
-  However, for this presentation, we represent the decision tree as \Emph{human readable} Scala code.
+  For this presentation, we represent the decision tree as \Emph{human readable} Scala code.
 \end{frame}
 
 
+
+\begin{frame}{Rewrite: 1}
+  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \usebox\typecaseAbox
+    \end{column}
+    \begin{column}{0.5\textwidth}  %%
+    \end{column}    
+  \end{columns}
+\end{frame}
 
 \begin{frame}{Rewrite: 1}
   Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
