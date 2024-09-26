@@ -1,7 +1,7 @@
-\section{Efficiency: Redundant Type Checks}
+\subsection{Efficiency: Redundant Type Checks}
 
 {  %% chapter slide
-  \setbeamercolor{background canvas}{bg=chaptercolor}
+  \setbeamercolor{background canvas}{bg=sectioncolor}
 
 \begin{frame}{Challenge \textnumero 5}{Redundant Type Check}
   Select correct transition, avoiding \Emph{redundant type checks}.
@@ -198,7 +198,7 @@
 \end{frame}
 
 \begin{frame}{Decision Tree Structure}
-  We programmatically manipulate \code{if ... else ...} using a lazy, \code{Ite} data structure similar to the following.
+  We programmatically manipulate \code{if ... else ...} using a lazy, \code{Ite} (if/then/else) data structure similar to the following.
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -266,10 +266,13 @@
 \end{frame}
 
 
+%% Thanks to John Wickerson, https://tex.stackexchange.com/users/25356/john-wickerson
+%% for this arrow
+%% https://tex.stackexchange.com/questions/113228/how-can-i-add-a-big-arrow
 \def\myLeftArrow{\smash{
   \begin{tikzpicture}[baseline=-2mm]
     \useasboundingbox (-2,0);
-    \node[single arrow,draw=black,fill=red!10,minimum width=5cm,minimum height=5cm,shape border rotate=180] at (0,-1) {};
+    \node[single arrow,draw=black,fill=red!10,minimum width=5cm,minimum height=7cm,shape border rotate=180] at (0,-1) {};
   \end{tikzpicture}
 }}
 

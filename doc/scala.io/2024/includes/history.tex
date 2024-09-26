@@ -27,18 +27,17 @@
 \end{frame}
 
 
-\begin{frame}{Requirements}
+\begin{frame}{Background}
   \begin{itemize}
   \item Heterogeneous sequences are commonplace in dynamically typed languages
     \begin{itemize}
     \item Supported in Scala as \code{Seq[Any]}
     \end{itemize}
-  \item Run-time type reflection 
+  \item Can we perform run-time reasoning about mixed-type sequences?
+  \item Need run-time type reflection 
     \begin{itemize}
     \item type membership query:\code{classOf[Int].isInstance("hello")}
     \item subtype query: \code{classOf[Int].isAssignableFrom(classOf[String])}
     \end{itemize}
-  \item Implementation of a Simple Embeddable Type System
-    \url{https://www.lrde.epita.fr/wiki/Publications/newton.21.els}
   \end{itemize}
 \end{frame}
