@@ -9,7 +9,6 @@
   \begin{itemize}
   \item   Compute a partition of a given set of type designators,
   \item   ... even (especially) when subtype relation is unknown.
-  \item   See \emph{An Elegant and Fast Algorithm for Partitioning Types} \url{https://www.european-lisp-symposium.org/static/proceedings/2023.pdf}
   \end{itemize}
 
 \end{frame}
@@ -17,14 +16,14 @@
 
 
 % Int and Int (classic case)
-\begin{frame}{Classic Non-determinism}
-  \centering
+%% \begin{frame}{Classic Non-determinism}
+%%   \centering
   
-  \scalebox{0.95}{\input{fig-nfa}}
+%%   \scalebox{0.95}{\input{fig-nfa}}
 
-  Classic \Emph{non-determinism}: state with two exiting transitions with same label.
+%%   Classic \Emph{non-determinism}: state with two exiting transitions with same label.
 
-\end{frame}
+%% \end{frame}
 
 \begin{frame}{Non-determinism by subtype}
   \begin{columns}[T]
@@ -39,7 +38,7 @@
     \end{column}%
     \begin{column}{0.6\textwidth}
       \only<1>{\scalebox{0.9}{\input{fig-nfa-subtype-3}}}%
-      \only<2>{\scalebox{0.9}{\input{fig-nfa-subtype-disjoint}}}%
+      \only<2>{\scalebox{0.8}{\input{fig-nfa-subtype-disjoint}}}%
       \only<3>{\scalebox{0.8}{\input{fig-nfa-subtype-disjoint-simple}}}%
       \only<4>{\scalebox{0.8}{\input{fig-nfa-subtype-simple}}}%
     \end{column}
