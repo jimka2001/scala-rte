@@ -1,0 +1,30 @@
+digraph G {
+  fontname=courier;
+  rankdir=LR; graph[labeljust=l,nojustify=true]
+  node [fontname=Arial, fontsize=25];
+  edge [fontsize=20];
+// Initial state
+I0 [label="", style=invis, width=0]
+I0 -> 0;
+// 3 final states
+F0 [label="", style=invis, width=0]
+F2 [label="", style=invis, width=0]
+F3 [label="", style=invis, width=0]
+// all 4 states
+0 [label="0",shape=doublecircle]
+0 -> 2 [label="\"M\""]
+0 -> 3 [label="\"C\""]
+0 -> 1 [label="!SMember(\"M\", \"C\")"]
+1 [label="1"]
+1 -> 1 [label="STop"]
+2 [label="2",shape=doublecircle]
+2 -> 2 [label="Double|Float|\"M\""]
+2 -> 3 [label="C"]
+2 -> 1 [label="!Double&!Float&!SMember(\"M\", C)"]
+3 [label="3",shape=doublecircle]
+3 -> 2 [label="\"M\""]
+3 -> 3 [label="Integer|\"C\""]
+3 -> 1 [label="!Integer&!SMember(\"M\", \"C\")"]
+  labelloc="t";
+  label=""
+}

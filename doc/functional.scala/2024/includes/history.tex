@@ -1,0 +1,43 @@
+\section{History}
+{  %% chapter slide
+  \setbeamercolor{background canvas}{bg=chaptercolor}
+\begin{frame}{History}
+  \centering
+  %% image from https://patimes.org/history-and-its-relevance-to-public-administration/  
+  \includegraphics[width=0.8\textwidth]{history.jpg}
+\end{frame}
+}
+\begin{frame}{History}
+  \begin{itemize}
+  \item Regular Type Expressions (RTEs) were introduced at 2016 European Lisp Conference, implemented in Common Lisp.
+    \url{https://www.lrde.epita.fr/wiki/Publications/newton.16.els}
+  \item See PhD Thesis 2018 for theoretical, implementation, and performance details
+    \url{https://www.lrde.epita.fr/wiki/Publications/newton.18.phd}
+  \item   RTE Available:
+
+    \medskip
+    
+  \begin{tabular}{ll}
+    Scala & \url{https://github.com/jimka2001/scala-rte}\\
+    Clojure & \url{https://github.com/jimka2001/clojure-rte}\\
+    Python & \url{https://github.com/jimka2001/python-rte}\\
+    Common Lisp & \url{https://github.com/jimka2001/cl-rte}    
+  \end{tabular}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Background}
+  \begin{itemize}
+  \item Heterogeneous sequences are commonplace in dynamically typed languages
+    \begin{itemize}
+    \item Supported in Scala as \code{Seq[Any]}
+    \end{itemize}
+  \item Can we perform run-time reasoning about mixed-type sequences?
+  \item Need run-time type reflection 
+    \begin{itemize}
+    \item type membership query:\code{classOf[Int].isInstance("hello")}
+    \item subtype query: \code{classOf[Int].isAssignableFrom(classOf[String])}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
