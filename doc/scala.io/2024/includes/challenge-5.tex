@@ -45,13 +45,19 @@
   \end{minipage}
 \end{lrbox}
 
+\newsavebox\typecaseBaabox
+\begin{lrbox}{\typecaseBaabox}
+  \begin{minipage}{8cm}
+\input{typecaseBaabox}
+  \end{minipage}
+\end{lrbox}
+
 \newsavebox\typecaseBbox
 \begin{lrbox}{\typecaseBbox}
   \begin{minipage}{8cm}
     \input{typecaseBbox}
   \end{minipage}
 \end{lrbox}
-
 
 \newsavebox\typecaseCbox
 \begin{lrbox}{\typecaseCbox}
@@ -123,6 +129,13 @@
   \end{minipage}
 \end{lrbox}
 
+\newsavebox\typecaseGhbox
+\begin{lrbox}{\typecaseGhbox}
+  \begin{minipage}{8cm}
+    \input{typecaseGhbox}
+  \end{minipage}
+\end{lrbox}
+
 
 \newsavebox\typecaseHbox
 \begin{lrbox}{\typecaseHbox}
@@ -184,7 +197,7 @@
 
 
 \begin{frame}{Sequential Type Check}
-  In general a state in the DFA may have several \Emph{disjoint} transitions, each with its own type label.
+  A DFA state may have several \Emph{disjoint} transitions, each with its own type label.
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \usebox\typecaseAbox
@@ -212,55 +225,31 @@
   For this presentation, we represent the decision tree as \Emph{human readable} Scala code.
 \end{frame}
 
-
-
-\begin{frame}{Rewrite: 1}
-  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
+\begin{frame}{Decision Tree, Before and After}
+  Viewing the \code{if ... else ...} before and after as decision trees.
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \usebox\typecaseAbox
+      \usebox\typecaseITEbox
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-    \end{column}    
+      \usebox\typecaseITEafterbox
+    \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}{Rewrite: 1}
+
+
+\begin{frame}{Rewrite: 1}%1
   Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \usebox\typecaseAbox
+      \only<1,2,3>{\usebox\typecaseAbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseBabox
-    \end{column}    
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Rewrite: 1}
-  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
-
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \usebox\typecaseAbox
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseBbox
-    \end{column}    
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Rewrite: 1}
-  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
-
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \usebox\typecaseAbox
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseBbox
+      \only<2>{\usebox\typecaseBabox}%
+      \only<3>{\usebox\typecaseBaabox}
     \end{column}    
   \end{columns}
 \end{frame}
@@ -276,8 +265,7 @@
   \end{tikzpicture}
 }}
 
-\begin{frame}{Rewrite: 1}
-  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
+\begin{frame}{Rewrite: 1}%4,5,6
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -290,9 +278,6 @@
   \end{columns}
 \end{frame}
 
-
-
-
 \begin{frame}{Rewrite: 2}
   \begin{tabular}{ll}
   In \code{then} part: \colorbox{pink!30}{Supertypes of \code{N} $\to$ \code{STop}}. &
@@ -302,8 +287,7 @@
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \only<1,2>{\usebox\typecaseBbox}%
-      \only<4>{\usebox\typecaseChbox}%
-      \only<5>{\usebox\typecaseCbox}
+      \only<4,5>{\usebox\typecaseCbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
       \only<2,3>{\usebox\typecaseChbox}
@@ -394,7 +378,8 @@
 
     \begin{column}{0.5\textwidth}  %%
       \only<2>{\usebox\typecaseGabox}
-      \only<3,4>{\usebox\typecaseGbox}%
+      \only<3>{\usebox\typecaseGhbox}%
+      \only<4>{\usebox\typecaseGbox}%
       \only<5>{\myLeftArrow\vfill}
     \end{column}    
   \end{columns}
@@ -409,8 +394,7 @@
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \only<1,2>{\usebox\typecaseGbox}%
-      \only<4>{\usebox\typecaseHhbox}%
-      \only<5>{\usebox\typecaseHbox}
+      \only<4,5>{\usebox\typecaseHbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
       \only<2,3>{\usebox\typecaseHhbox}%
@@ -428,8 +412,7 @@
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \only<1,2>{\usebox\typecaseHbox}%
-      \only<4>{\usebox\typecaseIhbox}%
-      \only<5>{\usebox\typecaseIbox}
+      \only<4,5>{\usebox\typecaseIbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
       \only<2,3>{\usebox\typecaseIhbox}%
@@ -446,8 +429,7 @@
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \only<1,2>{\usebox\typecaseIbox}%
-      \only<4>{\usebox\typecaseJhbox}%
-      \only<5>{\usebox\typecaseJbox}
+      \only<4,5>{\usebox\typecaseJbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
       \only<2,3>{\usebox\typecaseJhbox}%
@@ -464,8 +446,7 @@
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \only<1,2>{\usebox\typecaseJbox}%
-      \only<4>{\usebox\typecaseKhbox}%
-      \only<5>{\usebox\typecaseKbox}
+      \only<4,5>{\usebox\typecaseKbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
       \only<2,3>{\usebox\typecaseKhbox}%
@@ -491,18 +472,7 @@
 
 \end{frame}
 
-\begin{frame}{Decision Tree, Before and After}
-  Viewing the \code{if ... else ...} before and after as decision trees.
 
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \usebox\typecaseITEbox
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseITEafterbox
-    \end{column}
-  \end{columns}
-\end{frame}
 
 
 

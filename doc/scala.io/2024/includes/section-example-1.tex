@@ -67,10 +67,19 @@
       \scalebox{0.8}{\input{tikz-int-float}}%
     \end{column}%
     \begin{column}{0.7\textwidth}
-      \only<1>{\scalebox{0.95}{\input{fig-nfa-subtype}}}%
-      \only<2>{\LARGE Backtracking?\hfill\includegraphics[height=5cm]{red-head}}%
+      \only<1,2>{\scalebox{0.95}{\input{fig-nfa-subtype}}}
+      
+      \only<2>{\includegraphics[height=2cm]{red-head}\LARGE Backtracking?}%
       \only<3>{\scalebox{0.95}{\input{fig-dfa-subtype}}}%
-      \only<4>{\Challenge{Challenge \textnumero 3:} How to support $Int\cap\overline{Number}$ in Scala?}
+      \only<4-6>{\scalebox{0.65}{\input{fig-dfa-subtype}}}%
+      
+      \only<4-6>{\Challenge{Challenge \textnumero 3:} How to support $Int\cap\overline{Number}$ in Scala?\\}
+      \only<5,6>{\Challenge{Challenge \textnumero 4:} How to parition types?\\}
+      \only<6>{\Challenge{Challenge \textnumero 5:} How to avoid duplicate type checks?}%
+
+      \only<5>{
+        For example $\{Int,Number\}\to\{Int,Number\cap\overline{Int}\}$
+      }%
     \end{column}
   \end{columns}
 \end{frame}

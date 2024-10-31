@@ -2,8 +2,9 @@
 \begin{lstlisting}[style=scalaioScala]
 SAtomic(classOf[Int]).typep(-42) // returns true
 
-(SAtomic(classOf[String]) || SAtomic(classOf[Int])).typep(7) 
 // returns true
+(SAtomic(classOf[String]) || SAtomic(classOf[Int])).typep(7)
+
 
 // define predicate
 def oddp(a:Any):Boolean = {
