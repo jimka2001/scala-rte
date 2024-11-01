@@ -3,12 +3,12 @@
 {  \setbeamercolor{background canvas}{bg=sectioncolor}
 \begin{frame}{\Challenge{3} Type Lattice}
 
-  How to support types like $Int\cap\overline{Number}$ in Scala?
+  How to support types like \textcolor{greeny}{$Int\cap\overline{Number}$} in Scala?
 
   \begin{itemize}
   \item   Support \Emph{type lattice}
   \item Embed a dynamic type system into an existing programming language.
-  \item Compute membership and subtype predicates.
+  \item Answer type membership and subtype questions.
   \end{itemize}
 
 \end{frame}
@@ -34,10 +34,10 @@
   \scalebox{0.7}{\input{td-ast}}
   \begin{itemize}
   \item A type designator is an expression tree (AST).
-  \item Each node is an instance of class \code{SimpleTypeD}.
-  \item Leaf nodes interface to Scala classes via \code{SAtomic(...)}.
-  \item .. and to literal Scala values via \code{SEql(...)}
-  \end{itemize}
+  \item Leaf nodes interface to Scala classes via \code{SAtomic(...)}. 
+  \item \ldots and to literal Scala values via \code{SEql(...)}
+  \item \ldots and to predicate functions via \code{SSatisfies(...)}
+ \end{itemize}
 \end{frame}
 
 
