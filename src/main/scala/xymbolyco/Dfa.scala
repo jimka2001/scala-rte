@@ -138,7 +138,9 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //      Some(Left(List[L])) if there is a path, but some label is indeterminate.
   lazy val spanningTrace:Option[Either[List[L],List[L]]] = spanningPath match {
     case None => None
+    // satisfiable path
     case Some(Right(_)) => Some(Right(findTrace(true).getOrElse(List[L]())))
+    // indeterminate path
     case Some(Left(_)) => Some(Left(findTrace(false).getOrElse(List[L]())))
   }
 

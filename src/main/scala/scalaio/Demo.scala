@@ -13,9 +13,10 @@ object Demo {
                   "C", 2, 5, 3,
                   "M", 0.5, 1.2
                   )
+  val I: SimpleTypeD = SAtomic(classOf[Int])
   val D:SimpleTypeD = SAtomic(classOf[Double])
   val F:SimpleTypeD = SAtomic(classOf[Float])
-  val DF:SimpleTypeD = SOr(F, D)
+  val DF:SimpleTypeD = F || D
 
   def positive(x:Any):Boolean = {
     x match {
@@ -23,18 +24,18 @@ object Demo {
       case _ => false
     }
   }
-  val SInt: SimpleTypeD = SAtomic(classOf[Int])
-  val IPos: SimpleTypeD = SAnd(SInt, SSatisfies(positive, "IPos"))
+  val IPos: SimpleTypeD = SAnd(I, SSatisfies(positive, "IPos"))
   val M: SimpleTypeD = SEql("M")
   val C: SimpleTypeD = SEql("C")
   val XY: SimpleTypeD = SEql("XY")
-  val XYclause:Rte = XY ++ (SInt ++ DF).+
+  val XYclause:Rte = XY ++ (I ++ DF).+
   val Mclause:Rte = M ++ DF.+
   val Cclause:Rte = C ++ IPos.+
 
   val pattern1:Rte = (XYclause | Mclause | Cclause).*
   val pattern2:Rte = ((XY ++ (IPos ++ DF).+) | (M ++ DF.+) | (C ++ IPos.+)).*
-  val labels = Seq(SInt, M, C, XY)
+
+  val labels = Seq(I, M, C, XY)
   println(pattern1.contains(data1))
   println(pattern2.contains(data1))
   val diff = Xor(pattern2 ,pattern1)
