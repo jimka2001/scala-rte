@@ -21,7 +21,11 @@
     \vfill}
    \begin{columns}
     \begin{column}{0.4\textwidth}
-      \only<2>{We \textcolor{blue}{construct~a \Emph{deterministic} finite automaton} (DFA).}%
+      \only<2>{We \textcolor{blue}{construct~a \Emph{deterministic} finite automaton} (DFA).
+
+        \medskip
+
+        \Challenge{2} How to construct a DFA from an RTE?}%
       \only<3-16>{\textcolor{greeny}{\LARGE ${(Int \cdot ( Double^{+} ~\vee String^{+}))^{+}}$}}\\[2cm]%
       \only<3-16>{\textcolor{orange}{\LARGE Does it match?}}%
       \only<17>{\textcolor{greeny}{\LARGE Yes, it's a match!}}%
@@ -46,8 +50,6 @@
       \only<17>{\scalebox{0.95}{\input{fig-3-2}}}%
     \end{column}
   \end{columns}
-
-  \only<19>{\Challenge{Challenge \textnumero 2:} How to construct a DFA from an RTE?}
 \end{frame}
 
 
@@ -73,12 +75,12 @@
       \only<3>{\scalebox{0.95}{\input{fig-dfa-subtype}}}%
       \only<4-6>{\scalebox{0.65}{\input{fig-dfa-subtype}}}%
       
-      \only<4-6>{\Challenge{Challenge \textnumero 3:} How to support $Int\cap\overline{Number}$ in Scala?\\}
-      \only<5,6>{\Challenge{Challenge \textnumero 4:} How to parition types?\\}
-      \only<6>{\Challenge{Challenge \textnumero 5:} How to avoid duplicate type checks?}%
+      \only<4-6>{\Challenge{3} How to support \textcolor{greeny}{$Int\cap\overline{Number}$} in Scala?\\}
+      \only<5,6>{\Challenge{4} How to partition types?\\}
+      \only<6>{\Challenge{5} How to avoid duplicate type checks?}%
 
       \only<5>{
-        For example $\{Int,Number\}\to\{Int,Number\cap\overline{Int}\}$
+        \Eg,\\\quad\textcolor{greeny}{$\{String,Int,Number\}\to\{String,Int,Number\cap\overline{Int}\}$}
       }%
     \end{column}
   \end{columns}

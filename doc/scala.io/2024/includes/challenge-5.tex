@@ -3,7 +3,7 @@
 {  %% chapter slide
   \setbeamercolor{background canvas}{bg=sectioncolor}
 
-\begin{frame}{Challenge \textnumero 5}{Redundant Type Check}
+\begin{frame}{\Challenge{5} Redundant Type Check}
   Select correct transition, avoiding \Emph{redundant type checks}.
 
   \medskip
@@ -228,6 +228,12 @@
 \begin{frame}{Decision Tree, Before and After}
   Viewing the \code{if ... else ...} before and after as decision trees.
 
+  \medskip
+  
+  Rewrite: $1 \to 2\to 3\to 4\to 5\to 6\to 7\to 8\to 9\to 10$
+
+  \medskip
+  
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \usebox\typecaseITEbox
@@ -235,22 +241,6 @@
     \begin{column}{0.5\textwidth}  %%
       \usebox\typecaseITEafterbox
     \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}{Rewrite: 1}%1
-  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
-
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \only<1,2,3>{\usebox\typecaseAbox}
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \only<2>{\usebox\typecaseBabox}%
-      \only<3>{\usebox\typecaseBaabox}
-    \end{column}    
   \end{columns}
 \end{frame}
 
@@ -265,20 +255,25 @@
   \end{tikzpicture}
 }}
 
-\begin{frame}{Rewrite: 1}%4,5,6
+
+\begin{frame}{Rewrite: $\colorbox{orange!30}{\Huge 1}\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to 9\to 10$}%1
+  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
-    \only<2,3>{\usebox\typecaseBbox}
+      \only<1,2,3>{\usebox\typecaseAbox}%
+      \only<5,6>{\usebox\typecaseBbox}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-    \only<1>{\usebox\typecaseBbox}%%
-    \only<2>{\myLeftArrow\vfill}
+      \only<2>{\usebox\typecaseBabox}%
+      \only<3>{\usebox\typecaseBaabox}%
+      \only<4>{\usebox\typecaseBbox}%
+      \only<5>{\myLeftArrow\vfill}
     \end{column}    
   \end{columns}
 \end{frame}
 
-\begin{frame}{Rewrite: 2}
+\begin{frame}{Rewrite: $1\to \colorbox{orange!30}{\Huge 2}\to 3\to 4\to 5\to 6\to 7\to 8\to 9\to 10$}
   \begin{tabular}{ll}
   In \code{then} part: \colorbox{pink!30}{Supertypes of \code{N} $\to$ \code{STop}}. &
   In \code{else} part: \colorbox{pink!30}{Subtypes of \code{N} $\to$ \code{SEmpty}}.
@@ -296,24 +291,7 @@
   \end{columns}
 \end{frame}
 
-%% \begin{frame}{Recognizing Subtypes}
-%%   \centering
-
-%%   \begin{align*}
-%%     Int&\subseteq Number\\
-%%     Int&\subseteq Int
-%%   \end{align*}
-
-%%   \scalebox{0.8}{\input{tikz-number.tex}}
-
-
-%%   Failure to identify subtypes/supertypes will lead to \Emph{correct} but \Emph{inefficient} code.
-%% \end{frame}
-
-
-
-
-\begin{frame}{Rewrite: 3}
+\begin{frame}{Rewrite: $1\to 2\to \colorbox{orange!30}{\Huge 3}\to 4\to 5\to 6\to 7\to 8\to 9\to 10$}
   \begin{tabular}{ll}
     \colorbox{pink!30}{\code{(STop \& x)} $\to$ \code{x}} &       \colorbox{pink!30}{\code{(SEmpty \& x)} $\to$ \code{SEmpty}}\\
     \colorbox{pink!30}{\code{!STop} $\to$ \code{SEmpty}} &       \colorbox{pink!30}{\code{!SEmpty} $\to$ \code{STop}}    
@@ -331,7 +309,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Rewrite: 4}
+\begin{frame}{Rewrite: $1\to 2\to 3\to \colorbox{orange!30}{\Huge 4}\to 5\to 6\to 7\to 8\to 9\to 10$}
   \begin{tabular}{ll}
     \colorbox{pink!30}{\code{SEmpty.typep(x)} $\to$ \code{false}} & 
     \colorbox{pink!30}{\code{STop.typep(x)} $\to$ \code{true}}
@@ -349,7 +327,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Rewrite: 5}
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to \colorbox{orange!30}{\Huge 5}\to 6\to 7\to 8\to 9\to 10$}
   \begin{tabular}{ll}
     \colorbox{pink!30}{\code{(if true x else y)} $\to$ \code{x}} &     
     \colorbox{pink!30}{\code{(if false x else y)} $\to$ \code{y}}
@@ -367,7 +345,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Rewrite: 6}
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to \colorbox{orange!30}{\Huge 6}\to 7\to 8\to 9\to 10$}
   Introduce \colorbox{pink!30}{\code{if I.typep(x) ... else ...}}
 
   \begin{columns}
@@ -385,7 +363,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Rewrite: 7}
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to \colorbox{orange!30}{\Huge 7}\to 8\to 9\to 10$}
   \begin{tabular}{ll}
   In \code{then} part: \colorbox{pink!30}{Supertypes of \code{I} $\to$ \code{STop}}.&
   In \code{else} part: \colorbox{pink!30}{Subtypes of \code{I} $\to$ \code{SEmpty}}.
@@ -404,7 +382,7 @@
 \end{frame}
 
 
-\begin{frame}{Rewrite: 8}
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to 7\to \colorbox{orange!30}{\Huge 8}\to 9\to 10$}
   \begin{tabular}{ll}
       \colorbox{pink!30}{\code{!STop} $\to$ \code{SEmpty}} &    
       \colorbox{pink!30}{\code{!SEmpty} $\to$ \code{STop}}
@@ -421,7 +399,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Rewrite: 9}
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to \colorbox{orange!30}{\Huge 9}\to 10$}
   \begin{tabular}{ll}
     \colorbox{pink!30}{\code{SEmpty.typep(x)} $\to$ \code{false}} &
     \colorbox{pink!30}{\code{STop.typep(x)} $\to$ \code{true}}  
@@ -438,7 +416,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Rewrite: 10}
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to 9\to \colorbox{orange!30}{\Huge 10}$}
   \begin{tabular}{ll}
   \colorbox{pink!30}{\code{(if true x else y)} $\to$ \code{x}}
 & \colorbox{pink!30}{\code{(if false x else y)} $\to$ \code{y}}
