@@ -56,7 +56,7 @@
 
 \begin{frame}{Deterministic (DFA) vs Non-deterministic (NFA)}
 
-  Suppose sequence = \code{[2, 3, 5.6F]}
+  Suppose sequence = \code{[2,  \colorbox{orange!30}{\Large 3}, 5.6F]}
 
   \begin{columns}[T]
     \begin{column}{0.3\textwidth}
@@ -80,7 +80,7 @@
       \only<6>{\Challenge{5} How to avoid duplicate type checks?}%
 
       \only<5>{
-        \Eg,\\\quad\textcolor{greeny}{$\{String,Int,Number\}\to\{String,Int,Number\cap\overline{Int}\}$}
+        \Eg, type decomposition\\\quad\textcolor{greeny}{$\{String,Int,Number\}\to\{String,Int,Number\cap\overline{Int}\}$}
       }%
     \end{column}
   \end{columns}
