@@ -1,18 +1,22 @@
 package scalaio
 
-import genus._
+import genus.{SAnd, SAtomic, SEql, SNot, SOr, SSatisfies, SimpleTypeD}
+import rte.{Or, Rte, Xor}
 import rte.RteImplicits.tdToRte
-import rte.{Rte, Xor}
 import xymbolyco.GraphViz.dfaView
+import xymbolyco.Minimize.minimize
 
 object Demo2 {
-  val data = Seq("M", 0.1, 0.3, 4.5, // 1 or more double or float all positive
+  val data1 = Seq("XY", 1, 0.5F, 2, 0.8F, 5, 1.2F, 7, 0.4F, // 1 or more x,y where x is integer and y is float
+                  "M", 0.1, 0.3, 4.5, // 1 or more double or float all positive
                   "C", 1, 5, 7, 8, // 1 ore more ints, all positive
                   "C", 2, 5, 3,
                   "M", 0.5, 1.2
                   )
   val I: SimpleTypeD = SAtomic(classOf[Int])
-  val DF:SimpleTypeD = SAtomic(classOf[Float]) || SAtomic(classOf[Double])
+  val D:SimpleTypeD = SAtomic(classOf[Double])
+  val F:SimpleTypeD = SAtomic(classOf[Float])
+  val DF:SimpleTypeD = F || D
 
   def positive(x:Any):Boolean = {
     x match {
@@ -23,41 +27,35 @@ object Demo2 {
   val IPos: SimpleTypeD = SAnd(I, SSatisfies(positive, "IPos"))
   val M: SimpleTypeD = SEql("M")
   val C: SimpleTypeD = SEql("C")
-
+  val XY: SimpleTypeD = SEql("XY")
+  val XYclause:Rte = XY ++ (I ++ DF).+
   val Mclause:Rte = M ++ DF.+
   val Cclause:Rte = C ++ IPos.+
 
-  val pattern1:Rte = ( Mclause | Cclause).*
-  val pattern2:Rte = ((M ++ DF.+) | (C ++ I.+)).*
+  val pattern1:Rte = (XYclause | Mclause | Cclause).*
+  val pattern2:Rte = ((XY ++ (IPos ++ DF).+) | (M ++ DF.+) | (C ++ IPos.+)).*
 
-  val pattern_xor = Xor(pattern1, pattern2)
+  val labels = Seq(I, M, C, XY)
+  println(pattern1.contains(data1))
+  println(pattern2.contains(data1))
+  val diff = Xor(pattern2 ,pattern1)
+  val dfa = diff.toDfa(exitValue=true)
+  dfaView(pattern1.toDfa(), title="pattern 1", showSink=false, abbrev=true, givenLabels=labels)
+  dfaView(pattern2.toDfa(), title="pattern 2", showSink=false, abbrev=true, givenLabels=labels)
+  dfaView(dfa, title="xor", showSink=false, abbrev=true, givenLabels=labels)
 
-  val labels = Seq(I, M, C)
+  println(dfa.spanningTrace)
+  dfa.spanningTrace match {
+    case None => ()
+    case Some(e) => println(e.map(span => span.map {
+      (td: SimpleTypeD) =>
+        if (td.sampleValues.nonEmpty) Some(td.sampleValues.head) else None
+    }))
+  }
+  println(pattern1.contains(Seq("XY", -1, 1.0)))
+  println(pattern2.contains(Seq("XY", -1, 1.0)))
 
   def main(argv:Array[String]):Unit = {
 
-    println("Pattern 1 contains data1? --> "+pattern1.contains(data))
-    dfaView(pattern1.toDfa(), title="Pattern 1", showSink=false, abbrev=true, givenLabels=labels)
-
-    println("Pattern 2 contains data1? --> " + pattern2.contains(data))
-    dfaView(pattern2.toDfa(), title="Pattern 2", showSink=false, abbrev=true, givenLabels=labels)
-
-    println()
-
-    val diff_dfa = pattern_xor.toDfa()
-    dfaView(diff_dfa, title="Symmetric Difference", showSink=false, abbrev=true, givenLabels=labels)
-
-    diff_dfa.spanningTrace match {
-      case None => ()
-      case Some(Right(e)) =>
-        println("Spanning types: --> " + e)
-        println("Spanning trace: --> " + e.map {
-        (td: SimpleTypeD) => td.sampleValues.headOption
-      })
-    }
-    println()
-
-    println("Pattern 1 contains? --> " + pattern1.contains(Seq("C", 0)))
-    println("Pattern 2 contains? --> " + pattern2.contains(Seq("C", 0)))
   }
 }
