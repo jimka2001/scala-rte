@@ -51,15 +51,15 @@
 
 
 
-\begin{frame}{Example 2}{An RTE to match}
-  \usebox\exampleAbox
+%% \begin{frame}{Example 2}{An RTE to match}
+%%   \usebox\exampleAbox
 
-  \begin{itemize}
-  \item Keyword strings \code{"C"} (counts) and \code{"M"} (measurements)
-  \item \code{"C"} followed by zero or more \code{Int} values
-  \item \code{"M"} followed by zero or more values, \code{Double} or \code{Float}
-  \end{itemize}
-\end{frame}
+%%   \begin{itemize}
+%%   \item Keyword strings \code{"C"} (counts) and \code{"M"} (measurements)
+%%   \item \code{"C"} followed by zero or more \code{Int} values
+%%   \item \code{"M"} followed by zero or more values, \code{Double} or \code{Float}
+%%   \end{itemize}
+%% \end{frame}
 
 \newsavebox\exampleAbbox
 \begin{lrbox}{\exampleAbbox}
@@ -70,9 +70,9 @@
 
 
 
-\begin{frame}{Example 2}{Successful match}
-  \usebox\exampleAbbox
-\end{frame}
+%% \begin{frame}{Example 2}{Successful match}
+%%   \usebox\exampleAbbox
+%% \end{frame}
 
 \newsavebox\exampleAcbox
 \begin{lrbox}{\exampleAcbox}
@@ -83,9 +83,9 @@
 
 
 
-\begin{frame}{Example 2}{Does not match}
-  \usebox\exampleAcbox
-\end{frame}
+%% \begin{frame}{Example 2}{Does not match}
+%%   \usebox\exampleAcbox
+%% \end{frame}
 
 \newsavebox\exampleAdbox
 \begin{lrbox}{\exampleAdbox}
@@ -133,14 +133,14 @@
 \begin{frame}{\code{Rte} class quasi-ADT}
   \scalebox{0.9}{\input{rte-adt}}
 
-  \medskip
+  %% \medskip
 
-  \begin{itemize}
-  \item RTE nodes (and leafs) defined by the class hierarchy \code{Rte}
-  \item The \code{Singleton} class interfaces to the type system.
-  \item \code{SimpleTypeD} is an abstraction of Scala/Java class (later)
-  \item Not an ADT for a \Emph{silly} reason, (single file  \code{sealed} classes).
-  \end{itemize}
+  %% \begin{itemize}
+  %% \item RTE nodes (and leafs) defined by the class hierarchy \code{Rte}
+  %% \item The \code{Singleton} class interfaces to the type system.
+  %% \item \code{SimpleTypeD} is an abstraction of Scala/Java class (later)
+  %% \item Not an ADT for a \Emph{silly} reason, (single file  \code{sealed} classes).
+  %% \end{itemize}
 \end{frame}
 
 %% \newsavebox\leafbox
@@ -229,6 +229,6 @@
   \end{minipage}
 \end{lrbox}
 
-\begin{frame}{Extended RTEs}{Some Syntax Sugar}
-  \usebox\extendedbox
-\end{frame}
+%% \begin{frame}{Extended RTEs}{Some Syntax Sugar}
+%%   \usebox\extendedbox
+%% \end{frame}
