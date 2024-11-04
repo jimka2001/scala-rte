@@ -4,8 +4,10 @@ import rte.{Rte, Xor, Atomic, Satisfies, Eql}
 import xymbolyco.GraphViz.dfaView
 
 object Demo1 {
-  val data:Seq[Any] = Seq("M", 0.1, 0.3F, 4.5, // "M" designates measurements, 1 or more double or float
-                          "C", 1, 5, 7, 8, // "C" designates counts, 1 or more ints, all positive
+  val data:Seq[Any] = Seq("M", 0.1, 0.3F, 4.5, // "M" designates measurements,
+                          //                      1 or more double or float
+                          "C", 1, 5, 7, 8, // "C" designates counts,
+                          //                      1 or more ints, all positive
                           "C", 2, 5, 3,
                           "M", 0.5, 1.2F
                           )
