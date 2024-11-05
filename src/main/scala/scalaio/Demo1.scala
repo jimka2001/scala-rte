@@ -31,12 +31,16 @@ object Demo1 {
   def main(argv:Array[String]):Unit = {
     val pattern1:Rte = ( Mclause | Cclause).*
     val m1 = pattern1.contains(data)
+
     println("Pattern 1 contains data1? --> " + m1)
+
     dfaView(pattern1.toDfa(), title="Pattern 1", showSink=false, abbrev=true)
 
     val pattern2:Rte = ((M ++ DF.+) | (C ++ I.+)).*
     val m2 = pattern2.contains(data)
+
     println("Pattern 2 contains data1? --> " + m2)
+
     dfaView(pattern2.toDfa(), title="Pattern 2", showSink=false, abbrev=true)
     
     val pattern_xor:Rte = Xor(pattern1, pattern2)
