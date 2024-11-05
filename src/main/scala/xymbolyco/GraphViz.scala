@@ -163,7 +163,10 @@ object GraphViz {
     }
 
     def drawState(q: State[Sigma, L, E]): Unit = {
-      write(s"""${qarr.indexOf(q)} [label="${q.id}"]\n""")
+      if (dfa.F.contains(q))
+        write(s"""${qarr.indexOf(q)} [shape=doublecircle, label="${q.id}"]\n""")
+      else
+        write(s"""${qarr.indexOf(q)} [label="${q.id}"]\n""")
       for {
         (destination, transitions) <- q.transitions.groupBy(_.destination)
         if showSink || !sinkStateIds.contains(destination.id)
