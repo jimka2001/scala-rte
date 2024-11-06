@@ -4,6 +4,7 @@ import rte.{Rte, Xor, Atomic, Satisfies, Eql}
 import xymbolyco.GraphViz.dfaView
 
 object Demo1 {
+
   val data:Seq[Any] = Seq("M", 0.1, 0.3F, 4.5, // "M" designates measurements,
                           //                      1 or more double or float
                           "C", 1, 5, 7, 8, // "C" designates counts,
@@ -11,7 +12,7 @@ object Demo1 {
                           "C", 2, 5, 3,
                           "M", 0.5, 1.2F
                           )
-  val I: Rte = Atomic(classOf[Int])
+  val I:Rte = Atomic(classOf[Int])
   val DF:Rte = Atomic(classOf[Float]) | Atomic(classOf[Double])
 
   def positive(x:Any):Boolean = {
@@ -29,6 +30,7 @@ object Demo1 {
   val Cclause:Rte = C ++ IPos.+
 
   def main(argv:Array[String]):Unit = {
+
     val pattern1:Rte = ( Mclause | Cclause).*
     val m1 = pattern1.contains(data)
 
