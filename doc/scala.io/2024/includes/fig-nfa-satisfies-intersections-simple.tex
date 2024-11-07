@@ -12,8 +12,8 @@
   \node[state,color=red,rounded rectangle] (4) [above right=5mm and 65mm of 1] {$4$};
   \path[->] (0) edge node {$Int$} (1);
   \path[->] (1) edge[color=indeterminant, line width=3pt, bend right=15]  node[pos=.7,swap] {$Int \cap Odd = Odd$} (2);
-  \path[->] (1) edge[color=indeterminant, line width=3pt, bend left=15]  node[pos=.8] {$Int \cap ~!Odd $} (3);
+  \path[->] (1) edge[color=indeterminant, line width=3pt, bend left=15]  node[pos=.8] {$Int~ \cap ~!Odd $} (3);
   \path[->] (1) edge[color=indeterminant, dotted, line width=3pt, bend left=15]  node[pos=.4,swap] {$!Int \cap Odd = \emptyset$} (4);
-  \path[->] (1) edge[color=indeterminant, line width=3pt, bend right=15]  node[pos=.4] {$!Int \cap~ !Odd = !Int$} (5);
+  \path[->] (1) edge[color=indeterminant, line width=3pt, bend right=15]  node[pos=.4] {$!Int~ \cap~ !Odd = !Int$} (5);
 \end{tikzpicture}
 \end{document}

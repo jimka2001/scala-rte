@@ -35,6 +35,15 @@ abstract class Labeler[Σ,L] {
   def universal(label: L): Boolean = {
     inhabited(subtractLabels(universe, Seq(label))) == Some(false)
   }
+  // return a set of samples values of the type specified by the label L.
+  //   any of the elements in the set should "match" the transition label.
+  def examples(label:L):Set[Any] = Set[Any]()
+
+  // function to return a prototypical example as Some(witness) if possible,
+  //   or else return None, meaning we didn't find a witness, even though
+  //   we know its type.
+  def exampleOption(label:L):Option[Any] = examples(label).headOption
+
   // The sxp function creates a cartesian product of two Dfas.
   // In doing so it needs to 'intersect' labels.   This function,
   // maybeIntersectLabels, returns None if the resulting label means
@@ -122,4 +131,6 @@ case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
     val itet = IfThenElseTree(leaves.toList,transitions)
     a:Any => itet(a)
   }
+
+  override def examples(td:SimpleTypeD): Set[Any] = td.sampleValues
 }

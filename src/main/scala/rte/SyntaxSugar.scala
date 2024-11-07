@@ -54,6 +54,12 @@ object Member extends RteSyntaxSugar {
   def apply(xs: Any*): Rte = Singleton(SMember(xs: _*))
 }
 
+object Satisfies extends RteSyntaxSugar {
+  import genus.SSatisfies
+
+  def apply(f: Any=>Boolean, text:String): Rte = Singleton(SSatisfies(f,text))
+}
+
 object Eql extends RteSyntaxSugar {
   import genus.SEql
 

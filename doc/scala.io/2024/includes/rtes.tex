@@ -2,29 +2,34 @@
 
 {  %% chapter slide
   \setbeamercolor{background canvas}{bg=chaptercolor}
-\begin{frame}{Example}{Regular Type Expressions}
+\begin{frame}{Example}{Regular Type Expressions (RTEs)}
   \centering
   
   \includegraphics[width=0.9\textwidth]{regexp.png}
 \end{frame}
 }
 
-\begin{frame}[t]{Regular Expressions}
+\begin{frame}[t]{Regular Type Expressions (RTEs)}
 
   We'd like to recognize sequences with  \Emph{regular patterns}.
 
   \medskip
   
-  \only<1,2>{\LARGE [ {1}, {2},
-      {2.3},
-      {9.3},
-      {3},
-      {1.5F},
-      {6.5},
-      {4.8F},
-      {2},
-      {2.3}]}%
-  \only<4,5>{{\LARGE [ \textcolor{greeny}{1},
+  \only<1,2,3>{{\LARGE [ {1}, \quad
+        {2},\quad
+      {2.3},\quad
+      {9.3},\quad
+      {3},\quad
+      {1.5F},\quad
+      {6.5},\quad
+      {4.8F},\quad
+      {2},\quad
+      {2.3}]}
+
+  \bigskip 
+
+  }%
+  \only<5>{{\LARGE [ \textcolor{greeny}{1},
     \textcolor{blue}{2.3},
     \textcolor{blue}{9.3},
     \quad \textcolor{greeny}{3},
@@ -32,17 +37,27 @@
     \textcolor{blue}{6.5},
     \textcolor{blue}{4.8F},
     \quad \textcolor{greeny}{2},
-    \textcolor{blue}{2.3}]}}%
-  \only<3>{{\Large [ \textcolor{greeny}{1},
-    \textcolor{blue}{$\underbrace{2.3, 9.3}_{\text{floating point}}$},
-    \quad \textcolor{greeny}{3},
-    \textcolor{blue}{$\underbrace{1.5F, 6.5, 4.8F}_{\text{floating point}}$},
-    \quad \textcolor{greeny}{2},
-    \textcolor{blue}{$\underbrace{2.3}_{\text{floating point}}$}]}}%
+    \textcolor{blue}{2.3}]}
 
   \bigskip 
 
-  \only<2>{What's the pattern?}%  
+  }%
+  \only<2,3>{{\LARGE What's the pattern?}
+
+  \bigskip 
+
+  }%
+
+  \only<3>{{\Large [ \textcolor{greeny}{$\overbrace{1}^{integer}$},
+    \textcolor{blue}{$\underbrace{2.3, 9.3}_{\text{floating points}}$},
+    \quad \textcolor{greeny}{$\overbrace{3}^{integer}$},
+    \textcolor{blue}{$\underbrace{1.5F, 6.5, 4.8F}_{\text{floating points}}$},
+    \quad \textcolor{greeny}{$\overbrace{2}^{integer}$},
+    \textcolor{blue}{$\underbrace{2.3}_{\text{floating points}}$}]}
+
+  \bigskip 
+
+  }%    
   \only<4->{
     {\Large String-based \textcolor{blue}{regular expressions}}
     \begin{columns}
@@ -75,7 +90,7 @@
     $\cup$
     \textcolor{blue}{Float}
     $) {}^{+} )^{*}$
-  \item \Challenge{Challenge \textnumero 1:} We need a surface syntax for Scala.
+  \item \Challenge{1} We need a surface syntax for Scala.
   \end{itemize}
   }
 \end{frame}

@@ -27,17 +27,9 @@
 \end{frame}
 
 
-\begin{frame}{Background}
+\begin{frame}{Goal}
   \begin{itemize}
-  \item Heterogeneous sequences are commonplace in dynamically typed languages
-    \begin{itemize}
-    \item Supported in Scala as \code{Seq[Any]}
-    \end{itemize}
-  \item Can we perform run-time reasoning about mixed-type sequences?
-  \item Need run-time type reflection 
-    \begin{itemize}
-    \item type membership query:\code{classOf[Int].isInstance("hello")}
-    \item subtype query: \code{classOf[Int].isAssignableFrom(classOf[String])}
-    \end{itemize}
+  \item Efficiently recognize patterns in heterogeneously typed sequences.
+  \item Supported in Scala as \code{Seq[Any]}.
   \end{itemize}
 \end{frame}

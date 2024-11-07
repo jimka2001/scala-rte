@@ -137,10 +137,16 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //      Some(Right(List[L])) if there is a satisfiable path, List[L] are the labels
   //      Some(Left(List[L])) if there is a path, but some label is indeterminate.
   lazy val spanningTrace:Option[Either[List[L],List[L]]] = spanningPath match {
+    // unsatisfiable path, or no path
     case None => None
+    // satisfiable path
     case Some(Right(_)) => Some(Right(findTrace(true).getOrElse(List[L]())))
+    // indeterminate path
     case Some(Left(_)) => Some(Left(findTrace(false).getOrElse(List[L]())))
   }
+
+  lazy val witness: Option[List[Option[Any]]] =
+    spanningTrace.map(_.merge.map(labeler.exampleOption))
 
   // Compute a Map from exit-value to (Path,Option[Boolean])) which denotes the shortest path
   //   from q0 to a final state with that exit value.
