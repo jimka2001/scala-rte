@@ -24,7 +24,7 @@
 \end{lrbox}
 
 
-\begin{frame}{Example \code{SimpleTypeD} Expression Tree}
+\begin{frame}{Example \code{SimpleTypeD} Expression Tree: AST}
   \usebox\tdast
 
   \medskip
@@ -154,6 +154,21 @@
   \item Code is incomplete.
   \item JVM supports run-time loaded classes.
   \item No dependable way of finding subtypes in JVM $> 8.x$.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Simple Embedded Type System}
+
+  At the point, \Emph{what have we done}?
+
+  \begin{itemize}
+  \item Wrapped the Scala type system
+  \item ... with a simple type system
+  \item ... which supports a complemented type lattice
+  \item ... with membership Boolean predicate
+  \item ... with subtype semi-Boolean predicate
+  \item ... which supports reflection
   \end{itemize}
 
 \end{frame}
