@@ -24,6 +24,7 @@ package rte
 import genus._
 import adjuvant.Adjuvant._
 import genus.Types._
+import xymbolyco.{Indeterminate, Satisfiable}
 
 import scala.annotation.tailrec
 
@@ -88,8 +89,8 @@ abstract class Rte {
           Some(true)
         else dfa.spanningPath match {
           case None => Some(true)
-          case Some(Right(_)) => Some(false) // exists satisfiable path to a final state
-          case _ => None // exists semi-satisfiable path to a final state
+          case Some((Satisfiable, _)) => Some(false) // exists satisfiable path to a final state
+          case Some((Indeterminate,_)) => None // exists semi-satisfiable path to a final state
         }
     }
   }

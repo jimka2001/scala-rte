@@ -45,13 +45,7 @@ object Demo2 {
   dfaView(dfa, title="xor", showSink=false, abbrev=true, givenLabels=labels)
 
   println(dfa.spanningTrace)
-  dfa.spanningTrace match {
-    case None => ()
-    case Some(e) => println(e.map(span => span.map {
-      (td: SimpleTypeD) =>
-        if (td.sampleValues.nonEmpty) Some(td.sampleValues.head) else None
-    }))
-  }
+
   println(pattern1.contains(Seq("XY", -1, 1.0)))
   println(pattern2.contains(Seq("XY", -1, 1.0)))
 
