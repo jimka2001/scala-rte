@@ -288,7 +288,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     else spanningPath match {
       case None => Some(true)
       case Some((Satisfiable, _)) => Some(false)
-      case Some((Indeterminate, _) )=> None
+      case Some((Indeterminate, _))=> None
     }
   }
 
