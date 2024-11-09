@@ -204,8 +204,8 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       )
     }
 
-    // m is the map from final state to shortest path from q0 to that state
     val m:Map[Int,(Option[Boolean],Path)] = F.map(maybePath).toMap
+    // m is the map from final state to a shortest path from q0 to that state
 
     // given a sequence of designators (Option[Boolean], Path) each indicating some
     //   path to a final state (presumably all the final states have the same
@@ -221,8 +221,8 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       }
     }
 
-    // m maps final state to shortest path, we need to map exit-value
-    // to shortest path.  In the case that 2 (or more) final states
+    // m maps final state to a shortest path, we need to map exit-value
+    // to a shortest path.  In the case that 2 (or more) final states
     // have the same exit value, we need to select the best path of
     // the paths for those final states.
     val x: Map[E, (Option[Boolean], Path)] = for {(e,fs) <- fMap.groupMap(_._2)(_._1)
