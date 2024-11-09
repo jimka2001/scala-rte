@@ -22,7 +22,7 @@
 package rte
 
 import org.scalacheck.Arbitrary
-import xymbolyco.GraphViz
+import xymbolyco.{GraphViz, Indeterminate, Satisfiable, Unsatisfiable}
 
 object RtePropertyBasedScalaTest extends App {
   def classifyRte(n: Int, size: Int, stdDepth: Int)= {
@@ -44,8 +44,8 @@ object RtePropertyBasedScalaTest extends App {
       if (dfa.vacuous().getOrElse(false))
         empty += 1
       else dfa.spanningPath match {
-        case Some(Left(_)) => indeterminate += 1
-        case Some(Right(_)) => satisfiable += 1
+        case Some((Indeterminate, _)) => indeterminate += 1
+        case Some((Satisfiable, _)) => satisfiable += 1
         // need this case to avoid compiler warning about missing case
         case None => () // should not happen because if dfa is non-vacuous, there must be a spanning path
       }

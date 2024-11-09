@@ -1,0 +1,10 @@
+%% dont re-indent this file
+\begin{lstlisting}[style=scalaioScala]
+val Str:SimpleTypeD = SAtomic(classOf[String])
+val Int:SimpleTypeD = SAtomic(classOf[Int])
+val Num:SimpleTypeD = SAtomic(classOf[Number])
+
+Str.subtypep(Int)  // returns Some(false)
+Int.subtypep(Num)  // returns Some(true)
+SSatisfies(oddp).subtypep(Int) // returns None
+\end{lstlisting}

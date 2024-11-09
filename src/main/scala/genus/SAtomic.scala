@@ -260,7 +260,7 @@ object SAtomic {
   //   we assume that it is possible to create a class inheriting from both
   //   thus interfaces are never disjoint.
   //   However if the world view is closed, then we only assume classes
-  //   exist which actually exist NOW, thus thus if there are not common
+  //   exist which actually exist NOW, thus if there are not common
   //   subclasses of two given classes, then we conclude the classes are
   //   disjoint.
   val worldView: DynamicVariable[WorldView] = new DynamicVariable[WorldView](ClosedWorldView)

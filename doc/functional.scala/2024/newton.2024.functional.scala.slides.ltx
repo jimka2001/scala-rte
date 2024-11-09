@@ -1,0 +1,47 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage{xspace}
+\usepackage{pgf}
+\usepackage{tikz}
+\usetikzlibrary{patterns}
+\usetikzlibrary{shapes.arrows}
+\tikzstyle{accepting}=[accepting by double]
+%%\tikzset{outer sep=2mm, accepting/.style={double distance=3.5mm}}
+\usepackage{appendixnumberbeamer}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{color}
+\usepackage[subpreambles=true]{standalone}
+
+\input{scalaio-colors}
+\input{scalaio-commands}
+\input{scalaio-listings}
+
+
+\title{Recognizing Regular Patterns in Heterogeneous Sequences}
+%% \titlegraphic{}
+\author{Jim E. Newton}
+\institute{EPITA Research Laboratory, Le Kremlin Bic\^etre, FRANCE}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}{Overview}
+\tableofcontents
+\end{frame}
+}
+
+\input{history}
+\input{rtes}
+\input{section-example-1} % matching (a 1 1.0 b "a" "an" "the" -5 2 22 222 d 2/3)
+\input{theoretic-problems}
+\input{challenge-1}
+\input{challenge-2}
+\input{challenge-3}
+\input{challenge-4}
+\input{challenge-5}
+\input{conclusion}
+\end{document}

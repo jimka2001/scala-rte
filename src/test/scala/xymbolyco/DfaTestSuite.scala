@@ -425,19 +425,19 @@ class DfaTestSuite extends AdjFunSuite {
     val diff = Xor(pattern2 ,pattern1)
     val dfa = diff.toDfa(exitValue=true)
     val qs = dfa.spanningPath match {
-      case Some(Right(qs)) => {
+      case Some((Satisfiable, qs)) => {
         assert(qs.length == 4)
         qs
       }
-      case Some(Left(qs)) => {
+      case Some((Indeterminate, qs)) => {
         assert (qs.length == 4)
         qs
       }
       case _ => List()
     }
     dfa.spanningTrace match {
-      case Some(Right(tds)) => assert(tds.length == 3)
-      case Some(Left(tds)) => assert(tds.length == 3)
+      case Some((Satisfiable,tds)) => assert(tds.length == 3)
+      case Some((Indeterminate,tds)) => assert(tds.length == 3)
       case _ => ()
     }
     val m = dfa.findSpanningPathMap()

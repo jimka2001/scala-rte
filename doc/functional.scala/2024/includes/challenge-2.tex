@@ -1,0 +1,54 @@
+\subsection{DFA Construction}
+
+{  \setbeamercolor{background canvas}{bg=sectioncolor}
+\begin{frame}{Challenge \textnumero 2}{DFA Construction}
+
+  Given an RTE, generate a finite automaton.
+
+  \begin{itemize}
+  \item Well-known techniques exists to construct DFAs from RE
+  \item Adapt them to work with RTEs
+  \item Library: \code{xymbolyco}
+  \item Enforce determinism
+  \end{itemize}
+\end{frame}
+
+}
+
+\begin{frame}{DFA}{What are Finite Automata?}
+  \scalebox{0.75}{\input{fig-td}}
+  \begin{itemize}
+  \item   Every RTE corresponds to a Deterministic Finite Automaton (DFA), \code{Rte.toDfa(rte)}, \Emph{$O(2^n)$}.
+
+  \item   The DFA recognizes a sequence matching the RTE, \Emph{$O(n)$}.
+
+  \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Demo}{Sample Flow}
+  \centering
+   \includegraphics[height=0.8\textheight]{demo.png}
+\end{frame}
+
+
+\begin{frame}{Demo}{Sample Flow}
+  Decide whether two RTEs are equivalent, and if not what is the difference.
+
+  \code{ScalaIo2024.scala}
+
+  \begin{itemize}
+  \item define data
+  \item define types and RTEs
+  \item define two candidate patterns
+  \item both match data
+  \item show DFAs
+  \item show xor DFA
+  \item show spanning trace
+  \end{itemize}
+
+\end{frame}
+
+
+

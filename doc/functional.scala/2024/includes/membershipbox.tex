@@ -1,0 +1,16 @@
+%% dont re-indent this file
+\begin{lstlisting}[style=scalaioScala]
+SAtomic(classOf[Int]).typep(-42) // returns true
+
+(SAtomic(classOf[String]) || SAtomic(classOf[Int])).typep(7) 
+// returns true
+
+// define predicate
+def oddp(a:Any):Boolean = {
+  a match
+    case a:Int => a % 2 != 0
+    case _ => false
+}
+
+SSatisfies(oddp).typep(36)  // returns false
+\end{lstlisting}
