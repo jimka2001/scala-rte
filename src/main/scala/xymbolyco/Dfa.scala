@@ -107,7 +107,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //   states, then their labels are combined with labeler.combineLabels.
   // If pathToLabels is called with a list of states which are not all consecutive,
   //   an exception will be thrown.
-  def pathToLabels(path:Path):List[L] = {
+  def pathToLabels(path:StatePath):List[L] = {
       path.tails.flatMap {
         case q1 :: q2 :: _ =>
           // filter all transitions from q1 to q2, accumulate their labels
@@ -129,7 +129,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //          we get None from label.inhabited(label) meaning that we don't know for sure
   //          that the label is satisfiable.
   def findTrace(requireSatisfiable:Boolean=true):Option[List[L]] = {
-    val maybePath:Option[Path] = spanningPath match {
+    val maybePath:Option[StatePath] = spanningPath match {
       case None => None
       case Some((Satisfiable, path)) => Some(path)
       case Some((Indeterminate, path)) if !requireSatisfiable => Some(path)
@@ -139,14 +139,16 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     maybePath.map(path => pathToLabels(path))
   }
 
-  type Path = List[State[Σ, L, E]]
-  type MaybePath = Option[(Satisfiability, Path)]
-  lazy val spanningPath: MaybePath = findSpanningPath()
+  type StatePath = List[State[Σ, L, E]]
+  type LabelPath = List[L]
+  type MaybeStatePath = Option[(Satisfiability, StatePath)]
+  type MaybeLabelPath = Option[(Satisfiability, LabelPath)]
+  lazy val spanningPath: MaybeStatePath = findSpanningPath()
 
   // spanningTrace is None if there is no spanning path
   //      Some((true,List[L])) if there is a satisfiable path, List[L] are the labels
   //      Some((false,List[L])) if there is a path, but some label is indeterminate.
-  lazy val spanningTrace:Option[(Satisfiability,List[L])] = spanningPath match {
+  lazy val spanningTrace:MaybeLabelPath = spanningPath match {
     // unsatisfiable path, or no path
     case None => None
     // satisfiable path
@@ -168,7 +170,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //       transitions, i.e., transitions for which the label is satisfiable
   //   If the Option[Boolean] is None, then the path passes through at least one
   //       indeterminate transition, i.e., the label.inhabited returned None, dont-know.
-  def findSpanningPathMap():Map[E,(Satisfiability,Path)] = {
+  def findSpanningPathMap():Map[E,(Satisfiability,StatePath)] = {
     import adjuvant.BellmanFord.{shortestPath,reconstructPath}
     import scala.Double.PositiveInfinity
     val numStates:Double = 2 * Q.size.toDouble
@@ -192,7 +194,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
           }} yield edge
     val edge_weights_map = edge_weights.toMap
 
-    def path_weight(path:Path):Double = {
+    def path_weight(path:StatePath):Double = {
       path match {
         case List() => 0.0
         case _::Nil => 0.0
@@ -207,7 +209,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     //   if no such path exists, then the Option[Boolean] is Some(false) and the path is List()
     //   if Option[Boolean] is Some(true) then the path passes through no indeterminate states
     //   if Option[Boolean] is None then the path passes through at least one indeterminate state
-    def maybePath(q:State[Σ, L, E]):(Int,(Satisfiability,Path)) = {
+    def maybePath(q:State[Σ, L, E]):(Int,(Satisfiability,StatePath)) = {
       (q.id,
         if (d(q) < numStates) // satisfiable path
           (Satisfiable, reconstructPath[State[Σ, L, E]](p, q))
@@ -219,14 +221,14 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     }
 
     // m is the map from final state to a shortest path from q0 to that state
-    val m:Map[Int,(Satisfiability,Path)] = F.map(maybePath).toMap
+    val m:Map[Int,(Satisfiability,StatePath)] = F.map(maybePath).toMap
 
     // given a sequence of designators (Option[Boolean], Path) each indicating some
     //   path to a final state (presumably all the final states have the same
     //   exit value) find the path with the smallest weight.  This will be
     //   a satisfiable path if such exists, if not, it will be a path with the
     //   least number of indeterminate types.
-    def bestPath(pairs:Seq[(Satisfiability,Path)]):(Satisfiability,Path) = {
+    def bestPath(pairs:Seq[(Satisfiability,StatePath)]):(Satisfiability,StatePath) = {
       pairs.reduce{ (acc, path) =>
         (acc, path) match {
           case ((ob, path1), (_, path2)) if path_weight(path1) < path_weight(path2) => (ob, path1)
@@ -239,9 +241,9 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     // to a shortest path.  In the case that 2 (or more) final states
     // have the same exit value, we need to select the best path of
     // the paths for those final states.
-    val x: Map[E, (Satisfiability, Path)] = for {(e,fs) <- fMap.groupMap(_._2)(_._1)
-                                                  best = bestPath(fs.map(m).toSeq)
-                                                  } yield e -> best
+    val x: Map[E, (Satisfiability, StatePath)] = for {(e,fs) <- fMap.groupMap(_._2)(_._1)
+                                                      best = bestPath(fs.map(m).toSeq)
+                                                      } yield e -> best
     x
   }
 
@@ -259,8 +261,8 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   //        return None
   // This method is final because it is expensive to call.
   //   it is already called lazily in the lazy var spanningPath,
-  private def findSpanningPath():MaybePath = {
-    val m: Map[E, (Satisfiability, Path)] = findSpanningPathMap()
+  private def findSpanningPath():MaybeStatePath = {
+    val m: Map[E, (Satisfiability, StatePath)] = findSpanningPathMap()
 
     lazy val foundTrue = m.collectFirst{case (_,(Satisfiable,path)) => (Satisfiable, path)}
     lazy val foundNone = m.collectFirst{case (_,(Indeterminate,path)) => (Indeterminate, path)}
