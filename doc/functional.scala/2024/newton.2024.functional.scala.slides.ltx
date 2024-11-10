@@ -8,6 +8,8 @@
 %  \setbeamerfont{frametitle}{size=\huge}
   %  \setbeamertemplate{headline}{}
   \setbeamertemplate{navigation symbols}{}
+  \setbeamercolor{section in toc}{fg=fslightblue}
+  \setbeamercolor{subsection in toc}{fg=white}
 }
 \usepackage{xspace}
 \usepackage{pgf}
@@ -76,8 +78,8 @@
 \end{frame}
 }
 
-{\setbeamercolor{background canvas}{bg=toccolor}
-\begin{frame}{Overview}
+{\setbeamercolor{background canvas}{bg=fsdarkblue}
+\begin{frame}{\textcolor{white}{Overview}}
 \tableofcontents
 \end{frame}
 }
