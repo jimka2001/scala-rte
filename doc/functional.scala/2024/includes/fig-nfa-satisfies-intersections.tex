@@ -13,8 +13,8 @@
   \node[state,rounded rectangle] (5) [below right=5mm and 55mm of 1] {$5$};
   \path[->] (0) edge node {$Int$} (1);
   \path[->] (1) edge[color=deterministic, line width=3pt, bend right=15]  node[pos=.7,swap] {$Int \cap Odd$} (2);
-  \path[->] (1) edge[color=deterministic, line width=3pt, bend left=15]  node[pos=.8] {$Int \cap ~!Odd $} (3);
+  \path[->] (1) edge[color=deterministic, line width=3pt, bend left=15]  node[pos=.8] {$Int~ \cap ~!Odd $} (3);
   \path[->] (1) edge[color=deterministic, line width=3pt, bend left=15]  node[pos=.5,swap] {$!Int \cap Odd$} (4);
-  \path[->] (1) edge[color=deterministic, line width=3pt, bend right=15]  node[pos=.5] {$!Int \cap~ !Odd$} (5);
+  \path[->] (1) edge[color=deterministic, line width=3pt, bend right=15]  node[pos=.5] {$!Int~ \cap~ !Odd$} (5);
 \end{tikzpicture}
 \end{document}

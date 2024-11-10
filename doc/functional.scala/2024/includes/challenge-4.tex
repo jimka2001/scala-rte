@@ -2,7 +2,7 @@
 
 {  %% chapter slide
   \setbeamercolor{background canvas}{bg=sectioncolor}
-\begin{frame}{Challenge \textnumero 4}{Deterministic State Machines}
+\begin{frame}{\Challenge{4} Deterministic State Machines}
 
   How to assure DFAs are deterministic by construction?
 
@@ -82,7 +82,7 @@
       \only<3>{\scalebox{0.74}{\input{fig-nfa-satisfies-intersections-simple}}}%
     \end{column}
   \end{columns}
-  \only<3>{\Emph{Unreachable} states \nodecirc{4} and \nodecirc{6}, but \Emph{undecidable}.}
+  \only<3>{\Emph{Unreachable} state \nodecirc{4}, but \Emph{undecidable}.}
 \end{frame}
 
 
@@ -131,7 +131,7 @@
   \scalebox{0.8}{\input{fig-4}}
 
   \begin{itemize}
-    \item We \Emph{can always} determine type membership.
+    \item We \Emph{can always} determine \Emph{type membership}.
     \item DFAs with indeterminant transitions \Emph{correctly}
       match sequences in $O(n)$.
   \end{itemize}
@@ -145,26 +145,28 @@
     \end{column}%
     \begin{column}{0.55\textwidth}
       \only<1>{\scalebox{0.95}{\input{fig-A-B}}}%
-      \only<2-3>{\scalebox{0.95}{\input{fig-C-D}}}%
-      \only<4>{\scalebox{0.95}{\input{fig-G-E}}}%
-      \only<5>{\scalebox{0.95}{\input{fig-E-F}}}%
+      \only<2>{\scalebox{0.95}{\input{fig-C-D}}}%
+      \only<3,4>{\scalebox{0.95}{\input{fig-G-E}}}%
 
   \only<1>{{\LARGE \[\textcolor{blue}{A\cap B = \emptyset}\]}}%
   \only<2>{{\LARGE \[\textcolor{blue}{C\cap D = unknown}\]}}%
-  \only<3>{{\LARGE \[\textcolor{blue}{C\cap D = unknown}\]}}%
-  \only<4>{{\LARGE \[\textcolor{blue}{G\subset E}\]}}%
-  \only<5>{{\LARGE \[\textcolor{blue}{E\cap F \neq \emptyset}\]}}%
+  \only<3>{{\LARGE \[\textcolor{blue}{G\subset E \implies G\cap E \neq \emptyset}\]}}%
+  \only<4>{{\LARGE \[\textcolor{blue}{E\cap F \neq \emptyset}\]}}%
     \end{column}%
   \end{columns}
   \only<1>{Both are \code{final}; they have no common \Emph{inhabited} subclass.}%
   \only<2>{\medskip
 
-    We do not know whether some class inherits from both.}%
-  \only<3>{\medskip
+    Is there \Emph{somewhere} some class inherits from both.
 
-    JVM might run-time load another library which creates a common subclass of \code{C} and \code{D}}%
-  \only<4>{Explicit subtype relation.}%
-  \only<5>{\code{G} inherits from \code{E} and \code{F}.
+    \medskip
+    
+    Even if no, JVM might run-time load a library creating a common subclass.
+   }%
+
+  \only<3>{Explicit subtype relation.}%
+
+  \only<4>{\code{G} inherits from \code{E} and \code{F}.
 
     \medskip
     

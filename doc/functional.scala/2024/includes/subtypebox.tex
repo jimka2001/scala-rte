@@ -3,6 +3,7 @@
 val Str:SimpleTypeD = SAtomic(classOf[String])
 val Int:SimpleTypeD = SAtomic(classOf[Int])
 val Num:SimpleTypeD = SAtomic(classOf[Number])
+val odd:SimpleTypeD = SSatisfies(oddp, "oddp")
 
 Str.subtypep(Int)  // returns Some(false)
 Int.subtypep(Num)  // returns Some(true)

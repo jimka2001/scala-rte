@@ -4,15 +4,11 @@
 r1 & r2 == And(r1,r2)
 r1 | r2 == Or(r1,r2)
 r1 ++ r2 == Cat(r1,r2)
-
-// complement (unary)
 !re == Not(re)
 
-// one/zero or more, optional
-re.* == Star(re)
-re.+ == re ++ re.*
-re.? == EmptySeq | re
+re.* == Star(re) // zero or more
 
-// exponent, n-times
-re^4 == re ++ re ++ re ++ re
+re.+ == re ++ re.* // one or more
+
+re.? == EmptySeq | re // zero or one
 \end{lstlisting}

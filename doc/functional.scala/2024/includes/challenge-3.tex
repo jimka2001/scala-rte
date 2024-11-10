@@ -1,15 +1,14 @@
 \subsection{Embedding a Type System}
 
 {  \setbeamercolor{background canvas}{bg=sectioncolor}
-\begin{frame}{Challenge \textnumero 3}{Type Lattice}
+\begin{frame}{\Challenge{3} Type Lattice}
 
-  How to support types like $Int\cap\overline{Number}$ in Scala?
+  How to support types like \textcolor{greeny}{$Int\cap\overline{Number}$} in Scala?
 
   \begin{itemize}
   \item   Support \Emph{type lattice}
   \item Embed a dynamic type system into an existing programming language.
-  \item Library: \code{genus}
-  \item Compute membership and subtype predicates.
+  \item Answer type membership and subtype questions.
   \end{itemize}
 
 \end{frame}
@@ -25,7 +24,7 @@
 \end{lrbox}
 
 
-\begin{frame}{Example \code{SimpleTypeD} Expression Tree}
+\begin{frame}{Example \code{SimpleTypeD} Expression Tree: AST}
   \usebox\tdast
 
   \medskip
@@ -35,10 +34,10 @@
   \scalebox{0.7}{\input{td-ast}}
   \begin{itemize}
   \item A type designator is an expression tree (AST).
-  \item Each node is an instance of class \code{SimpleTypeD}.
-  \item Leaf nodes interface to Scala classes via \code{SAtomic(...)}.
-  \item .. and to literal Scala values via \code{SEql(...)}
-  \end{itemize}
+  \item Leaf nodes interface to Scala classes via \code{SAtomic(...)}. 
+  \item \ldots and to literal Scala values via \code{SEql(...)}
+  \item \ldots and to predicate functions via \code{SSatisfies(...)}
+ \end{itemize}
 \end{frame}
 
 
@@ -155,6 +154,21 @@
   \item Code is incomplete.
   \item JVM supports run-time loaded classes.
   \item No dependable way of finding subtypes in JVM $> 8.x$.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Simple Embedded Type System}
+
+  At the point, \Emph{what have we done}?
+
+  \begin{itemize}
+  \item Wrapped the Scala type system
+  \item ... with a simple type system
+  \item ... which supports a complemented type lattice
+  \item ... with membership Boolean predicate
+  \item ... with subtype semi-Boolean predicate
+  \item ... which supports reflection
   \end{itemize}
 
 \end{frame}
