@@ -196,10 +196,10 @@
   A DFA state may have several \Emph{disjoint} transitions, each with its own type label.
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \usebox\typecaseAbox
+      \scalebox{0.9}{\input{multiple-transitions}}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \scalebox{0.9}{\input{multiple-transitions}}
+      \usebox\typecaseAbox
     \end{column}    
   \end{columns}
 
@@ -207,35 +207,33 @@
 \end{frame}
 
 \begin{frame}{Decision Tree Structure}
-  We programmatically manipulate \code{if ... else ...} using a lazy, \code{Ite} (if/then/else) data structure similar to the following.
+  We programmatically manipulate \code{if ... else ...} using a lazy decision tree.
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \usebox\typecaseAbox
+      \includegraphics[height=0.8\textheight]{ldd-0.pdf}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseITEbox
+      \usebox\typecaseAbox
     \end{column}    
   \end{columns}
-
-  For this presentation, we represent the decision tree as \Emph{human readable} Scala code.
 \end{frame}
 
 \begin{frame}{Decision Tree, Before and After}
-  Viewing the \code{if ... else ...} before and after as decision trees.
+  Viewing the decision tree before/after
 
   \medskip
   
-  Rewrite: $1 \to 2\to 3\to 4\to 5\to 6\to 7\to 8\to 9\to 10$
+  Rewrite: $1 \to 2\to 3\to 4\to 5\to 6\to 7\to 8\to 9$
 
   \medskip
   
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \usebox\typecaseITEbox
+      \includegraphics[height=0.8\textheight]{ldd-0.pdf}
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \usebox\typecaseITEafterbox
+      \includegraphics[height=0.8\textheight]{ldd-9.pdf}
     \end{column}
   \end{columns}
 \end{frame}
@@ -252,181 +250,118 @@
 }}
 
 
-\begin{frame}{Rewrite: $\colorbox{orange!30}{\Huge 1}\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to 9\to 10$}%1
-  Introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
+\begin{frame}{Rewrite: $\colorbox{orange!30}{\Huge 1}\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to 9$}%1
+  Duplicate tree, and introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \only<1,2,3>{\usebox\typecaseAbox}%
-      \only<5,6>{\usebox\typecaseBbox}
+      \only<1,2>{\includegraphics[height=0.8\textheight]{ldd-0.pdf}}%
     \end{column}
     \begin{column}{0.5\textwidth}  %%
-      \only<2>{\usebox\typecaseBabox}%
-      \only<3>{\usebox\typecaseBaabox}%
-      \only<4>{\usebox\typecaseBbox}%
-      \only<5>{\myLeftArrow\vfill}
+      \only<2>{\includegraphics[height=0.8\textheight]{ldd-1.pdf}}%
     \end{column}    
   \end{columns}
 \end{frame}
 
-\begin{frame}{Rewrite: $1\to \colorbox{orange!30}{\Huge 2}\to 3\to 4\to 5\to 6\to 7\to 8\to 9\to 10$}
+\begin{frame}{Rewrite: $\colorbox{orange!30}{\Huge 1}\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to 9$}%1
+  Duplicate tree, and introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
+  
+  \centerline{  \includegraphics[height=0.8\textheight]{ldd-1.pdf}}
+\end{frame}
+
+\begin{frame}{Rewrite: $1\to \colorbox{orange!30}{\Huge 2}\to 3\to 4\to 5\to 6\to 7\to 8\to 9$}
   \begin{tabular}{ll}
   In \code{then} part: \colorbox{pink!30}{Supertypes of \code{N} $\to$ \code{STop}}. &
   In \code{else} part: \colorbox{pink!30}{Subtypes of \code{N} $\to$ \code{SEmpty}}.
   \end{tabular}
   
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \only<1,2>{\usebox\typecaseBbox}%
-      \only<4,5>{\usebox\typecaseCbox}
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \only<2,3>{\usebox\typecaseChbox}
-      \only<4>{\myLeftArrow\vfill}
-    \end{column}    
-  \end{columns}
+  \only<1>{\centerline{\includegraphics[height=0.8\textheight]{ldd-1.pdf}}}%
+  \only<2>{\centerline{\includegraphics[height=0.8\textheight]{ldd-2.pdf}}}
 \end{frame}
 
-\begin{frame}{Rewrite: $1\to 2\to \colorbox{orange!30}{\Huge 3}\to 4\to 5\to 6\to 7\to 8\to 9\to 10$}
+\begin{frame}{Rewrite: $1\to 2\to \colorbox{orange!30}{\Huge 3}\to 4\to 5\to 6\to 7\to 8\to 9$}
   \begin{tabular}{ll}
-    \colorbox{pink!30}{\code{(STop \& x)} $\to$ \code{x}} &       \colorbox{pink!30}{\code{(SEmpty \& x)} $\to$ \code{SEmpty}}\\
     \colorbox{pink!30}{\code{!STop} $\to$ \code{SEmpty}} &       \colorbox{pink!30}{\code{!SEmpty} $\to$ \code{STop}}    
   \end{tabular}
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \only<1,2>{\usebox\typecaseCbox}%
-      \only<4>{\usebox\typecaseDhbox}%
-      \only<5>{\usebox\typecaseDbox}
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \only<2,3>{\usebox\typecaseDhbox}%
-      \only<4>{\myLeftArrow\vfill}
-    \end{column}    
-  \end{columns}
+
+  \only<1>{\centerline{\includegraphics[height=0.8\textheight]{ldd-2.pdf}}}%
+  \only<2>{\centerline{\includegraphics[height=0.8\textheight]{ldd-3.pdf}}}
 \end{frame}
 
-\begin{frame}{Rewrite: $1\to 2\to 3\to \colorbox{orange!30}{\Huge 4}\to 5\to 6\to 7\to 8\to 9\to 10$}
+\begin{frame}{Rewrite: $1\to 2\to 3\to \colorbox{orange!30}{\Huge 4}\to 5\to 6\to 7\to 8\to 9$}
   \begin{tabular}{ll}
-    \colorbox{pink!30}{\code{SEmpty.typep(x)} $\to$ \code{false}} & 
-    \colorbox{pink!30}{\code{STop.typep(x)} $\to$ \code{true}}
+    \colorbox{pink!30}{\code{(STop \& x)} $\to$ \code{x}} &       \colorbox{pink!30}{\code{(SEmpty \& x)} $\to$ \code{SEmpty}}
   \end{tabular}
-  \begin{columns}
-    \begin{column}{0.5\textwidth}      
-      \only<1,2>{\usebox\typecaseDbox}%
-      \only<4>{\usebox\typecaseEhbox}%
-      \only<5>{\usebox\typecaseEbox}
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \only<2,3>{\usebox\typecaseEhbox}%
-      \only<4>{\myLeftArrow\vfill}
-    \end{column}    
-  \end{columns}
+  \only<1>{\centerline{\includegraphics[height=0.8\textheight]{ldd-3.pdf}}}%
+  \only<2>{\centerline{\includegraphics[height=0.8\textheight]{ldd-4.pdf}}}
+  
 \end{frame}
 
-\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to \colorbox{orange!30}{\Huge 5}\to 6\to 7\to 8\to 9\to 10$}
+
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to\colorbox{orange!30}{\Huge 5}\to 6\to 7\to 8\to 9$}
   \begin{tabular}{ll}
-    \colorbox{pink!30}{\code{(if true x else y)} $\to$ \code{x}} &     
-    \colorbox{pink!30}{\code{(if false x else y)} $\to$ \code{y}}
+    Replace \code{STop} with \code{then} branch. &
+    Replace \code{SEmpty} with \code{else} branch.
   \end{tabular}
+
+  \only<1>{\centerline{\includegraphics[height=0.8\textheight]{ldd-4.pdf}}}%
+  \only<2>{\centerline{\includegraphics[height=0.8\textheight]{ldd-5.pdf}}}
+  
+\end{frame}
+
+
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to \colorbox{orange!30}{\Huge 6}\to 7\to 8\to 9$}
+  Duplicate tree, and introduce \colorbox{pink!30}{\code{if I.typep(x) ... else ...}}
+
   \begin{columns}
     \begin{column}{0.5\textwidth}
-      \only<1,2>{\usebox\typecaseEbox}%
-      \only<4>{\usebox\typecaseFhbox}%
-      \only<5>{\usebox\typecaseFbox}
+      \includegraphics[height=0.8\textheight]{ldd-5.pdf}%
     \end{column}
+
     \begin{column}{0.5\textwidth}  %%
-      \only<2,3>{\usebox\typecaseFhbox}%
-      \only<4>{\myLeftArrow\vfill}
+      \includegraphics[height=0.8\textheight]{ldd-6.pdf}%
     \end{column}    
   \end{columns}
 \end{frame}
 
-\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to \colorbox{orange!30}{\Huge 6}\to 7\to 8\to 9\to 10$}
-  Introduce \colorbox{pink!30}{\code{if I.typep(x) ... else ...}}
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to \colorbox{orange!30}{\Huge 6}\to 7\to 8\to 9$}
+  Duplicate tree, and introduce \colorbox{pink!30}{\code{if I.typep(x) ... else ...}}
 
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \only<1,2,3>{\usebox\typecaseFbox}%
-      \only<5,6>{\usebox\typecaseGbox}
-    \end{column}
-
-    \begin{column}{0.5\textwidth}  %%
-      \only<2>{\usebox\typecaseGabox}
-      \only<3>{\usebox\typecaseGhbox}%
-      \only<4>{\usebox\typecaseGbox}%
-      \only<5>{\myLeftArrow\vfill}
-    \end{column}    
-  \end{columns}
+  \centerline{\includegraphics[height=0.8\textheight]{ldd-6.pdf}}  %
 \end{frame}
 
-\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to \colorbox{orange!30}{\Huge 7}\to 8\to 9\to 10$}
+
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to \colorbox{orange!30}{\Huge 7}\to 8\to 9$}
   \begin{tabular}{ll}
   In \code{then} part: \colorbox{pink!30}{Supertypes of \code{I} $\to$ \code{STop}}.&
   In \code{else} part: \colorbox{pink!30}{Subtypes of \code{I} $\to$ \code{SEmpty}}.
   \end{tabular}
 
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \only<1,2>{\usebox\typecaseGbox}%
-      \only<4,5>{\usebox\typecaseHbox}
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \only<2,3>{\usebox\typecaseHhbox}%
-      \only<4>{\myLeftArrow\vfill}
-    \end{column}    
-  \end{columns}
+  \only<1>{\centerline{\includegraphics[height=0.8\textheight]{ldd-6.pdf}}}%
+  \only<2>{\centerline{\includegraphics[height=0.8\textheight]{ldd-7.pdf}}}
 \end{frame}
 
 
-\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to 7\to \colorbox{orange!30}{\Huge 8}\to 9\to 10$}
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to 7\to \colorbox{orange!30}{\Huge 8}\to 9$}
   \begin{tabular}{ll}
       \colorbox{pink!30}{\code{!STop} $\to$ \code{SEmpty}} &    
       \colorbox{pink!30}{\code{!SEmpty} $\to$ \code{STop}}
   \end{tabular}
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \only<1,2>{\usebox\typecaseHbox}%
-      \only<4,5>{\usebox\typecaseIbox}
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \only<2,3>{\usebox\typecaseIhbox}%
-      \only<4>{\myLeftArrow\vfill}
-    \end{column}    
-  \end{columns}
+
+  \only<1>{\centerline{\includegraphics[height=0.8\textheight]{ldd-7.pdf}}}%
+  \only<2>{\centerline{\includegraphics[height=0.8\textheight]{ldd-8.pdf}}}
 \end{frame}
 
-\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to \colorbox{orange!30}{\Huge 9}\to 10$}
+\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to \colorbox{orange!30}{\Huge 9}$}
   \begin{tabular}{ll}
-    \colorbox{pink!30}{\code{SEmpty.typep(x)} $\to$ \code{false}} &
-    \colorbox{pink!30}{\code{STop.typep(x)} $\to$ \code{true}}  
+    Replace \code{STop} with \code{then} branch. &
+    Replace \code{SEmpty} with \code{else} branch.
   \end{tabular}
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \only<1,2>{\usebox\typecaseIbox}%
-      \only<4,5>{\usebox\typecaseJbox}
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \only<2,3>{\usebox\typecaseJhbox}%
-      \only<4>{\myLeftArrow\vfill}
-    \end{column}    
-  \end{columns}
-\end{frame}
 
-\begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to 9\to \colorbox{orange!30}{\Huge 10}$}
-  \begin{tabular}{ll}
-  \colorbox{pink!30}{\code{(if true x else y)} $\to$ \code{x}}
-& \colorbox{pink!30}{\code{(if false x else y)} $\to$ \code{y}}
-  \end{tabular}
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \only<1,2>{\usebox\typecaseJbox}%
-      \only<4,5>{\usebox\typecaseKbox}
-    \end{column}
-    \begin{column}{0.5\textwidth}  %%
-      \only<2,3>{\usebox\typecaseKhbox}%
-      \only<4>{\myLeftArrow\vfill}
-    \end{column}
-  \end{columns}
+  \only<1>{\centerline{\includegraphics[height=0.8\textheight]{ldd-8.pdf}}}%
+  \only<2>{\centerline{\includegraphics[height=0.8\textheight]{ldd-9.pdf}}}
+  
+
 \end{frame}
 
 

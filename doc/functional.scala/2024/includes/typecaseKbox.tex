@@ -1,9 +1,12 @@
 %% dont re-indent this file
 \begin{lstlisting}[style=scalaioScala]
-if N.typep(x) {
-  if I.typep(x)
+if I.typep(x) {
+  if N.typep(x) {
     Some(2)
   else
+    Some(3)
+} else if N.typep(x)
     Some(1)
-} else Some(3)
+else
+  Some(3)
 \end{lstlisting}

@@ -24,6 +24,17 @@
 %%   Classic \Emph{non-determinism}: state with two exiting transitions with same label.
 
 %% \end{frame}
+\begin{frame}{MDTD: Maximal Disjoint Type Decomposition}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \only<1,2>{\scalebox{0.98}{\input{pgf-a1-a8.tex}}}%
+      \only<3>{\includegraphics[scale=0.18]{venn-x1-x13.png}}%
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \only<2,3>{\scalebox{0.98}{\input{pgf-x1-x13.tex}}}%
+    \end{column}
+  \end{columns}
+\end{frame}
 
 \begin{frame}{Non-determinism by subtype}
   \begin{columns}[T]
@@ -138,7 +149,7 @@
 \end{frame}
 
 
-\begin{frame}{Non-determinism with classes}
+\begin{frame}{Determining whether two classes are disjoint}
   \begin{columns}[T]
     \begin{column}{0.45\textwidth}
       \usebox\classbox  
@@ -157,22 +168,32 @@
   \only<1>{Both are \code{final}; they have no common \Emph{inhabited} subclass.}%
   \only<2>{\medskip
 
-    Is there \Emph{somewhere} some class inherits from both.
-
-    \medskip
-    
-    Even if no, JVM might run-time load a library creating a common subclass.
+    Is there a class \Emph{somewhere} which inherits from both.
    }%
 
   \only<3>{Explicit subtype relation.}%
 
   \only<4>{\code{G} inherits from \code{E} and \code{F}.
+}
+\end{frame}
+
+
+\begin{frame}{Determining whether two classes are disjoint: Caveats}
+
+  \begin{itemize}
+    \medskip
+    \item 
+      Even if \Emph{currently} no subclass exists, JVM might \Emph{later} run-time
+      load a \code{.jar} creating a subclass.
+
 
     \medskip
     
-    Java $>8.x$, cannot compute subclasses.
+    \item With Java $>8.x$, Scala cannot dependably compute list of subclasses.
 
     \medskip
     
-    \url{github.com/ronmamo/reflections} no longer maintained.}
+    \item Library \url{github.com/ronmamo/reflections} no longer maintained.
+  \end{itemize}
+
 \end{frame}

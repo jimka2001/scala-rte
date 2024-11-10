@@ -8,6 +8,8 @@
 %  \setbeamerfont{frametitle}{size=\huge}
   %  \setbeamertemplate{headline}{}
   \setbeamertemplate{navigation symbols}{}
+  \setbeamercolor{section in toc}{fg=fslightblue}
+  \setbeamercolor{subsection in toc}{fg=white}
 }
 \usepackage{xspace}
 \usepackage{pgf}
@@ -28,7 +30,6 @@
 
 
 \title[]{Recognizing Regular Patterns in Heterogeneous Sequences}
-%% \titlegraphic{}
 \author[]{Jim E. Newton}
 \institute[]{EPITA Research Laboratory, Le Kremlin Bic\^etre, FRANCE}
 
@@ -47,16 +48,38 @@
   \vskip0pt%
 }
 
+\defbeamertemplate*{title page}{customized}[1][]
+{\centering
+
+  \vspace{0.2\paperheight}
+  \usebeamerfont{title}\textbf{\textcolor{white}{\inserttitle}}
+  \par
+  \vspace{0.05\paperheight}
+  \usebeamerfont{subtitle}\textcolor{white}{\insertauthor}
+  \par
+  \vspace{0.05\paperheight}
+  \normalsize{\textcolor{white}{\insertinstitute}}
+  \par
+  \vspace{0.05\paperheight}
+  \normalsize{\textcolor{white}{\insertdate}}
+  \par
+  \vspace{0.05\paperheight}
+  \normalsize{{}}
+}
+
 
 
 \begin{document}
 
+{  \setbeamertemplate{background}{\includegraphics[width=\paperwidth]{functional-scala-title-page.png}}
+
 \begin{frame}
 \titlepage
 \end{frame}
+}
 
-{\setbeamercolor{background canvas}{bg=toccolor}
-\begin{frame}{Overview}
+{\setbeamercolor{background canvas}{bg=fsdarkblue}
+\begin{frame}{\textcolor{white}{Overview}}
 \tableofcontents
 \end{frame}
 }
@@ -71,4 +94,11 @@
 \input{challenge-4}
 \input{challenge-5}
 \input{conclusion}
+
+{  \setbeamertemplate{background}{\includegraphics[width=\paperwidth]{functional-scala-thank-you.png}}
+\begin{frame}
+\end{frame}
+}
+
+
 \end{document}
