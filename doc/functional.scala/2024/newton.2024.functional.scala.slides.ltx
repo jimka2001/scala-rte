@@ -1,4 +1,14 @@
-\documentclass[aspectratio=169]{beamer}
+\documentclass[compress,aspectratio=169]{beamer}
+\mode<presentation>{
+  \usetheme{Madrid}
+  \setbeamercolor{frametitle}{fg=black}
+  \setbeamercolor*{palette primary}{use=structure,fg=black}
+%  \setbeamercolor*{palette secondary}{use=structure,fg=red}
+%  \setbeamercolor*{palette tertiary}{use=structure,fg=red}
+%  \setbeamerfont{frametitle}{size=\huge}
+  %  \setbeamertemplate{headline}{}
+  \setbeamertemplate{navigation symbols}{}
+}
 \usepackage{xspace}
 \usepackage{pgf}
 \usepackage{tikz}
@@ -17,10 +27,34 @@
 \input{scalaio-listings}
 
 
-\title{Recognizing Regular Patterns in Heterogeneous Sequences}
+\title[]{Recognizing Regular Patterns in Heterogeneous Sequences}
 %% \titlegraphic{}
-\author{Jim E. Newton}
-\institute{EPITA Research Laboratory, Le Kremlin Bic\^etre, FRANCE}
+\author[]{Jim E. Newton}
+\institute[]{EPITA Research Laboratory, Le Kremlin Bic\^etre, FRANCE}
+
+\usepackage{textpos}
+%\usepackage[export]{adjustbox}
+
+\makeatletter
+\setbeamertemplate{footline}{
+\leavevmode%
+\includegraphics[width=\paperwidth, height=5mm]{functional-scala-footer.png}%
+\vskip-10pt%NEW
+  \hbox{%
+  %% \begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+  %%   \usebeamerfont{author in head/foot}\insertshortauthor\expandafter\beamer@ifempty\expandafter{\beamer@shortinstitute}{}{~~(\insertshortinstitute)}
+  %% \end{beamercolorbox}%
+  %% \begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+  %%   \usebeamerfont{title in head/foot}\insertshorttitle
+  %% \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,right]{date in head/foot}%
+    \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{2em}
+    \insertframenumber{} / \inserttotalframenumber\hspace*{2ex} 
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+
 
 \begin{document}
 
