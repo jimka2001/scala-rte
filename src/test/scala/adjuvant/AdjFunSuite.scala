@@ -22,6 +22,8 @@
 package adjuvant
 import adjuvant.Adjuvant.printTime
 import org.scalatest.funsuite.AnyFunSuite
+
+import java.time.Duration
 class AdjFunSuite extends AnyFunSuite {
   import org.scalactic.source
   import org.scalatest.Tag
@@ -44,10 +46,11 @@ class AdjFunSuite extends AnyFunSuite {
       }
       finally{
         val end = System.nanoTime()
+        val endLocalTime = LocalDateTime.now()
         if (finished)
-          println("] finished " + testName + ": " + printTime(end-start) + " total time: " + printTime(AdjFunSuite.elapsed()))
+          println("] finished " + testName + "at : " + endLocalTime + "" + printTime(end - start) + " total time: " + printTime(AdjFunSuite.elapsed()))
         else
-          println("] aborted " + testName + ": " + printTime(end - start))
+          println("] aborted "  + testName + "at : " + endLocalTime + "" + printTime(end - start))
       }
     })(pos)
   }
