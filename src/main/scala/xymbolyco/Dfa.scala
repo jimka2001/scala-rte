@@ -289,6 +289,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       case None => Some(true)
       case Some((Satisfiable, _)) => Some(false)
       case Some((Indeterminate, _))=> None
+      case Some((Unsatisfiable, _)) => Some(true)
     }
   }
 

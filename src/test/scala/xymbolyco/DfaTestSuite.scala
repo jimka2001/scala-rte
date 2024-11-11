@@ -451,7 +451,7 @@ class DfaTestSuite extends AdjFunSuite {
     import xymbolyco.GraphViz.dfaView
     import genus.Types.oddType
 
-    val rte1 = And(Not(Singleton(oddType)), Atomic(classOf[Int])) ++ Atomic(classOf[Number])
+    val rte1 = And(Not(Singleton(oddType())), Atomic(classOf[Int])) ++ Atomic(classOf[Number])
     val rte2 = Not(rte1)
     //val dfa1 = rte1.toDfa()
     val dfa2 = rte2.toDfa()
