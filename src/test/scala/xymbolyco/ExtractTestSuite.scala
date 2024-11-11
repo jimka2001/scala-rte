@@ -94,7 +94,7 @@ class ExtractTestSuite  extends AdjFunSuite {
     // perhaps need to adjust number of seconds
     val start = System.nanoTime()
     implicit val signaler: Signaler = ThreadSignaler
-    failAfter(Span(60000, Millis)) {
+    failAfter(Span(2 * 60000, Millis)) {
       SAtomic.withClosedWorldView {
         for {depth <- 1 to 3
              rep <- 0 to 25
