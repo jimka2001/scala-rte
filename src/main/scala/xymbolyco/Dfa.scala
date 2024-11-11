@@ -155,6 +155,8 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     case Some((Satisfiable,_)) => Some(Satisfiable, findTrace(true).getOrElse(List[L]()))
     // indeterminate path
     case Some((Indeterminate,_)) => Some(Indeterminate, findTrace(false).getOrElse(List[L]()))
+    // unsatisfiable path
+    case Some((Unsatisfiable,_)) => None
   }
 
   lazy val witness: Option[List[Option[Any]]] = {
