@@ -63,7 +63,11 @@ class AdjFunSuite extends AnyFunSuite {
 }
 
 object AdjFunSuite {
-  val testsStarted:Long = System.nanoTime()
+  val testsStarted:Long = locally{
+    val nt = System.nanoTime()
+    println(s"AdjFunSuite companion object initializing at time= $nt")
+    nt
+  }
 
   def elapsed():Long = System.nanoTime() - testsStarted
 }
