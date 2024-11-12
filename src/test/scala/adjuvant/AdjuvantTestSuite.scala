@@ -25,6 +25,24 @@ import adjuvant.Adjuvant._
 import org.scalatest.funsuite.AnyFunSuite
 
 class AdjuvantTestSuite extends AdjFunSuite {
+  test("printTime"){
+    def makeTime(ns:Long, us:Long, ms:Long, sec:Long, min:Long, hour:Long):Long = {
+      (ns
+      + us * 1000L
+      + ms * 1000L * 1000L
+      + sec * 1000L * 1000L * 1000L
+      + min * 60L * 1000L * 1000L * 1000L
+      + hour * 60L * 60L * 1000L * 1000L * 1000L)
+    }
+    assert("1 ns" == printTime(1))
+    assert("3 us" == printTime(3007))
+    assert("4 ms" == printTime(4L * 1000 * 1000 + 5L * 1000 + 31L))
+    assert("4 ms" == printTime(makeTime(31, 5, 4, 0, 0, 0)))
+    assert("31 sec 341 ms" == printTime(makeTime(ns=12, us=13, ms=341, sec=31, min=0, hour=0)))
+    assert("11 min 43 sec" == printTime(makeTime(ns=5, us=6, ms=7, sec=43, min=11, hour=0)))
+    assert("5 hours 4 min 3 sec" == printTime(makeTime(ns=0, us=0, ms=0, sec=3, min=4, hour=5)))
+
+  }
   test("conj"){
     val l1 = List( 1, 2, 3)
     val v1 = Vector(1,2,3)

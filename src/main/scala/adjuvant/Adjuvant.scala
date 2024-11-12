@@ -347,15 +347,15 @@ object Adjuvant {
   // Build and return a string which describes a time duration,
   //   given in nanoseconds.
   def printTime(time: Long): String = {
-    def recur(time: Long, divisors: List[Int]): List[Int] = {
+    def recur(time: Long, divisors: List[Long]): List[Long] = {
       divisors match {
         case Nil => Nil
-        case d :: ds => (time / d).toInt :: recur(time / d, ds)
+        case d :: ds => (time % d).toInt :: recur(time / d, ds)
       }
     }
 
-    val List(ns, us, ms, sec, min, hour) = recur(time, List(1000, 1000, 1000,
-                                                            60, 60, 60))
+    val List(ns, us, ms, sec, min, hour) = recur(time, List(1000L, 1000L, 1000L,
+                                                            60L, 60L, 60L))
     if (hour > 0)
       s"$hour hours $min min $sec sec"
     else if (min > 0)
