@@ -24,6 +24,27 @@ import genus.{SAnd, SEmpty, SNot, STop, SimpleTypeD}
 
 sealed abstract class IfThenElseTree[E] {
   def apply(a:Any):Option[State[Any,SimpleTypeD,E]]
+// an IfThenElseTree is a lazy tree which is used to figure out given
+// an object, which transition in a Dfa to select.
+// A state in a Dfa has a set of Transition objects which are
+// assumed to be labeled by disjoint types (SimpleTypeD)
+// Calling the apply(a:Any) method on an IfThenElseTree object will return
+// None if the object `a` satisfies none of the transitions.
+// Some(dst) if a matches the Transition(_,td,dst).
+// However, as explained above, this check is lazy.
+// The tree has been initialized, with a call to IfThenElse(...)
+// with a list of types which indicate all the leaf-level types
+// in the set of transitions.
+// The object, `a`, is checked against each SimpleTypeD as td.typep(a)
+// to return either true or false. The list of transitions is
+// then filtered by intersection td (in the case of true) or SNot(td)
+// in the case of false.  Any transition which becomes unsatisfiable
+// is eliminated, and some (hopefully most) of the type designators
+// become simpler.
+// This filtering either continues until there are no transitions remaining,
+// in which case None is returned, or a single transition remains whose type
+// is STop,  in which case indicated destination state is returned, wrapped
+// in Some(dst).
 }
 
 object IfThenElseTree {
