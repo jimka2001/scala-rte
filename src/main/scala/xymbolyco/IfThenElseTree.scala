@@ -22,8 +22,6 @@
 package xymbolyco
 import genus.{SAnd, SEmpty, SNot, STop, SimpleTypeD}
 
-sealed abstract class IfThenElseTree[E] {
-  def apply(a:Any):Option[State[Any,SimpleTypeD,E]]
 // an IfThenElseTree is a lazy tree which is used to figure out given
 // an object, which transition in a Dfa to select.
 // A state in a Dfa has a set of Transition objects which are
@@ -45,36 +43,41 @@ sealed abstract class IfThenElseTree[E] {
 // in which case None is returned, or a single transition remains whose type
 // is STop,  in which case indicated destination state is returned, wrapped
 // in Some(dst).
+// Usually when this code is used, E=Any, and S=State[Any, SimpleTypeD, E];
+// however, S has been parameterized to make the testing easier.  Test cases
+// are written with a simpler S, such as Int
+sealed abstract class IfThenElseTree[E,S] {
+  def apply(a:Any):Option[S]
 }
 
 object IfThenElseTree {
-  def apply[E](tds:List[SimpleTypeD],
-               transitions:Set[Transition[Any, SimpleTypeD, E]]):IfThenElseTree[E] = {
+  def apply[E,S](tds:List[SimpleTypeD],
+               transitions:Set[(SimpleTypeD, S)]):IfThenElseTree[E,S] = {
     if (transitions.isEmpty)
-      IfThenElseFalse[E]()
+      IfThenElseFalse[E,S]()
     else if (tds.isEmpty) {
       // should have exactly one transition
       assert(transitions.size == 1, s"too many transitions, expecting exactly 1: $transitions")
-      val Transition(_,_,dest) = transitions.head
-      IfThenElseTrue[E](dest)
+      val (_,dest) = transitions.head
+      IfThenElseTrue[E,S](dest)
     } else
-      IfThenElseNode[E](tds,transitions)
+      IfThenElseNode[E,S](tds,transitions)
   }
 }
 
-case class IfThenElseTrue[E](dest:State[Any,SimpleTypeD,E]) extends IfThenElseTree[E] {
-  def apply(a:Any):Option[State[Any,SimpleTypeD,E]] = Some(dest)
+case class IfThenElseTrue[E,S](dest:S) extends IfThenElseTree[E,S] {
+  def apply(a:Any):Option[S] = Some(dest)
 }
 
-case class IfThenElseFalse[E]() extends IfThenElseTree[E] {
-  def apply(a:Any):Option[State[Any,SimpleTypeD,E]] = None
+case class IfThenElseFalse[E,S]() extends IfThenElseTree[E,S] {
+  def apply(a:Any):Option[S] = None
 }
 
-case class IfThenElseNode[E](tds:List[SimpleTypeD], transitions:Set[Transition[Any, SimpleTypeD, E]])
-  extends IfThenElseTree[E] {
+case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTypeD, S)])
+  extends IfThenElseTree[E,S] {
   val tdh::tdt = tds
-  def reduceTransitions(search: SimpleTypeD, intersect:SimpleTypeD, replace: SimpleTypeD): Set[Transition[Any, SimpleTypeD, E]] = {
-    transitions.flatMap { case Transition(src, td, dest) =>
+  def reduceTransitions(search: SimpleTypeD, intersect:SimpleTypeD, replace: SimpleTypeD): Set[(SimpleTypeD, S)] = {
+    transitions.flatMap { case (td, dest) =>
       val simpler = SAnd(td,intersect)
         .canonicalize()
         .searchReplaceInType(search, replace)
@@ -82,7 +85,7 @@ case class IfThenElseNode[E](tds:List[SimpleTypeD], transitions:Set[Transition[A
       if (simpler.inhabited.contains(false))
         Set()
       else
-        Set(Transition(src, simpler, dest))
+        Set((simpler, dest))
     }
   }
 
@@ -90,10 +93,10 @@ case class IfThenElseNode[E](tds:List[SimpleTypeD], transitions:Set[Transition[A
   // This has the effect that only the part of the tree that is actually
   //   walked, gets expanded, and only once.  If it is walked again, the
   //   expansion has already happened.
-  lazy val ifTrue:IfThenElseTree[E] = IfThenElseTree[E](tdt, reduceTransitions(tdh, tdh, STop))
-  lazy val ifFalse:IfThenElseTree[E] = IfThenElseTree[E](tdt, reduceTransitions(tdh, SNot(tdh), SEmpty))
+  lazy val ifTrue:IfThenElseTree[E,S] = IfThenElseTree[E,S](tdt, reduceTransitions(tdh, tdh, STop))
+  lazy val ifFalse:IfThenElseTree[E,S] = IfThenElseTree[E,S](tdt, reduceTransitions(tdh, SNot(tdh), SEmpty))
 
-  def apply(a: Any): Option[State[Any,SimpleTypeD,E]] = {
+  def apply(a: Any): Option[S] = {
     if (tdh.typep(a))
       ifTrue(a)
     else

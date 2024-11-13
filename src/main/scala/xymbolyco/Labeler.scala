@@ -128,7 +128,7 @@ case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
                            ): Any => Option[State[Any, SimpleTypeD, E]] = {
     // find all leaf-level types in the transitions
     val leaves = transitions.flatMap{case Transition(_,td,_) => td.leafTypes()}
-    val itet = IfThenElseTree(leaves.toList,transitions)
+    val itet = IfThenElseTree(leaves.toList,transitions.map{case Transition(_,td,dst) => (td,dst)})
     a:Any => itet(a)
   }
 
