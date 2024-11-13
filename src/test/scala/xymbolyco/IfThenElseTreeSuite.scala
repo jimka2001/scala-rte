@@ -22,7 +22,7 @@
 
 package xymbolyco
 import adjuvant.AdjFunSuite
-import genus.{SEql, STop, SimpleTypeD}
+import genus.{SAtomic, SEql, SNot, STop, SimpleTypeD}
 import xymbolyco.GraphViz.dfaView
 import xymbolyco.Minimize.complete
 
@@ -73,5 +73,27 @@ class IfThenElseTreeSuite extends AdjFunSuite {
     assert(dfa.simulate(Seq(43,42)).contains(4))
     assert(dfa.simulate(Seq(42,43,43,42)).contains(4))
     assert(dfa.simulate(Seq(43,42,42,0)).isEmpty)
+  }
+
+  test("ite 1"){
+    val N = SAtomic(classOf[Number])
+    val I = SAtomic(classOf[Int])
+
+    val transitions:Set[(SimpleTypeD, Int)] = Set((N && !I, 1),
+                          (I, 2),
+                          (!N, 3))
+
+    val ite = IfThenElseTree[SimpleTypeD,Int](List(N,I), transitions)
+    println(ite)
+    assert(! ite.ifTrueEvaluated)
+
+    println(ite(100))
+    println(ite)
+
+    println(ite(1.1))
+    println(ite)
+
+    println(ite("hello"))
+    println(ite)
   }
 }

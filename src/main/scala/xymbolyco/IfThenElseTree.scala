@@ -48,29 +48,35 @@ import genus.{SAnd, SEmpty, SNot, STop, SimpleTypeD}
 // are written with a simpler S, such as Int
 sealed abstract class IfThenElseTree[E,S] {
   def apply(a:Any):Option[S]
+
+  var ifTrueEvaluated:Boolean = false // this is here just for testing
+  var ifFalseEvaluated:Boolean = false // it would be nice to eliminate if the test could figure out whether or not a lazy val has been evaluated
+
 }
 
 object IfThenElseTree {
   def apply[E,S](tds:List[SimpleTypeD],
-               transitions:Set[(SimpleTypeD, S)]):IfThenElseTree[E,S] = {
+                 transitions:Set[(SimpleTypeD, S)]):IfThenElseTree[E,S] = {
     if (transitions.isEmpty)
-      IfThenElseFalse[E,S]()
+      IfThenElseMissing[E,S]()
     else if (tds.isEmpty) {
       // should have exactly one transition
       assert(transitions.size == 1, s"too many transitions, expecting exactly 1: $transitions")
       val (_,dest) = transitions.head
-      IfThenElseTrue[E,S](dest)
+      IfThenElseFound[E,S](dest)
     } else
       IfThenElseNode[E,S](tds,transitions)
   }
 }
 
-case class IfThenElseTrue[E,S](dest:S) extends IfThenElseTree[E,S] {
+case class IfThenElseFound[E,S](dest:S) extends IfThenElseTree[E,S] {
   def apply(a:Any):Option[S] = Some(dest)
+  override def toString():String = dest.toString()
 }
 
-case class IfThenElseFalse[E,S]() extends IfThenElseTree[E,S] {
+case class IfThenElseMissing[E,S]() extends IfThenElseTree[E,S] {
   def apply(a:Any):Option[S] = None
+  override def toString():String = "missing"
 }
 
 case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTypeD, S)])
@@ -89,12 +95,27 @@ case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTyp
     }
   }
 
+
+  override def toString():String = {
+    s"Ite($tdh, $transitions, " +
+      (if (ifTrueEvaluated) ifTrue.toString() else "_") +
+      ", " +
+      (if (ifFalseEvaluated) ifFalse.toString() else "_") +
+      ")"
+  }
+
   // ifTrue and ifFalse are lazy.
   // This has the effect that only the part of the tree that is actually
   //   walked, gets expanded, and only once.  If it is walked again, the
   //   expansion has already happened.
-  lazy val ifTrue:IfThenElseTree[E,S] = IfThenElseTree[E,S](tdt, reduceTransitions(tdh, tdh, STop))
-  lazy val ifFalse:IfThenElseTree[E,S] = IfThenElseTree[E,S](tdt, reduceTransitions(tdh, SNot(tdh), SEmpty))
+  lazy val ifTrue:IfThenElseTree[E,S] = locally{
+    ifTrueEvaluated = true
+    IfThenElseTree[E,S](tdt, reduceTransitions(tdh, tdh, STop))
+  }
+  lazy val ifFalse:IfThenElseTree[E,S] = locally{
+    ifFalseEvaluated = true
+    IfThenElseTree[E,S](tdt, reduceTransitions(tdh, SNot(tdh), SEmpty))
+  }
 
   def apply(a: Any): Option[S] = {
     if (tdh.typep(a))
