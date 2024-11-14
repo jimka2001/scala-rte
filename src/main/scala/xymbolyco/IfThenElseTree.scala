@@ -95,7 +95,6 @@ case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTyp
     }
   }
 
-
   override def toString():String = {
     s"Ite($tdh, $transitions, " +
       (if (ifTrueEvaluated) ifTrue.toString() else "_") +
