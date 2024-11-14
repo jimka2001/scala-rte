@@ -109,11 +109,23 @@ case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTyp
   //   expansion has already happened.
   lazy val ifTrue:IfThenElseTree[E,S] = locally{
     ifTrueEvaluated = true
-    IfThenElseTree[E,S](tdt, reduceTransitions(tdh, tdh, STop))
+    // at this point, in the tree, we have assured that the object is of type tdh,
+    //   we still need to check all of tdt.
+    // For example, if we have already determined that the object is an Int,
+    //   then we don't need to further check whether it is a Number
+    val pending = tdt
+      .map(td => SAnd(td, tdh).canonicalize())
+      .distinct
+      .filter(td => !td.inhabited.contains(false)) // only keep pending types which are inhabited or don't know
+    IfThenElseTree[E,S](pending, reduceTransitions(tdh, tdh, STop))
   }
   lazy val ifFalse:IfThenElseTree[E,S] = locally{
     ifFalseEvaluated = true
-    IfThenElseTree[E,S](tdt, reduceTransitions(tdh, SNot(tdh), SEmpty))
+    val pending = tdt
+      .map(td => SAnd(td, SNot(tdh)).canonicalize())
+      .distinct
+      .filter(td => !td.inhabited.contains(false)) // only keep pending types which are inhabited or don't know
+    IfThenElseTree[E,S](pending, reduceTransitions(tdh, SNot(tdh), SEmpty))
   }
 
   def apply(a: Any): Option[S] = {
