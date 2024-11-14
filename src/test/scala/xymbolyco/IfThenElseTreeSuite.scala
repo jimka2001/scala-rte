@@ -84,16 +84,45 @@ class IfThenElseTreeSuite extends AdjFunSuite {
                           (!N, 3))
 
     val ite = IfThenElseTree[SimpleTypeD,Int](List(N,I), transitions)
-    println(ite)
+    //println(ite)
     assert(! ite.ifTrueEvaluated)
+    assert(! ite.ifFalseEvaluated)
 
-    println(ite(100))
-    println(ite)
+    assert(ite(100) == Some(2))
+    assert(ite.ifTrueEvaluated)
+    assert(! ite.ifFalseEvaluated)
+    //println(ite)
 
-    println(ite(1.1))
-    println(ite)
+    ite match {
+      case ite@IfThenElseNode(tdh::_,transitions) =>
+        assert(tdh == N)
+        assert(transitions == Set((N && !I,1),
+                                  (I,2),
+                                  (!N,3)))
+        ite.ifTrue match {
+          case ite@IfThenElseNode(tdh::_,transitions) =>
+            println(ite)
+            assert(ite.ifTrueEvaluated)
+            assert(! ite.ifFalseEvaluated)
+            assert(tdh == I)
+            assert(transitions == Set((!I,1),
+                                      (I,2)))
+            ite.ifTrue match {
+              case IfThenElseFound(dest) => {
+                assert(dest == 2)
+              }
+              case _ => fail("wrong format 3")
+            }
 
-    println(ite("hello"))
-    println(ite)
+          case _ => fail("wrong format case 2")
+        }
+      case _ => fail("wrong format case 1")
+    }
+
+    //println(ite(1.1))
+    //println(ite)
+
+    //println(ite("hello"))
+    //println(ite)
   }
 }
