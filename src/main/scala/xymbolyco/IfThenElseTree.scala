@@ -56,17 +56,23 @@ sealed abstract class IfThenElseTree[E,S] {
 }
 
 object IfThenElseTree {
-  def apply[E,S](tds:List[SimpleTypeD],
-                 transitions:Set[(SimpleTypeD, S)]):IfThenElseTree[E,S] = {
+  def apply[E,S](transitions:Set[(SimpleTypeD, S)]):IfThenElseTree[E,S] = {
+    // TODO, this is a problem because it is non-deterministic.
+    //    leafTypes returns a Set[],
+    lazy val tds = transitions.head._1.leafTypes()
     if (transitions.isEmpty)
       IfThenElseMissing[E,S]()
-    else if (tds.isEmpty) {
+    else if (transitions.head._1 == STop) {
+      val (_,dest) = transitions.head
+      IfThenElseFound[E,S](dest)
+    } else if (tds.isEmpty) {
       // should have exactly one transition
       assert(transitions.size == 1, s"too many transitions, expecting exactly 1: $transitions")
       val (_,dest) = transitions.head
       IfThenElseFound[E,S](dest)
-    } else
-      IfThenElseNode[E,S](tds,transitions)
+    }
+    else
+      IfThenElseNode[E,S](transitions)
   }
 }
 
@@ -80,12 +86,19 @@ case class IfThenElseMissing[E,S]() extends IfThenElseTree[E,S] {
   override def toString():String = "missing"
 }
 
-case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTypeD, S)])
+case class IfThenElseNode[E,S](transitions:Set[(SimpleTypeD, S)])
   extends IfThenElseTree[E,S] {
+  // what about tds is empty?
+  val tds = transitions.head._1.leafTypes().toList
+  // TODO, this is a problem because it is non-deterministic.
+  //    leafTypes returns a Set[], and tdh and tdt may not always
+  //    be the same.  so test cases might fail, and we might get a different
+  //    tree on different runs.  need a way of finding a deterministic type designator
+  //    from the set, or a better idea
   val tdh::tdt = tds
-  def reduceTransitions(search: SimpleTypeD, intersect:SimpleTypeD, replace: SimpleTypeD): Set[(SimpleTypeD, S)] = {
+  def reduceTransitions(intersect: SimpleTypeD, search:SimpleTypeD, replace: SimpleTypeD): Set[(SimpleTypeD, S)] = {
     transitions.flatMap { case (td, dest) =>
-      val simpler = SAnd(td,intersect)
+      val simpler = SAnd(td, intersect)
         .canonicalize()
         .searchReplaceInType(search, replace)
         .canonicalize()
@@ -104,13 +117,6 @@ case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTyp
       ")"
   }
 
-  def pending(combine:(SimpleTypeD,SimpleTypeD)=>SimpleTypeD):List[SimpleTypeD] = {
-    tdt
-      .map(td => combine(td, tdh).canonicalize())
-      .distinct
-      .filter(td => !td.inhabited.contains(false)) // only keep pending types which are inhabited or don't know
-  }
-
   // ifTrue and ifFalse are lazy.
   // This has the effect that only the part of the tree that is actually
   //   walked, gets expanded, and only once.  If it is walked again, the
@@ -121,13 +127,11 @@ case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTyp
     //   we still need to check all of tdt.
     // For example, if we have already determined that the object is an Int,
     //   then we don't need to further check whether it is a Number
-    IfThenElseTree[E,S](pending(SAnd(_,_)),
-                        reduceTransitions(tdh, tdh, STop))
+    IfThenElseTree[E,S](reduceTransitions(tdh, tdh, STop))
   }
   lazy val ifFalse:IfThenElseTree[E,S] = locally{
     ifFalseEvaluated = true
-    IfThenElseTree[E,S](pending(SAndNot),
-                        reduceTransitions(tdh, SNot(tdh), SEmpty))
+    IfThenElseTree[E,S](reduceTransitions(SNot(tdh), tdh, SEmpty))
   }
 
   def apply(a: Any): Option[S] = {
