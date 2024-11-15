@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package xymbolyco
+import genus.SyntaxSugar.SAndNot
 import genus.{SAnd, SEmpty, SNot, STop, SimpleTypeD}
 
 // an IfThenElseTree is a lazy tree which is used to figure out given
@@ -103,6 +104,13 @@ case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTyp
       ")"
   }
 
+  def pending(combine:(SimpleTypeD,SimpleTypeD)=>SimpleTypeD):List[SimpleTypeD] = {
+    tdt
+      .map(td => combine(td, tdh).canonicalize())
+      .distinct
+      .filter(td => !td.inhabited.contains(false)) // only keep pending types which are inhabited or don't know
+  }
+
   // ifTrue and ifFalse are lazy.
   // This has the effect that only the part of the tree that is actually
   //   walked, gets expanded, and only once.  If it is walked again, the
@@ -113,19 +121,13 @@ case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTyp
     //   we still need to check all of tdt.
     // For example, if we have already determined that the object is an Int,
     //   then we don't need to further check whether it is a Number
-    val pending = tdt
-      .map(td => SAnd(td, tdh).canonicalize())
-      .distinct
-      .filter(td => !td.inhabited.contains(false)) // only keep pending types which are inhabited or don't know
-    IfThenElseTree[E,S](pending, reduceTransitions(tdh, tdh, STop))
+    IfThenElseTree[E,S](pending(SAnd(_,_)),
+                        reduceTransitions(tdh, tdh, STop))
   }
   lazy val ifFalse:IfThenElseTree[E,S] = locally{
     ifFalseEvaluated = true
-    val pending = tdt
-      .map(td => SAnd(td, SNot(tdh)).canonicalize())
-      .distinct
-      .filter(td => !td.inhabited.contains(false)) // only keep pending types which are inhabited or don't know
-    IfThenElseTree[E,S](pending, reduceTransitions(tdh, SNot(tdh), SEmpty))
+    IfThenElseTree[E,S](pending(SAndNot),
+                        reduceTransitions(tdh, SNot(tdh), SEmpty))
   }
 
   def apply(a: Any): Option[S] = {
