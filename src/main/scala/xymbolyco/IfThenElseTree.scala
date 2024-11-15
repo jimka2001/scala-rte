@@ -56,10 +56,7 @@ sealed abstract class IfThenElseTree[E,S] {
 }
 
 object IfThenElseTree {
-  def apply[E,S](transitions:Set[(SimpleTypeD, S)]):IfThenElseTree[E,S] = {
-    // TODO, this is a problem because it is non-deterministic.
-    //    leafTypes returns a Set[],
-    lazy val tds = transitions.head._1.leafTypes()
+  def apply[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTypeD, S)]):IfThenElseTree[E,S] = {
     if (transitions.isEmpty)
       IfThenElseMissing[E,S]()
     else if (transitions.head._1 == STop) {
@@ -72,7 +69,7 @@ object IfThenElseTree {
       IfThenElseFound[E,S](dest)
     }
     else
-      IfThenElseNode[E,S](transitions)
+      IfThenElseNode[E,S](tds,transitions)
   }
 }
 
@@ -86,16 +83,9 @@ case class IfThenElseMissing[E,S]() extends IfThenElseTree[E,S] {
   override def toString():String = "missing"
 }
 
-case class IfThenElseNode[E,S](transitions:Set[(SimpleTypeD, S)])
+case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTypeD, S)])
   extends IfThenElseTree[E,S] {
-  // what about tds is empty?
-  val tds = transitions.head._1.leafTypes().toList
-  // TODO, this is a problem because it is non-deterministic.
-  //    leafTypes returns a Set[], and tdh and tdt may not always
-  //    be the same.  so test cases might fail, and we might get a different
-  //    tree on different runs.  need a way of finding a deterministic type designator
-  //    from the set, or a better idea
-  val tdh::tdt = tds
+  val tdh::tdt = tds.filter(td1 => transitions.exists{case (td2,_) => td2.leafTypes().contains(td1)})
   def reduceTransitions(intersect: SimpleTypeD, search:SimpleTypeD, replace: SimpleTypeD): Set[(SimpleTypeD, S)] = {
     transitions.flatMap { case (td, dest) =>
       val simpler = SAnd(td, intersect)
@@ -127,11 +117,11 @@ case class IfThenElseNode[E,S](transitions:Set[(SimpleTypeD, S)])
     //   we still need to check all of tdt.
     // For example, if we have already determined that the object is an Int,
     //   then we don't need to further check whether it is a Number
-    IfThenElseTree[E,S](reduceTransitions(tdh, tdh, STop))
+    IfThenElseTree[E,S](tdt, reduceTransitions(tdh, tdh, STop))
   }
   lazy val ifFalse:IfThenElseTree[E,S] = locally{
     ifFalseEvaluated = true
-    IfThenElseTree[E,S](reduceTransitions(SNot(tdh), tdh, SEmpty))
+    IfThenElseTree[E,S](tdt, reduceTransitions(SNot(tdh), tdh, SEmpty))
   }
 
   def apply(a: Any): Option[S] = {

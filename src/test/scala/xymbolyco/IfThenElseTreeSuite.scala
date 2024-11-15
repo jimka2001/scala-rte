@@ -84,7 +84,7 @@ class IfThenElseTreeSuite extends AdjFunSuite {
                                                   (I && !odd , 2),
                                                   (!I && odd, 3),
                                                   (!I && !odd, 4))
-    val ite = IfThenElseTree[SimpleTypeD,Int](transitions)
+    val ite = IfThenElseTree[SimpleTypeD,Int](List(I, odd),transitions)
     println(ite)
     println(List("hello", 1, 2, 1.0).map(ite.apply))
   }
@@ -97,7 +97,7 @@ class IfThenElseTreeSuite extends AdjFunSuite {
                                                   (I, 2),
                                                   (!N, 3))
 
-    val ite = IfThenElseTree[SimpleTypeD,Int](transitions)
+    val ite = IfThenElseTree[SimpleTypeD,Int](List(N,I), transitions)
     //println(ite)
     assert(! ite.ifTrueEvaluated)
     assert(! ite.ifFalseEvaluated)
@@ -108,12 +108,14 @@ class IfThenElseTreeSuite extends AdjFunSuite {
     //println(ite)
 
     ite match {
-      case ite@IfThenElseNode(transitions) =>
+      case ite@IfThenElseNode(tds,transitions) =>
+        assert(tds == List(N,I))
         assert(transitions == Set((N && !I,1),
                                   (I,2),
                                   (!N,3)))
         ite.ifTrue match {
-          case ite@IfThenElseNode(transitions) =>
+          case ite@IfThenElseNode(tds,transitions) =>
+            assert(tds == List(I))
             //println(ite)
             assert(ite.ifTrueEvaluated)
             assert(! ite.ifFalseEvaluated)
@@ -137,12 +139,12 @@ class IfThenElseTreeSuite extends AdjFunSuite {
     //println(ite)
 
     ite match {
-      case ite@IfThenElseNode(transitions) =>
+      case ite@IfThenElseNode(_,transitions) =>
         assert(transitions == Set((N && !I,1),
                                   (I,2),
                                   (!N,3)))
         ite.ifTrue match {
-          case ite@IfThenElseNode(transitions) =>
+          case ite@IfThenElseNode(_,transitions) =>
             //println(ite)
             assert(ite.ifTrueEvaluated)
             assert(ite.ifFalseEvaluated)
@@ -170,7 +172,7 @@ class IfThenElseTreeSuite extends AdjFunSuite {
     assert(ite.ifFalseEvaluated)
 
     ite match {
-      case ite@IfThenElseNode(transitions) =>
+      case ite@IfThenElseNode(_,transitions) =>
         assert(transitions == Set((N && !I,1),
                                   (I,2),
                                   (!N,3)))
@@ -180,7 +182,7 @@ class IfThenElseTreeSuite extends AdjFunSuite {
           case _ => fail(s"wrong format 8c: ite.ifFalse = ${ite.ifFalse}")
         }
         ite.ifTrue match {
-          case ite@IfThenElseNode(transitions) =>
+          case ite@IfThenElseNode(_,transitions) =>
             //println(ite)
             assert(ite.ifTrueEvaluated)
             assert(ite.ifFalseEvaluated)
