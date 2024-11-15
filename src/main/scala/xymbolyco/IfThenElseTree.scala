@@ -22,38 +22,68 @@
 package xymbolyco
 import genus.{SAnd, SEmpty, SNot, STop, SimpleTypeD}
 
-sealed abstract class IfThenElseTree[E] {
-  def apply(a:Any):Option[State[Any,SimpleTypeD,E]]
+// an IfThenElseTree is a lazy tree which is used to figure out given
+// an object, which transition in a Dfa to select.
+// A state in a Dfa has a set of Transition objects which are
+// assumed to be labeled by disjoint types (SimpleTypeD)
+// Calling the apply(a:Any) method on an IfThenElseTree object will return
+// None if the object `a` satisfies none of the transitions.
+// Some(dst) if a matches the Transition(_,td,dst).
+// However, as explained above, this check is lazy.
+// The tree has been initialized, with a call to IfThenElse(...)
+// with a list of types which indicate all the leaf-level types
+// in the set of transitions.
+// The object, `a`, is checked against each SimpleTypeD as td.typep(a)
+// to return either true or false. The list of transitions is
+// then filtered by intersection td (in the case of true) or SNot(td)
+// in the case of false.  Any transition which becomes unsatisfiable
+// is eliminated, and some (hopefully most) of the type designators
+// become simpler.
+// This filtering either continues until there are no transitions remaining,
+// in which case None is returned, or a single transition remains whose type
+// is STop,  in which case indicated destination state is returned, wrapped
+// in Some(dst).
+// Usually when this code is used, E=Any, and S=State[Any, SimpleTypeD, E];
+// however, S has been parameterized to make the testing easier.  Test cases
+// are written with a simpler S, such as Int
+sealed abstract class IfThenElseTree[E,S] {
+  def apply(a:Any):Option[S]
+
+  var ifTrueEvaluated:Boolean = false // this is here just for testing
+  var ifFalseEvaluated:Boolean = false // it would be nice to eliminate if the test could figure out whether or not a lazy val has been evaluated
+
 }
 
 object IfThenElseTree {
-  def apply[E](tds:List[SimpleTypeD],
-               transitions:Set[Transition[Any, SimpleTypeD, E]]):IfThenElseTree[E] = {
+  def apply[E,S](tds:List[SimpleTypeD],
+                 transitions:Set[(SimpleTypeD, S)]):IfThenElseTree[E,S] = {
     if (transitions.isEmpty)
-      IfThenElseFalse[E]()
+      IfThenElseMissing[E,S]()
     else if (tds.isEmpty) {
       // should have exactly one transition
       assert(transitions.size == 1, s"too many transitions, expecting exactly 1: $transitions")
-      val Transition(_,_,dest) = transitions.head
-      IfThenElseTrue[E](dest)
+      val (_,dest) = transitions.head
+      IfThenElseFound[E,S](dest)
     } else
-      IfThenElseNode[E](tds,transitions)
+      IfThenElseNode[E,S](tds,transitions)
   }
 }
 
-case class IfThenElseTrue[E](dest:State[Any,SimpleTypeD,E]) extends IfThenElseTree[E] {
-  def apply(a:Any):Option[State[Any,SimpleTypeD,E]] = Some(dest)
+case class IfThenElseFound[E,S](dest:S) extends IfThenElseTree[E,S] {
+  def apply(a:Any):Option[S] = Some(dest)
+  override def toString():String = dest.toString()
 }
 
-case class IfThenElseFalse[E]() extends IfThenElseTree[E] {
-  def apply(a:Any):Option[State[Any,SimpleTypeD,E]] = None
+case class IfThenElseMissing[E,S]() extends IfThenElseTree[E,S] {
+  def apply(a:Any):Option[S] = None
+  override def toString():String = "missing"
 }
 
-case class IfThenElseNode[E](tds:List[SimpleTypeD], transitions:Set[Transition[Any, SimpleTypeD, E]])
-  extends IfThenElseTree[E] {
+case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTypeD, S)])
+  extends IfThenElseTree[E,S] {
   val tdh::tdt = tds
-  def reduceTransitions(search: SimpleTypeD, intersect:SimpleTypeD, replace: SimpleTypeD): Set[Transition[Any, SimpleTypeD, E]] = {
-    transitions.flatMap { case Transition(src, td, dest) =>
+  def reduceTransitions(search: SimpleTypeD, intersect:SimpleTypeD, replace: SimpleTypeD): Set[(SimpleTypeD, S)] = {
+    transitions.flatMap { case (td, dest) =>
       val simpler = SAnd(td,intersect)
         .canonicalize()
         .searchReplaceInType(search, replace)
@@ -61,18 +91,44 @@ case class IfThenElseNode[E](tds:List[SimpleTypeD], transitions:Set[Transition[A
       if (simpler.inhabited.contains(false))
         Set()
       else
-        Set(Transition(src, simpler, dest))
+        Set((simpler, dest))
     }
+  }
+
+  override def toString():String = {
+    s"Ite($tdh, $transitions, " +
+      (if (ifTrueEvaluated) ifTrue.toString() else "_") +
+      ", " +
+      (if (ifFalseEvaluated) ifFalse.toString() else "_") +
+      ")"
   }
 
   // ifTrue and ifFalse are lazy.
   // This has the effect that only the part of the tree that is actually
   //   walked, gets expanded, and only once.  If it is walked again, the
   //   expansion has already happened.
-  lazy val ifTrue:IfThenElseTree[E] = IfThenElseTree[E](tdt, reduceTransitions(tdh, tdh, STop))
-  lazy val ifFalse:IfThenElseTree[E] = IfThenElseTree[E](tdt, reduceTransitions(tdh, SNot(tdh), SEmpty))
+  lazy val ifTrue:IfThenElseTree[E,S] = locally{
+    ifTrueEvaluated = true
+    // at this point, in the tree, we have assured that the object is of type tdh,
+    //   we still need to check all of tdt.
+    // For example, if we have already determined that the object is an Int,
+    //   then we don't need to further check whether it is a Number
+    val pending = tdt
+      .map(td => SAnd(td, tdh).canonicalize())
+      .distinct
+      .filter(td => !td.inhabited.contains(false)) // only keep pending types which are inhabited or don't know
+    IfThenElseTree[E,S](pending, reduceTransitions(tdh, tdh, STop))
+  }
+  lazy val ifFalse:IfThenElseTree[E,S] = locally{
+    ifFalseEvaluated = true
+    val pending = tdt
+      .map(td => SAnd(td, SNot(tdh)).canonicalize())
+      .distinct
+      .filter(td => !td.inhabited.contains(false)) // only keep pending types which are inhabited or don't know
+    IfThenElseTree[E,S](pending, reduceTransitions(tdh, SNot(tdh), SEmpty))
+  }
 
-  def apply(a: Any): Option[State[Any,SimpleTypeD,E]] = {
+  def apply(a: Any): Option[S] = {
     if (tdh.typep(a))
       ifTrue(a)
     else

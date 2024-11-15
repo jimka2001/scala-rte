@@ -22,7 +22,7 @@
 
 package xymbolyco
 import adjuvant.AdjFunSuite
-import genus.{SEql, STop, SimpleTypeD}
+import genus.{SAtomic, SEql, SNot, STop, SimpleTypeD}
 import xymbolyco.GraphViz.dfaView
 import xymbolyco.Minimize.complete
 
@@ -73,5 +73,125 @@ class IfThenElseTreeSuite extends AdjFunSuite {
     assert(dfa.simulate(Seq(43,42)).contains(4))
     assert(dfa.simulate(Seq(42,43,43,42)).contains(4))
     assert(dfa.simulate(Seq(43,42,42,0)).isEmpty)
+  }
+
+  test("ite 1"){
+    val N = SAtomic(classOf[Number])
+    val I = SAtomic(classOf[Int])
+
+    val transitions:Set[(SimpleTypeD, Int)] = Set((N && !I, 1),
+                          (I, 2),
+                          (!N, 3))
+
+    val ite = IfThenElseTree[SimpleTypeD,Int](List(N,I), transitions)
+    //println(ite)
+    assert(! ite.ifTrueEvaluated)
+    assert(! ite.ifFalseEvaluated)
+
+    assert(ite(100) == Some(2))
+    assert(ite.ifTrueEvaluated)
+    assert(! ite.ifFalseEvaluated)
+    //println(ite)
+
+    ite match {
+      case ite@IfThenElseNode(tdh::_,transitions) =>
+        assert(tdh == N)
+        assert(transitions == Set((N && !I,1),
+                                  (I,2),
+                                  (!N,3)))
+        ite.ifTrue match {
+          case ite@IfThenElseNode(tdh::_,transitions) =>
+            //println(ite)
+            assert(ite.ifTrueEvaluated)
+            assert(! ite.ifFalseEvaluated)
+            assert(tdh == I)
+            assert(transitions == Set((!I,1),
+                                      (I,2)))
+            ite.ifTrue match {
+              case IfThenElseFound(dest) => {
+                assert(dest == 2)
+              }
+              case _ => fail("wrong format 1")
+            }
+
+          case _ => fail("wrong format case 2")
+        }
+      case _ => fail("wrong format case 3")
+    }
+
+    assert(ite(1.1) == Some(1))
+    assert(ite.ifTrueEvaluated)
+    assert(! ite.ifFalseEvaluated)
+    //println(ite)
+
+    ite match {
+      case ite@IfThenElseNode(tdh::_,transitions) =>
+        assert(tdh == N)
+        assert(transitions == Set((N && !I,1),
+                                  (I,2),
+                                  (!N,3)))
+        ite.ifTrue match {
+          case ite@IfThenElseNode(tdh::_,transitions) =>
+            //println(ite)
+            assert(ite.ifTrueEvaluated)
+            assert(ite.ifFalseEvaluated)
+            assert(tdh == I)
+            assert(transitions == Set((!I,1),
+                                      (I,2)))
+            ite.ifTrue match {
+              case IfThenElseFound(dest) => {
+                assert(dest == 2)
+              }
+              case _ => fail("wrong format 4b")
+            }
+            ite.ifFalse match {
+              case IfThenElseFound(dest) =>
+                assert(dest == 1)
+              case _ => fail("wrong format 5b")
+            }
+          case _ => fail("wrong format case 6b")
+        }
+      case _ => fail("wrong format case 7b")
+    }
+
+    assert(ite("hello") == Some(3))
+    //println(ite)
+    assert(ite.ifTrueEvaluated)
+    assert(ite.ifFalseEvaluated)
+
+    ite match {
+      case ite@IfThenElseNode(tdh::_,transitions) =>
+        assert(tdh == N)
+        assert(transitions == Set((N && !I,1),
+                                  (I,2),
+                                  (!N,3)))
+        ite.ifFalse match {
+          case ite@IfThenElseFound(dest) =>
+            assert(dest == 3)
+          case _ => fail(s"wrong format 8c: ite.ifFalse = ${ite.ifFalse}")
+        }
+        ite.ifTrue match {
+          case ite@IfThenElseNode(tdh::_,transitions) =>
+            //println(ite)
+            assert(ite.ifTrueEvaluated)
+            assert(ite.ifFalseEvaluated)
+            assert(tdh == I)
+            assert(transitions == Set((!I,1),
+                                      (I,2)))
+            ite.ifTrue match {
+              case IfThenElseFound(dest) => {
+                assert(dest == 2)
+              }
+              case _ => fail("wrong format 9c")
+            }
+            ite.ifFalse match {
+              case IfThenElseFound(dest) =>
+                assert(dest == 1)
+              case _ => fail("wrong format 10c")
+            }
+          case _ => fail("wrong format case 11c")
+        }
+      case _ => fail("wrong format case 12c")
+    }
   }
 }
