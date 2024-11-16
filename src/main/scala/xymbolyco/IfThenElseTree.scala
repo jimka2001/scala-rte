@@ -50,9 +50,6 @@ import genus.{SAnd, SEmpty, SNot, STop, SimpleTypeD}
 sealed abstract class IfThenElseTree[E,S] {
   def apply(a:Any):Option[S]
 
-  var ifTrueEvaluated:Boolean = false // this is here just for testing
-  var ifFalseEvaluated:Boolean = false // it would be nice to eliminate if the test could figure out whether or not a lazy val has been evaluated
-
 }
 
 object IfThenElseTree {
@@ -98,6 +95,9 @@ case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTyp
         Set((simpler, dest))
     }
   }
+
+  var ifTrueEvaluated:Boolean = false // this is here just for testing
+  var ifFalseEvaluated:Boolean = false // it would be nice to eliminate if the test could figure out whether or not a lazy val has been evaluated
 
   override def toString():String = {
     s"Ite($tdh, $transitions, " +
