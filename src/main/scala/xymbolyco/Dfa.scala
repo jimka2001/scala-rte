@@ -93,7 +93,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     val init: Option[State[Σ, L, E]] = Some(q0)
     seq.iterator.foldLeft(init) { (mq, s) =>
       if(verbose)
-        println(s"mq=$mq s=$s [${s.getClass()}] --> ${mq.flatMap(_.successor(s))}")
+        println(s"findReachableFinal: mq=$mq s=$s [${s.getClass()}] --> ${mq.flatMap(_.successor(s))}")
       mq.flatMap(_.successor(s))
     }
   }
