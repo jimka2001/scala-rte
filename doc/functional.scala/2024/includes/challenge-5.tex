@@ -251,7 +251,7 @@
 
 
 \begin{frame}{Rewrite: $\colorbox{orange!30}{\Huge 1}\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to 9$}%1
-  Duplicate tree, and introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
+  Duplicate tree, and introduce \colorbox{pink!30}{\code{if N.typep(x) \code{\textcolor{greeny}{then}} ... \code{\textcolor{red}{else}} ...}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -264,7 +264,7 @@
 \end{frame}
 
 \begin{frame}{Rewrite: $\colorbox{orange!30}{\Huge 1}\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to 9$}%1
-  Duplicate tree, and introduce \colorbox{pink!30}{\code{if N.typep(x) ... else ...}}
+  Duplicate tree, and introduce \colorbox{pink!30}{\code{if N.typep(x) \code{\textcolor{greeny}{then}} ... \code{\textcolor{red}{else}} ...}}
   
   \centerline{  \includegraphics[height=0.8\textheight]{ldd-1.pdf}}
 \end{frame}
@@ -325,7 +325,7 @@
 
 
 \begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to \colorbox{orange!30}{\Huge 6}\to 7\to 8\to 9$}
-  Duplicate tree, and introduce \colorbox{pink!30}{\code{if I.typep(x) ... else ...}}
+  Duplicate tree, and introduce \colorbox{pink!30}{\code{if I.typep(x) \code{\textcolor{greeny}{then}} ... \code{\textcolor{red}{else}} ...}}
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -339,7 +339,7 @@
 \end{frame}
 
 \begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to \colorbox{orange!30}{\Huge 6}\to 7\to 8\to 9$}
-  Duplicate tree, and introduce \colorbox{pink!30}{\code{if I.typep(x) ... else ...}}
+  Duplicate tree, and introduce \colorbox{pink!30}{\code{if I.typep(x) \code{\textcolor{greeny}{then}} ... \code{\textcolor{red}{else}} ...}}
 
   \centerline{\includegraphics[height=0.8\textheight]{ldd-6.pdf}}  %
 \end{frame}
@@ -396,8 +396,8 @@
 \end{frame}
 
 
-{  %\setbeamercolor{background canvas}{bg=chaptercolor}
-\begin{frame}{Challenges of the Project}
+{ %\setbeamercolor{background canvas}{bg=chaptercolor}
+\begin{frame}{Summary: Challenges of the Project}
   \begin{itemize}
   \item \Challenge{~1}\textcolor{blue}{RTE Representation}:   Representing an RTE in Scala?
   \item \Challenge{~2}\textcolor{blue}{DFA Construction}:  Constucting from RTE?
