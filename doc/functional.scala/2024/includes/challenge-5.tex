@@ -207,7 +207,7 @@
 \end{frame}
 
 \begin{frame}{Decision Tree Structure}
-  We programmatically manipulate \code{if ... else ...} using a lazy decision tree.
+  We programmatically manipulate \code{if \code{\textcolor{greeny}{then}} ... \code{\textcolor{red}{else}} ...} using a lazy decision tree.
 
   \begin{columns}
     \begin{column}{0.5\textwidth}
@@ -271,8 +271,8 @@
 
 \begin{frame}{Rewrite: $1\to \colorbox{orange!30}{\Huge 2}\to 3\to 4\to 5\to 6\to 7\to 8\to 9$}
   \begin{tabular}{ll}
-  In \code{then} part: \colorbox{pink!30}{Supertypes of \code{N} $\to$ \code{STop}}. &
-  In \code{else} part: \colorbox{pink!30}{Subtypes of \code{N} $\to$ \code{SEmpty}}.
+  In \code{\textcolor{greeny}{then}} part: \colorbox{pink!30}{Supertypes of \code{N} $\to$ \code{STop}}. &
+  In \code{\textcolor{red}{else}} part: \colorbox{pink!30}{Subtypes of \code{N} $\to$ \code{SEmpty}}.
   \end{tabular}
   
   \only<1>{\centerline{\includegraphics[height=0.8\textheight]{ldd-1.pdf}}}%
@@ -297,11 +297,25 @@
   
 \end{frame}
 
+\newsavebox\boxstop
+\begin{lrbox}{\boxstop}
+\begin{tikzpicture}
+\node[draw,text width=0.7cm] at (2,-2) {\code{STop}};
+\end{tikzpicture}
+\end{lrbox}
+
+\newsavebox\boxsempty
+\begin{lrbox}{\boxsempty}
+\begin{tikzpicture}
+\node[draw,text width=1.2cm] at (2,-2) {\code{SEmpty}};
+\end{tikzpicture}
+\end{lrbox}
+
 
 \begin{frame}{Rewrite: $1\to 2\to 3\to 4\to\colorbox{orange!30}{\Huge 5}\to 6\to 7\to 8\to 9$}
   \begin{tabular}{ll}
-    Replace \code{STop} with \code{then} branch. &
-    Replace \code{SEmpty} with \code{else} branch.
+    Replace \usebox\boxstop~with \code{\textcolor{greeny}{then}} branch. &
+    Replace \usebox\boxsempty~with \code{\textcolor{red}{else}} branch.
   \end{tabular}
 
   \only<1>{\centerline{\includegraphics[height=0.8\textheight]{ldd-4.pdf}}}%
@@ -333,8 +347,8 @@
 
 \begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to \colorbox{orange!30}{\Huge 7}\to 8\to 9$}
   \begin{tabular}{ll}
-  In \code{then} part: \colorbox{pink!30}{Supertypes of \code{I} $\to$ \code{STop}}.&
-  In \code{else} part: \colorbox{pink!30}{Subtypes of \code{I} $\to$ \code{SEmpty}}.
+  In \code{\textcolor{greeny}{then}} part: \colorbox{pink!30}{Supertypes of \code{I} $\to$ \code{STop}}.&
+  In \code{\textcolor{red}{else}} part: \colorbox{pink!30}{Subtypes of \code{I} $\to$ \code{SEmpty}}.
   \end{tabular}
 
   \only<1>{\centerline{\includegraphics[height=0.8\textheight]{ldd-6.pdf}}}%
@@ -354,8 +368,8 @@
 
 \begin{frame}{Rewrite: $1\to 2\to 3\to 4\to 5\to 6\to 7\to 8\to \colorbox{orange!30}{\Huge 9}$}
   \begin{tabular}{ll}
-    Replace \code{STop} with \code{then} branch. &
-    Replace \code{SEmpty} with \code{else} branch.
+    Replace \usebox\boxstop~ with \code{\textcolor{greeny}{then}} branch. &
+    Replace \usebox\boxsempty~ with \code{\textcolor{red}{else}} branch.
   \end{tabular}
 
   \only<1>{\centerline{\includegraphics[height=0.8\textheight]{ldd-8.pdf}}}%

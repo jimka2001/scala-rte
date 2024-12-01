@@ -8,7 +8,7 @@ bgcolor="#ffffff00" # RGBA (with alpha)
 9 -> n8n [style=dashed,color=red,penwidth=2,arrowhead=normal,arrowtail=odot,dir=both]
 
 n8n [shape=box,label="N",fontname="Courier"]
-n8p [shape=box,label="N",fontname="Courier"]
+n8p [shape=box,label="STop",fontname="Courier"]
 
 {rank=same n8n n8p }
 
