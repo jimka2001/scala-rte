@@ -1,6 +1,6 @@
-package scalaio
+package functionalscala2024
 
-import rte.{Rte, Xor, Atomic, Satisfies, Eql}
+import rte._
 import xymbolyco.GraphViz.dfaView
 
 object Demo1 {
@@ -34,8 +34,8 @@ object Demo1 {
 
   def main(argv:Array[String]):Unit = {
 
-    val m1 = pattern1.contains(data, verbose=true)
-    assert(pattern1.contains(data,verbose=true))
+    val m1 = pattern1.contains(data, verbose=false)
+    assert(pattern1.contains(data,verbose=false))
     println("Pattern 1 contains data1? --> " + m1)
 
     dfaView(pattern1.toDfa(), title="Pattern 1", showSink=false, abbrev=true)

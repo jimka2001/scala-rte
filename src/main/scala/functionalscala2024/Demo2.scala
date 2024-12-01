@@ -1,10 +1,9 @@
-package scalaio
+package functionalscala2024
 
-import genus.{SAnd, SAtomic, SEql, SNot, SOr, SSatisfies, SimpleTypeD}
-import rte.{Or, Rte, Xor}
+import genus._
 import rte.RteImplicits.tdToRte
+import rte.{Rte, Xor}
 import xymbolyco.GraphViz.dfaView
-import xymbolyco.Minimize.minimize
 
 object Demo2 {
   val data1 = Seq("XY", 1, 0.5F, 2, 0.8F, 5, 1.2F, 7, 0.4F, // 1 or more x,y where x is integer and y is float

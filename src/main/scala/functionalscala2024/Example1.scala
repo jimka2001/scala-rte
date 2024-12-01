@@ -1,4 +1,4 @@
-package scalaio
+package functionalscala2024
 
 import rte.{Atomic, Eql, Rte}
 
