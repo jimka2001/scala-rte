@@ -56,3 +56,38 @@ object sanityTest2 {
     }
   }
 }
+
+object sanityTest3 {
+
+  val data:Seq[Any] = Seq("M", 0.1, 0.3F, 4.5, // "M" designates measurements,
+                          //                      1 or more double or float
+                          "C", 1, 5, 7, 8, // "C" designates counts,
+                          //                      1 or more ints, all positive
+                          "C", 2, 5, 3,
+                          "M", 0.5, 1.2F
+                          )
+  val I:Rte = Atomic(classOf[Int])
+  val DF:Rte = Atomic(classOf[Float]) | Atomic(classOf[Double])
+
+  def positive(x:Any):Boolean = {
+    x match {
+      case a:Int => a > 0
+      case _ => false
+    }
+  }
+
+  val IPos:Rte = I & Satisfies(positive, "IPos")
+  val M:Rte = Eql("M")
+  val C:Rte = Eql("C")
+
+  val Mclause:Rte = M ++ DF.+
+  val Cclause:Rte = C ++ IPos.+
+
+  def main(argv:Array[String]):Unit = {
+
+    val pattern1:Rte = ( Mclause | Cclause).*
+
+    pattern1.contains(data)
+
+  }
+}

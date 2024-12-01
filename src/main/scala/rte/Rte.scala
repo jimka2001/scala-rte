@@ -219,7 +219,7 @@ abstract class Rte {
 
   import xymbolyco.Dfa
 
-  def toDfa[E](exitValue: E = true): Dfa[Any, SimpleTypeD, E] = {
+  def toDfa[E](exitValue: E = true, verbose:Boolean=false): Dfa[Any, SimpleTypeD, E] = {
     //println(s"toDfa: $this")
     val (rtes, edges) = try {
       derivatives()
@@ -233,6 +233,13 @@ abstract class Rte {
                                              "  toDfa reported:",
                                              e.msg).mkString("\n"),
                                    rte = this)
+    }
+    if(verbose) {
+      println(s"toDfa: ")
+      for {i <- rtes.indices} {
+        println(s"   rtes[$i] = ${rtes(i)}")
+        println(s"   edges[$i]= ${edges(i)}")
+      }
     }
     val qids = rtes.indices.toSet
     val fids = qids.filter(i => rtes(i).nullable)
@@ -261,7 +268,7 @@ abstract class Rte {
    * else None is returned.
    */
   def simulate[E](exitValue: E, seq: Seq[Any], verbose:Boolean=false): Option[E] = {
-    toDfa(exitValue).simulate(seq, verbose=verbose)
+    toDfa(exitValue,verbose=verbose).simulate(seq, verbose=verbose)
   }
 
   /**

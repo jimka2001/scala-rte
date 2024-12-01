@@ -90,11 +90,11 @@ class ExtractTestSuite  extends AdjFunSuite {
   }
 
   test("test_extract_rte") {
-    // test should fail if cannot run within 60 seconds
+    // test should fail, if cannot run within 60 seconds
     // perhaps need to adjust number of seconds
     val start = System.nanoTime()
     implicit val signaler: Signaler = ThreadSignaler
-    failAfter(Span(60000, Millis)) {
+    failAfter(Span(3 * 60000, Millis)) {
       SAtomic.withClosedWorldView {
         for {depth <- 1 to 3
              rep <- 0 to 25

@@ -22,6 +22,8 @@
 package adjuvant
 import adjuvant.Adjuvant.printTime
 import org.scalatest.funsuite.AnyFunSuite
+
+import java.time.Duration
 class AdjFunSuite extends AnyFunSuite {
   import org.scalactic.source
   import org.scalatest.Tag
@@ -36,7 +38,9 @@ class AdjFunSuite extends AnyFunSuite {
       import java.time.LocalDateTime
 
       val start = System.nanoTime()
-      println("[ starting " + testName + " at " + LocalDateTime.now())
+      println("[ starting " + testName
+                + " at " + LocalDateTime.now()
+                + " total time: " + printTime(AdjFunSuite.elapsed()))
       var finished = false
       try{
         testFun
@@ -44,17 +48,26 @@ class AdjFunSuite extends AnyFunSuite {
       }
       finally{
         val end = System.nanoTime()
+        val endLocalTime = LocalDateTime.now()
         if (finished)
-          println("] finished " + testName + ": " + printTime(end-start) + " total time: " + printTime(AdjFunSuite.elapsed()))
+          println("] finished " + testName
+                    + " at : " + endLocalTime
+                    + " test time: " + printTime(end - start)
+                    + " total time: " + printTime(AdjFunSuite.elapsed()))
         else
-          println("] aborted " + testName + ": " + printTime(end - start))
+          println("] aborted "  + testName
+                    + " at : " + endLocalTime + "" + printTime(end - start))
       }
     })(pos)
   }
 }
 
 object AdjFunSuite {
-  val testsStarted:Long = System.nanoTime()
+  val testsStarted:Long = locally{
+    val nt = System.nanoTime()
+    println(s"AdjFunSuite companion object initializing at time= $nt")
+    nt
+  }
 
   def elapsed():Long = System.nanoTime() - testsStarted
 }

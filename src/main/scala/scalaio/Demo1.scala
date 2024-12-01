@@ -29,16 +29,17 @@ object Demo1 {
   val Mclause:Rte = M ++ DF.+
   val Cclause:Rte = C ++ IPos.+
 
+  val pattern1:Rte = ( Mclause | Cclause).*
+  val pattern2:Rte = ((M ++ DF.+) | (C ++ I.+)).*
+
   def main(argv:Array[String]):Unit = {
 
-    val pattern1:Rte = ( Mclause | Cclause).*
-    val m1 = pattern1.contains(data)
-
+    val m1 = pattern1.contains(data, verbose=true)
+    assert(pattern1.contains(data,verbose=true))
     println("Pattern 1 contains data1? --> " + m1)
 
     dfaView(pattern1.toDfa(), title="Pattern 1", showSink=false, abbrev=true)
 
-    val pattern2:Rte = ((M ++ DF.+) | (C ++ I.+)).*
     val m2 = pattern2.contains(data)
 
     println("Pattern 2 contains data1? --> " + m2)

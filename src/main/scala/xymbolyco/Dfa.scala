@@ -93,7 +93,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     val init: Option[State[Σ, L, E]] = Some(q0)
     seq.iterator.foldLeft(init) { (mq, s) =>
       if(verbose)
-        println(s"mq=$mq s=$s [${s.getClass()}] --> ${mq.flatMap(_.successor(s))}")
+        println(s"findReachableFinal: mq=$mq s=$s [${s.getClass()}] --> ${mq.flatMap(_.successor(s))}")
       mq.flatMap(_.successor(s))
     }
   }
@@ -155,6 +155,8 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     case Some((Satisfiable,_)) => Some(Satisfiable, findTrace(true).getOrElse(List[L]()))
     // indeterminate path
     case Some((Indeterminate,_)) => Some(Indeterminate, findTrace(false).getOrElse(List[L]()))
+    // unsatisfiable path
+    case Some((Unsatisfiable,_)) => None
   }
 
   lazy val witness: Option[List[Option[Any]]] = {
@@ -289,6 +291,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       case None => Some(true)
       case Some((Satisfiable, _)) => Some(false)
       case Some((Indeterminate, _))=> None
+      case Some((Unsatisfiable, _)) => Some(true)
     }
   }
 

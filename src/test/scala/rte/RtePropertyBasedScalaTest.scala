@@ -48,6 +48,7 @@ object RtePropertyBasedScalaTest extends App {
         case Some((Satisfiable, _)) => satisfiable += 1
         // need this case to avoid compiler warning about missing case
         case None => () // should not happen because if dfa is non-vacuous, there must be a spanning path
+        case Some((Unsatisfiable, _)) => ()
       }
     }
 
