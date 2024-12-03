@@ -28,12 +28,13 @@
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \only<1,2>{\scalebox{0.98}{\input{pgf-a1-a8.tex}}}%
-      \only<3>{\includegraphics[scale=0.18]{venn-x1-x13.png}}%
+      \only<3,4>{\includegraphics[scale=0.18]{venn-x1-x13.png}}%
     \end{column}
     \begin{column}{0.5\textwidth}
-      \only<2,3>{\scalebox{0.98}{\input{pgf-x1-x13.tex}}}%
+      \only<2-4>{\scalebox{0.98}{\input{pgf-x1-x13.tex}}}%
     \end{column}
   \end{columns}
+  \only<4>{For more info, see: \textit{An Elegant and Fast Algorithm for Partitioning Types} [Newton] 2020 European Lisp Symposium}
 \end{frame}
 
 \begin{frame}{Non-determinism by subtype}
