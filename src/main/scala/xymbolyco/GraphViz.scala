@@ -51,7 +51,7 @@ object GraphViz {
                          title:String="",
                          abbrev:Boolean=false,
                          label:Option[String]=None,
-                         showSink:Boolean=true,
+                         showSink:Boolean=false,
                          dotFileCB:String=>Unit=(_=>()),
                          givenLabels:Seq[L]=Seq(),
                          printLatex:Boolean=false): String = {
