@@ -44,15 +44,12 @@ object Demo1 {
     println("Pattern 1 contains data? --> " + m1)
     println("Pattern 2 contains data? --> " + m2)
 
-    dfaView(pattern1.toDfa(), title="Pattern 1", showSink=false, abbrev=true)
-    dfaView(pattern2.toDfa(), title="Pattern 2", showSink=false, abbrev=true)
+    dfaView(pattern1.toDfa(), title="Pattern 1")
+    dfaView(pattern2.toDfa(), title="Pattern 2")
     
     val pattern_xor:Rte = Xor(pattern1, pattern2)
     val diff_dfa = pattern_xor.toDfa()
-    dfaView(diff_dfa,
-            title="Symmetric Difference",
-            showSink=false,
-            abbrev=true)
+    dfaView(diff_dfa, title="Symmetric Difference", abbrev=true)
 
     val trace = diff_dfa.spanningTrace
     val witness = diff_dfa.witness
@@ -61,13 +58,14 @@ object Demo1 {
 
     val m1a = pattern1.contains(Seq("C", 0))
     val m2a = pattern2.contains(Seq("C", 0))
-    println("Pattern 1 contains? --> " + m1a)
-    println("Pattern 2 contains? --> " + m2a)
+    println(s"Pattern 1 contains $witness? --> " + m1a)
+    println(s"Pattern 2 contains $witness? --> " + m2a)
 
     // Question: Is pattern1 a subset of pattern2?
-    dfaView((pattern1 & !pattern2).toDfa(),
-            title="Subset Query",
-            showSink=false,
-            abbrev=true)
+    val isSubset = (pattern1 & !pattern2).toDfa()
+    dfaView(isSubset, title="Subset Query")
+    println("Spanning types: --> " + isSubset.spanningTrace)
+
+
   }
 }
