@@ -8,7 +8,7 @@ object Demo1 {
   val data:Seq[Any] = Seq("M", 0.1, 0.3F, 4.5, // "M" designates measurements,
                           //                      1 or more double or float
                           "C", 1, 5, 7, 8, // "C" designates counts,
-                          //                      1 or more ints, all positive
+                          //                      1 or more integers, all positive
                           "C", 2, 5, 3,
                           "M", 0.5, 1.2F
                           )
@@ -18,11 +18,14 @@ object Demo1 {
   def positive(x:Any):Boolean = {
     x match {
       case a:Int => a > 0
+      case a:Double => a > 0.0
+      case a:Float => a > 0.0
       case _ => false
     }
   }
 
-  val IPos:Rte = I & Satisfies(positive, "IPos")
+  val Pos:Rte = Satisfies(positive, "Pos")
+  val IPos:Rte = I & Pos
   val M:Rte = Eql("M")
   val C:Rte = Eql("C")
 
@@ -36,13 +39,12 @@ object Demo1 {
   def main(argv:Array[String]):Unit = {
 
     val m1 = pattern1.contains(data, verbose=false)
-    println("Pattern 1 contains data1? --> " + m1)
-
-    dfaView(pattern1.toDfa(), title="Pattern 1", showSink=false, abbrev=true)
-
     val m2 = pattern2.contains(data)
+
+    println("Pattern 1 contains data1? --> " + m1)
     println("Pattern 2 contains data1? --> " + m2)
 
+    dfaView(pattern1.toDfa(), title="Pattern 1", showSink=false, abbrev=true)
     dfaView(pattern2.toDfa(), title="Pattern 2", showSink=false, abbrev=true)
     
     val pattern_xor:Rte = Xor(pattern1, pattern2)
@@ -61,5 +63,11 @@ object Demo1 {
     val m2a = pattern2.contains(Seq("C", 0))
     println("Pattern 1 contains? --> " + m1a)
     println("Pattern 2 contains? --> " + m2a)
+
+    // Question: Is pattern1 a subset of pattern2?
+    dfaView((pattern1 & !pattern2).toDfa(),
+            title="Subset Query",
+            showSink=false,
+            abbrev=true)
   }
 }
