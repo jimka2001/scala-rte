@@ -41,8 +41,8 @@ object Demo1 {
     val m1 = pattern1.contains(data, verbose=false)
     val m2 = pattern2.contains(data)
 
-    println("Pattern 1 contains data1? --> " + m1)
-    println("Pattern 2 contains data1? --> " + m2)
+    println("Pattern 1 contains data? --> " + m1)
+    println("Pattern 2 contains data? --> " + m2)
 
     dfaView(pattern1.toDfa(), title="Pattern 1", showSink=false, abbrev=true)
     dfaView(pattern2.toDfa(), title="Pattern 2", showSink=false, abbrev=true)
