@@ -32,23 +32,25 @@ object Demo1 {
   val pattern1:Rte = ( Mclause | Cclause).*
   val pattern2:Rte = ((M ++ DF.+) | (C ++ I.+)).*
 
+
   def main(argv:Array[String]):Unit = {
 
     val m1 = pattern1.contains(data, verbose=false)
-    assert(pattern1.contains(data,verbose=false))
     println("Pattern 1 contains data1? --> " + m1)
 
     dfaView(pattern1.toDfa(), title="Pattern 1", showSink=false, abbrev=true)
 
     val m2 = pattern2.contains(data)
-
     println("Pattern 2 contains data1? --> " + m2)
 
     dfaView(pattern2.toDfa(), title="Pattern 2", showSink=false, abbrev=true)
     
     val pattern_xor:Rte = Xor(pattern1, pattern2)
     val diff_dfa = pattern_xor.toDfa()
-    dfaView(diff_dfa, title="Symmetric Difference", showSink=false, abbrev=true)
+    dfaView(diff_dfa,
+            title="Symmetric Difference",
+            showSink=false,
+            abbrev=true)
 
     val trace = diff_dfa.spanningTrace
     val witness = diff_dfa.witness
