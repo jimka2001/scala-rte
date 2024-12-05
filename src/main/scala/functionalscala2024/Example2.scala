@@ -1,6 +1,6 @@
-package scalaio
+package functionalscala2024
 
-import rte.{Atomic, Eql, Rte}
+import rte.{Atomic, Rte}
 import xymbolyco.GraphViz.dfaView
 
 object Example2 {

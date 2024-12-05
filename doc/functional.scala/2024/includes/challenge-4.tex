@@ -1,4 +1,4 @@
-\subsection{Determinism}
+\subsection{Determinism: Type Partitioning}
 
 {  %% chapter slide
   \setbeamercolor{background canvas}{bg=sectioncolor}
@@ -28,12 +28,13 @@
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \only<1,2>{\scalebox{0.98}{\input{pgf-a1-a8.tex}}}%
-      \only<3>{\includegraphics[scale=0.18]{venn-x1-x13.png}}%
+      \only<3,4>{\includegraphics[scale=0.18]{venn-x1-x13.png}}%
     \end{column}
     \begin{column}{0.5\textwidth}
-      \only<2,3>{\scalebox{0.98}{\input{pgf-x1-x13.tex}}}%
+      \only<2-4>{\scalebox{0.98}{\input{pgf-x1-x13.tex}}}%
     \end{column}
   \end{columns}
+  \only<4>{Cf: \textit{An Elegant and Fast Algorithm for Partitioning Types} [Newton] 2023 ELS}
 \end{frame}
 
 \begin{frame}{Non-determinism by subtype}
@@ -119,13 +120,13 @@
 
   \scalebox{0.8}{\input{fig-4-unsat}}
   \begin{itemize}
-  \item   If we determine a type is empty, then the transistion is \Emph{unsatifiable}.
+  \item   If we determine a type is empty, then the transition is \Emph{unsatisfiable}.
   \item Thus we \Emph{can eliminate} the transition and unreachable states.
 
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Indeterminant Transitions}
+\begin{frame}{Indeterminate Transitions}
 
   \scalebox{0.8}{\input{fig-4}}
 
@@ -137,13 +138,13 @@
 \end{frame}
 
 
-\begin{frame}{Indeterminant Transitions}
+\begin{frame}{Indeterminate Transitions}
 
   \scalebox{0.8}{\input{fig-4}}
 
   \begin{itemize}
     \item We \Emph{can always} determine \Emph{type membership}.
-    \item DFAs with indeterminant transitions \Emph{correctly}
+    \item DFAs with indeterminate transitions \Emph{correctly}
       match sequences in $O(n)$.
   \end{itemize}
 \end{frame}
@@ -168,7 +169,7 @@
   \only<1>{Both are \code{final}; they have no common \Emph{inhabited} subclass.}%
   \only<2>{\medskip
 
-    Is there a class \Emph{somewhere} which inherits from both.
+    Is there a class \Emph{somewhere} which inherits from both?
    }%
 
   \only<3>{Explicit subtype relation.}%
@@ -182,9 +183,8 @@
 
   \begin{itemize}
     \medskip
-    \item 
-      Even if \Emph{currently} no subclass exists, JVM might \Emph{later} run-time
-      load a \code{.jar} creating a subclass.
+    \item If \Emph{currently} no subclass exists, JVM might \Emph{later} run-time
+      load \code{subclass.jar}
 
 
     \medskip
@@ -194,6 +194,13 @@
     \medskip
     
     \item Library \url{github.com/ronmamo/reflections} no longer maintained.
+
+      \begin{itemize}
+      \item       \code{https://github.com/ronmamo/reflections/issues/324}
+      \item       \code{https://users.scala-lang.org/t/help-with-org-reflections-api}
+      \item       \code{https://stackoverflow.com/questions/52879584}
+      \end{itemize}
+
   \end{itemize}
 
 \end{frame}

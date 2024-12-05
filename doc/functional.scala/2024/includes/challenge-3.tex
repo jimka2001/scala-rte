@@ -1,4 +1,4 @@
-\subsection{Embedding a Type System}
+\subsection{Embedding: Complemented Type System Lattice}
 
 {  \setbeamercolor{background canvas}{bg=sectioncolor}
 \begin{frame}{\Challenge{3} Type Lattice}
@@ -6,7 +6,7 @@
   How to support types like \textcolor{greeny}{$Int\cap\overline{Number}$} in Scala?
 
   \begin{itemize}
-  \item   Support \Emph{type lattice}
+  \item Support \Emph{complemented type lattice}
   \item Embed a dynamic type system into an existing programming language.
   \item Answer type membership and subtype questions.
   \end{itemize}
@@ -153,12 +153,12 @@
   \item Impossible to compute, \eg \code{SSatisfies}.
   \item Code is incomplete.
   \item JVM supports run-time loaded classes.
-  \item No dependable way of finding subtypes in JVM $> 8.x$.
+  \item Limitations of support libraries (discussed later).
   \end{itemize}
 
 \end{frame}
 
-\begin{frame}{Simple Embedded Type System}
+\begin{frame}{Simple Embedded Type System: SETS}
 
   At the point, \Emph{what have we done}?
 
@@ -170,5 +170,9 @@
   \item ... with subtype semi-Boolean predicate
   \item ... which supports reflection
   \end{itemize}
+
+  \medskip
+
+  Cf: \textit{A Portable, Simple, Embeddable Type System} [Newton, Pommellet] 2021 ELS
 
 \end{frame}

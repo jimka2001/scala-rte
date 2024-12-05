@@ -1,4 +1,4 @@
-package scalaio
+package scalaio2024
 
 import rte.{Rte, Xor, Atomic, Satisfies, Eql}
 import xymbolyco.GraphViz.dfaView

@@ -51,7 +51,7 @@ object GraphViz {
                          title:String="",
                          abbrev:Boolean=false,
                          label:Option[String]=None,
-                         showSink:Boolean=true,
+                         showSink:Boolean=false,
                          dotFileCB:String=>Unit=(_=>()),
                          givenLabels:Seq[L]=Seq(),
                          printLatex:Boolean=false): String = {
@@ -208,7 +208,7 @@ object GraphViz {
                                                  if usedLabels.contains(lab)
                                                  _ = if (printLatex) println(s"t$i => " + dfa.labeler.toLaTeX(lab))
                                                  multiLab = multiLineString(dfa.labeler.toDot(lab))
-                                                 } yield s"\\l$i= $multiLab").mkString("", "", "\\l")
+                                                 } yield s"\\lt$i= $multiLab").mkString("", "", "\\l")
 
     if (abbrev || title != "") {
       write("""  labelloc="t";""")
