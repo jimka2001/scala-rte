@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package padl
+package padl2023
 
 import adjuvant.Adjuvant.{existingFile, filterFile}
 import genus.{SAnd, SAtomic, SEmpty, SEql, SNot, SOr, SSatisfies, STop, SimpleTypeD}
@@ -30,7 +30,7 @@ import xymbolyco.GraphViz.{dfaView, multiLineString}
 import xymbolyco.Minimize.minimize
 
 
-object Padl {
+object Demo {
   import scala.language.implicitConversions
   import rte.RteImplicits._
   val dotDir:String = existingFile(Seq("/Users/jnewton/Repos/research/dot/",
