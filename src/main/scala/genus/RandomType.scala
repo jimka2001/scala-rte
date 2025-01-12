@@ -120,10 +120,10 @@ object RandomType {
   //   witness value, w, is provided such that f(w) = g(w) = true, then we know
   //   that both types are inhabited and moreover that they are NOT disjoint.
   //   Disadvantage of this approach is that the set of sample values is necessarily
-  //   small, and run-time checks take more time.   It is a matter of ongoing
-  //   research as to whether such a check is beneficial.
+  //   small, and run-time checks take more time.
+  //   Whether such a check is beneficial is a matter of ongoing research.
   //   The purpose of the interesting-values-implication branch is to
-  //   persue this investigation.
+  //   pursue this investigation.
   val interestingValuesAsImplications:Boolean = true
 
   def getInterestingValues(asImplication:Boolean = interestingValuesAsImplications):Set[Any] = {
@@ -190,11 +190,11 @@ object RandomType {
     recur()
   }
 
-  // the final function that is in charge of generating the random simpletypeDs
-  // the avoid boolean, when true, will avoid using nots and ands to compound types, and will also ensure that the
+  // the final function that is in charge of generating a random SimpleTypeD.
+  // the `avoid` boolean, when true, will avoid using nots and ands to compound types, and will also ensure that the
   // selected type/compound type will not be uninhabited.
   // when creating compound types, we will randomly select one of the "and or not" keyword to combine types, when the
-  // avoid boolean is set to true, it will only select the Or keyword
+  // `avoid` boolean is set to true, it will only select the Or keyword
   def randomType(depth: Int, avoid: Boolean = false): SimpleTypeD = {
     val random = new scala.util.Random
     val maxCompoundSize = 2

@@ -3,17 +3,15 @@ package demos.padl2025
 import rte._
 import xymbolyco.GraphViz.dfaView
 
-object Demo1 {
+object Demo2 {
 
-  val data:Seq[Any] = Seq("M", 0.1, 0.3F, 4.5, // "M" designates measurements,
-                          //                      1 or more double or float
-                          "C", 1, 5, 7, 8, // "C" designates counts,
-                          //                      1 or more integers, all positive
-                          "C", 2, 5, 3,
-                          "M", 0.5, 1.2F
+  val data:Seq[Any] = Seq("fred", 1, 2, 3, 4,
+                          "john", -1, -2, -3,
+                          "alice",
+                          "anne", 10, 20,30
                           )
+  val S:Rte = Atomic(classOf[String])
   val I:Rte = Atomic(classOf[Int])
-  val DF:Rte = Atomic(classOf[Float]) | Atomic(classOf[Double])
 
   def positive(x:Any):Boolean = {
     x match {
@@ -26,14 +24,10 @@ object Demo1 {
 
   val Pos:Rte = Satisfies(positive, "Pos")
   val IPos:Rte = I & Pos
-  val M:Rte = Eql("M")
-  val C:Rte = Eql("C")
+  val INeg:Rte = I & Not(Pos)
 
-  val Mclause:Rte = M ++ DF.+
-  val Cclause:Rte = C ++ IPos.+
-
-  val pattern1:Rte = ( Mclause | Cclause).*
-  val pattern2:Rte = ((M ++ DF.+) | (C ++ I.+)).*
+  val pattern1:Rte = Pos ++ ((S ++ IPos.+) | (S ++ INeg.+)).*
+  val pattern2:Rte = Pos ++ ((S ++ IPos.*) | (S.? ++ INeg.*)).+
 
 
   def main(argv:Array[String]):Unit = {
@@ -65,10 +59,14 @@ object Demo1 {
     val isSubset12 = (pattern1 & !pattern2).toDfa()
     dfaView(isSubset12, title="Subset P1 < P2 Query")
     println("Spanning types: --> " + isSubset12.spanningTrace)
+    println("Spanning trace: --> " + isSubset12.witness)
+
 
     // Question: Is pattern1 a subset of pattern2?
     val isSubset21 = (pattern2 & !pattern1).toDfa()
     dfaView(isSubset21, title="Subset P2 < P1 Query")
     println("Spanning types: --> " + isSubset21.spanningTrace)
+    println("Spanning trace: --> " + isSubset21.witness)
+
   }
 }
