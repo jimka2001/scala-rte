@@ -196,12 +196,15 @@ object GraphViz {
 
     // final states F
     write(s"// ${dfa.F.size} final states\n")
-    for {q <- dfa.F} {
+    for {q <- dfa.F
+         label = dfa.exitValue(q).toString
+         if label != "true"
+         } {
       val i = qarr.indexOf(q)
       write(s"""F$i [label="", style=invis, width=0]""")
       write("\n")
       write(i.toString + s" -> F$i ")
-      write(s"""[label="${dfa.exitValue(q).toString}"]""")
+      write(s"""[label="${label}"]""")
       write(";\n")
     }
     write(s"// all ${dfa.Q.size} states\n")
