@@ -38,18 +38,18 @@ object Demo1 {
 
   def main(argv:Array[String]):Unit = {
 
-    val m1 = pattern1.contains(data, verbose=false)
+    val m1 = pattern1.contains(data, verbose = false)
     val m2 = pattern2.contains(data)
 
     println("Pattern 1 contains data? --> " + m1)
     println("Pattern 2 contains data? --> " + m2)
 
-    dfaView(pattern1.toDfa(), title="Pattern 1")
-    dfaView(pattern2.toDfa(), title="Pattern 2")
-    
-    val pattern_xor:Rte = Xor(pattern1, pattern2)
+    dfaView(pattern1.toDfa(), title = "Pattern 1")
+    dfaView(pattern2.toDfa(), title = "Pattern 2")
+
+    val pattern_xor: Rte = Xor(pattern1, pattern2)
     val diff_dfa = pattern_xor.toDfa()
-    dfaView(diff_dfa, title="Symmetric Difference", abbrev=true)
+    dfaView(diff_dfa, title = "Symmetric Difference", abbrev = true)
 
     val trace = diff_dfa.spanningTrace
     val witness = diff_dfa.witness
@@ -63,12 +63,7 @@ object Demo1 {
 
     // Question: Is pattern1 a subset of pattern2?
     val isSubset = (pattern1 & !pattern2).toDfa()
-    dfaView(isSubset, title="Subset Query")
-    println("Spanning types: --> " + isSubset.spanningTrace)
-
-    // Question: Is pattern1 a subset of pattern2?
-    val isSubset = (pattern1 & !pattern2).toDfa()
-    dfaView(isSubset, title="Subset Query")
+    dfaView(isSubset, title = "Subset Query")
     println("Spanning types: --> " + isSubset.spanningTrace)
   }
 }

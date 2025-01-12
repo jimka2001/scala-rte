@@ -51,7 +51,8 @@ case class SAtomic(ct: Class[_]) extends STerminal {
       shortName.drop(1)
   }
 
-  override def toString: String = "SAtomic:" + shortTypeName()
+  // override def toString: String = "SAtomic:" + shortTypeName()
+  override def toString: String = shortTypeName()
 
   override def toDot(): String = shortTypeName()
 

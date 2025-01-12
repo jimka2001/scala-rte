@@ -62,13 +62,13 @@ object Demo1 {
     println(s"Pattern 2 contains $witness? --> " + m2a)
 
     // Question: Is pattern1 a subset of pattern2?
-    val isSubset = (pattern1 & !pattern2).toDfa()
-    dfaView(isSubset, title="Subset Query")
-    println("Spanning types: --> " + isSubset.spanningTrace)
+    val isSubset12 = (pattern1 & !pattern2).toDfa()
+    dfaView(isSubset12, title="Subset P1 < P2 Query")
+    println("Spanning types: --> " + isSubset12.spanningTrace)
 
     // Question: Is pattern1 a subset of pattern2?
-    val isSubset = (pattern1 & !pattern2).toDfa()
-    dfaView(isSubset, title="Subset Query")
-    println("Spanning types: --> " + isSubset.spanningTrace)
+    val isSubset21 = (pattern2 & !pattern1).toDfa()
+    dfaView(isSubset21, title="Subset P2 < P1 Query")
+    println("Spanning types: --> " + isSubset21.spanningTrace)
   }
 }
