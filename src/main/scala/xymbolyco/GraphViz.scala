@@ -155,10 +155,16 @@ object GraphViz {
       }
     }
 
-    def arrow(from: Int, to: Int, label: String): Unit = {
+    def arrow(from: Int, to: Int, label: String, inhabited:Option[Boolean]): Unit = {
       write(s"$from -> $to")
-      if (label != "")
-        write(s""" [label="$label"]""")
+      if (label != "") {
+        write(s" [")
+        write(s"label=\"$label\"")
+        if(inhabited == None) {
+          write(s",style=dashed")
+        }
+        write(s"]")
+      }
       write("\n")
     }
 
@@ -172,7 +178,7 @@ object GraphViz {
         if showSink || !sinkStateIds.contains(destination.id)
         labels = transitions.map(_.label)
         label = labels.reduce(dfa.labeler.combineLabels)
-      } arrow(qarr.indexOf(q), qarr.indexOf(destination), labelMap(label)._2)
+      } arrow(qarr.indexOf(q), qarr.indexOf(destination), labelMap(label)._2, dfa.labeler.inhabited(label))
     }
 
     write("digraph G {\n")
