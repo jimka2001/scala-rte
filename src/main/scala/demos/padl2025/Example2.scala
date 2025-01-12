@@ -1,6 +1,6 @@
-package scalaio2024
+package demos.padl2025
 
-import rte.{Atomic, Eql, Rte}
+import rte.{Atomic, Rte}
 import xymbolyco.GraphViz.dfaView
 
 object Example2 {

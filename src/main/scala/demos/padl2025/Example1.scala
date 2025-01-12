@@ -1,4 +1,4 @@
-package functionalscala2024
+package demos.padl2025
 
 import rte.{Atomic, Eql, Rte}
 

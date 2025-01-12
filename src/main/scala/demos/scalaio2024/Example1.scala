@@ -1,4 +1,4 @@
-package scalaio2024
+package demos.scalaio2024
 
 import rte.{Atomic, Eql, Rte}
 

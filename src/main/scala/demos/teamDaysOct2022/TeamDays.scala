@@ -19,14 +19,12 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package teamDaysOct2022
+package demos.teamDaysOct2022
 
-import rte._
-import RteImplicits._
 import adjuvant.Adjuvant.{copyFile, existingFile}
-import genus.SMember
-import genus.RandomType._
 import genus.Types.evenType
+import rte.RteImplicits._
+import rte._
 import xymbolyco.GraphViz.dfaView
 import xymbolyco.Minimize
 
