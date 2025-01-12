@@ -3,7 +3,7 @@ package demos.padl2025
 import rte._
 import xymbolyco.GraphViz.dfaView
 
-object Demo3 {
+object Demo {
 
   val data:Seq[Any] = Seq("Lorem", "ipsum", 1, 2, 3, "dolor", 10, 20)
   val S:Rte = Atomic(classOf[String])
