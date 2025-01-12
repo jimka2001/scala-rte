@@ -1,4 +1,4 @@
-package padl2025
+package demos.functionalscala2024
 
 import genus._
 import rte.RteImplicits.tdToRte

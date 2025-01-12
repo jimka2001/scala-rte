@@ -1,4 +1,4 @@
-package functionalscala2024
+package demos.functionalscala2024
 
 import rte.{Atomic, Rte}
 import xymbolyco.GraphViz.dfaView

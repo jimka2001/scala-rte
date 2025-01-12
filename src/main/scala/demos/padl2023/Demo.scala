@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package padl2023
+package demos.padl2023
 
 import adjuvant.Adjuvant.{existingFile, filterFile}
 import genus.{SAnd, SAtomic, SEmpty, SEql, SNot, SOr, SSatisfies, STop, SimpleTypeD}
