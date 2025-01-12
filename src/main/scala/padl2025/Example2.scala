@@ -1,4 +1,4 @@
-package functionalscala2024
+package padl2025
 
 import rte.{Atomic, Rte}
 import xymbolyco.GraphViz.dfaView
