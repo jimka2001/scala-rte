@@ -300,12 +300,18 @@ object SAtomic {
     import scala.jdk.CollectionConverters._
     import io.github.classgraph.ClassGraph
     cache.getOrElseUpdate(sup, {
-      new ClassGraph()
+      val scanResult = new ClassGraph()
         .enableClassInfo()
         .enableExternalClasses()
         //.acceptPackages("my.package") // optional, limits scope
         .scan()
-        .getSubclasses(sup.getName)
+
+      val impls = if (sup.isInterface)
+        scanResult.getClassesImplementing(sup.getName)
+      else
+        scanResult.getSubclasses(sup.getName)
+
+      impls
         .loadClasses()
         .asScala
         .toSeq
