@@ -14,10 +14,11 @@ libraryDependencies += "org.scala-lang.modules" %% "scala-parallel-collections" 
 libraryDependencies += "org.jboss" % "jboss-common-core" % "2.5.0.Final"
 libraryDependencies += "org.sameersingh.scalaplot" % "scalaplot" % "0.1"
 
+libraryDependencies += "io.github.classgraph" % "classgraph" % "4.8.162"
+
+
 //libraryDependencies += "org.typelevel" %% "spire" % "0.14.1"
 libraryDependencies += "org.typelevel" %% "spire" % "0.17.0-RC1"
-
-libraryDependencies += "org.reflections" % "reflections" % "0.10.2"
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.10"
 

@@ -260,7 +260,7 @@ object SAtomic {
   //   if the world view is open, then for any two interfaces (for example)
   //   we assume that it is possible to create a class inheriting from both
   //   thus interfaces are never disjoint.
-  //   However if the world view is closed, then we only assume classes
+  //   However, if the world view is closed, then we only assume classes
   //   exist which actually exist NOW, thus if there are not common
   //   subclasses of two given classes, then we conclude the classes are
   //   disjoint.
@@ -292,8 +292,28 @@ object SAtomic {
     }
   }
 
+  private val cache = scala.collection.mutable.Map[Class[_], Seq[Class[_]]]()
+
+  // The following code came from chatGPT
+  // https://chatgpt.com/share/684a63ce-d610-800d-a20e-8fc8cdb4b768
+  def computeSubclassesOf(sup:Class[_]):Seq[Class[_]] = {
+    import scala.jdk.CollectionConverters._
+    import io.github.classgraph.ClassGraph
+    cache.getOrElseUpdate(sup, {
+      new ClassGraph()
+        .enableClassInfo()
+        .enableExternalClasses()
+        //.acceptPackages("my.package") // optional, limits scope
+        .scan()
+        .getSubclasses(sup.getName)
+        .loadClasses()
+        .asScala
+        .toSeq
+    })
+  }
+
   def instantiatableSubclasses(cl: Class[_]): Array[Class[_]] = {
-    val properSubs = reflections.getSubTypesOf(cl).toArray.collect {
+    val properSubs = computeSubclassesOf(cl).toArray.collect {
       case c: Class[_] if isInstantiatable(c) => c
     }
     if (isInstantiatable(cl))
@@ -302,10 +322,11 @@ object SAtomic {
       properSubs
   }
 
+
   def existsInstantiatableSubclass(cl: Class[_]): Boolean = {
     // determine whether an instantiatable subclass exists.
     //    Note that a class is considered a subclass of itself.
-    isInstantiatable(cl) || reflections.getSubTypesOf(cl).toArray.exists {
+    isInstantiatable(cl) || computeSubclassesOf(cl).toArray.exists {
       case c: Class[_] => isInstantiatable(c)
       case _ => false
     }
@@ -351,15 +372,12 @@ object SAtomic {
       true
   }
 
-  import org.reflections.Reflections
-
-  val reflections = new Reflections()
-  assert(reflections.getSubTypesOf(classOf[Number]).toArray.toList.nonEmpty,
-         "INTERNAL ERROR: Reflections API was not able to find subclasses of Number, aborting")
+  assert(computeSubclassesOf(classOf[Number]).toArray.toList.nonEmpty,
+    "INTERNAL ERROR: Reflections API was not able to find subclasses of Number, aborting")
 }
 
 object SAtomicTest {
   def main(argv:Array[String]): Unit = {
-    
+    println("Number:" + SAtomic.computeSubclassesOf(classOf[Number]))
   }
 }

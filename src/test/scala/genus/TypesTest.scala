@@ -27,6 +27,7 @@ import adjuvant.Adjuvant.eql
 import adjuvant.AdjFunSuite
 import genus.RandomType._
 import genus.Types._
+import SAtomic.computeSubclassesOf
 import genus.GenusImplicits
 
 
@@ -96,13 +97,11 @@ class TypesTest extends AdjFunSuite {
   }
 
   test("reflect malfunction"){
-    val reflect = new org.reflections.Reflections(classOf[List[_]])
-    // If this test fails, there may be some problem with the initialization of
-    // the reflections library.
+
     for{c <- List(classOf[List[Any]],
                   classOf[Vector[Any]]
                   )}
-      assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.nonEmpty,
+      assert(computeSubclassesOf(classOf[List[Any]]).nonEmpty,
              s"There seems to be a problem with org.reflections.Reflections().reflect.getSubTypesOf($c)," +
                " it cannot find any subtypes")
 
@@ -110,22 +109,19 @@ class TypesTest extends AdjFunSuite {
   }
 
   test("reflect.getSubTypesOf List"){
-    val reflect = new org.reflections.Reflections(classOf[List[_]])
-    assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.nonEmpty)
-    assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
-    assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
+    assert(computeSubclassesOf(classOf[List[Any]]).nonEmpty)
+    assert(computeSubclassesOf(classOf[List[Any]]).contains(List(1,2,3).getClass))
+    assert(computeSubclassesOf(classOf[List[Any]]).contains(List.empty.getClass))
   }
 
   test("reflect.getSubTypesOf Number"){
-    val reflect = new org.reflections.Reflections()
-    assert(reflect.getSubTypesOf(classOf[Number]).toArray.nonEmpty)
+    assert(computeSubclassesOf(classOf[Number]).toArray.nonEmpty)
   }
 
   test("Number has instantiatable subclass"){
 
     import genus.SAtomic.existsInstantiatableSubclass
-    import genus.SAtomic.reflections
-    assert(reflections.getSubTypesOf(classOf[Number]).toArray.toList.nonEmpty)
+    assert(computeSubclassesOf(classOf[Number]).nonEmpty)
     assert(existsInstantiatableSubclass(classOf[Number]))
   }
 

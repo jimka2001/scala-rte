@@ -28,24 +28,22 @@ import genus.Types._
 import scala.language.implicitConversions
 
 class ReflectionTest extends AdjFunSuite {
-
+  import SAtomic.computeSubclassesOf
 
   test("reflect.getSubTypesOf List"){
-    val reflect = new org.reflections.Reflections(classOf[List[_]])
-    assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.nonEmpty)
-    assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
-    assert(reflect.getSubTypesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
+    assert(computeSubclassesOf(classOf[List[Any]]).toArray.nonEmpty)
+    assert(computeSubclassesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
+    assert(computeSubclassesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
   }
 
   test("reflect.getSubTypesOf Number"){
-    val reflect = new org.reflections.Reflections()
-    assert(reflect.getSubTypesOf(classOf[Number]).toArray.nonEmpty)
+    assert(computeSubclassesOf(classOf[Number]).toArray.nonEmpty)
   }
 
   test("Number has instantiatable subclass"){
 
-    import genus.SAtomic.{existsInstantiatableSubclass, reflections}
-    assert(reflections.getSubTypesOf(classOf[Number]).toArray.toList.nonEmpty)
+    import genus.SAtomic.{existsInstantiatableSubclass,computeSubclassesOf}
+    assert(computeSubclassesOf(classOf[Number]).toArray.toList.nonEmpty)
     assert(existsInstantiatableSubclass(classOf[Number]))
   }
 
