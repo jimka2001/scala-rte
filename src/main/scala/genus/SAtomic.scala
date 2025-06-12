@@ -292,14 +292,14 @@ object SAtomic {
     }
   }
 
-  private val cache = scala.collection.mutable.Map[Class[_], Seq[Class[_]]]()
+  private val subclassCache = scala.collection.mutable.Map[Class[_], Seq[Class[_]]]()
 
   // The following code came from chatGPT
   // https://chatgpt.com/share/684a63ce-d610-800d-a20e-8fc8cdb4b768
   def computeSubclassesOf(sup:Class[_]):Seq[Class[_]] = {
     import io.github.classgraph.ClassGraph
     import scala.jdk.CollectionConverters._
-
+    subclassCache.getOrElseUpdate(sup, {
       val scanResult = new ClassGraph()
         .enableClassInfo()
         //.acceptPackages(sup.getPackage.getName)
@@ -319,6 +319,7 @@ object SAtomic {
         }
 
       classInfos.toSeq.map(_.loadClass())
+    })
   }
 
 
