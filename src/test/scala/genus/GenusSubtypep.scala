@@ -43,6 +43,8 @@ class GenusSubtypep extends AdjFunSuite {
   val Integer: Class[Integer] = classOf[java.lang.Integer]
   val Number: Class[Number] = classOf[java.lang.Number]
 
+
+
   test("subtypep Java types") {
     // superclass.isAssignableFrom(subclass)
     assert(Number.isAssignableFrom(Integer))

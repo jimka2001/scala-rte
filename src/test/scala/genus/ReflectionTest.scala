@@ -25,25 +25,56 @@ import adjuvant.Adjuvant.eql
 import genus.RandomType._
 import genus.Types._
 
+trait TraitR1
+trait TraitR2 extends TraitR1
+
+trait RAnimal
+trait RMammal extends RAnimal
+class RDog extends RMammal
+class RCat extends RAnimal
+
 import scala.language.implicitConversions
 
 class ReflectionTest extends AdjFunSuite {
   import SAtomic.computeSubclassesOf
 
-  test("reflect.getSubTypesOf List"){
-    assert(computeSubclassesOf(classOf[List[Any]]).toArray.nonEmpty)
-    assert(computeSubclassesOf(classOf[List[Any]]).toArray.contains(List(1,2,3).getClass))
-    assert(computeSubclassesOf(classOf[List[Any]]).toArray.contains(List.empty.getClass))
+  test("Number"){
+    println(computeSubclassesOf(classOf[Number]))
+    assert(computeSubclassesOf(classOf[Number]).nonEmpty)
   }
 
-  test("reflect.getSubTypesOf Number"){
-    assert(computeSubclassesOf(classOf[Number]).toArray.nonEmpty)
+  test("trait3") {
+    println(computeSubclassesOf(classOf[RMammal]))
+    assert(computeSubclassesOf(classOf[RMammal]) == Seq(classOf[RDog]))
+  }
+
+  test("trait2") {
+    println(computeSubclassesOf(classOf[RAnimal]))
+    assert(computeSubclassesOf(classOf[RAnimal]).toSet ==
+             Set(classOf[RCat],
+                 classOf[RDog],
+                 classOf[RMammal]))
+  }
+  test("trait1"){
+    print(computeSubclassesOf(classOf[TraitR2]))
+    // nothing inherits from TraitR2
+    assert(computeSubclassesOf(classOf[TraitR2]) == Seq())
+  }
+
+  test("computeSubclassesOf List"){
+    assert(computeSubclassesOf(classOf[List[Any]]).nonEmpty)
+    assert(computeSubclassesOf(classOf[List[Any]]).contains(List(1,2,3).getClass))
+    assert(computeSubclassesOf(classOf[List[Any]]).contains(List.empty.getClass))
+  }
+
+  test("computeSubclassesOf Number"){
+    assert(computeSubclassesOf(classOf[Number]).nonEmpty)
   }
 
   test("Number has instantiatable subclass"){
 
     import genus.SAtomic.{existsInstantiatableSubclass,computeSubclassesOf}
-    assert(computeSubclassesOf(classOf[Number]).toArray.toList.nonEmpty)
+    assert(computeSubclassesOf(classOf[Number]).nonEmpty)
     assert(existsInstantiatableSubclass(classOf[Number]))
   }
 

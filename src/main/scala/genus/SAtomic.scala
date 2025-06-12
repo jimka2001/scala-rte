@@ -297,26 +297,31 @@ object SAtomic {
   // The following code came from chatGPT
   // https://chatgpt.com/share/684a63ce-d610-800d-a20e-8fc8cdb4b768
   def computeSubclassesOf(sup:Class[_]):Seq[Class[_]] = {
-    import scala.jdk.CollectionConverters._
     import io.github.classgraph.ClassGraph
-    cache.getOrElseUpdate(sup, {
+    import scala.jdk.CollectionConverters._
+
       val scanResult = new ClassGraph()
         .enableClassInfo()
-        .enableExternalClasses()
-        //.acceptPackages("my.package") // optional, limits scope
+        //.acceptPackages(sup.getPackage.getName)
         .scan()
 
-      val impls = if (sup.isInterface)
-        scanResult.getClassesImplementing(sup.getName)
-      else
-        scanResult.getSubclasses(sup.getName)
+      val className = sup.getName
 
-      impls
-        .loadClasses()
-        .asScala
-        .toSeq
-    })
+      val classInfos =
+        if (sup.isInterface) {
+          val skippable = scanResult.getClassesImplementing(className).asScala
+          val extendingTraits = scanResult.getAllInterfaces.asScala.filter { iface =>
+            iface.getInterfaces.asScala.contains(className)
+          }
+          (skippable ++ extendingTraits).distinct
+        } else {
+          scanResult.getSubclasses(className).asScala
+        }
+
+      classInfos.toSeq.map(_.loadClass())
   }
+
+
 
   def instantiatableSubclasses(cl: Class[_]): Array[Class[_]] = {
     val properSubs = computeSubclassesOf(cl).toArray.collect {
