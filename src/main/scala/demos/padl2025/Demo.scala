@@ -26,10 +26,12 @@ object Demo {
   val I:Rte = Atomic(classOf[Int])
   val Even:Rte = Satisfies(even, "Even")
   val Large:Rte = Satisfies(large, "Large")
+  val N:Rte = Atomic(classOf[Number])
 
   val pattern1:Rte = (S ++ Even.*).*
   val pattern2:Rte = (S ++ (I & Even).*).*
   val pattern3:Rte = (S ++ (I & Even & Large).*).*
+  val pattern4:Rte = ((S | N).+ ++ (I & Even).*).+ & (S ++ N).+ & !S
 
   def main(argv:Array[String]):Unit = {
 
@@ -47,7 +49,8 @@ object Demo {
 
     val pairs = List((pattern1, "P1"),
                      (pattern2, "P2"),
-                     (pattern3, "P3"))
+                     (pattern3, "P3"),
+                     (pattern4, "P4"))
     for{ (p,pl) <- pairs
          (q,ql) <- pairs
          if p != q
@@ -57,7 +60,7 @@ object Demo {
       println("--------------------")
       println(s"$pl = $p")
       println(s"$ql = $q")
-      dfaView(diff, title=label, abbrev=true)
+      dfaView(diff, title=label, abbrev=true, dotFileCB=(println))
       println(label)
 
       diff.spanningTrace match {
@@ -75,8 +78,6 @@ object Demo {
           println("   Spanning types: --> " + diff.spanningTrace)
         case _ => ()
       }
-
-
       println("   Spanning trace: --> " + diff.witness)
 
     }
