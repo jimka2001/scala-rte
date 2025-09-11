@@ -504,7 +504,7 @@ object Rte {
                       () => Singleton(RandomType.randomType(0))))()
     }
 
-    def tree012ToRte(tree:Tree012[Int]):Rte = {
+    def tree012ToRte(tree:Tree012):Rte = {
       tree match {
         case Tree012Leaf() => randomLeafRte()
         case Tree012Unary(_, child) =>
@@ -514,9 +514,9 @@ object Rte {
 
         case Tree012Binary(_, left, right) =>
           // And, Or, Cat
-          randElement(Seq((a, b) => And(a, b),
-                          (a, b) => Or(a, b),
-                          (a, b) => Cat(a, b)))(tree012ToRte(left), tree012ToRte(right))
+          randElement(Seq((a:Rte, b:Rte) => And(a, b),
+                          (a:Rte, b:Rte) => Or(a, b),
+                          (a:Rte, b:Rte) => Cat(a, b)))(tree012ToRte(left), tree012ToRte(right))
       }
     }
    //(printf "generating tree of depth %d:  %s <= count < %s\n" depth (pow 2 depth) (pow 2 (inc depth)))
@@ -543,6 +543,10 @@ object Rte {
     xymbolyco.GraphViz.dfaView[Any,SimpleTypeD,Boolean](rte.toDfa(true),
                                                         title, abbrev, label, showSink,
                                                         dotFileCB, givenLabels, printLatex)
+  }
+
+  def main(argv:Array[String]):Unit = {
+    println(randomTotallyBalancedRte(0.5F, 4))
   }
 }
 
