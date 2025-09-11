@@ -457,7 +457,7 @@ object Rte {
     seq.sortBy(_.toString)
   }
 
-  //here we are passing along an avoidEmpty boolean that will be true when we do not wish there to be :
+  // Here we are passing along an avoidEmpty boolean that will be true when we do not wish there to be
   // any ANDs or NOTs in the RTE, and that any of the SimpleTypeDs will not be empty either
   // this way we are also excluding the EmptySeq, EmptySet, and notSigma explicitly, while also not allowing
   // the recursive call for the randomTypeD to create any EmptyTypes

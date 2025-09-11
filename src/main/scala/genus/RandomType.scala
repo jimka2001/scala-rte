@@ -135,7 +135,7 @@ object RandomType {
 
   val interestingValues: Vector[Any] = Vector(
     -1, -2, 0, 1, 2, 3, 4, 5, 6,
-    1L, 0L, -1L, 1000L, 1000000L, // these values causes problems reported in issue #7
+    1L, 0L, -1L, 1000L, 1000000L, // these values cause problems reported in issue #7
     3.14, 2.17, -math.sqrt(2),
     3.14d, 2.17d,
     3.14f, 2.17f, -3.14f, -2.17f,
