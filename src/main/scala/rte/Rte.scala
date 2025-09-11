@@ -23,6 +23,7 @@ package rte
 
 import genus._
 import adjuvant.Adjuvant._
+import genus.RandomType.interestingTypes
 import genus.Types._
 import xymbolyco.{Indeterminate, Satisfiable, Unsatisfiable}
 
@@ -486,6 +487,48 @@ object Rte {
       val g = generators(random.nextInt(generators.length - (if (avoidEmpty) 2 else 0)))
       g()
     }
+  }
+
+  // Generate an RTE which corresponds (on average) in shape closely to a balanced
+  // binary tree.  The goal is to sample languages uniformly rather than sampling
+  // syntactic structure of the RTE uniformly.
+  //
+  // probability_binary: float strictly between 0.0 and 1.0
+  def randomTotallyBalancedRte(probability_binary:Float,
+                               depth:Int) = {
+    import adjuvant.{Tree012, Tree012Binary, Tree012Leaf, Tree012Unary}
+    def randomLeafRte():Rte = {
+      randElement(Seq(() => Sigma,
+                      () => EmptySeq,
+                      () => EmptySet,
+                      () => Singleton(RandomType.randomType(0))))()
+    }
+
+    def tree012ToRte(tree:Tree012[Int]):Rte = {
+      tree match {
+        case Tree012Leaf() => randomLeafRte()
+        case Tree012Unary(_, child) =>
+          // Star, Not
+          randElement(Seq((t) => Star(t),
+                          (t) => Not(t)))(tree012ToRte(child))
+
+        case Tree012Binary(_, left, right) =>
+          // And, Or, Cat
+          randElement(Seq((a, b) => And(a, b),
+                          (a, b) => Or(a, b),
+                          (a, b) => Cat(a, b)))(tree012ToRte(left), tree012ToRte(right))
+      }
+    }
+   //(printf "generating tree of depth %d:  %s <= count < %s\n" depth (pow 2 depth) (pow 2 (inc depth)))
+   // a binary tree of depth=n has 2^n <= m < 2^(n+1) leaves
+   // so generate a random number 2^n <= rand < 2^(n+1)
+   // i.e 2^n + (rand-int 2^(n+1) - 2^n)
+   //    2^n + (rand-int 2^n)
+    val tree = Tree012.rand(probability_binary, depth)
+    val rte = tree012ToRte(tree)
+
+    rte
+
   }
 
   def rteView(rte: Rte,

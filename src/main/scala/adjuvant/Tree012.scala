@@ -39,7 +39,7 @@ object Tree012 {
     }
   }
   val random = new scala.util.Random
-  def rand[A](probability_binary:Float, depth:Int):Tree012[A] = {
+  def rand(probability_binary:Float, depth:Int):Tree012[Int] = {
     assert(depth >= 0)
     assert(0.0 < probability_binary && probability_binary < 1.0)
 
