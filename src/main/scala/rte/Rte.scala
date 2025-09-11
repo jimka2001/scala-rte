@@ -498,6 +498,7 @@ object Rte {
                                depth:Int) = {
     import adjuvant.{Tree012, Tree012Binary, Tree012Leaf, Tree012Unary}
     def randomLeafRte():Rte = {
+      // TODO, perhaps Singleton should be 50%
       randElement(Seq(() => Sigma,
                       () => EmptySeq,
                       () => EmptySet,
