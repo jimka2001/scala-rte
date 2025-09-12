@@ -24,7 +24,8 @@ package psug
 import genus._
 import rte.Rte.rteIfThenElse
 import rte.{Cat, _}
-import xymbolyco.GraphViz.{dfaView, multiLineString}
+import xymbolyco.GraphViz.{dfaView}
+import adjuvant.GraphViz.multiLineString
 
 
 object Psug {

@@ -1,7 +1,8 @@
 package rte
 
 import adjuvant.Adjuvant.openGraphicalFile
-
+import genus.{SEmpty, STop, SimpleTypeD}
+import adjuvant.GraphViz.{multiLineString, runDot}
 
 object GraphViz {
   import java.io.{File, OutputStream}
@@ -28,37 +29,15 @@ object GraphViz {
       pathname
     }
 
-    val prefix = if (title == "")
-      "rte"
-    else
-      title
-    val png = File.createTempFile(prefix+"-", ".png")
-    val pngPath = png.getAbsolutePath
-    val dot = File.createTempFile(prefix+"-", ".dot")
-    val dotPath = dot.getAbsolutePath
-    val alt = File.createTempFile(prefix+"-", ".plain")
-    val altPath = alt.getAbsolutePath
-    val longTitle:String = label match {
-      case None => title
-      case Some(lab) => s"$title\\l-- $lab"
-    }
-    toPng(dotPath, longTitle)
-    locally {
-      import sys.process._
-      Seq("dot", "-Tplain", dotPath, "-o", altPath).! // write file containing coordinates
-
-      val cmd = Seq("dot", "-Tpng", dotPath, "-o", pngPath)
-      //println(s"cmd = $cmd")
-      cmd.!
-    }
-    //png.deleteOnExit()
-    //dot.deleteOnExit()
-    pngPath
+    runDot(title, label, toPng)
   }
 
+  val defaultTypeVector = Vector(SEmpty, STop)
   def rteToDot(rte:Rte,
                stream: OutputStream,
-               title: String):Unit = {
+               title: String,
+               abbrev:Boolean = true,
+               givenTypes: Vector[SimpleTypeD] = defaultTypeVector):Vector[SimpleTypeD] = {
     def write(str: String): Unit = {
       for {c <- str} {
         stream.write(c.toByte)
@@ -72,23 +51,19 @@ object GraphViz {
     write("  node [fontname=Arial, fontsize=25];\n")
     write("  edge [fontsize=20];\n")
 
-
     val linear = rte.linearize().zipWithIndex
     val nodemap = linear.to(Map)
 
-    // find nodes which are not pointed to by anything, ie, parents which
-    // are never children
+    // collect all type designators used in as operand of Singleton in this Rte.
+    // some of these might already be in givenTypes
+    val usedTypes = linear.collect{
+      case (Singleton(td), _)  => td
+    }.distinct
 
-    val missingnodes = linear.filter{case (p,pidx) => linear.exists{case (c,cidx) => c==p}}
-    println(s"missing = $missingnodes")
-    val missingidxs = linear.filter{case (p,pidx) => linear.exists{case (c,cidx) => cidx==pidx}}
-    println(s"missing = $missingidxs")
+    // collect all the type designators not already in givenTypes
+    val mergedTypes = givenTypes ++ (usedTypes.filter{td => ! givenTypes.contains(td)})
 
-
-    val tds = linear.collect{
-      case (Singleton(td), _) => td
-    }.zipWithIndex.to(Map)
-
+    val tds = mergedTypes.zipWithIndex.to(Map)
     def nodeLabel(rte:Rte):String = {
       rte match {
         case Star(_) => "*"
@@ -96,8 +71,6 @@ object GraphViz {
         case Sigma => "&#931;"
         case Singleton(td) =>
           val idx = tds(td)
-          // TODO need to add this type to the dot label
-          println(f"type[$idx] = $td")
           s"t$idx"
         case _ => rte.getClass.getSimpleName
       }
@@ -110,14 +83,23 @@ object GraphViz {
           child_index = nodemap(child)
           } write(f"R${idx} -> R${child_index}\n")
 
+    val typesLabels = for{(td,idx) <- mergedTypes.zipWithIndex
+                         if usedTypes.contains(td)
+                         lab = multiLineString(td.toDot()).replaceAll("\"","\\\"")
+                         }  yield s"t${idx} = $lab"
+    val typesLabel = typesLabels.mkString("", "\\l", "")
 
     if ( title != "") {
       write("""  labelloc="t";""")
       write("\n  label=\"")
       write(title)
+      if(abbrev)
+        write(s"\\l${typesLabel}\\l")
       write("\"\n")
     }
 
     write("}\n")
+
+    mergedTypes
   }
 }

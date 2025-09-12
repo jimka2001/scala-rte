@@ -26,7 +26,8 @@ import genus.{SAnd, SAtomic, SEmpty, SEql, SNot, SOr, SSatisfies, STop, SimpleTy
 import genus.Types.{evenType, oddType}
 import rte.{And, Cat, Eql, Not, Or, Permute, Plus, Rte, Singleton, Star}
 import xymbolyco.{Dfa, GraphViz, Thompson}
-import xymbolyco.GraphViz.{dfaView, multiLineString}
+import xymbolyco.GraphViz.{dfaView}
+import adjuvant.GraphViz.{multiLineString}
 import xymbolyco.Minimize.minimize
 
 
