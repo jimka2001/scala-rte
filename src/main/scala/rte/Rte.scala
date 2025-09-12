@@ -497,17 +497,13 @@ object Rte {
   def randomTotallyBalancedRte(probability_binary:Float,
                                depth:Int) = {
     import adjuvant.{Tree012, Tree012Binary, Tree012Leaf, Tree012Unary}
-    def randomLeafRte():Rte = {
-      // TODO, perhaps Singleton should be 50%
-      randElement(Seq(() => Sigma,
-                      () => EmptySeq,
-                      () => EmptySet,
-                      () => Singleton(RandomType.randomType(0))))()
-    }
 
     def tree012ToRte(tree:Tree012):Rte = {
       tree match {
-        case Tree012Leaf() => randomLeafRte()
+        case Tree012Leaf() => randCase(EmptySet,
+                                       List((0.50, () => Singleton(RandomType.randomType(0))),
+                                            (0.25, () => Sigma),
+                                            (0.25, () => EmptySeq)))
         case Tree012Unary(_, child) =>
           // Star, Not
           randElement(Seq((t) => Star(t),
@@ -547,7 +543,8 @@ object Rte {
   }
 
   def main(argv:Array[String]):Unit = {
-    println(randomTotallyBalancedRte(0.5F, 4))
+    val rte = randomTotallyBalancedRte(0.5F, 4)
+    rteView(rte, "balanced")
   }
 }
 
