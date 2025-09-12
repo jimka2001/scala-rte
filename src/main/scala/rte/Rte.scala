@@ -542,13 +542,12 @@ object Rte {
     val rte = tree012ToRte(tree)
 
     rte
-
   }
 
   def rteViewAst(rte:Rte,
                  title: String = "",
-                 dotFileCB: String => Unit = (_ => ())) = {
-    GraphViz.rteView(rte, title, dotFileCB=println)
+                 dotFileCB: String => Unit = (_ => ())):(Vector[SimpleTypeD], String) = {
+    GraphViz.rteView(rte, title=title, dotFileCB=dotFileCB)
   }
 
   def rteViewDfa(rte: Rte,
@@ -558,7 +557,7 @@ object Rte {
                  showSink: Boolean = true,
                  dotFileCB: String => Unit = (_ => ()),
                  givenLabels: Seq[SimpleTypeD] = Seq(),
-                 printLatex: Boolean = false): String = {
+                 printLatex: Boolean = false): (Vector[SimpleTypeD],String) = {
 
     xymbolyco.GraphViz.dfaView[Any,SimpleTypeD,Boolean](rte.toDfa(true),
                                                         title, abbrev, label, showSink,

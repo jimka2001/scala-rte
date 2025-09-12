@@ -7,32 +7,43 @@ import adjuvant.GraphViz.{multiLineString, runDot}
 object GraphViz {
   import java.io.{File, OutputStream}
   val fDummy = (_:String) => ()
-
+  val defaultTypeVector = Vector(SEmpty, STop)
   def rteView(rte: Rte,
               title: String = "",
-              dotFileCB: String => Unit = fDummy) = {
+              givenTypes: Vector[SimpleTypeD] = defaultTypeVector,
+              dotFileCB: String => Unit = fDummy): (Vector[SimpleTypeD], String) = {
 
-    val png = rteToPng(rte, title=title, dotFileCB = dotFileCB)
+    val (labels,png) = rteToPng(rte, title=title,
+                                givenTypes=givenTypes,
+                                dotFileCB = dotFileCB)
     openGraphicalFile(png)
+    (labels,png)
   }
 
   def rteToPng(rte: Rte,
                title: String,
                label:Option[String]=None,
-               dotFileCB: String => Unit = fDummy):String = {
+               givenTypes:Vector[SimpleTypeD] = defaultTypeVector,
+               dotFileCB: String => Unit = fDummy):(Vector[SimpleTypeD], String) = {
     def toPng(pathname: String,
-              title: String): String = {
+              title: String): Vector[SimpleTypeD] = {
       val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-      rteToDot(rte, stream, title)
+      val mergedTypes = rteToDot(rte, stream, title, givenTypes=givenTypes)
       stream.close()
       dotFileCB(pathname)
-      pathname
+      mergedTypes
     }
 
     runDot(title, label, toPng)
   }
 
-  val defaultTypeVector = Vector(SEmpty, STop)
+
+
+  // returns a vector of type designators (each of tyep SimpleTypeD).
+  //    this return value is useful in case the caller wants to make
+  //    another call to rteToDot making sure the same t0, t1, t2 assignment
+  //    is made to each type.  This helps to compare two different
+  //    images, so the same type is notated the same way.
   def rteToDot(rte:Rte,
                stream: OutputStream,
                title: String,

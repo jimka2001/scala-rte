@@ -37,17 +37,18 @@ object GraphViz {
                          showSink:Boolean=false,
                          dotFileCB:String=>Unit=(_=>()),
                          givenLabels:Seq[L]=Seq(),
-                         printLatex:Boolean=false): String = {
+                         printLatex:Boolean=false): (Vector[L],String) = {
     val extendedLabel = (label,dfa.labeler.graphicalText()) match {
       case (_, Seq()) => label
       case (None, strings) => Some(strings.mkString("\\l"))
       case (Some(str),strings) => Some(str + "\\l" + strings.mkString("\\l"))
     }
-    val png = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel,
+    val (v, png) = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel,
                        showSink=showSink, dotFileCB=dotFileCB,
                        givenLabels=givenLabels,
                        printLatex=printLatex)
     openGraphicalFile(png)
+    (v, png)
   }
 
   def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],
@@ -57,16 +58,18 @@ object GraphViz {
                           showSink:Boolean=true,
                           dotFileCB:String=>Unit= _=>(),
                           givenLabels:Seq[L]=Seq(),
-                          printLatex:Boolean=false): String = {
+                          printLatex:Boolean=false): (Vector[L],String) = {
     def toPng(pathname: String,
-              title: String): String = {
+              title: String): Vector[L] = {
       val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-      dfaToDot(dfa, stream, title, abbrev = abbrev,
-               showSink = showSink, givenLabels=givenLabels,
-               printLatex=printLatex)
+      val a = dfaToDot(dfa, stream, title,
+                       abbrev = abbrev,
+                       showSink = showSink,
+                       givenLabels=givenLabels,
+                       printLatex=printLatex)
       stream.close()
       dotFileCB(pathname)
-      pathname
+      a
     }
     runDot(title, label, toPng)
 
@@ -78,7 +81,7 @@ object GraphViz {
                           abbrev:Boolean,
                           showSink:Boolean,
                           givenLabels:Seq[L],
-                          printLatex:Boolean=false): Unit = {
+                          printLatex:Boolean=false): Vector[L] = {
     val qarr = dfa.Q.toArray
     val sinkStateIds = dfa.findSinkStateIds().filter(id => id != dfa.q0.id)
     val usedLabels: Set[L] = for {q <- dfa.Q
@@ -188,5 +191,7 @@ object GraphViz {
     }
 
     write("}\n")
+
+    orderedLabels.to(Vector)
   }
 }
