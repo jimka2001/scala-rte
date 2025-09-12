@@ -297,14 +297,15 @@ abstract class Rte {
 
   def linearize(): Vector[Rte] = {
     def bfs(done:Set[Rte], frontier:Vector[Rte], linear:Vector[Rte]):Vector[Rte] = {
-      val next_frontier = frontier.flatMap{r => r.children().filter{c => !done.contains(c)}}
+      // we have to call .distinct here because the same object might be
+      // a child of two different rtes in frontier.  e.g., And(Or(Sigma,X), Or(Sigma, Y))
+      val next_frontier = frontier.flatMap{r => r.children().filter{c => !done.contains(c)}}.distinct
       if (next_frontier.isEmpty)
         linear
       else
         bfs(done ++ next_frontier, next_frontier, linear ++ next_frontier)
-
     }
-    bfs(Set[Rte](), Vector[Rte](this), Vector[Rte](this))
+    bfs(Set[Rte](this), Vector[Rte](this), Vector[Rte](this))
   }
 }
 
