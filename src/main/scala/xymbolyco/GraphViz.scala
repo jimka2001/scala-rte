@@ -28,8 +28,6 @@ object GraphViz {
 
   import java.io.{File, OutputStream}
 
-
-
   def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E],
                          title:String="",
                          abbrev:Boolean=false,

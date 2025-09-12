@@ -8,14 +8,17 @@ object GraphViz {
   import java.io.{File, OutputStream}
   val fDummy = (_:String) => ()
   val defaultTypeVector = Vector(SEmpty, STop)
+
   def rteView(rte: Rte,
               title: String = "",
               givenTypes: Vector[SimpleTypeD] = defaultTypeVector,
-              dotFileCB: String => Unit = fDummy): (Vector[SimpleTypeD], String) = {
+              dotFileCB: String => Unit = fDummy,
+              habitation:Boolean = true): (Vector[SimpleTypeD], String) = {
 
     val (labels,png) = rteToPng(rte, title=title,
                                 givenTypes=givenTypes,
-                                dotFileCB = dotFileCB)
+                                dotFileCB = dotFileCB,
+                                habitation=habitation)
     openGraphicalFile(png)
     (labels,png)
   }
@@ -24,11 +27,12 @@ object GraphViz {
                title: String,
                label:Option[String]=None,
                givenTypes:Vector[SimpleTypeD] = defaultTypeVector,
-               dotFileCB: String => Unit = fDummy):(Vector[SimpleTypeD], String) = {
+               dotFileCB: String => Unit = fDummy,
+               habitation: Boolean = true):(Vector[SimpleTypeD], String) = {
     def toPng(pathname: String,
               title: String): Vector[SimpleTypeD] = {
       val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-      val mergedTypes = rteToDot(rte, stream, title, givenTypes=givenTypes)
+      val mergedTypes = rteToDot(rte, stream, title, givenTypes=givenTypes, habitation=habitation)
       stream.close()
       dotFileCB(pathname)
       mergedTypes
@@ -44,11 +48,18 @@ object GraphViz {
   //    another call to rteToDot making sure the same t0, t1, t2 assignment
   //    is made to each type.  This helps to compare two different
   //    images, so the same type is notated the same way.
+  // `habitation` controls whether the AST is colorized into 4 cases
+  //    empty/vacuous = red
+  //    universe = blue (equiv to Sigma *)
+  //    inhabited = green
+  //    dont-know = orange
   def rteToDot(rte:Rte,
                stream: OutputStream,
                title: String,
                abbrev:Boolean = true,
-               givenTypes: Vector[SimpleTypeD] = defaultTypeVector):Vector[SimpleTypeD] = {
+               givenTypes: Vector[SimpleTypeD] = defaultTypeVector,
+               habitation: Boolean = true):Vector[SimpleTypeD] = {
+
     def write(str: String): Unit = {
       for {c <- str} {
         stream.write(c.toByte)
@@ -88,7 +99,24 @@ object GraphViz {
     }
     for { (r,idx) <- linear
           label = nodeLabel(r)
-          } write(s"""R${idx} [label="${label}"]\n""")
+          } {
+      write(s"""R${idx} [label="${label}"""")
+      if (habitation) {
+        write(", style=filled, fillcolor=")
+        if (Not(r).toDfa(true).inhabited() == Some(false))
+          write("skyblue")
+        else
+          r.toDfa(true).inhabited() match {
+            // maybe
+            case None => write("orange")
+            // inhabited
+            case Some(true) => write("lightgreen")
+            // empty
+            case Some(false) => write("lightcoral")
+          }
+      }
+      write(s"""]\n""")
+    }
     for { (parent,idx) <- linear
           child <- parent.children()
           child_index = nodemap(child)

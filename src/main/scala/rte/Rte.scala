@@ -23,7 +23,6 @@ package rte
 
 import genus._
 import adjuvant.Adjuvant._
-import genus.RandomType.interestingTypes
 import genus.Types._
 import xymbolyco.{Indeterminate, Satisfiable, Unsatisfiable}
 
@@ -546,8 +545,9 @@ object Rte {
 
   def rteViewAst(rte:Rte,
                  title: String = "",
-                 dotFileCB: String => Unit = (_ => ())):(Vector[SimpleTypeD], String) = {
-    GraphViz.rteView(rte, title=title, dotFileCB=dotFileCB)
+                 dotFileCB: String => Unit = (_ => ()),
+                 habitation:Boolean=true):(Vector[SimpleTypeD], String) = {
+    GraphViz.rteView(rte, title=title, dotFileCB=println, habitation=true)
   }
 
   def rteViewDfa(rte: Rte,
@@ -567,7 +567,7 @@ object Rte {
   def main(argv:Array[String]):Unit = {
     val rte = randomTotallyBalancedRte(0.75F, 5)
     rteViewDfa(rte, "dfa-balanced")
-    rteViewAst(rte, "ast-balanced")
+    rteViewAst(rte, title="ast-balanced", habitation=true)
   }
 }
 
