@@ -395,4 +395,32 @@ object Adjuvant {
   def randElement[A](items:Seq[A]):A = {
     items(random.nextInt(items.length))
   }
+
+  // pairs is a list of pairs (prob, thunk)
+  //     where 0 <= prob < 1.0
+  // randCase chooses a random number d, between 0.0 and 1.0,
+  // then choses one of the pairs, such that prob indicates the
+  // likelihood of choosing that pair;
+  // then calls the thunk and returns its return value.
+  // e.g., pairs = List((0.25, () => "a"),
+  //                    (0.33, () => "b"),
+  //                    (0.10, () => "c"))
+  // There are 4 possible pairs, the first will be chosen with 25% likelihood,
+  // the second with 33% likelihood, the third with 10%.
+  // If none of these three is selected, the default will be chosen.
+  def randCase[A](default:A, pairs:List[(Double,()=>A)]) = {
+    val d = random.nextDouble()
+    assert( pairs.size > 0)
+    def loop(total:Double, pairs:List[(Double,()=>A)]):A = {
+      pairs match {
+        case Nil =>
+          default
+        case (prob, f)::_ if (d < total + prob) =>
+          f()
+        case (prob, _)::rest =>
+          loop(total + prob, rest)
+      }
+    }
+    loop(0.0, pairs)
+  }
 }
