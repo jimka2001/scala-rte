@@ -548,8 +548,9 @@ object Rte {
   def rteViewAst(rte:Rte,
                  title: String = "",
                  dotFileCB: String => Unit = (_ => ())) = {
-
+    GraphViz.rteView(rte, title, dotFileCB=println)
   }
+
   def rteViewDfa(rte: Rte,
                  title: String = "",
                  abbrev: Boolean = false,
@@ -565,8 +566,9 @@ object Rte {
   }
 
   def main(argv:Array[String]):Unit = {
-    val rte = randomTotallyBalancedRte(0.5F, 4)
-    rteViewDfa(rte, "balanced")
+    val rte = randomTotallyBalancedRte(0.75F, 5)
+    rteViewDfa(rte, "dfa-balanced")
+    rteViewAst(rte, "ast-balanced")
   }
 }
 
