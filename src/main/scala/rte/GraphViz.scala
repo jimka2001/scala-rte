@@ -104,15 +104,15 @@ object GraphViz {
       if (habitation) {
         write(", style=filled, fillcolor=")
         if (Not(r).toDfa(true).inhabited() == Some(false))
-          write("skyblue")
+          write("skyblue, shape=egg, orientation=180")
         else
           r.toDfa(true).inhabited() match {
             // maybe
-            case None => write("orange")
+            case None => write("orange, shape=Mcircle")
             // inhabited
-            case Some(true) => write("lightgreen")
+            case Some(true) => write("lightgreen, shape=rect")
             // empty
-            case Some(false) => write("lightcoral")
+            case Some(false) => write("lightcoral, shape=egg")
           }
       }
       write(s"""]\n""")

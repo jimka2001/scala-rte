@@ -517,9 +517,9 @@ object Rte {
     def tree012ToRte(tree:Tree012):Rte = {
       tree match {
         case Tree012Leaf() => randCase(EmptySet,
-                                       List((0.50, () => Singleton(RandomType.randomType(0))),
-                                            (0.25, () => Sigma),
-                                            (0.25, () => EmptySeq)))
+                                       List((0.90, () => Singleton(RandomType.randomType(0))),
+                                            (0.05, () => Sigma),
+                                            (0.05, () => EmptySeq)))
         case Tree012Unary(_, child) =>
           // Star, Not
           randElement(Seq((t) => Star(t),
@@ -565,9 +565,14 @@ object Rte {
   }
 
   def main(argv:Array[String]):Unit = {
-    val rte = randomTotallyBalancedRte(0.75F, 5)
-    rteViewDfa(rte, "dfa-balanced")
-    rteViewAst(rte, title="ast-balanced", habitation=true)
+    val rte1 = randomTotallyBalancedRte(0.75F, 6)
+    rteViewDfa(rte1, "dfa-balanced")
+    rteViewAst(rte1, title="ast-balanced")
+
+    val rte2 = randomRte(6)
+    rteViewDfa(rte2, "dfa-classic")
+    rteViewAst(rte2, title="ast-classic")
+
   }
 }
 
