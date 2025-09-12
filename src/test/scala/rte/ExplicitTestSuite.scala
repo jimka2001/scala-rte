@@ -26,7 +26,7 @@ import adjuvant.Adjuvant.{eql, fixedPoint}
 import genus._
 import rte.RteImplicits._
 import genus.GenusImplicits._
-import rte.Rte.rteView
+import rte.Rte.rteViewDfa
 import rte.Sigma.toDfa
 import xymbolyco.GraphViz.dfaView
 import xymbolyco.{Dfa, GraphViz}
@@ -93,7 +93,7 @@ class ExplicitTestSuite extends AdjFunSuite {
     assert(None == rte4.simulate(42, List(1, "a", "b", "c")))
 
     val rte5 = !rte1 & rte2
-    rteView(rte5, "title rte5")
+    rteViewDfa(rte5, "title rte5")
     assert(Some(42) == rte5.simulate(42, List(1, "a", 2, 3, 4, 5)))
     assert(None == rte5.simulate(42, List(1, "a", 2, 3, 4, 5, false)))
 

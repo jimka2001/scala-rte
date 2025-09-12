@@ -528,14 +528,14 @@ object Rte {
 
   }
 
-  def rteView(rte: Rte,
-              title: String = "",
-              abbrev: Boolean = false,
-              label: Option[String] = None,
-              showSink: Boolean = true,
-              dotFileCB: String => Unit = (_ => ()),
-              givenLabels: Seq[SimpleTypeD] = Seq(),
-              printLatex: Boolean = false): String = {
+  def rteViewDfa(rte: Rte,
+                 title: String = "",
+                 abbrev: Boolean = false,
+                 label: Option[String] = None,
+                 showSink: Boolean = true,
+                 dotFileCB: String => Unit = (_ => ()),
+                 givenLabels: Seq[SimpleTypeD] = Seq(),
+                 printLatex: Boolean = false): String = {
 
     xymbolyco.GraphViz.dfaView[Any,SimpleTypeD,Boolean](rte.toDfa(true),
                                                         title, abbrev, label, showSink,
@@ -544,7 +544,7 @@ object Rte {
 
   def main(argv:Array[String]):Unit = {
     val rte = randomTotallyBalancedRte(0.5F, 4)
-    rteView(rte, "balanced")
+    rteViewDfa(rte, "balanced")
   }
 }
 
