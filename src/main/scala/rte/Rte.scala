@@ -142,6 +142,8 @@ abstract class Rte {
                                    s"\n   r2=$r2")
                         }
                       })
+
+
   }
 
   def canonicalizeDebug(n: Int): Rte = {
@@ -292,6 +294,18 @@ abstract class Rte {
   }
 
   def children(): Vector[Rte]
+
+  def linearize(): Vector[Rte] = {
+    def bfs(done:Set[Rte], frontier:Vector[Rte], linear:Vector[Rte]):Vector[Rte] = {
+      val next_frontier = frontier.flatMap{r => r.children().filter{c => !done.contains(c)}}
+      if (next_frontier.isEmpty)
+        linear
+      else
+        bfs(done ++ next_frontier, next_frontier, linear ++ next_frontier)
+
+    }
+    bfs(Set[Rte](), Vector[Rte](this), Vector[Rte](this))
+  }
 }
 
 // abstract class for grouping subclasses of Rte which do not
