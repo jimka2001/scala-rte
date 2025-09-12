@@ -28,6 +28,8 @@ case class Not(operand:Rte) extends RteNode {
   override def toMachineReadable():String = "Not(" + operand.toMachineReadable() + ")"
   override def toString = "!" + operand.toString
 
+  def children():Vector[Rte] = Vector(operand)
+
   def nullable:Boolean = ! operand.nullable
   def firstTypes:Set[SimpleTypeD] = operand.firstTypes
 

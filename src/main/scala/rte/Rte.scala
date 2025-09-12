@@ -290,6 +290,8 @@ abstract class Rte {
   def search(test: Rte => Boolean): Option[Rte] = {
     Some(this).filter(test)
   }
+
+  def children(): Vector[Rte]
 }
 
 // abstract class for grouping subclasses of Rte which do not

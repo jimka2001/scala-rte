@@ -28,6 +28,7 @@ object Sigma extends RteTerminal {
   override def toMachineReadable():String = "Sigma"
   override def toDot():String = "Sigma"
 
+  def children():Vector[Rte] = Vector()
   def nullable:Boolean = false
   def firstTypes:Set[SimpleTypeD] = Set(STop)
   def inhabited:Option[Boolean] = Some(true)

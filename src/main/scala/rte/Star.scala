@@ -32,6 +32,7 @@ case class Star(operand:Rte) extends RteNode {
 
   def nullable: Boolean = true
 
+  def children():Vector[Rte] = Vector(operand)
   def firstTypes: Set[genus.SimpleTypeD] = operand.firstTypes
   def getStarCatOperands(rt: Rte): Seq[Rte] = {
     rt match {

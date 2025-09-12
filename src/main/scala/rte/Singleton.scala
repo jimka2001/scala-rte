@@ -31,7 +31,7 @@ case class Singleton(td:SimpleTypeD) extends RteTerminal {
   def nullable: Boolean = false
 
   def firstTypes: Set[SimpleTypeD] = Set(td)
-
+  def children():Vector[Rte] = Vector()
   def inhabited: Option[Boolean] = td.inhabited
   val flattenTypes = Rte.flattenSingletonTypes
   override def canonicalizeOnce: Rte = {

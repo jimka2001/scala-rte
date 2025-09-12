@@ -32,6 +32,8 @@ final case class Cat(operands: Seq[Rte]) extends RteNode {
   override def toDot(): String = operands.map(_.toDot()).mkString("Cat(", ",", ")")
   override def toMachineReadable(): String = operands.map(_.toMachineReadable()).mkString("Cat(", ",", ")")
 
+  def children():Vector[Rte] = operands.to(Vector)
+
   def create(operands: Seq[Rte]): Rte = Cat.createCat(operands)
 
 
