@@ -528,6 +528,11 @@ object Rte {
 
   }
 
+  def rteViewAst(rte:Rte,
+                 title: String = "",
+                 dotFileCB: String => Unit = (_ => ())) = {
+
+  }
   def rteViewDfa(rte: Rte,
                  title: String = "",
                  abbrev: Boolean = false,
