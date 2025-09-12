@@ -68,7 +68,7 @@ object GraphViz {
       rte match {
         case Star(_) => "*"
         case EmptySeq => "()"
-        case Sigma => "&#931;"
+        case Sigma => "&#931;" // Σ
         case Singleton(td) =>
           val idx = tds(td)
           s"t$idx"
