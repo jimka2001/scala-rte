@@ -392,7 +392,8 @@ object Adjuvant {
   }
 
   val random = new scala.util.Random
-  def randElement[A](items:Seq[A]):A = {
+
+  def randElement[A](items: Seq[A]): A = {
     items(random.nextInt(items.length))
   }
 
@@ -408,19 +409,49 @@ object Adjuvant {
   // There are 4 possible pairs, the first will be chosen with 25% likelihood,
   // the second with 33% likelihood, the third with 10%.
   // If none of these three is selected, the default will be chosen.
-  def randCase[A](default:A, pairs:List[(Double,()=>A)]) = {
+  def randCase[A](default: A, pairs: List[(Double, () => A)]) = {
     val d = random.nextDouble()
-    assert( pairs.size > 0)
-    def loop(total:Double, pairs:List[(Double,()=>A)]):A = {
+    assert(pairs.size > 0)
+
+    def loop(total: Double, pairs: List[(Double, () => A)]): A = {
       pairs match {
         case Nil =>
           default
-        case (prob, f)::_ if (d < total + prob) =>
+        case (prob, f) :: _ if (d < total + prob) =>
           f()
-        case (prob, _)::rest =>
+        case (prob, _) :: rest =>
           loop(total + prob, rest)
       }
     }
+
     loop(0.0, pairs)
+  }
+
+
+  // Thanks
+  // https://scastie.scala-lang.org/MLynxriyRsWmOkigA0TdQQ
+  def callWithTimeout[A](timeoutms:Int, task: ()=> A): Option[A] = {
+    import scala.util.Using
+    import scala.concurrent.duration._
+    import scala.concurrent._
+    import java.util.concurrent.CompletableFuture
+    import scala.jdk.FutureConverters._
+    import java.util.concurrent._
+
+    val executor = Executors.newSingleThreadExecutor()
+    val javaFuture = new FutureTask(() => {
+      Some(task())
+    })
+    executor.execute(javaFuture)
+    try {
+      javaFuture.get(timeoutms, TimeUnit.MILLISECONDS)
+    } catch {
+      case _: TimeoutException | _: InterruptedException |
+           _: CancellationException =>
+        None
+    } finally {
+      javaFuture.cancel(true)
+      executor.shutdown()
+    }
   }
 }
