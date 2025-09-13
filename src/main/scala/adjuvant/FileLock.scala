@@ -9,7 +9,7 @@ object FileLock {
   import java.util.UUID
   import scala.util.control.NonFatal
 
-  def callInBlock[A](lockFileName: String)(f: => A): A = {
+  def callInBlock[A](lockFileName: String)(f: ()=> A): A = {
     val lockFile = Paths.get(lockFileName)
     val lockKey  = UUID.randomUUID().toString
     val ms       = 500L
@@ -41,7 +41,7 @@ object FileLock {
       readSymlink() match {
         case Some(content) if content == lockKey =>
           try {
-            f
+            f()
           } finally {
             try Files.deleteIfExists(lockFile)
             catch { case NonFatal(_) => () }
