@@ -121,6 +121,7 @@ object GraphViz {
         write(s" [")
         write(s"label=\"$label\"")
         if(inhabited == None) {
+          // we draw indeterminate transitions as dashed lines
           write(s",style=dashed")
         }
         write(s"]")
