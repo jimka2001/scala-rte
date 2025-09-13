@@ -75,7 +75,7 @@ object Scalaio2025 {
   def main(argv: Array[String]): Unit = {
     val num_repetitions = 300
     for {r <- 0 to num_repetitions
-         depth <- 4 to 7} {
+         depth <- 4 to 8} {
       println(s"r=$r depth=$depth")
       writeCsvStatistic(depth, (n: Int) => randomTotallyBalancedRte(0.75F, n), balancedCsv)
       writeCsvStatistic(depth, (n: Int) => randomRte(n), classicCsv)
