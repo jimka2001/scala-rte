@@ -183,13 +183,13 @@ object Adjuvant {
 
   val simplifierUsed: mutable.Map[(String, String), Int] = mutable.Map()
 
-  // simplifiers *designates* a list of 0-ary functions.   Calling such a function
+  // `simplifiers` *designates* a list of 0-ary functions.   Calling such a function
   //   either returns `target` or something else.   We call all the functions
   //   in turn, as long as each returns `target`.  As soon as such a function
   //   returns something other than `target`, then that new value is returned
   //   from findSimplifier.  As a last resort, `target` is returned.
-  // simplifiers is actually a list of pairs (comment,function).  The function's
-  //   implement the semantics, which the comment's are used for debugging.
+  // `simplifiers` is actually a list of pairs (comment,function).  The function's
+  //   implement the semantics, which the comments are used for debugging.
   //   If verbose=true, then diagnostic messages will be printed to attempt
   //   to help the user understand which of the functions is the one which
   //   successfully simplifies the value.

@@ -51,7 +51,7 @@ object GnuPlot {
                                yLog: Boolean = false,
                                grid: Boolean = false,
                                // outputDirName     : String = "/tmp/",
-                               // outputFileBaseName is basename without the .pdf, .gnu, .png etc and without leading path
+                               // outputFileBaseName is basename without the .pdf, .gnu, .png etc. and without leading path
                                outputFileBaseName: String = "curves",
                                plotWith: String = "linespoints",
                                key: String = "horizontal bmargin",
@@ -172,7 +172,7 @@ object GnuPlot {
   //  gnuFileCB, if given, is a function which will be called given the name
   //      of the .gnu file, i.e., the file containing the gnuplot commands,
   //      before the .png file has been created.  This function may be used
-  //      to manipulate the file (add lines, delete lines, etc).   The function
+  //      to manipulate the file (add lines, delete lines, etc.).   The function
   //      is allowed to manipulate the file, but is expected to leave a file named
   //      the same in the same directory, which will be used by the system
   //      to create the .png file.
@@ -193,7 +193,7 @@ object GnuPlot {
                   yLog: Boolean = false,
                   grid: Boolean = false,
                   // outputDirName     : String = "/tmp/",
-                  // outputFileBaseName is basename without the .pdf, .gnu, .png etc and without leading path
+                  // outputFileBaseName is basename without the .pdf, .gnu, .png etc. and without leading path
                   outputFileBaseName: String = "curves",
                   plotWith: String = "linespoints",
                   key: String = "horizontal bmargin",

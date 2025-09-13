@@ -128,7 +128,7 @@ class ThompsonTestSuite  extends AdjFunSuite {
                              Seq(1, 2),
                              Seq((0, ti, 1),
                                  (0, ts, 2)))
-    // a new state (Int) has been added, but we don't which integer.
+    // a new state (Int) has been added, but we don't know which integer.
     //   we have to figure out which one it is
     val q = findAllStates(completed).diff(Set(0, 1, 2)).head
     assert(completed.toSet == Set((0, ti, 1),

@@ -149,7 +149,6 @@ object ReducePerf {
               // generate a per-fold plot of size/count
               // we must generate (text, List[x], List[y])
               // at each step in the iteration get the size, delta-size, count, and delta-count
-              //println(s"iteration=$iteration numLiteralsPerTerm=$numLiteralsPerTerm  text=$text")
               val (size, count) = getBddSizeCount
               collect((text, numLiteralsPerTerm, iteration, size, oldSize - size, count, oldCount - count))
               iteration = iteration + 1

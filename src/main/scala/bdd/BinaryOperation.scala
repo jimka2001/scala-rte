@@ -63,9 +63,6 @@ sealed abstract class BinaryOperation() {
           memoize(b1, b2, thunk)
         }
       case Some(hash) =>
-        //println(s"memoize: this=$this b1=$b1  b2=$b2  hash=$hash")
-        //if (hash.size > 0 && 0 == (hash.size % 100000))
-        //  println(s"$this  hash.size=${hash.size}")
         if (commutative) {
           (hash.get((b1, b2)), hash.get((b2, b1))) match {
             case (Some(bdd), _) => bdd

@@ -742,7 +742,7 @@ class GenusCanonicalize extends AdjFunSuite {
     assert(SOr(A, SAnd(SNot(A), B, X), Y).conversion11()
              == SOr(A,SAnd(B,X),Y))
 
-    // if rule does not apply, the it must return exactly the default
+    // if rule does not apply, then it must return exactly the default
     assert(SOr(A, B, C).conversion11() == SOr(A,B,C))
 
 
@@ -761,7 +761,7 @@ class GenusCanonicalize extends AdjFunSuite {
     assert(SAnd(A, SOr(SNot(A), B, X), Y).conversion11()
              == SAnd(A,SOr(B,X),Y))
 
-    // if rule does not apply, the it must return exactly the default
+    // if rule does not apply, then it must return exactly the default
     assert(SAnd(A, B, C).conversion11() == SAnd(A,B,C))
   }
   test("combo conversion9") {
@@ -957,7 +957,7 @@ class GenusCanonicalize extends AdjFunSuite {
         assert(SOr(X, Bsup, Y, Asub, Z).conversion10()
                  == SOr(X,Bsup,Y,Z))
 
-        // but be careful, if A < B and B < A we DO NOT want to remove both.
+        // but be careful, if A < B and B < A, we DO NOT want to remove both.
         assert((SOr(Z, SOr(X, Y), SOr(Y, X)).conversion10()
           == SOr(Z,SOr(Y,X)))
                  || (SOr(Z, SOr(X, Y), SOr(Y, X)).conversion10()

@@ -32,7 +32,7 @@ import scala.util.Random
 * This generator is currently parametered for size 25. If you want to use it for another size, follow the instructions in the findGeneratorParameter() function
 *
 * Implementation of a Boltzmann generator for Rte, according to this paper: https://algo.inria.fr/flajolet/Publications/DuFlLoSc04.pdf
-* A Boltzmann generator generates in linear time a Rte with size size in [(size - epsilon); (size + epsilon)]
+* A Boltzmann generator generates in linear time a Rte with size in [(size - epsilon); (size + epsilon)]
 */
 // FIXME: Refactor: And, Or and Cat share the same generator
 // FIXME: Refactor: Not and Star share the same generator
@@ -153,7 +153,7 @@ class RteBoltzmann(var size: Int, stdDepth: Int) {
     // print(z.value)
     // ```
     // For size 25. If you want to change the expected size, you can use the same script, and change the size variable AND NOTHING ELSE
-    // We make us of the paganini (https://github.com/maciej-bendkowski/paganini) python library to tune the parameter
+    // We make use of the paganini (https://github.com/maciej-bendkowski/paganini) python library to tune the parameter
     0.0773244464365775
   }
 }

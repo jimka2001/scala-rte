@@ -517,9 +517,9 @@ object Rte {
     def tree012ToRte(tree:Tree012):Rte = {
       tree match {
         case Tree012Leaf() => randCase(EmptySet,
-                                       List((0.50, () => Singleton(RandomType.randomType(0))),
-                                            (0.25, () => Sigma),
-                                            (0.25, () => EmptySeq)))
+                                       List((0.90, () => Singleton(RandomType.randomType(0))),
+                                            (0.05, () => Sigma),
+                                            (0.05, () => EmptySeq)))
         case Tree012Unary(_, child) =>
           // Star, Not
           randElement(Seq((t) => Star(t),
@@ -564,11 +564,6 @@ object Rte {
                                                         dotFileCB, givenLabels, printLatex)
   }
 
-  def main(argv:Array[String]):Unit = {
-    val rte = randomTotallyBalancedRte(0.75F, 5)
-    rteViewDfa(rte, "dfa-balanced")
-    rteViewAst(rte, title="ast-balanced", habitation=true)
-  }
 }
 
 class CannotComputeDerivative(val msg: String,

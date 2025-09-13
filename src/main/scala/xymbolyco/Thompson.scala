@@ -256,7 +256,7 @@ object Thompson {
   // use a graph-tracing algorithm to compute a new list of transitions
   // with all the reachable states in the cartesian product.  In the case that
   // a transition is provably unsatisfiable, the transition is omitted.
-  // However if the transition is provably satisfiable or dont-know, then
+  // However, if the transition is provably satisfiable or dont-know, then
   // the transition is included.
   def sxp(in1: Int, outs1: Seq[Int], transitions1: Seq[(Int, SimpleTypeD, Int)],
           in2: Int, outs2: Seq[Int], transitions2: Seq[(Int, SimpleTypeD, Int)],
@@ -344,7 +344,7 @@ object Thompson {
                                                           } collect(td))
       // The set tds of SimpleTypeD might contain some non-disjoint types.
       //   So we call compute the minimum disjoint type decomposition (mdtd)
-      //   and create one transition per type per type from this decomposition.
+      //   and create one transition per type from this decomposition.
       //   This is done in two steps.
       //   step 1. compute tr2 which is the list of (type,next-state) pairs.
       //   step 2. for { (td,pairs) ...} compute the seq of next states corresponding

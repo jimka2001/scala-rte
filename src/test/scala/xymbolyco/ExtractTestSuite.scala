@@ -24,7 +24,7 @@ package xymbolyco
 import rte._
 import genus._
 import Extract._
-import GraphViz._
+import xymbolyco.GraphViz._
 import adjuvant.AdjFunSuite
 import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.concurrent.TimeLimits.failAfter
@@ -64,11 +64,9 @@ class ExtractTestSuite  extends AdjFunSuite {
     val rt1 = rt.canonicalize
     val dfa1 = rt1.toDfa(exitValue=true)
     val extracted = dfaToRte[Boolean](dfa1,true)
-    //println(s"extracted=$extracted")
     if (extracted.contains(true)) {
       val rt2 = extracted(true)
-      //println(s"  rt2=$rt2")
-      // compute xor, should be emptyset    if rt1 is equivalent to rt2
+      // compute xor, should be empty set    if rt1 is equivalent to rt2
       val empty1 = Xor(rt1,rt2).canonicalize
       val empty_dfa = empty1.toDfa(true)
       val label_path = empty_dfa.vacuous() match {
@@ -90,7 +88,7 @@ class ExtractTestSuite  extends AdjFunSuite {
   }
 
   test("test_extract_rte") {
-    // test should fail, if cannot run within 60 seconds
+    // test should fail, if it cannot run within 60 seconds
     // perhaps need to adjust number of seconds
     val start = System.nanoTime()
     implicit val signaler: Signaler = ThreadSignaler

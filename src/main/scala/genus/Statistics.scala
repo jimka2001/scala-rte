@@ -67,7 +67,7 @@ object Statistics {
           "subtype DNF False" -> (m.getOrElse("subtype DNF False",0) + (if (s2.contains(false)) 1 else 0)),
           "subtype DNF Some" -> (m.getOrElse("subtype DNF Some",0) + (if (s2.nonEmpty) 1 else 0)),
           "subtype DNF None" -> (m.getOrElse("subtype DNF None",0) + (if (s2.isEmpty) 1 else 0)),
-          // how many were not computed a original but became computable after DNF
+          // how many were not computed originally but became computable after DNF
           "gained" -> (m.getOrElse("gained",0) + (if (s1.isEmpty && s2.nonEmpty) 1 else 0)),
           // how many lost computability after DNF
           "lost" -> (m.getOrElse("lost",0) + (if (s1.nonEmpty && s2.isEmpty) 1 else 0)))
