@@ -39,7 +39,7 @@ class AdjFunSuite extends AnyFunSuite {
 
       val start = System.nanoTime()
       println("[ starting " + testName
-                + " at " + LocalDateTime.now()
+                + " at : " + LocalDateTime.now()
                 + " total time: " + printTime(AdjFunSuite.elapsed()))
       var finished = false
       try{
