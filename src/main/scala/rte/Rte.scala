@@ -182,8 +182,10 @@ abstract class Rte {
         // if this code is being called from a unit test with a timeout
         // when we have to explicitly check for thread interrupt
         // if the assertion fails, we simply cause a failed unit test
+        if (Thread.currentThread().isInterrupted)
+          println(s"Thread interrupted in Extract.extractRte() while computing derivatives of $rt")
         assert(!Thread.currentThread().isInterrupted,
-               s"Thread interrupted in Extract.extractRte()")
+               "Thread interrupted in Extract.extractRte()")
       }
       wrts.map { case (td, (factors, disjoints)) => (td,
         // Here we call rt.derivative, but we pass along the correct-by-construction

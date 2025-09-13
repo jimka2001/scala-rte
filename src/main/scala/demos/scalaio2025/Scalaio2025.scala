@@ -1,8 +1,11 @@
 package demos.scalaio2025
 
+import adjuvant.Adjuvant.callWithTimeout
 import adjuvant.FileLock.callInBlock
+import genus.SimpleTypeD
 import rte.Rte
 import rte.Rte.{randomRte, randomTotallyBalancedRte, rteViewAst, rteViewDfa}
+import xymbolyco.Dfa
 
 import java.io.FileWriter
 import java.nio.file.Paths
@@ -58,18 +61,21 @@ object Scalaio2025 {
   def writeCsvStatistic(depth: Int, genRte: (Int => Rte), csvFileName: String): Unit = {
     val rte = genRte(depth)
     val actualSize = rte.linearize().size
-    val dfa = rte.toDfa(true)
-    val stateCount = dfa.Qids.size
-    val transitionCount = dfa.Q.map(q => q.transitions.size).sum
-    mergeFile(csvFileName)((outFile: FileWriter) => {
-      outFile.write(s"$depth,$actualSize,$stateCount,$transitionCount")
-    })
+    for {dfa <- callWithTimeout(depth * 2000,
+                                () => rte.toDfa(true),
+                                () => println(s"cancelling after ${depth*2000}ms depth=$depth, csv=$csvFileName"))} {
+      val stateCount = dfa.Qids.size
+      val transitionCount = dfa.Q.map(q => q.transitions.size).sum
+      mergeFile(csvFileName)((outFile: FileWriter) => {
+        outFile.write(s"$depth,$actualSize,$stateCount,$transitionCount")
+      })
+    }
   }
 
   def main(argv: Array[String]): Unit = {
     val num_repetitions = 300
     for {r <- 0 to num_repetitions
-         depth <- 4 to 6} {
+         depth <- 4 to 8} {
       println(s"r=$r depth=$depth")
       writeCsvStatistic(depth, (n: Int) => randomTotallyBalancedRte(0.75F, n), balancedCsv)
       writeCsvStatistic(depth, (n: Int) => randomRte(n), classicCsv)
