@@ -61,9 +61,9 @@ object Scalaio2025 {
   def writeCsvStatistic(depth: Int, genRte: (Int => Rte), csvFileName: String): Unit = {
     val rte = genRte(depth)
     val actualSize = rte.linearize().size
-    for {dfa <- callWithTimeout(5000,
+    for {dfa <- callWithTimeout(depth * 2000,
                                 () => rte.toDfa(true),
-                                () => println(s"cancelling depth=$depth, csv=$csvFileName"))} {
+                                () => println(s"cancelling after ${depth*2000}ms depth=$depth, csv=$csvFileName"))} {
       val stateCount = dfa.Qids.size
       val transitionCount = dfa.Q.map(q => q.transitions.size).sum
       mergeFile(csvFileName)((outFile: FileWriter) => {
@@ -75,7 +75,7 @@ object Scalaio2025 {
   def main(argv: Array[String]): Unit = {
     val num_repetitions = 300
     for {r <- 0 to num_repetitions
-         depth <- 4 to 6} {
+         depth <- 4 to 7} {
       println(s"r=$r depth=$depth")
       writeCsvStatistic(depth, (n: Int) => randomTotallyBalancedRte(0.75F, n), balancedCsv)
       writeCsvStatistic(depth, (n: Int) => randomRte(n), classicCsv)
