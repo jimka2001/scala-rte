@@ -1,12 +1,15 @@
 package demos.scalaio2025
 
 import adjuvant.FileLock.callInBlock
+import genus.SimpleTypeD
 import rte.Rte
 import rte.Rte.{randomRte, randomTotallyBalancedRte, rteViewAst, rteViewDfa}
+import xymbolyco.Dfa
 
 import java.io.FileWriter
 import java.nio.file.Paths
 import java.util.UUID
+
 import scala.sys.process.stringSeqToProcess
 
 object Scalaio2025 {
@@ -56,14 +59,25 @@ object Scalaio2025 {
   // write an entry to the csv file so we can plot later
 
   def writeCsvStatistic(depth: Int, genRte: (Int => Rte), csvFileName: String): Unit = {
+    import scala.concurrent.{ Future, ExecutionContext, Await, TimeoutException }
+    import ExecutionContext.Implicits.global
+    import scala.concurrent.duration._
     val rte = genRte(depth)
     val actualSize = rte.linearize().size
-    val dfa = rte.toDfa(true)
-    val stateCount = dfa.Qids.size
-    val transitionCount = dfa.Q.map(q => q.transitions.size).sum
-    mergeFile(csvFileName)((outFile: FileWriter) => {
-      outFile.write(s"$depth,$actualSize,$stateCount,$transitionCount")
-    })
+    val fdfa = Future(rte.toDfa(true))
+
+    try {
+      val dfa: Dfa[Any, SimpleTypeD, Boolean] = Await.result(fdfa, 5.second)
+
+      val stateCount = dfa.Qids.size
+      val transitionCount = dfa.Q.map(q => q.transitions.size).sum
+      mergeFile(csvFileName)((outFile: FileWriter) => {
+        outFile.write(s"$depth,$actualSize,$stateCount,$transitionCount")
+      })
+    } catch {
+      case _: TimeoutException =>
+        fdfa.cancel(true)
+    }
   }
 
   def main(argv: Array[String]): Unit = {
