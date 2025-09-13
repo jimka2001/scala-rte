@@ -24,7 +24,7 @@ package xymbolyco
 import rte._
 import genus._
 import Extract._
-import GraphViz._
+import xymbolyco.GraphViz._
 import adjuvant.AdjFunSuite
 import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.concurrent.TimeLimits.failAfter
