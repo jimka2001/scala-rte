@@ -564,16 +564,6 @@ object Rte {
                                                         dotFileCB, givenLabels, printLatex)
   }
 
-  def main(argv:Array[String]):Unit = {
-    val rte1 = randomTotallyBalancedRte(0.75F, 6)
-    rteViewDfa(rte1, "dfa-balanced")
-    rteViewAst(rte1, title="ast-balanced")
-
-    val rte2 = randomRte(6)
-    rteViewDfa(rte2, "dfa-classic")
-    rteViewAst(rte2, title="ast-classic")
-
-  }
 }
 
 class CannotComputeDerivative(val msg: String,
