@@ -61,7 +61,9 @@ object Scalaio2025 {
   def writeCsvStatistic(depth: Int, genRte: (Int => Rte), csvFileName: String): Unit = {
     val rte = genRte(depth)
     val actualSize = rte.linearize().size
-    for {dfa <- callWithTimeout(5000, () => rte.toDfa(true))} {
+    for {dfa <- callWithTimeout(5000,
+                                () => rte.toDfa(true),
+                                () => println(s"cancelling depth=$depth, csv=$csvFileName"))} {
       val stateCount = dfa.Qids.size
       val transitionCount = dfa.Q.map(q => q.transitions.size).sum
       mergeFile(csvFileName)((outFile: FileWriter) => {

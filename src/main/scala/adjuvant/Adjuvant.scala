@@ -430,7 +430,7 @@ object Adjuvant {
 
   // Thanks
   // https://scastie.scala-lang.org/MLynxriyRsWmOkigA0TdQQ
-  def callWithTimeout[A](timeoutms:Int, task: ()=> A): Option[A] = {
+  def callWithTimeout[A](timeoutms:Int, task: ()=> A, oncancel: ()=>Unit=()=>()): Option[A] = {
     import scala.util.Using
     import scala.concurrent.duration._
     import scala.concurrent._
@@ -448,6 +448,7 @@ object Adjuvant {
     } catch {
       case _: TimeoutException | _: InterruptedException |
            _: CancellationException =>
+        oncancel()
         None
     } finally {
       javaFuture.cancel(true)
