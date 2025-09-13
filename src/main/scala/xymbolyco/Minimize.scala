@@ -142,7 +142,7 @@ object Minimize {
 
     def refine(partition: PARTITION): PARTITION = {
       def phi(source: STATE, label: L): EQVCLASS = {
-        // find the element of partition, itself an equivalence class, which
+        // find the element of partition, itself an equivalence class,
         //   which contains the destination state of the transition
         //   whose source and label are given
         partition.find(_.contains(source.delta(label))).get

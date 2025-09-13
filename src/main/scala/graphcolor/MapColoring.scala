@@ -431,7 +431,7 @@ object MapColoring {
       Bdd.withNewBddHash {
         import java.lang.management._
 
-        // Thanks Jasper M for the following recipe.
+        // Thanks, Jasper M for the following recipe.
         // https://users.scala-lang.org/u/jasper-m
         // https://users.scala-lang.org/t/how-to-call-a-function-from-a-java-library/5722/2
         val beans: Array[GarbageCollectorMXBean] = ManagementFactory

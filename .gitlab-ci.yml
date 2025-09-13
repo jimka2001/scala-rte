@@ -6,7 +6,7 @@ stages:
 variables:
   build_docker: 'true'
 
-# to rebuild the docker image, you must change the docker/Dockerfile (add comment etc)
+# to rebuild the docker image, you must change the docker/Dockerfile (add comment etc.)
 docker-build:
   stage: docker
   image: docker

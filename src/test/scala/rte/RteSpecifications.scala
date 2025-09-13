@@ -53,7 +53,7 @@ object RteSpecifications {
     lazy val genCat = Cat(listRte: _*)
     lazy val genStar = Star(naiveGenRte(newDepth).sample.get)
 
-    // Choose between one of the 3 non terminal types
+    // Choose between one of the 3 non-terminal types
     Gen.frequency(
       2 -> Gen.lzy(genAnd),
       2 -> Gen.lzy(genOr),

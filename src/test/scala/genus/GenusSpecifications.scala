@@ -63,7 +63,7 @@ object GenusSpecifications {
      implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus(newDepth))
      lazy val listGenus = Gen.listOfN[SimpleTypeD](childrenNum, Arbitrary.arbitrary[SimpleTypeD](arbitraryGen)).sample.get
 
-    // Choose between one of the 3 non terminal types
+    // Choose between one of the 3 non-terminal types
     Gen.frequency(
       2 -> Gen.lzy(SAnd(listGenus: _*)),
       2 -> Gen.lzy(SOr(listGenus: _*)),

@@ -647,7 +647,7 @@ class AndTestSuite extends AdjFunSuite {
   }
   test("and conversion17b"){
     // if there is a Cat having no nullables,
-    //    then every cat must have that many non-nullables or
+    //    then every cat must have that many non-nullables
     //    or fewer plus a nullable
     val a = Singleton(SEql("a"))
     val b = Singleton(SEql("b"))

@@ -37,7 +37,7 @@ abstract class SimpleTypeD { // SimpleTypeD
   def toDot():String = toString
 
   // toLaTeX is intended to be a printed representation which is
-  //    easy to copy paste into a LaTeX file.
+  //    easy to copy and paste into a LaTeX file.
   def toLaTeX():String = "[LaTeX? " + toString + "]"
 
   def ||(t: SimpleTypeD): SimpleTypeD = SOr(this, t).canonicalize(nf = Some(Dnf))
@@ -169,7 +169,7 @@ abstract class SimpleTypeD { // SimpleTypeD
     }
       //   sub        super
     else (inhabited, t.inhabited) match {
-      // empty set is subset of every set even if we don't know know whether the superset is inhabited or not
+      // empty set is subset of every set even if we don't know whether the superset is inhabited or not
       case (Some(false),_) => Some(true)
       case (Some(true),Some(false)) => Some(false)
       case _ => None

@@ -101,7 +101,7 @@ class QmVec() {
   }
 
   // Call the given function, consume, on all the clauses in the hash.
-  // This function is called for side-effect only.
+  // This function is called for sideeffect only.
   def mapClauses(consume: ClauseAsList => Unit): Unit = {
     for {
       (_, lengthHash) <- hash
@@ -280,7 +280,7 @@ object QmVec {
     }
   }
 
-  // enforce that the clause in in absLess order.  E.g., (1 -2 3 -4)
+  // enforce that the clause in absLess order.  E.g., (1 -2 3 -4)
   def canonicalizeClause(clause: ClauseAsList): ClauseAsList = {
     clause.sortWith(absLess)
   }

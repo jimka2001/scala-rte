@@ -151,7 +151,7 @@ case class SAtomic(ct: Class[_]) extends STerminal {
               case (None, Some(true)) => None
               // super.isAssignableFrom(sub) means sub is subtype of super
               //   we ask where whether ct is a subtype of tp
-              //  i.e    this.ct subtype of s.ct
+              //  i.e.,    this.ct subtype of s.ct
               case (Some(true), Some(true)) => Some(tp.isAssignableFrom(ct))
               case _ => throw new Exception("impossible")
             }
@@ -261,7 +261,7 @@ object SAtomic {
   //   we assume that it is possible to create a class inheriting from both
   //   thus interfaces are never disjoint.
   //   However, if the world view is closed, then we only assume classes
-  //   exist which actually exist NOW, thus if there are not common
+  //   exist which actually exist NOW; thus if there are no common
   //   subclasses of two given classes, then we conclude the classes are
   //   disjoint.
   val worldView: DynamicVariable[WorldView] = new DynamicVariable[WorldView](ClosedWorldView)
@@ -346,7 +346,7 @@ object SAtomic {
 
   def existsCommonInstantiatableSubclass(c1: Class[_], c2: Class[_]): Boolean = {
     // use the reflections API to determine whether there is a common subclass
-    // which is instantiable, ie., not empty, not interface, not abstract.
+    // which is instantiable, i.e., not empty, not interface, not abstract.
     val subsC1 = instantiatableSubclasses(c1)
     lazy val subsC2 = instantiatableSubclasses(c2).toSet
 
