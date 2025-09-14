@@ -49,11 +49,15 @@ class AdjFunSuite extends AnyFunSuite {
       finally{
         val end = System.nanoTime()
         val endLocalTime = LocalDateTime.now()
-        if (finished)
+        if (finished) {
           println("] finished " + testName
                     + " at : " + endLocalTime
                     + " test time: " + printTime(end - start)
                     + " total time: " + printTime(AdjFunSuite.elapsed()))
+
+          println("current time = " + printTime(System.nanoTime()))
+          println("time started = " + printTime(AdjFunSuite.testsStarted))
+        }
         else
           println("] aborted "  + testName
                     + " at : " + endLocalTime + "" + printTime(end - start))
