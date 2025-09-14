@@ -67,11 +67,12 @@ class ExtractTestSuite  extends AdjFunSuite {
       dfa1 <- callWithTimeout(10 * 1000, () => rt1.toDfa(exitValue = true))
       extracted <- callWithTimeout(10 * 1000, () => dfaToRte[Boolean](dfa1, true))
       if extracted.contains(true)
-    } {
-      val rt2 = extracted(true)
+      rt2 = extracted(true)
       // compute xor, should be empty set    if rt1 is equivalent to rt2
-      val empty1 = Xor(rt1, rt2).canonicalize
-      val empty_dfa = empty1.toDfa(true)
+      empty1 = Xor(rt1, rt2).canonicalize
+      empty_dfa <- callWithTimeout[Dfa[Any, SimpleTypeD, Boolean]](10 * 1000, () => empty1.toDfa(true))
+    } {
+
       val label_path = empty_dfa.vacuous() match {
         case None => empty_dfa.findTrace(requireSatisfiable = false)
         case Some(false) => empty_dfa.findTrace(requireSatisfiable = true)
