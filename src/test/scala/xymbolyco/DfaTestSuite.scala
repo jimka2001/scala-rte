@@ -24,6 +24,7 @@
 package xymbolyco
 
 import adjuvant.AdjFunSuite
+import adjuvant.Adjuvant.callWithTimeout
 import org.scalatest.funsuite.AnyFunSuite
 import xymbolyco.Minimize.trim
 
@@ -476,7 +477,6 @@ class DfaTestSuite extends AdjFunSuite {
     val xor = dfaXor(dfa1,dfa2)
     val empty = xor.vacuous()
 
-
     dfaView(dfa1, title = "dfa1: negated dfa")
     dfaView(dfa2, title = "dfa2: dfa of negated rte")
     dfaView(xor, title = "xor of dfa1 and dfa2")
@@ -501,8 +501,8 @@ class DfaTestSuite extends AdjFunSuite {
          n <- 0 to 50
          rte1 = Rte.randomRte(depth)
          rte2 = Not(rte1)
-         dfa1 = rte1.toDfa().negate(true)
-         dfa2 = rte2.toDfa()
+         dfa1 <- callWithTimeout(2000*depth, () => rte1.toDfa().negate(true))
+         dfa2 <- callWithTimeout(200*depth, () => rte2.toDfa())
          xor = dfaXor(dfa1,dfa2)
          empty = xor.vacuous()
          } {

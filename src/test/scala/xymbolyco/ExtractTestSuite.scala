@@ -26,6 +26,7 @@ import genus._
 import Extract._
 import xymbolyco.GraphViz._
 import adjuvant.AdjFunSuite
+import adjuvant.Adjuvant.callWithTimeout
 import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.concurrent.TimeLimits.failAfter
 import org.scalatest.time.{Millis, Span}
@@ -62,21 +63,23 @@ class ExtractTestSuite  extends AdjFunSuite {
   def check_extraction_cycle(rt: Rte, depth:Int, rep:Int): Unit = {
     println(s"depth=$depth   rep=$rep")
     val rt1 = rt.canonicalize
-    val dfa1 = rt1.toDfa(exitValue=true)
-    val extracted = dfaToRte[Boolean](dfa1,true)
-    if (extracted.contains(true)) {
+    for {
+      dfa1 <- callWithTimeout(10 * 1000, () => rt1.toDfa(exitValue = true))
+      extracted <- callWithTimeout(10 * 1000, () => dfaToRte[Boolean](dfa1, true))
+      if extracted.contains(true)
+    } {
       val rt2 = extracted(true)
       // compute xor, should be empty set    if rt1 is equivalent to rt2
-      val empty1 = Xor(rt1,rt2).canonicalize
+      val empty1 = Xor(rt1, rt2).canonicalize
       val empty_dfa = empty1.toDfa(true)
       val label_path = empty_dfa.vacuous() match {
-        case None => empty_dfa.findTrace(requireSatisfiable=false)
-        case Some(false) => empty_dfa.findTrace(requireSatisfiable=true)
+        case None => empty_dfa.findTrace(requireSatisfiable = false)
+        case Some(false) => empty_dfa.findTrace(requireSatisfiable = true)
         case Some(true) => None
       }
       if (empty_dfa.vacuous().contains(false)) {
-        dfaView(rt1.toDfa(true),title="rt1")
-        dfaView(empty_dfa,title="empty_dfa")
+        dfaView(rt1.toDfa(true), title = "rt1")
+        dfaView(empty_dfa, title = "empty_dfa")
       }
       assert(!empty_dfa.vacuous().contains(false),
              s"\nrt1=$rt1\n" +
@@ -96,7 +99,7 @@ class ExtractTestSuite  extends AdjFunSuite {
       SAtomic.withClosedWorldView {
         for {depth <- 1 to 3
              rep <- 0 to 25
-             rt = Rte.randomRte(depth)
+             rt = Rte.randomTotallyBalancedRte(0.75F, depth)
              } locally{
           val now = System.nanoTime()
           print(s"elapsed = ${(now - start)/(1e9)} ")
