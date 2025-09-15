@@ -292,35 +292,45 @@ object SAtomic {
     }
   }
 
-  private val subclassCache = scala.collection.mutable.Map[Class[_], Seq[Class[_]]]()
+  private val subclassCache =
+    scala.collection.mutable.Map[Class[_], Seq[Class[_]]]()
 
   // The following code came from chatGPT
   // https://chatgpt.com/share/684a63ce-d610-800d-a20e-8fc8cdb4b768
-  def computeSubclassesOf(sup:Class[_]):Seq[Class[_]] = {
+  def computeSubclassesOf(sup: Class[_]): Seq[Class[_]] = {
     import io.github.classgraph.ClassGraph
     import scala.jdk.CollectionConverters._
+
     subclassCache.getOrElseUpdate(sup, {
       val scanResult = new ClassGraph()
         .enableClassInfo()
-        //.acceptPackages(sup.getPackage.getName)
         .scan()
 
-      val className = sup.getName
+      try {
+        val className    = sup.getName
+        val targetLoader = sup.getClassLoader
 
-      val classInfos =
-        if (sup.isInterface) {
-          val skippable = scanResult.getClassesImplementing(className).asScala
-          val extendingTraits = scanResult.getAllInterfaces.asScala.filter { iface =>
-            iface.getInterfaces.asScala.exists(_.getName == className)
-          }
-          (skippable ++ extendingTraits).distinct
-        } else {
-          scanResult.getSubclasses(className).asScala
-        }
+        val implementors: Seq[String] = scanResult.getClassesImplementing(className)
+          .asScala.map(_.getName).toSeq
 
-      classInfos.toSeq.map(_.loadClass())
+        val extendingTraits: Seq[String] = scanResult.getAllInterfaces.asScala.collect {
+          case iface if iface.getInterfaces.asScala.exists(_.getName == className) =>
+            iface.getName
+        }.toSeq
+
+        val classNames: Seq[String] =
+          (if (sup.isInterface) (implementors ++ extendingTraits) else
+            scanResult.getSubclasses(className).asScala.map(_.getName).toSeq
+            ).distinct
+
+        classNames.map(name => Class.forName(name, false, targetLoader))
+      } finally {
+        scanResult.close()
+      }
     })
   }
+
+
 
 
 
