@@ -302,36 +302,30 @@ object SAtomic {
     import scala.jdk.CollectionConverters._
 
     subclassCache.getOrElseUpdate(sup, {
-      val scanResult = new ClassGraph()
-        .enableClassInfo()
-        .scan()
+      val scanResult = new ClassGraph().enableClassInfo().scan()
 
       try {
-        val className    = sup.getName
-        val targetLoader = sup.getClassLoader
-
-        val implementors: Seq[String] = scanResult.getClassesImplementing(className)
-          .asScala.map(_.getName).toSeq
-
-        val extendingTraits: Seq[String] = scanResult.getAllInterfaces.asScala.collect {
-          case iface if iface.getInterfaces.asScala.exists(_.getName == className) =>
-            iface.getName
-        }.toSeq
+        val className = sup.getName
+        val loader    = Thread.currentThread.getContextClassLoader // use context loader
 
         val classNames: Seq[String] =
-          (if (sup.isInterface) (implementors ++ extendingTraits) else
+          if (sup.isInterface) {
+            val implementors = scanResult.getClassesImplementing(className).asScala.map(_.getName).toSeq
+            val extendingTraits = scanResult.getAllInterfaces.asScala.collect {
+              case iface if iface.getInterfaces.asScala.exists(_.getName == className) => iface.getName
+            }.toSeq
+            (implementors ++ extendingTraits).distinct
+          } else {
             scanResult.getSubclasses(className).asScala.map(_.getName).toSeq
-            ).distinct
+          }
 
-        classNames.map(name => Class.forName(name, false, targetLoader))
+        // Reload using context loader
+        classNames.map(name => Class.forName(name, false, loader))
       } finally {
         scanResult.close()
       }
     })
   }
-
-
-
 
 
   def instantiatableSubclasses(cl: Class[_]): Array[Class[_]] = {

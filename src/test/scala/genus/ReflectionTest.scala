@@ -62,11 +62,8 @@ class ReflectionTest extends AdjFunSuite {
   }
 
   test("computeSubclassesOf List"){
-    println(s"======== SUSPICIOUS TEST ===============")
     assert(computeSubclassesOf(classOf[List[Any]]).nonEmpty,
       s"Failed to compute subclasses of classOf[List[Any]]")
-    println(s"  subclasses = ${computeSubclassesOf(classOf[List[Any]])}")
-    println(s"  contains? ${List(1,2,3).getClass}")
     assert(computeSubclassesOf(classOf[List[Any]]).contains(List(1,2,3).getClass),
       s"List(1,2,3).getClass not in the subClasses of classOf[List[Any]]")
     assert(computeSubclassesOf(classOf[List[Any]]).contains(List.empty.getClass),
