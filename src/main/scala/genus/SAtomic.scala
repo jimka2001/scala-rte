@@ -300,27 +300,35 @@ object SAtomic {
   def computeSubclassesOf(sup: Class[_]): Seq[Class[_]] = {
     import io.github.classgraph.ClassGraph
     import scala.jdk.CollectionConverters._
+    import scala.util.Try
 
     subclassCache.getOrElseUpdate(sup, {
-      val scanResult = new ClassGraph().enableClassInfo().scan()
+      val scanResult = new ClassGraph()
+        .enableClassInfo()
+        .scan()
 
       try {
         val className = sup.getName
-        val loader    = Thread.currentThread.getContextClassLoader // use context loader
+        val loader = Thread.currentThread.getContextClassLoader
 
+        // Collect class names as strings first
         val classNames: Seq[String] =
           if (sup.isInterface) {
-            val implementors = scanResult.getClassesImplementing(className).asScala.map(_.getName).toSeq
+            val implementors = scanResult.getClassesImplementing(className)
+              .asScala.map(_.getName).toSeq
             val extendingTraits = scanResult.getAllInterfaces.asScala.collect {
-              case iface if iface.getInterfaces.asScala.exists(_.getName == className) => iface.getName
+              case iface if iface.getInterfaces.asScala.exists(_.getName == className) =>
+                iface.getName
             }.toSeq
             (implementors ++ extendingTraits).distinct
           } else {
-            scanResult.getSubclasses(className).asScala.map(_.getName).toSeq
+            scanResult.getSubclasses(className)
+              .asScala.map(_.getName).toSeq.distinct
           }
 
-        // Reload using context loader
-        classNames.map(name => Class.forName(name, false, loader))
+        // Attempt to load each class with the chosen loader, skip if unavailable
+        classNames.flatMap(name => Try(Class.forName(name, false, loader)).toOption)
+
       } finally {
         scanResult.close()
       }
