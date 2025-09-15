@@ -45,22 +45,14 @@ class AdjFunSuite extends AnyFunSuite {
         testFun
         finished = true
       }
-      finally{
+      finally {
         val endLocalTime = LocalDateTime.now()
-        if (finished) {
-          println("] finished " + testName
-                    + " at : " + endLocalTime
-            + " test time: " + Duration.between(start,endLocalTime)
-            + " total time: " + AdjFunSuite.elapsed())
-
-          println("current time = " + endLocalTime)
-          println("time started = " + AdjFunSuite.testsStartedTime)
-        }
-        else
-          println("] aborted "  + testName
-                    + " at : " + endLocalTime
-            + " test time: " + Duration.between(start,endLocalTime)
-            + " total time: " + AdjFunSuite.elapsed())
+        val status = if (finished) "finished" else "aborted"
+        println(s"] ${status} "
+                  + testName
+                  + " at : " + endLocalTime
+                  + " test time: " + Duration.between(start, endLocalTime)
+                  + " total time: " + AdjFunSuite.elapsed())
       }
     })(pos)
   }
