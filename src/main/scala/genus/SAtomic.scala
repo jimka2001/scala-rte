@@ -311,7 +311,7 @@ object SAtomic {
         if (sup.isInterface) {
           val skippable = scanResult.getClassesImplementing(className).asScala
           val extendingTraits = scanResult.getAllInterfaces.asScala.filter { iface =>
-            iface.getInterfaces.asScala.contains(className)
+            iface.getInterfaces.asScala.exists(_.getName == className)
           }
           (skippable ++ extendingTraits).distinct
         } else {
