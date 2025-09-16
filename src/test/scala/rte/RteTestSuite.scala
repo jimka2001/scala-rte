@@ -27,6 +27,7 @@ import adjuvant.Accumulators.withOutputToString
 import genus._
 import adjuvant.AdjFunSuite
 import RandomType.randomType
+import adjuvant.Adjuvant.callWithTimeout
 import genus.Types.mysteryType
 import xymbolyco.Dfa
 import xymbolyco.Extract.{dfaToRte, extractRte}
@@ -397,8 +398,8 @@ class RteTestSuite extends AdjFunSuite {
          rte1 = Rte.randomRte(depth)
          rte2 = Rte.randomRte(depth)
          rte3 = Rte.randomRte(depth)
-         dfa1 = Cat(rte1, Star(rte2), Not(rte2), rte3).toDfa(1)
-         dfa2 = Cat(rte2, Star(rte3), Not(rte3), rte1).toDfa(2)
+         dfa1 <- callWithTimeout(2000*depth, () => Cat(rte1, Star(rte2), Not(rte2), rte3).toDfa(1))
+         dfa2 <- callWithTimeout(2000*depth, () => Cat(rte2, Star(rte3), Not(rte3), rte1).toDfa(2))
          dfau = dfaUnion(dfa1, dfa2, arbitrate = arbitrate)
          } {
       println("======================")

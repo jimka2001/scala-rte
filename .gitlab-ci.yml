@@ -6,7 +6,7 @@ stages:
 variables:
   build_docker: 'true'
 
-# to rebuild the docker image, you must change the docker/Dockerfile (add comment etc)
+# to rebuild the docker image, you must change the docker/Dockerfile (add comment etc.)
 docker-build:
   stage: docker
   image: docker
@@ -23,6 +23,9 @@ docker-build:
 unit-scala:
   stage: test
   image: $CI_REGISTRY_IMAGE:latest
+  timeout: 2h
+  only: 
+    - master
   script: 
     - sbt sbtVersion
     - ./bin/auto-test-scala-on-push.csh

@@ -254,12 +254,12 @@ class TreeReduceSuite extends AdjFunSuite {
 object Reference {
   // This is the reference implementation of treeMapReduce.
   // This is in fact the code I would like to remove once it has been generalized as a type class.
-  // For the moment the code remains because it us used in the tests to assert the same results
+  // For the moment the code remains because it is used in the tests to assert the same results
   //   are computed.
   def treeMapReduce[A, B](objects: IterableOnce[A])(init: B)(seqOp: A => B, combOp: (B, B) => B): B = {
     // we have to assume that combOp is NOT commutative, so we have to be
     // careful and apply the arguments in the correct order.
-    // because the stack is storing items in *reverse* order, we have to reverse the
+    // because the stack is storing items in *reverse* order, we have to reverse
     // the arguments of combOp to have combOp(a2,a1) rather than combOp(a1,a2)
 
     @tailrec

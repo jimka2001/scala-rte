@@ -62,21 +62,23 @@ class ReflectionTest extends AdjFunSuite {
   }
 
   test("computeSubclassesOf List"){
-    assert(computeSubclassesOf(classOf[List[Any]]).nonEmpty)
-    assert(computeSubclassesOf(classOf[List[Any]]).contains(List(1,2,3).getClass))
-    assert(computeSubclassesOf(classOf[List[Any]]).contains(List.empty.getClass))
+    assert(computeSubclassesOf(classOf[List[Any]]).nonEmpty,
+      s"Failed to compute subclasses of classOf[List[Any]]")
+    assert(computeSubclassesOf(classOf[List[Any]]).contains(List(1,2,3).getClass),
+      s"List(1,2,3).getClass not in the subClasses of classOf[List[Any]]")
+    assert(computeSubclassesOf(classOf[List[Any]]).contains(List.empty.getClass),
+      s"List.empty.getClass not in subclasses of classOf[List[Any]]")
   }
 
-  test("computeSubclassesOf Number"){
-    assert(computeSubclassesOf(classOf[Number]).nonEmpty)
+  test("reflect.getSubTypesOf Number"){
+    assert(computeSubclassesOf(classOf[Number]).toArray.nonEmpty)
   }
 
   test("Number has instantiatable subclass"){
 
-    import genus.SAtomic.{existsInstantiatableSubclass,computeSubclassesOf}
+    import genus.SAtomic.existsInstantiatableSubclass
     assert(computeSubclassesOf(classOf[Number]).nonEmpty)
     assert(existsInstantiatableSubclass(classOf[Number]))
   }
-
 }
 

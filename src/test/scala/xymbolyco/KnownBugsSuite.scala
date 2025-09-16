@@ -29,7 +29,7 @@ import rte._
 
 // these 5 test cases contain RTEs which Minimised Brozozwski constructed DFAs present some undeterministic constructions
 // the obtained DFAs will not always be of the same size without anything in the code changing. the results are seemingly
-// random. However the obtained DFAs should be of the same size of the DFAs obtained by minimising the ones built
+// random. However, the obtained DFAs should be of the same size of the DFAs obtained by minimising the ones built
 // using the thompson algorithm. The tests should be rerun in their entirety should they be tested.
 
 class KnownBugsSuite extends AnyFunSuite {

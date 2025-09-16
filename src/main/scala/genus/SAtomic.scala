@@ -35,7 +35,7 @@ case class SAtomic(ct: Class[_]) extends STerminal {
   // syntax: SAtomic(classOf[Int])
   //if (ct != classOf[Nothing] && ! SAtomic.existsInstantiatableSubclass(ct))
   //  println(s"WARNING: SAtomic($ct) is equivalent to SEmpty")
-  val wv = SAtomic.getWorldView()
+  private val wv = SAtomic.getWorldView()
 
   def shortTypeName(): String = {
     val fullName = if (ct.getName.startsWith("java.lang."))
@@ -151,7 +151,7 @@ case class SAtomic(ct: Class[_]) extends STerminal {
               case (None, Some(true)) => None
               // super.isAssignableFrom(sub) means sub is subtype of super
               //   we ask where whether ct is a subtype of tp
-              //  i.e    this.ct subtype of s.ct
+              //  i.e.,    this.ct subtype of s.ct
               case (Some(true), Some(true)) => Some(tp.isAssignableFrom(ct))
               case _ => throw new Exception("impossible")
             }
@@ -261,7 +261,7 @@ object SAtomic {
   //   we assume that it is possible to create a class inheriting from both
   //   thus interfaces are never disjoint.
   //   However, if the world view is closed, then we only assume classes
-  //   exist which actually exist NOW, thus if there are not common
+  //   exist which actually exist NOW; thus if there are no common
   //   subclasses of two given classes, then we conclude the classes are
   //   disjoint.
   val worldView: DynamicVariable[WorldView] = new DynamicVariable[WorldView](ClosedWorldView)
@@ -292,36 +292,76 @@ object SAtomic {
     }
   }
 
-  private val subclassCache = scala.collection.mutable.Map[Class[_], Seq[Class[_]]]()
+  private val subclassCache =
+    scala.collection.mutable.Map[Class[_], Seq[Class[_]]]()
 
   // The following code came from chatGPT
   // https://chatgpt.com/share/684a63ce-d610-800d-a20e-8fc8cdb4b768
-  def computeSubclassesOf(sup:Class[_]):Seq[Class[_]] = {
+  //
+  // Computes all subclasses (or implementing classes, for interfaces/traits) of the given class `sup`.
+  //
+  // Notes / caveats:
+  // 1. Scala-specific considerations:
+  //    - Sealed classes/traits only allow subclasses within the same source file or package.
+  //    - Traits compile to interfaces + helper classes; detecting all implementors requires checking both.
+  //    - Many Scala collection classes (e.g., List) have concrete subclasses with compiler-generated names ($colon$colon, Nil$).
+  //
+  // 2. ClassLoaders:
+  //    - Two Class[_] objects with the same name may be unequal if loaded by different classloaders.
+  //    - To ensure equality and avoid ClassNotFoundException, all discovered classes are loaded using
+  //      the thread context classloader.
+  //
+  // 3. Runtime scanning:
+  //    - Uses ClassGraph to scan the classpath for all subclasses.
+  //    - Some classes may be discovered but not loadable in the chosen classloader; these are skipped.
+  //
+  // 4. Caching:
+  //    - Results are cached per superclass to avoid repeated expensive scans.
+  //
+  // Usage:
+  //    val subclasses = computeSubclassesOf(classOf[List[Any]])
+  //    // subclasses will include :: and Nil$, for example.
+  //
+  // Important:
+  //    - This method may not find all subclasses if they are not on the runtime classpath.
+  //    - Avoid relying on exact Class[_] equality across different classloaders; use this method’s cache to guarantee consistency.
+  def computeSubclassesOf(sup: Class[_]): Seq[Class[_]] = {
     import io.github.classgraph.ClassGraph
     import scala.jdk.CollectionConverters._
+    import scala.util.Try
+
     subclassCache.getOrElseUpdate(sup, {
       val scanResult = new ClassGraph()
         .enableClassInfo()
-        //.acceptPackages(sup.getPackage.getName)
         .scan()
 
-      val className = sup.getName
+      try {
+        val className = sup.getName
+        val loader = Thread.currentThread.getContextClassLoader
 
-      val classInfos =
-        if (sup.isInterface) {
-          val skippable = scanResult.getClassesImplementing(className).asScala
-          val extendingTraits = scanResult.getAllInterfaces.asScala.filter { iface =>
-            iface.getInterfaces.asScala.contains(className)
+        // Collect class names as strings first
+        val classNames: Seq[String] =
+          if (sup.isInterface) {
+            val implementors = scanResult.getClassesImplementing(className)
+              .asScala.map(_.getName).toSeq
+            val extendingTraits = scanResult.getAllInterfaces.asScala.collect {
+              case iface if iface.getInterfaces.asScala.exists(_.getName == className) =>
+                iface.getName
+            }.toSeq
+            (implementors ++ extendingTraits).distinct
+          } else {
+            scanResult.getSubclasses(className)
+              .asScala.map(_.getName).toSeq.distinct
           }
-          (skippable ++ extendingTraits).distinct
-        } else {
-          scanResult.getSubclasses(className).asScala
-        }
 
-      classInfos.toSeq.map(_.loadClass())
+        // Attempt to load each class with the chosen loader, skip if unavailable
+        classNames.flatMap(name => Try(Class.forName(name, false, loader)).toOption)
+
+      } finally {
+        scanResult.close()
+      }
     })
   }
-
 
 
   def instantiatableSubclasses(cl: Class[_]): Array[Class[_]] = {
@@ -346,7 +386,7 @@ object SAtomic {
 
   def existsCommonInstantiatableSubclass(c1: Class[_], c2: Class[_]): Boolean = {
     // use the reflections API to determine whether there is a common subclass
-    // which is instantiable, ie., not empty, not interface, not abstract.
+    // which is instantiable, i.e., not empty, not interface, not abstract.
     val subsC1 = instantiatableSubclasses(c1)
     lazy val subsC2 = instantiatableSubclasses(c2).toSet
 

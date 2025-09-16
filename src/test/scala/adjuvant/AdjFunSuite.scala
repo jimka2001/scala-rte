@@ -23,7 +23,7 @@ package adjuvant
 import adjuvant.Adjuvant.printTime
 import org.scalatest.funsuite.AnyFunSuite
 
-import java.time.Duration
+
 class AdjFunSuite extends AnyFunSuite {
   import org.scalactic.source
   import org.scalatest.Tag
@@ -35,39 +35,33 @@ class AdjFunSuite extends AnyFunSuite {
 
   override def test(testName: String, testTags: Tag*)(testFun: => Any /* Assertion */)(implicit pos: source.Position):Unit = {
     super.test(testName,testTags : _*)(locally{
-      import java.time.LocalDateTime
-
-      val start = System.nanoTime()
+      import java.time.{Duration, LocalDateTime}
+      val start = LocalDateTime.now()
       println("[ starting " + testName
-                + " at " + LocalDateTime.now()
-                + " total time: " + printTime(AdjFunSuite.elapsed()))
+                + " at : " + start
+                + " total time: " + AdjFunSuite.elapsed())
       var finished = false
       try{
         testFun
         finished = true
       }
-      finally{
-        val end = System.nanoTime()
+      finally {
         val endLocalTime = LocalDateTime.now()
-        if (finished)
-          println("] finished " + testName
-                    + " at : " + endLocalTime
-                    + " test time: " + printTime(end - start)
-                    + " total time: " + printTime(AdjFunSuite.elapsed()))
-        else
-          println("] aborted "  + testName
-                    + " at : " + endLocalTime + "" + printTime(end - start))
+        val status = if (finished) "finished" else "aborted"
+        println(s"] ${status} "
+                  + testName
+                  + " at : " + endLocalTime
+                  + " test time: " + Duration.between(start, endLocalTime)
+                  + " total time: " + AdjFunSuite.elapsed())
       }
     })(pos)
   }
 }
 
 object AdjFunSuite {
-  val testsStarted:Long = locally{
-    val nt = System.nanoTime()
-    println(s"AdjFunSuite companion object initializing at time= $nt")
-    nt
-  }
 
-  def elapsed():Long = System.nanoTime() - testsStarted
+  import java.time.{Duration, LocalDateTime}
+  val testsStartedTime: LocalDateTime = LocalDateTime.now()
+
+  def elapsed():Duration = Duration.between(testsStartedTime, LocalDateTime.now())
 }

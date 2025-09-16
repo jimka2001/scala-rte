@@ -19,15 +19,16 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package psug
+package demos.psug2023
 
+import adjuvant.GraphViz.multiLineString
 import genus._
 import rte.Rte.rteIfThenElse
-import rte.{Cat, _}
-import xymbolyco.GraphViz.{dfaView, multiLineString}
+import rte._
+import xymbolyco.GraphViz.dfaView
 
 
-object Psug {
+object Psug2023 {
   import rte.RteImplicits._
 
   import scala.language.implicitConversions

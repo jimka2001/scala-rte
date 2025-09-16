@@ -183,13 +183,13 @@ object Adjuvant {
 
   val simplifierUsed: mutable.Map[(String, String), Int] = mutable.Map()
 
-  // simplifiers *designates* a list of 0-ary functions.   Calling such a function
+  // `simplifiers` *designates* a list of 0-ary functions.   Calling such a function
   //   either returns `target` or something else.   We call all the functions
   //   in turn, as long as each returns `target`.  As soon as such a function
   //   returns something other than `target`, then that new value is returned
   //   from findSimplifier.  As a last resort, `target` is returned.
-  // simplifiers is actually a list of pairs (comment,function).  The function's
-  //   implement the semantics, which the comment's are used for debugging.
+  // `simplifiers` is actually a list of pairs (comment,function).  The function's
+  //   implement the semantics, which the comments are used for debugging.
   //   If verbose=true, then diagnostic messages will be printed to attempt
   //   to help the user understand which of the functions is the one which
   //   successfully simplifies the value.
@@ -382,12 +382,79 @@ object Adjuvant {
 
   // Given a sequence of strings designating files (or directories)
   //   find the first one in the sequence which corresponds to an existing
-  //   file or directory in the file system.  Otherwise the default
+  //   file or directory in the file system.  Otherwise, the default
   //   is returned.
   def existingFile(fNames: Seq[String], default: String): String = {
     import java.nio.file.{Files, Paths}
     fNames.find { fName =>
       Files.exists(Paths.get(fName))
     }.getOrElse(default)
+  }
+
+  val random = new scala.util.Random
+
+  def randElement[A](items: Seq[A]): A = {
+    items(random.nextInt(items.length))
+  }
+
+  // pairs is a list of pairs (prob, thunk)
+  //     where 0 <= prob < 1.0
+  // randCase chooses a random number d, between 0.0 and 1.0,
+  // then choses one of the pairs, such that prob indicates the
+  // likelihood of choosing that pair;
+  // then calls the thunk and returns its return value.
+  // e.g., pairs = List((0.25, () => "a"),
+  //                    (0.33, () => "b"),
+  //                    (0.10, () => "c"))
+  // There are 4 possible pairs, the first will be chosen with 25% likelihood,
+  // the second with 33% likelihood, the third with 10%.
+  // If none of these three is selected, the default will be chosen.
+  def randCase[A](default: A, pairs: List[(Double, () => A)]) = {
+    val d = random.nextDouble()
+    assert(pairs.size > 0)
+
+    def loop(total: Double, pairs: List[(Double, () => A)]): A = {
+      pairs match {
+        case Nil =>
+          default
+        case (prob, f) :: _ if (d < total + prob) =>
+          f()
+        case (prob, _) :: rest =>
+          loop(total + prob, rest)
+      }
+    }
+
+    loop(0.0, pairs)
+  }
+
+
+  // Thanks
+  // https://scastie.scala-lang.org/MLynxriyRsWmOkigA0TdQQ
+  def callWithTimeout[A](timeoutms:Int,
+                         task: ()=> A,
+                         oncancel: ()=>Unit=()=>()): Option[A] = {
+    import scala.util.Using
+    import scala.concurrent.duration._
+    import scala.concurrent._
+    import java.util.concurrent.CompletableFuture
+    import scala.jdk.FutureConverters._
+    import java.util.concurrent._
+
+    val executor = Executors.newSingleThreadExecutor()
+    val javaFuture = new FutureTask(() => {
+      Some(task())
+    })
+    executor.execute(javaFuture)
+    try {
+      javaFuture.get(timeoutms, TimeUnit.MILLISECONDS)
+    } catch {
+      case _: TimeoutException | _: InterruptedException |
+           _: CancellationException =>
+        oncancel()
+        None
+    } finally {
+      javaFuture.cancel(true)
+      executor.shutdown()
+    }
   }
 }

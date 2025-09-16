@@ -295,6 +295,14 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
     }
   }
 
+  def inhabited():Option[Boolean] = {
+    vacuous() match {
+      case Some(true) => Some(false)
+      case Some(false) => Some(true)
+      case None => None
+    }
+  }
+
   def findSinkStateIds():Set[Int] = {
     for{ q <- Q
          if q.isSinkState

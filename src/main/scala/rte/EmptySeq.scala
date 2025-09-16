@@ -28,6 +28,7 @@ object EmptySeq extends RteTerminal {
   override def toDot():String = "EmptySeq"
   override def toMachineReadable():String = "EmptySeq"
 
+  def children():Vector[Rte] = Vector()
   def nullable:Boolean = true
   def firstTypes:Set[SimpleTypeD] = Set.empty
   def inhabited:Option[Boolean] = Some(true)

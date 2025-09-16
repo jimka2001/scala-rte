@@ -22,30 +22,11 @@
 package xymbolyco
 
 import adjuvant.Adjuvant.openGraphicalFile
+import adjuvant.GraphViz.{multiLineString,runDot}
 
 object GraphViz {
 
   import java.io.{File, OutputStream}
-
-  def multiLineString(str:String,maxLine:Int=60):String = {
-    if (str.size <= maxLine)
-      str
-    else {
-     // start at column maxLine and count backwards for a delimiter
-      val delimeters = Seq(',',')')
-      val tab = "    "
-      (maxLine to 1 by -1).find(i => delimeters.contains(str(i))) match {
-        case Some(k) =>
-          val suffix = multiLineString(str.drop(k+1),maxLine)
-          if (suffix == "")
-            str
-          else
-            str.take(k + 1) + "\\l" + tab + suffix
-        case None =>
-          str
-      }
-    }
-  }
 
   def dfaView[Sigma,L,E](dfa: Dfa[Sigma,L,E],
                          title:String="",
@@ -54,17 +35,18 @@ object GraphViz {
                          showSink:Boolean=false,
                          dotFileCB:String=>Unit=(_=>()),
                          givenLabels:Seq[L]=Seq(),
-                         printLatex:Boolean=false): String = {
+                         printLatex:Boolean=false): (Vector[L],String) = {
     val extendedLabel = (label,dfa.labeler.graphicalText()) match {
       case (_, Seq()) => label
       case (None, strings) => Some(strings.mkString("\\l"))
       case (Some(str),strings) => Some(str + "\\l" + strings.mkString("\\l"))
     }
-    val png = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel,
+    val (v, png) = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel,
                        showSink=showSink, dotFileCB=dotFileCB,
                        givenLabels=givenLabels,
                        printLatex=printLatex)
     openGraphicalFile(png)
+    (v, png)
   }
 
   def dfaToPng[Sigma,L,E](dfa:Dfa[Sigma,L,E],
@@ -74,43 +56,21 @@ object GraphViz {
                           showSink:Boolean=true,
                           dotFileCB:String=>Unit= _=>(),
                           givenLabels:Seq[L]=Seq(),
-                          printLatex:Boolean=false): String = {
+                          printLatex:Boolean=false): (Vector[L],String) = {
     def toPng(pathname: String,
-              title: String): String = {
+              title: String): Vector[L] = {
       val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-      dfaToDot(dfa, stream, title, abbrev = abbrev,
-               showSink = showSink, givenLabels=givenLabels,
-               printLatex=printLatex)
+      val a = dfaToDot(dfa, stream, title,
+                       abbrev = abbrev,
+                       showSink = showSink,
+                       givenLabels=givenLabels,
+                       printLatex=printLatex)
       stream.close()
       dotFileCB(pathname)
-      pathname
+      a
     }
-    val prefix = if (title == "")
-      "dfa"
-    else
-      title
-    val png = File.createTempFile(prefix+"-", ".png")
-    val pngPath = png.getAbsolutePath
-    val dot = File.createTempFile(prefix+"-", ".dot")
-    val dotPath = dot.getAbsolutePath
-    val alt = File.createTempFile(prefix+"-", ".plain")
-    val altPath = alt.getAbsolutePath
-    val longTitle:String = label match {
-      case None => title
-      case Some(lab) => s"$title\\l-- $lab"
-    }
-    toPng(dotPath, longTitle)
-    locally {
-      import sys.process._
-      Seq("dot", "-Tplain", dotPath, "-o", altPath).! // write file containing coordinates
+    runDot(title, label, toPng)
 
-      val cmd = Seq("dot", "-Tpng", dotPath, "-o", pngPath)
-      //println(s"cmd = $cmd")
-      cmd.!
-    }
-    //png.deleteOnExit()
-    //dot.deleteOnExit()
-    pngPath
   }
 
   def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],
@@ -119,7 +79,7 @@ object GraphViz {
                           abbrev:Boolean,
                           showSink:Boolean,
                           givenLabels:Seq[L],
-                          printLatex:Boolean=false): Unit = {
+                          printLatex:Boolean=false): Vector[L] = {
     val qarr = dfa.Q.toArray
     val sinkStateIds = dfa.findSinkStateIds().filter(id => id != dfa.q0.id)
     val usedLabels: Set[L] = for {q <- dfa.Q
@@ -161,6 +121,7 @@ object GraphViz {
         write(s" [")
         write(s"label=\"$label\"")
         if(inhabited == None) {
+          // we draw indeterminate transitions as dashed lines
           write(s",style=dashed")
         }
         write(s"]")
@@ -229,5 +190,7 @@ object GraphViz {
     }
 
     write("}\n")
+
+    orderedLabels.to(Vector)
   }
 }

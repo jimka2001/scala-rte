@@ -29,6 +29,7 @@ import genus._
 abstract class Combination(val operands:Seq[Rte]) extends RteNode {
   val zero:Rte
   val one:Rte
+  def children():Vector[Rte] = operands.to(Vector)
   def create(operands: Seq[Rte]):Rte
   def createTypeD(operands: Seq[SimpleTypeD]):SimpleTypeD
   def createDual(operands: Seq[Rte]):Rte

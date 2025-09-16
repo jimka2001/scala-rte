@@ -44,7 +44,7 @@ case class SEql(a: (SimpleTypeD,Any)) extends SLiteral(Vector(a)) {
     a._2.toString
   }
   override def toDot(): String = {
-    a._2.toString
+    "=" + a._2.toString
   }
 
   override def typep(b: Any): Boolean = {

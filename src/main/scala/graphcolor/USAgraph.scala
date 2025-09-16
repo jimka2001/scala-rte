@@ -131,7 +131,7 @@ object USAgraph extends PoliticalMap[String] {
 
   checkUniMap(allStates, stateUniGraph)
 
-  // bi-directional graph so that if x is a member of stateBiGraph(y)
+  // bidirectional graph so that if x is a member of stateBiGraph(y)
   //   then y is ALSO a member of stateUniGraph(x)
   val stateBiGraph: Map[String, Set[String]] = uniMapToBiMap(allStates, stateUniGraph)
 
