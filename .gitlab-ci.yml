@@ -24,6 +24,8 @@ unit-scala:
   stage: test
   image: $CI_REGISTRY_IMAGE:latest
   timeout: 2h
+  only: 
+    - master
   script: 
     - sbt sbtVersion
     - ./bin/auto-test-scala-on-push.csh
