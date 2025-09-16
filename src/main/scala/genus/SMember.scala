@@ -36,7 +36,7 @@ case class SMember(override val xs: Vector[(SimpleTypeD,Any)]) extends SLiteral(
   }.mkString("SMember(", ", ", ")")
 
   override def toDot(): String = xs.map {
-    case (td: SAtomic, a: Any) => a.toString
+    case (_td: SAtomic, a: Any) => a.toString
     case (_, a: Any) => a.toString + " /* ??? */"
   }.mkString("SMember(", ", ", ")")
 

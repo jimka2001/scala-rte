@@ -35,7 +35,7 @@ case class SAtomic(ct: Class[_]) extends STerminal {
   // syntax: SAtomic(classOf[Int])
   //if (ct != classOf[Nothing] && ! SAtomic.existsInstantiatableSubclass(ct))
   //  println(s"WARNING: SAtomic($ct) is equivalent to SEmpty")
-  val wv = SAtomic.getWorldView()
+  private val wv = SAtomic.getWorldView()
 
   def shortTypeName(): String = {
     val fullName = if (ct.getName.startsWith("java.lang."))
