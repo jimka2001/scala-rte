@@ -268,7 +268,7 @@ object GenCsvNaive {
 
 object GenCsvClassicME {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.size == 0) 5 else argv(0).toInt)
+    val limit:Int = (if (argv.size == 0) 500 else argv(0).toInt)
     Scalaio2025.genCsvClassicME(limit)
   }
 }
