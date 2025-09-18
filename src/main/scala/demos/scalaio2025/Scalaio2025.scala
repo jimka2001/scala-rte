@@ -111,7 +111,8 @@ object Scalaio2025 {
     import scala.concurrent.{Await, Future}
     for {
       r <- 0 to num_repetitions
-      depth <- 4 to 8
+      m <- 4 to 8
+      depth <- m to 8
       futures = for {p <- List(0.25F, 0.50F, 0.75F, 0.90F)} yield Future {
         println(s"r=$r depth=$depth, percentage=$p")
         writeCsvStatistic(depth, (n: Int) => randomTotallyBalancedRte(0.75F, n), balancedCsv, Some(p))
@@ -138,7 +139,7 @@ object Scalaio2025 {
       // we will create one curve for each depth
       val alllines = fp.getLines()
         .map(line => line.split(",").to(Vector).take(4))
-        .map { case Vector(depth, node_count, state_count, transition_count) =>
+        .collect { case Vector(depth, node_count, state_count, transition_count) =>
           CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt)
         }
         .to(Vector)
@@ -149,7 +150,7 @@ object Scalaio2025 {
                         // map state count to number of lines with that count
                         state_count_to_dfa_count = cvslines
                           .groupBy(_.state_count)
-                          .map { case (state_count, cvslines) => (state_count, cvslines.size) }
+                          .collect { case (state_count, cvslines) => (state_count, cvslines.size) }
                         xys = for {(this_state_count, _) <- state_count_to_dfa_count.toList
                                    // compute percentage of cvslines which have state_count > this_state_count
                                    // 1st, how many cvslines have state_count > this_state_count
@@ -177,7 +178,7 @@ object Scalaio2025 {
 
       val tuples = fp.getLines()
         .map(line => line.split(",").to(Vector))
-        .map { case Vector(depth, node_count, state_count, transition_count, probability) =>
+        .collect { case Vector(depth, node_count, state_count, transition_count, probability) =>
           CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, probability.toFloat)
         }//.filter(_.node_count < 140)
         .to(Vector)
@@ -209,7 +210,7 @@ object Scalaio2025 {
 
       val tuples = fp.getLines()
         .map(line => line.split(",").to(Vector))
-        .map { case Vector(depth, node_count, state_count, transition_count) =>
+        .collect { case Vector(depth, node_count, state_count, transition_count) =>
           CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt)
         }
         .to(Vector)
@@ -231,7 +232,7 @@ object Scalaio2025 {
 
 object GenCsvBalanced {
   def main(argv: Array[String]): Unit = {
-    Scalaio2025.genCsvBalanced(400)
+    Scalaio2025.genCsvBalanced(10)
   }
 }
 
