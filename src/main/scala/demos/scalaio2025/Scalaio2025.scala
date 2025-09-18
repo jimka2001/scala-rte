@@ -132,7 +132,7 @@ object Scalaio2025 {
     import java.io.InputStream
     import scala.io.{BufferedSource, Source}
 
-    for {str <- Seq("balanced", "classic")
+    for {str <- Seq("balanced", "classic", "classicME")
          s = getClass.getResourceAsStream(s"/statistics/${str}.csv")
          fp = Source.createBufferedSource(s)
          } {
@@ -205,8 +205,8 @@ object Scalaio2025 {
                               plotWith = "points",
                               view = true)
     }
-    locally {
-      val s: InputStream = getClass.getResourceAsStream(s"/statistics/classic.csv")
+    for {str <- Seq("classic", "classicME")} {
+      val s: InputStream = getClass.getResourceAsStream(s"/statistics/${str}.csv")
       val fp = Source.createBufferedSource(s)
 
       val tuples = fp.getLines()
@@ -220,8 +220,8 @@ object Scalaio2025 {
                      state_counts = tuples.map(_.state_count)
                      average = state_counts.sum / state_counts.size.toDouble
                      } yield (node_count.toDouble, average))
-      val descr = Seq(("classic", xys.to(List).sortBy(_._1)))
-      gnuPlot(descr)(title = f"Average classic node count (${sample_count} samples)",
+      val descr = Seq((str, xys.to(List).sortBy(_._1)))
+      gnuPlot(descr)(title = f"Average ${str} node count (${sample_count} samples)",
                      xAxisLabel = "AST node count",
                      yAxisLabel = "DFA state count",
                      yLog = true,
