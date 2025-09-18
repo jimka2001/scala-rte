@@ -17,14 +17,13 @@ import scala.sys.process.stringSeqToProcess
 object Scalaio2025 {
 
   val statisticsResource: String = Paths.get("src/main/resources/statistics").toString + "/"
-  val lockFile:String = statisticsResource + "statistics.lockfile"
   val classicCsv:String = statisticsResource + "classic.csv"
   val classicMECsv:String = statisticsResource + "classicME.csv" // classic but maybe empty = true
   val balancedCsv:String = statisticsResource + "balanced.csv"
 
-  def withLock[A](f: () => A): A = {
+  def withLock[A](lockFile:String, f: () => A): A = {
     import adjuvant.FileLock.callInBlock
-    callInBlock(lockFile)(f)
+    callInBlock(lockFile + ".lock")(f)
   }
 
 
@@ -45,7 +44,7 @@ object Scalaio2025 {
     }
 
     // critical section: merge tmp1 with the CSV and update it atomically
-    withLock(() => {
+    withLock(csvFileName, () => {
       Seq("sort", "-t,", "-k1,4n", "-m", tmp1, csvFileName, "-o", tmp2).!
       Seq("mv", tmp2, csvFileName).!
     })
@@ -128,9 +127,7 @@ object Scalaio2025 {
 
   // make plot of y vs x where y = percentage of samples where number of state_counts > x
   def plotThreshold() = {
-
-    import java.io.InputStream
-    import scala.io.{BufferedSource, Source}
+    import scala.io.{Source}
 
     for {str <- Seq("balanced", "classic", "classicME")
          s = getClass.getResourceAsStream(s"/statistics/${str}.csv")
