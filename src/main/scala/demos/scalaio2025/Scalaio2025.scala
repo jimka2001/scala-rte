@@ -191,6 +191,7 @@ object Scalaio2025 {
                                                 xAxisLabel = "AST node count",
                                                 yAxisLabel = "DFA state count",
                                                 yLog = true,
+                                                grid = true,
                                                 plotWith = "points",
                                                 view = true)
                         } yield descr
@@ -199,6 +200,7 @@ object Scalaio2025 {
                               xAxisLabel = "AST node count",
                               yAxisLabel = "DFA state count",
                               yLog = true,
+                              grid = true,
                               plotWith = "points",
                               view = true)
     }
@@ -222,6 +224,7 @@ object Scalaio2025 {
                      xAxisLabel = "AST node count",
                      yAxisLabel = "DFA state count",
                      yLog = true,
+                     grid = true,
                      plotWith = "points",
                      view = true)
     }
