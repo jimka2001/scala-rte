@@ -109,7 +109,7 @@ object Scalaio2025 {
       for {m <- 4 to 8
            depth <- m to 8
            futures = for {p <- List(0.25F, 0.50F, 0.75F, 0.90F)} yield Future {
-             println(s"r=$r depth=$depth, percentage=$p")
+             println(s"r=$r m=$m depth=$depth, percentage=$p")
              writeCsvStatistic(depth, (n: Int) => randomTotallyBalancedRte(0.75F, n), balancedCsv, Some(p))
            }
            combined = Future.sequence(futures)
