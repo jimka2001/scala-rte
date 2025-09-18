@@ -1,13 +1,9 @@
 package demos.scalaio2025
 
 import adjuvant.Adjuvant.callWithTimeout
-import adjuvant.FileLock.callInBlock
 import adjuvant.GnuPlot.gnuPlot
-import genus.SimpleTypeD
 import rte.Random.{randomRte, randomTotallyBalancedRte}
 import rte.Rte
-import rte.Rte.{rteViewAst, rteViewDfa}
-import xymbolyco.Dfa
 
 import java.io.FileWriter
 import java.nio.file.Paths
@@ -32,8 +28,8 @@ object Scalaio2025 {
    * @param writeRecord function that writes one record into the given FileWriter
    */
   def mergeFile(csvFileName: String)(writeRecord: FileWriter => Unit): Unit = {
-    val tmp1 = statisticsResource + UUID.randomUUID().toString
-    val tmp2 = statisticsResource + UUID.randomUUID().toString
+    val tmp1 = statisticsResource + UUID.randomUUID().toString + "~"
+    val tmp2 = statisticsResource + UUID.randomUUID().toString + "~"
 
     // write one record into tmp1
     val outFile = new FileWriter(tmp1, true)
