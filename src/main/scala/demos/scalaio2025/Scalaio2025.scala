@@ -60,12 +60,13 @@ object Scalaio2025 {
   // record targetSize
   // write an entry to the csv file so we can plot later
 
-  def writeCsvStatistic(depth: Int, genRte: (Int => Rte), csvFileName: String, probability:Option[Float]): Unit = {
+  def writeCsvStatistic(depth: Int, genRte: (Int => Rte), csvFileName: String, probability: Option[Float]): Unit = {
     val rte = genRte(depth)
     val actualSize = rte.linearize().size
-    for {dfa <- callWithTimeout(depth * 2000,
+    val timeout = depth*4000
+    for {dfa <- callWithTimeout(timeout,
                                 () => rte.toDfa(true),
-                                () => println(s"cancelling after ${depth * 2000}ms depth=$depth, csv=$csvFileName"))} {
+                                () => println(s"cancelling after ${timeout}ms depth=$depth, csv=$csvFileName"))} {
       val stateCount = dfa.Qids.size
       val transitionCount = dfa.Q.map(q => q.transitions.size).sum
       mergeFile(csvFileName)((outFile: FileWriter) => {
@@ -79,7 +80,7 @@ object Scalaio2025 {
     }
   }
 
-  def genCsv1(num_repetitions:Int) = {
+  def genCsv1(num_repetitions: Int) = {
     for {r <- 0 to num_repetitions
          depth <- 4 to 8} {
       println(s"r=$r depth=$depth")
@@ -88,49 +89,145 @@ object Scalaio2025 {
     }
   }
 
-  def genCsvBalanced(num_repetitions:Int) = {
+  def genCsvClassic(num_repetitions: Int) = {
+    import scala.concurrent.duration._
+    import scala.concurrent.ExecutionContext.Implicits.global
+    import scala.concurrent.{Await, Future}
+    for {r <- 0 to num_repetitions
+         futures = (4 to 8).map((depth) => Future{
+           println(s"r=$r depth=$depth")
+           writeCsvStatistic(depth, (n: Int) => randomRte(n), classicCsv, None)
+         })
+         combined = Future.sequence(futures) } {
+      Await.result(combined, Duration.Inf)
+    }
+  }
+
+
+  def genCsvBalanced(num_repetitions: Int) = {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
     for {
       r <- 0 to num_repetitions
       depth <- 4 to 8
-
-    } {
-      val futures = for {p <- List(0.25F, 0.50F, 0.75F, 0.90F) } yield Future {
+      futures = for {p <- List(0.25F, 0.50F, 0.75F, 0.90F)} yield Future {
         println(s"r=$r depth=$depth, percentage=$p")
         writeCsvStatistic(depth, (n: Int) => randomTotallyBalancedRte(0.75F, n), balancedCsv, Some(p))
       }
-      val combined = Future.sequence(futures)
-      Await.result(combined,Duration.Inf)
+      combined = Future.sequence(futures)
+    } {
+      Await.result(combined, Duration.Inf)
     }
   }
 
-  def plotBalancedCsv() = {
+  case class CsvLine(depth: Int, node_count: Int, state_count: Int, transition_count: Int, probability: Float = 0.0F)
+
+  // make plot of y vs x where y = percentage of samples where number of state_counts > x
+  def plotThreshold() = {
+
     import java.io.InputStream
     import scala.io.{BufferedSource, Source}
-    val s: InputStream = getClass.getResourceAsStream(s"/statistics/balanced.csv")
-    val fp = Source.createBufferedSource(s)
 
-    val tuples = fp.getLines()
-      .map(line => line.split(",").to(Vector))
-      .map{case Vector(depth, node_count, state_count, transition_count, probability) =>
-        (depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, probability.toFloat) }
-      .to(Vector)
-    val descr = for { (percentage, tuples) <- tuples.groupBy(_._5)
-                      xys = for {(node_count, tuples) <- tuples.groupBy(_._2)
-                                 state_counts = tuples.map(_._3)
-                                 average = state_counts.sum / state_counts.size.toFloat
-                                 } yield (node_count.toDouble, average.toDouble)
-                      } yield (s"percentage=$percentage", xys.to(List).sortBy(_._1))
+    for {str <- Seq("balanced", "classic")
+         s = getClass.getResourceAsStream(s"/statistics/${str}.csv")
+         fp = Source.createBufferedSource(s)
+         } {
+      // build a map to associate a depth to all CvsLines of that depth
+      // we will create one curve for each depth
+      val alllines = fp.getLines()
+        .map(line => line.split(",").to(Vector).take(4))
+        .map { case Vector(depth, node_count, state_count, transition_count) =>
+          CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt)
+        }
+        .to(Vector)
+      val depthmap = alllines.groupBy(_.depth)
+      val curves = for {(depth, cvslines) <- depthmap
+                        num_per_depth = cvslines.size
+                        // map state count to Vector of lines with that count
+                        // map state count to number of lines with that count
+                        state_count_to_dfa_count = cvslines
+                          .groupBy(_.state_count)
+                          .map { case (state_count, cvslines) => (state_count, cvslines.size) }
+                        xys = for {(this_state_count, _) <- state_count_to_dfa_count.toList
+                                   // compute percentage of cvslines which have state_count > this_state_count
+                                   // 1st, how many cvslines have state_count > this_state_count
+                                   n = state_count_to_dfa_count.collect { case (state_count, count) if count <= this_state_count => count }.sum
+                                   } yield (this_state_count, 100.0 * n.toDouble / num_per_depth)
+                        } yield (s"depth=${depth}", xys.sortBy(_._1))
 
-    gnuPlot(descr.to(Seq))(title="balanced node count", view=true)
+      gnuPlot(curves.to(Seq))(title = s"Analysis of ${str} for ${alllines.size} Samples",
+                              xAxisLabel = "DFA state count",
+                              xLog = true,
+                              yAxisLabel = "Percentage dfa <= state count",
+                              view = true)
+    }
   }
+
+
+
+  def plotAverageCsv() = {
+    import java.io.InputStream
+    import scala.io.{BufferedSource, Source}
+    locally {
+      val s: InputStream = getClass.getResourceAsStream("/statistics/balanced.csv")
+      val fp = Source.createBufferedSource(s)
+
+      val tuples = fp.getLines()
+        .map(line => line.split(",").to(Vector))
+        .map { case Vector(depth, node_count, state_count, transition_count, probability) =>
+          CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, probability.toFloat)
+        }//.filter(_.node_count < 140)
+        .to(Vector)
+      val sample_count = tuples.size
+      val descr = for {(percentage, tuples) <- tuples.groupBy(_.probability)
+                       //if percentage == 0.25F
+                       xys = for {(node_count, tuples) <- tuples.groupBy(_.node_count)
+                                  state_counts = tuples.map(_.state_count)
+                                  average = state_counts.sum / state_counts.size.toDouble
+                                  } yield (node_count.toDouble, average)
+                       } yield (s"percentage=$percentage", xys.to(List).sortBy(_._1))
+
+      gnuPlot(descr.to(Seq))(title = s"Average balanced node count (${sample_count} samples)",
+                             xAxisLabel = "AST node count",
+                             yAxisLabel = "DFA state count",
+                             yLog = true,
+                             plotWith = "points",
+                             view = true)
+    }
+    locally {
+      val s: InputStream = getClass.getResourceAsStream(s"/statistics/classic.csv")
+      val fp = Source.createBufferedSource(s)
+
+      val tuples = fp.getLines()
+        .map(line => line.split(",").to(Vector))
+        .map { case Vector(depth, node_count, state_count, transition_count) =>
+          CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt)
+        }
+        .to(Vector)
+      val sample_count = tuples.size
+      val xys = (for {(node_count, tuples) <- tuples.groupBy(_.node_count)
+                     state_counts = tuples.map(_.state_count)
+                     average = state_counts.sum / state_counts.size.toDouble
+                     } yield (node_count.toDouble, average))
+      val descr = Seq(("classic", xys.to(List).sortBy(_._1)))
+      gnuPlot(descr)(title = f"Average classic node count (${sample_count} samples)",
+                     xAxisLabel = "AST node count",
+                     yAxisLabel = "DFA state count",
+                     yLog = true,
+                     plotWith = "points",
+                     view = true)
+    }
+  }
+
 
   def main(argv: Array[String]): Unit = {
     for (_ <- 0 to 5) {
-      genCsvBalanced(100)
-      plotBalancedCsv()
+      //genCsvBalanced(100)
+      // plotBalancedCsv()
     }
+    //plotAverageCsv()
+    //plotThreshold()
+    genCsvClassic(500)
   }
 }
