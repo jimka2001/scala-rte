@@ -17,9 +17,10 @@ import scala.sys.process.stringSeqToProcess
 object Scalaio2025 {
 
   val statisticsResource: String = Paths.get("src/main/resources/statistics").toString + "/"
-  val lockFile = statisticsResource + "statistics.lockfile"
-  val classicCsv = statisticsResource + "classic.csv"
-  val balancedCsv = statisticsResource + "balanced.csv"
+  val lockFile:String = statisticsResource + "statistics.lockfile"
+  val classicCsv:String = statisticsResource + "classic.csv"
+  val classicMECsv:String = statisticsResource + "classicME.csv" // classic but maybe empty = true
+  val balancedCsv:String = statisticsResource + "balanced.csv"
 
   def withLock[A](f: () => A): A = {
     import adjuvant.FileLock.callInBlock
@@ -81,8 +82,12 @@ object Scalaio2025 {
   }
 
 
+  def genCsvClassicME(num_repetitions: Int) = {
+    genCsvClassic(num_repetitions, avoidEmpty=false, csv=classicMECsv)
+  }
 
-  def genCsvClassic(num_repetitions: Int) = {
+
+  def genCsvClassic(num_repetitions: Int, avoidEmpty:Boolean=true,csv:String=classicCsv) = {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
@@ -90,7 +95,7 @@ object Scalaio2025 {
       for {m <- 4 to 7
            futures = (m to 8).map((depth) => Future {
              println(s"r=$r m=$m depth=$depth")
-             writeCsvStatistic(depth, (n: Int) => randomRte(n), classicCsv, None)
+             writeCsvStatistic(depth, (n: Int) => randomRte(n,avoidEmpty=avoidEmpty), csv, None)
            })
            combined = Future.sequence(futures)} {
         Await.result(combined, Duration.Inf)
@@ -237,6 +242,13 @@ object GenCsvClassic {
   def main(argv: Array[String]): Unit = {
     val limit:Int = (if (argv.size == 0) 500 else argv(0).toInt)
     Scalaio2025.genCsvClassic(limit)
+  }
+}
+
+object GenCsvClassicME {
+  def main(argv: Array[String]): Unit = {
+    val limit:Int = (if (argv.size == 0) 5 else argv(0).toInt)
+    Scalaio2025.genCsvClassicME(limit)
   }
 }
 
