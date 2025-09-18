@@ -2,7 +2,7 @@ package demos.scalaio2025
 
 import adjuvant.Adjuvant.callWithTimeout
 import adjuvant.GnuPlot.gnuPlot
-import rte.Random.{randomRte, randomTotallyBalancedRte}
+import rte.Random.{randomNaiveRte, randomRte, randomTotallyBalancedRte}
 import rte.Rte
 
 import java.io.FileWriter
@@ -13,6 +13,7 @@ import scala.sys.process.stringSeqToProcess
 object Scalaio2025 {
 
   val statisticsResource: String = Paths.get("src/main/resources/statistics").toString + "/"
+  val naiveCsv:String = statisticsResource + "naive.csv"
   val classicCsv:String = statisticsResource + "classic.csv"
   val classicMECsv:String = statisticsResource + "classicME.csv" // classic but maybe empty = true
   val balancedCsv:String = statisticsResource + "balanced.csv"
@@ -27,10 +28,10 @@ object Scalaio2025 {
    * @param csvFileName name of a CSV file in resources/statistics
    * @param writeRecord function that writes one record into the given FileWriter
    */
-  def mergeFile(csvFileName: String)(writeRecord: FileWriter => Unit): Unit = {
+  def mergeFile(csvFileName: String, prefix:String="")(writeRecord: FileWriter => Unit): Unit = {
     // create temporary files ending in ~ so that .gitignore will ignore them.
-    val tmp1 = statisticsResource + UUID.randomUUID().toString + "~"
-    val tmp2 = statisticsResource + UUID.randomUUID().toString + "~"
+    val tmp1 = statisticsResource + prefix + UUID.randomUUID().toString + "~"
+    val tmp2 = statisticsResource + prefix + UUID.randomUUID().toString + "~"
 
     // write one record into tmp1
     val outFile = new FileWriter(tmp1, true)
@@ -42,6 +43,7 @@ object Scalaio2025 {
 
     // critical section: merge tmp1 with the CSV and update it atomically
     withLock(csvFileName, () => {
+      Seq("touch", csvFileName).!
       Seq("sort", "-t,", "-k1,4n", "-m", tmp1, csvFileName, "-o", tmp2).!
       Seq("mv", tmp2, csvFileName).!
     })
@@ -81,6 +83,21 @@ object Scalaio2025 {
   def genCsvClassicME(num_repetitions: Int) = {
     genCsvClassic(num_repetitions, avoidEmpty=false, csv=classicMECsv)
   }
+
+  def genCsvNaive(num_repetitions: Int) = {
+    import scala.concurrent.duration._
+    import scala.concurrent.ExecutionContext.Implicits.global
+    import scala.concurrent.{Await, Future}
+    for {r <- 0 to num_repetitions} {
+      for {m <- 4 to 7
+           futures = (m to 8).map((depth) => Future {
+             println(s"r=$r m=$m depth=$depth")
+             writeCsvStatistic(depth, (n: Int) => randomNaiveRte(n), naiveCsv, None)
+           })
+           combined = Future.sequence(futures)} {
+        Await.result(combined, Duration.Inf)
+      }
+    }  }
 
 
   def genCsvClassic(num_repetitions: Int, avoidEmpty:Boolean=true,csv:String=classicCsv) = {
@@ -124,9 +141,9 @@ object Scalaio2025 {
 
   // make plot of y vs x where y = percentage of samples where number of state_counts > x
   def plotThreshold() = {
-    import scala.io.{Source}
+    import scala.io.Source
 
-    for {str <- Seq("balanced", "classic", "classicME")
+    for {str <- Seq("balanced", "classic", "classicME", "naive")
          s = getClass.getResourceAsStream(s"/statistics/${str}.csv")
          fp = Source.createBufferedSource(s)
          } {
@@ -201,7 +218,7 @@ object Scalaio2025 {
                               plotWith = "points",
                               view = true)
     }
-    for {str <- Seq("classic", "classicME")} {
+    for {str <- Seq("classic", "classicME", "naive")} {
       val s: InputStream = getClass.getResourceAsStream(s"/statistics/${str}.csv")
       val fp = Source.createBufferedSource(s)
 
@@ -239,6 +256,13 @@ object GenCsvClassic {
   def main(argv: Array[String]): Unit = {
     val limit:Int = (if (argv.size == 0) 500 else argv(0).toInt)
     Scalaio2025.genCsvClassic(limit)
+  }
+}
+
+object GenCsvNaive {
+  def main(argv: Array[String]): Unit = {
+    val limit:Int = (if (argv.size == 0) 5 else argv(0).toInt)
+    Scalaio2025.genCsvNaive(limit)
   }
 }
 
