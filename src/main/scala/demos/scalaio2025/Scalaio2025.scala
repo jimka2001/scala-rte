@@ -28,6 +28,7 @@ object Scalaio2025 {
    * @param writeRecord function that writes one record into the given FileWriter
    */
   def mergeFile(csvFileName: String)(writeRecord: FileWriter => Unit): Unit = {
+    // create temporary files ending in ~ so that .gitignore will ignore them.
     val tmp1 = statisticsResource + UUID.randomUUID().toString + "~"
     val tmp2 = statisticsResource + UUID.randomUUID().toString + "~"
 
