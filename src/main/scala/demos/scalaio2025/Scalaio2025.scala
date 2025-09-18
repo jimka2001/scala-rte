@@ -232,13 +232,15 @@ object Scalaio2025 {
 
 object GenCsvBalanced {
   def main(argv: Array[String]): Unit = {
-    Scalaio2025.genCsvBalanced(500)
+    val limit:Int = (if (argv.size == 0) 500 else argv(0).toInt)
+    Scalaio2025.genCsvBalanced(limit)
   }
 }
 
 object GenCsvClassic {
   def main(argv: Array[String]): Unit = {
-    Scalaio2025.genCsvClassic(500)
+    val limit:Int = (if (argv.size == 0) 500 else argv(0).toInt)
+    Scalaio2025.genCsvClassic(limit)
   }
 }
 
