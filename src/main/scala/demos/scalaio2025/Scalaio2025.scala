@@ -80,14 +80,7 @@ object Scalaio2025 {
     }
   }
 
-  def genCsv1(num_repetitions: Int) = {
-    for {r <- 0 to num_repetitions
-         depth <- 4 to 8} {
-      println(s"r=$r depth=$depth")
-      writeCsvStatistic(depth, (n: Int) => randomTotallyBalancedRte(0.75F, n), balancedCsv, Some(0.75F))
-      writeCsvStatistic(depth, (n: Int) => randomRte(n), classicCsv, None)
-    }
-  }
+
 
   def genCsvClassic(num_repetitions: Int) = {
     import scala.concurrent.duration._
