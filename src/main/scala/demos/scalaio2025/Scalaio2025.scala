@@ -93,16 +93,18 @@ object Scalaio2025 {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
-    for {r <- 0 to num_repetitions
-         m <- 4 to 7
-         futures = (m to 8).map((depth) => Future{
-           println(s"r=$r depth=$depth")
-           writeCsvStatistic(depth, (n: Int) => randomRte(n), classicCsv, None)
-         })
-         combined = Future.sequence(futures) } {
-      Await.result(combined, Duration.Inf)
+    for {r <- 0 to num_repetitions} {
+      for {m <- 4 to 7
+           futures = (m to 8).map((depth) => Future {
+             println(s"r=$r m=$m depth=$depth")
+             writeCsvStatistic(depth, (n: Int) => randomRte(n), classicCsv, None)
+           })
+           combined = Future.sequence(futures)} {
+        Await.result(combined, Duration.Inf)
+      }
     }
   }
+
 
 
   def genCsvBalanced(num_repetitions: Int) = {
@@ -110,16 +112,17 @@ object Scalaio2025 {
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
     for {
-      r <- 0 to num_repetitions
-      m <- 4 to 8
-      depth <- m to 8
-      futures = for {p <- List(0.25F, 0.50F, 0.75F, 0.90F)} yield Future {
-        println(s"r=$r depth=$depth, percentage=$p")
-        writeCsvStatistic(depth, (n: Int) => randomTotallyBalancedRte(0.75F, n), balancedCsv, Some(p))
+      r <- 0 to num_repetitions} {
+      for {m <- 4 to 8
+           depth <- m to 8
+           futures = for {p <- List(0.25F, 0.50F, 0.75F, 0.90F)} yield Future {
+             println(s"r=$r depth=$depth, percentage=$p")
+             writeCsvStatistic(depth, (n: Int) => randomTotallyBalancedRte(0.75F, n), balancedCsv, Some(p))
+           }
+           combined = Future.sequence(futures)
+           } {
+        Await.result(combined, Duration.Inf)
       }
-      combined = Future.sequence(futures)
-    } {
-      Await.result(combined, Duration.Inf)
     }
   }
 
