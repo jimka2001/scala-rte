@@ -232,7 +232,7 @@ object Scalaio2025 {
 
 object GenCsvBalanced {
   def main(argv: Array[String]): Unit = {
-    Scalaio2025.genCsvBalanced(10)
+    Scalaio2025.genCsvBalanced(500)
   }
 }
 
