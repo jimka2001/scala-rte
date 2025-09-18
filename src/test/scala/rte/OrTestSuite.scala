@@ -25,6 +25,7 @@ package rte
 import adjuvant.AdjFunSuite
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
+import rte.Random.randomRte
 import rte.RteImplicits._
 
 class OrTestSuite extends AdjFunSuite {
@@ -110,8 +111,8 @@ class OrTestSuite extends AdjFunSuite {
   test("canonicalize or b1") {
     for {depth <- 2 to 2
          _ <- 1 to num_random_tests
-         r1 = Rte.randomRte(depth)
-         r2 = Rte.randomRte(depth)
+         r1 = randomRte(depth)
+         r2 = randomRte(depth)
          } {
       try {
         Or(r1, r2).canonicalize
@@ -129,10 +130,10 @@ class OrTestSuite extends AdjFunSuite {
 
     for {depth <- 0 to 5
          _ <- 1 to num_random_tests
-         r1 = Rte.randomRte(depth)
-         r2 = Rte.randomRte(depth)
-         r3 = Rte.randomRte(depth)
-         r4 = Rte.randomRte(depth)
+         r1 = randomRte(depth)
+         r2 = randomRte(depth)
+         r3 = randomRte(depth)
+         r4 = randomRte(depth)
          } {
 
       // Or(Or(x,y),b) --> Or(x,y,b)
@@ -166,10 +167,10 @@ class OrTestSuite extends AdjFunSuite {
 
     for {depth <- 0 to 5
          _ <- 1 to num_random_tests/2
-         r1 = Rte.randomRte(depth)
-         r2 = Rte.randomRte(depth)
-         r3 = Rte.randomRte(depth)
-         r4 = Rte.randomRte(depth)
+         r1 = randomRte(depth)
+         r2 = randomRte(depth)
+         r3 = randomRte(depth)
+         r4 = randomRte(depth)
          } {
 
       // Or(:epsilon,Cat(X,Y,Z,Star(Cat(X,Y,Z))))
@@ -299,10 +300,10 @@ class OrTestSuite extends AdjFunSuite {
   test("canonicalize or 204") {
     for {depth <- 0 to 3
          _ <- 1 to 10
-         r1 = Rte.randomRte(depth)
-         r2 = Rte.randomRte(depth)
-         r3 = Rte.randomRte(depth)
-         r4 = Rte.randomRte(depth)
+         r1 = randomRte(depth)
+         r2 = randomRte(depth)
+         r3 = randomRte(depth)
+         r4 = randomRte(depth)
          } {
       // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
       if (!Or(r1, And(r2, r3), r4).canonicalize ~= And(Or(r1, r2, r4),
@@ -354,10 +355,10 @@ class OrTestSuite extends AdjFunSuite {
   test("canonicalize or 253") {
     for {depth <- 0 to 4
          _ <- 1 to num_random_tests/2
-         r1 = Rte.randomRte(depth)
-         r2 = Rte.randomRte(depth)
-         r3 = Rte.randomRte(depth)
-         r4 = Rte.randomRte(depth)
+         r1 = randomRte(depth)
+         r2 = randomRte(depth)
+         r3 = randomRte(depth)
+         r4 = randomRte(depth)
          } {
       assert(Or(r1, And(r2, r3).canonicalize, r4).canonicalize ~=
                Or(r1, And(r2, r3), r4).canonicalize,

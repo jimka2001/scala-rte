@@ -4,14 +4,14 @@ import adjuvant.Adjuvant.callWithTimeout
 import adjuvant.FileLock.callInBlock
 import adjuvant.GnuPlot.gnuPlot
 import genus.SimpleTypeD
+import rte.Random.{randomRte, randomTotallyBalancedRte}
 import rte.Rte
-import rte.Rte.{randomRte, randomTotallyBalancedRte, rteViewAst, rteViewDfa}
+import rte.Rte.{rteViewAst, rteViewDfa}
 import xymbolyco.Dfa
 
 import java.io.FileWriter
 import java.nio.file.Paths
 import java.util.UUID
-
 import scala.sys.process.stringSeqToProcess
 
 object Scalaio2025 {
