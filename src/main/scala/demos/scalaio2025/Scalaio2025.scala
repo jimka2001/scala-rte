@@ -94,7 +94,8 @@ object Scalaio2025 {
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
     for {r <- 0 to num_repetitions
-         futures = (4 to 8).map((depth) => Future{
+         m <- 4 to 7
+         futures = (m to 8).map((depth) => Future{
            println(s"r=$r depth=$depth")
            writeCsvStatistic(depth, (n: Int) => randomRte(n), classicCsv, None)
          })
@@ -159,6 +160,7 @@ object Scalaio2025 {
       gnuPlot(curves.to(Seq))(title = s"Analysis of ${str} for ${alllines.size} Samples",
                               xAxisLabel = "DFA state count",
                               xLog = true,
+                              grid = true,
                               yAxisLabel = "Percentage dfa <= state count",
                               view = true)
     }
@@ -180,20 +182,26 @@ object Scalaio2025 {
         }//.filter(_.node_count < 140)
         .to(Vector)
       val sample_count = tuples.size
-      val descr = for {(percentage, tuples) <- tuples.groupBy(_.probability)
-                       //if percentage == 0.25F
+      val descrs = for {(percentage, tuples) <- tuples.groupBy(_.probability)
                        xys = for {(node_count, tuples) <- tuples.groupBy(_.node_count)
                                   state_counts = tuples.map(_.state_count)
                                   average = state_counts.sum / state_counts.size.toDouble
                                   } yield (node_count.toDouble, average)
-                       } yield (s"percentage=$percentage", xys.to(List).sortBy(_._1))
+                        descr = (s"percentage=$percentage", xys.to(List).sortBy(_._1))
+                        _ = gnuPlot(Seq(descr))(title = s"Average balanced percentage=${percentage} node count (${tuples.size} samples)",
+                                                xAxisLabel = "AST node count",
+                                                yAxisLabel = "DFA state count",
+                                                yLog = true,
+                                                plotWith = "points",
+                                                view = true)
+                        } yield descr
 
-      gnuPlot(descr.to(Seq))(title = s"Average balanced node count (${sample_count} samples)",
-                             xAxisLabel = "AST node count",
-                             yAxisLabel = "DFA state count",
-                             yLog = true,
-                             plotWith = "points",
-                             view = true)
+      gnuPlot(descrs.to(Seq))(title = s"Average balanced node count (${sample_count} samples)",
+                              xAxisLabel = "AST node count",
+                              yAxisLabel = "DFA state count",
+                              yLog = true,
+                              plotWith = "points",
+                              view = true)
     }
     locally {
       val s: InputStream = getClass.getResourceAsStream(s"/statistics/classic.csv")
@@ -219,15 +227,23 @@ object Scalaio2025 {
                      view = true)
     }
   }
+}
 
-
+object GenCsvBalanced {
   def main(argv: Array[String]): Unit = {
-    for (_ <- 0 to 5) {
-      //genCsvBalanced(100)
-      // plotBalancedCsv()
-    }
-    //plotAverageCsv()
-    //plotThreshold()
-    genCsvClassic(500)
+    Scalaio2025.genCsvBalanced(400)
+  }
+}
+
+object GenCsvClassic {
+  def main(argv: Array[String]): Unit = {
+    Scalaio2025.genCsvClassic(500)
+  }
+}
+
+object Plots {
+  def main(argv: Array[String]): Unit = {
+    Scalaio2025.plotThreshold()
+    Scalaio2025.plotAverageCsv()
   }
 }
