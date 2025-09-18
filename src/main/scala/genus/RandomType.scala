@@ -161,7 +161,6 @@ object RandomType {
   // that the types that are indeterminately inhabited will be rejected, and those that are proven to be uninhabited will also be rejected)
   //this function then calls the 2nd function if the filter is set to be different than Some(true) with a filter function
 
-
   def randomType(depth: Int, filter: Option[Boolean]): SimpleTypeD = {
     if (filter.contains(false)) {
       RandomType.randomType(depth, a => !a.inhabited.contains(false), true)

@@ -37,6 +37,24 @@ object Random {
     }
   }
 
+  def randomNaiveRte(depth:Int):Rte = {
+    // a naive random Rte of depth <= n is either a leaf or a node whose
+    //  children are naive random Rtes of depth <= n-1
+    if (depth == 0)
+      randCase(EmptySet,
+               List((0.1, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
+                    (0.9, () => Singleton(RandomType.randomType(0, false))),
+                    ))
+    else
+      randCase(EmptySet,
+               List((0.1, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
+                    (0.1, () => Singleton(RandomType.randomType(0, false))),
+                    (0.2, () => Cat(randomNaiveRte(depth-1), randomNaiveRte(depth-1))),
+                    (0.2, () => And(randomNaiveRte(depth-1), randomNaiveRte(depth-1))),
+                    (0.2, () => Or(randomNaiveRte(depth-1), randomNaiveRte(depth-1))),
+                    (0.1, () => Star(randomNaiveRte(depth-1))),
+                    (0.1, () => Not(randomNaiveRte(depth-1)))))
+  }
 
   def randomSeq(depth: Int, length: Int, option: Boolean = true): Seq[Rte] = {
     (0 until length).map { _ => randomRte(depth, option) }
