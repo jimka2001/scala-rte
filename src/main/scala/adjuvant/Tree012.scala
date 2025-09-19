@@ -43,9 +43,12 @@ object Tree012 {
     assert(depth >= 0)
     assert(0.0 < probability_binary && probability_binary < 1.0)
 
-    val k = math.pow(2, depth).round.toInt
-    val num_leaves = k + random.nextInt(k)
-
-    build(probability_binary, Random.shuffle((0 to num_leaves).to(List)))
+    // if depth=0, we need 1 total node
+    // if depth=1, we need between 2 and 3
+    // if depth=2, we need between 4 and 7
+    // if depth=3, we need between 8 and 15
+    val num_nodes = random.between(1<<depth, 2<<depth) // (inclusive, exclusive)
+    val data = Random.shuffle((1 to num_nodes).to(List))
+    build(probability_binary, data)
   }
 }
