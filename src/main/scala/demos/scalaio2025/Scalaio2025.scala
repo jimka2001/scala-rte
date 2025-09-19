@@ -80,11 +80,22 @@ object Scalaio2025 {
   }
 
 
-  def genCsvClassicME(num_repetitions: Int) = {
+  def genCsvClassicME(num_repetitions: Int): Unit = {
     genCsvClassic(num_repetitions, avoidEmpty=false, csv=classicMECsv)
   }
 
-  def genCsvNaive(num_repetitions: Int) = {
+  def genCsvNaive(num_repetitions: Int): Unit = {
+    import rte.Random.randomNaiveRte
+    genCsv(num_repetitions, naiveCsv, randomNaiveRte)
+  }
+
+  def genCsvClassic(num_repetitions: Int, avoidEmpty:Boolean=true,csv:String=classicCsv): Unit = {
+    genCsv(num_repetitions, csv, (n:Int) => randomRte(n, avoidEmpty=avoidEmpty))
+  }
+
+  def genCsv(num_repetitions: Int,
+             csv:String=classicCsv,
+             genRte:(Int=>Rte)): Unit = {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
@@ -92,23 +103,7 @@ object Scalaio2025 {
       for {m <- 4 to 7
            futures = (m to 8).map((depth) => Future {
              println(s"r=$r m=$m depth=$depth")
-             writeCsvStatistic(depth, (n: Int) => randomNaiveRte(n), naiveCsv, None)
-           })
-           combined = Future.sequence(futures)} {
-        Await.result(combined, Duration.Inf)
-      }
-    }  }
-
-
-  def genCsvClassic(num_repetitions: Int, avoidEmpty:Boolean=true,csv:String=classicCsv) = {
-    import scala.concurrent.duration._
-    import scala.concurrent.ExecutionContext.Implicits.global
-    import scala.concurrent.{Await, Future}
-    for {r <- 0 to num_repetitions} {
-      for {m <- 4 to 7
-           futures = (m to 8).map((depth) => Future {
-             println(s"r=$r m=$m depth=$depth")
-             writeCsvStatistic(depth, (n: Int) => randomRte(n,avoidEmpty=avoidEmpty), csv, None)
+             writeCsvStatistic(depth, genRte, csv, None)
            })
            combined = Future.sequence(futures)} {
         Await.result(combined, Duration.Inf)
@@ -118,7 +113,7 @@ object Scalaio2025 {
 
 
 
-  def genCsvBalanced(num_repetitions: Int) = {
+  def genCsvBalanced(num_repetitions: Int): Unit = {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
@@ -140,7 +135,7 @@ object Scalaio2025 {
   case class CsvLine(depth: Int, node_count: Int, state_count: Int, transition_count: Int, probability: Float = 0.0F)
 
   // make plot of y vs x where y = percentage of samples where number of state_counts > x
-  def plotThreshold() = {
+  def plotThreshold(): Unit = {
     import scala.io.Source
 
     for {str <- Seq("balanced", "classic", "classicME", "naive")
@@ -181,43 +176,42 @@ object Scalaio2025 {
 
 
 
-  def plotAverageCsv() = {
+  def plotAverageCsv(): Unit = {
     import java.io.InputStream
     import scala.io.{BufferedSource, Source}
-    locally {
-      val s: InputStream = getClass.getResourceAsStream("/statistics/balanced.csv")
-      val fp = Source.createBufferedSource(s)
+    val s: InputStream = getClass.getResourceAsStream("/statistics/balanced.csv")
+    val fp = Source.createBufferedSource(s)
 
-      val tuples = fp.getLines()
-        .map(line => line.split(",").to(Vector))
-        .collect { case Vector(depth, node_count, state_count, transition_count, probability) =>
-          CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, probability.toFloat)
-        }//.filter(_.node_count < 140)
-        .to(Vector)
-      val sample_count = tuples.size
-      val descrs = for {(percentage, tuples) <- tuples.groupBy(_.probability)
-                       xys = for {(node_count, tuples) <- tuples.groupBy(_.node_count)
-                                  state_counts = tuples.map(_.state_count)
-                                  average = state_counts.sum / state_counts.size.toDouble
-                                  } yield (node_count.toDouble, average)
-                        descr = (s"percentage=$percentage", xys.to(List).sortBy(_._1))
-                        _ = gnuPlot(Seq(descr))(title = s"Average balanced percentage=${percentage} node count (${tuples.size} samples)",
-                                                xAxisLabel = "AST node count",
-                                                yAxisLabel = "DFA state count",
-                                                yLog = true,
-                                                grid = true,
-                                                plotWith = "points",
-                                                view = true)
-                        } yield descr
+    val tuples = fp.getLines()
+      .map(line => line.split(",").to(Vector))
+      .collect { case Vector(depth, node_count, state_count, transition_count, probability) =>
+        CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, probability.toFloat)
+      }
+      .to(Vector)
+    val sample_count = tuples.size
+    val descrs = for {(percentage, tuples) <- tuples.groupBy(_.probability)
+                      xys = for {(node_count, tuples) <- tuples.groupBy(_.node_count)
+                                 state_counts = tuples.map(_.state_count)
+                                 average = state_counts.sum / state_counts.size.toDouble
+                                 } yield (node_count.toDouble, average)
+                      descr = (s"percentage=$percentage", xys.to(List).sortBy(_._1))
+                      _ = gnuPlot(Seq(descr))(title = s"Average balanced percentage=${percentage} node count (${tuples.size} samples)",
+                                              xAxisLabel = "AST node count",
+                                              yAxisLabel = "DFA state count",
+                                              yLog = true,
+                                              grid = true,
+                                              plotWith = "points",
+                                              view = true)
+                      } yield descr
 
-      gnuPlot(descrs.to(Seq))(title = s"Average balanced node count (${sample_count} samples)",
-                              xAxisLabel = "AST node count",
-                              yAxisLabel = "DFA state count",
-                              yLog = true,
-                              grid = true,
-                              plotWith = "points",
-                              view = true)
-    }
+    gnuPlot(descrs.to(Seq))(title = s"Average balanced node count (${sample_count} samples)",
+                            xAxisLabel = "AST node count",
+                            yAxisLabel = "DFA state count",
+                            yLog = true,
+                            grid = true,
+                            plotWith = "points",
+                            view = true)
+
     for {str <- Seq("classic", "classicME", "naive")} {
       val s: InputStream = getClass.getResourceAsStream(s"/statistics/${str}.csv")
       val fp = Source.createBufferedSource(s)
@@ -247,28 +241,28 @@ object Scalaio2025 {
 
 object GenCsvBalanced {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.size == 0) 500 else argv(0).toInt)
+    val limit:Int = (if (argv.length == 0) 500 else argv(0).toInt)
     Scalaio2025.genCsvBalanced(limit)
   }
 }
 
 object GenCsvClassic {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.size == 0) 500 else argv(0).toInt)
+    val limit:Int = (if (argv.length == 0) 500 else argv(0).toInt)
     Scalaio2025.genCsvClassic(limit)
   }
 }
 
 object GenCsvNaive {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.size == 0) 5 else argv(0).toInt)
+    val limit:Int = (if (argv.length == 0) 5 else argv(0).toInt)
     Scalaio2025.genCsvNaive(limit)
   }
 }
 
 object GenCsvClassicME {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.size == 0) 500 else argv(0).toInt)
+    val limit:Int = (if (argv.length == 0) 500 else argv(0).toInt)
     Scalaio2025.genCsvClassicME(limit)
   }
 }
