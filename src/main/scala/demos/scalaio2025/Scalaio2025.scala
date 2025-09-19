@@ -201,15 +201,23 @@ object Scalaio2025 {
       gnu.write(gnuheader(basename,depth) + "\n\n")
       gnu.write("$MyData << EOD\n")
       gnu.write("State-count " + algos.mkString(" ") + "\n")
-      val matrix = for {str <- algos
-           depthlines = readCsvLines(str, 4).filter(_.depth == depth)
-           xys = for {(state_count, sclines) <- depthlines.groupBy(_.state_count).to(Seq).sortBy(_._1)
-                      percentage = 100 * sclines.length.toDouble / depthlines.length
-                      if percentage > 1.0
-                      } yield (state_count, percentage)
-           sc_to_percent = xys.to(Map)
-           sc <- counts
-           } yield (str, sc, sc_to_percent.getOrElse(sc, 0.0))
+      val mixed = for {str <- algos
+                       depthlines = readCsvLines(str, 4).filter(_.depth == depth)
+                       xys = for {(state_count, sclines) <- depthlines.groupBy(_.state_count).to(Seq).sortBy(_._1)
+                                  percentage = 100 * sclines.length.toDouble / depthlines.length
+                                  } yield (state_count, percentage)
+                       _ = println(xys)
+                       sc_to_percent = xys.to(Map)
+                       max_count = counts.max
+                       restPercent = (for{(sc,percent) <- xys
+                                          if sc > max_count
+                                          } yield percent).sum
+                       tuples = for{sc<-counts} yield (sc, sc_to_percent.getOrElse(sc, 0.0))
+                       } yield (str, restPercent, tuples)
+      val outOfRange = (for{(str,restPercent,_) <- mixed
+                            } yield (str, restPercent)).to(Map)
+      val matrix = for{(str,_,tuples) <- mixed
+                       (sc, percent) <- tuples} yield (str, sc, percent)
       val grouped = matrix.groupBy(_._2)
 
       for{sc <- counts
@@ -222,6 +230,10 @@ object Scalaio2025 {
              } gnu.write(f" $percent%.3f")
         gnu.write("\n")
       }
+      gnu.write("""">10" """)
+      for{str <- algos
+          percent = outOfRange(str)} gnu.write(f" $percent%.3f")
+      gnu.write("\n")
       gnu.write("EOD\n\n")
       gnu.write(gnufooter())
       gnu.close()
@@ -315,6 +327,7 @@ object Scalaio2025 {
                      yAxisLabel = "DFA state count",
                      yLog = true,
                      grid = true,
+                     gnuFileCB = println,
                      plotWith = "points",
                      view = true)
     }
@@ -323,7 +336,7 @@ object Scalaio2025 {
 
 object GenCsvBalanced {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.length == 0) 500 else argv(0).toInt)
+    val limit:Int = (if (argv.length == 0) 100 else argv(0).toInt)
     Scalaio2025.genCsvBalanced(limit)
   }
 }
@@ -337,7 +350,7 @@ object GenCsvTuned {
 
 object GenCsvNaive {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.length == 0) 5 else argv(0).toInt)
+    val limit:Int = (if (argv.length == 0) 100 else argv(0).toInt)
     Scalaio2025.genCsvNaive(limit)
   }
 }

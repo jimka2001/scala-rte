@@ -37,7 +37,7 @@ object Random {
     }
   }
 
-  def randomNaiveRte(depth:Int):Rte = {
+  def randomNaiveRte(depth: Int):Rte = {
     // a naive random Rte of depth <= n is either a leaf or a node whose
     //  children are naive random Rtes of depth <= n-1
     if (depth == 0)
