@@ -1,6 +1,6 @@
 package demos.scalaio2025
 
-import adjuvant.Adjuvant.callWithTimeout
+import adjuvant.Adjuvant.{callWithTimeout, openGraphicalFile}
 import adjuvant.GnuPlot.gnuPlot
 import rte.Rte
 
@@ -166,16 +166,84 @@ object Scalaio2025 {
     csvlines
   }
 
+  def histogram():Unit = {
+    import java.io._
+    def gnuheader(basename:String, depth:Int): String = {
+      "set terminal pngcairo size 600,400\n" +
+        s"set output '${basename}.png'\n" +
+        """|
+           |set boxwidth 0.9 absolute
+           |set style fill solid 1.00 border lt -1
+           |set style histogram clustered gap 5 title textcolor lt -1
+           |set style data histograms
+           |set key outside top center horizontal
+           |set xtics rotate by -45
+           |set yrange [0:100]
+           |""".stripMargin +
+           s"set title \"DFA State distribution for Rte of depth=$depth\"\n"
+    }
+    def gnufooter():String = {
+      """|
+         |plot $MyData using 2:xtic(1) ti col, \
+         |     $MyData using 3 ti col, \
+         |     $MyData using 4 ti col""".stripMargin
+    }
+    for {depth <- 4 to 8
+         counts = (1 to 10).to(List)
+         basename = s"histogram-${depth}"
+         gnuFileName = basename + ".gnu"
+         gnu = new PrintWriter(new File(gnuFileName))
+         algos = Seq("balanced",
+                     "tuned",
+                     //"tunedME",
+                     "naive")
+         } {
+      gnu.write(gnuheader(basename,depth) + "\n\n")
+      gnu.write("$MyData << EOD\n")
+      gnu.write("State-count " + algos.mkString(" ") + "\n")
+      val matrix = for {str <- algos
+           depthlines = readCsvLines(str, 4).filter(_.depth == depth)
+           xys = for {(state_count, sclines) <- depthlines.groupBy(_.state_count).to(Seq).sortBy(_._1)
+                      percentage = 100 * sclines.length.toDouble / depthlines.length
+                      if percentage > 1.0
+                      } yield (state_count, percentage)
+           sc_to_percent = xys.to(Map)
+           sc <- counts
+           } yield (str, sc, sc_to_percent.getOrElse(sc, 0.0))
+      val grouped = matrix.groupBy(_._2)
+
+      for{sc <- counts
+          triples = grouped(sc)} {
+        gnu.write(s"${sc} ")
+        for {str <- algos
+             triple <- triples
+             if str == triple._1
+             percent = triple._3
+             } gnu.write(f" $percent%.3f")
+        gnu.write("\n")
+      }
+      gnu.write("EOD\n\n")
+      gnu.write(gnufooter())
+      gnu.close()
+      Seq(adjuvant.GnuPlot.gnuPlotPath, gnuFileName).!
+      openGraphicalFile(basename + ".png")
+    }
+  }
+
   // make plot of y vs x where y = percentage of samples where number of state_counts > x
   def plotThreshold(): Unit = {
     import scala.io.Source
 
-    for {str <- Seq("balanced", "tuned", "tunedME", "naive")
+    for {str <- Seq("balanced",
+                    "tuned",
+                    //"tunedME",
+                    "naive")
          alllines = readCsvLines(str, 4)
+         depthmap = alllines.groupBy(_.depth)
          } {
       // build a map to associate a depth to all CvsLines of that depth
       // we will create one curve for each depth
-      val depthmap = alllines.groupBy(_.depth)
+
       val curves = for {(depth, cvslines) <- depthmap
                         xys = genThresholdCurve(cvslines)
                         } yield (s"depth=${depth}", xys.sortBy(_._1))
@@ -189,7 +257,10 @@ object Scalaio2025 {
                               view = true)
     }
     for {depth <- (4 to 8)
-         descrs = for {str <- Seq("balanced", "tuned", "tunedME", "naive")
+         descrs = for {str <- Seq("balanced",
+                                  "tuned",
+                                  //"tunedME",
+                                  "naive")
                        alllines = readCsvLines(str, 4).filter(_.depth == depth)
                        xys = genThresholdCurve(alllines)
                        } yield (s"${str} samples=${alllines.length}", xys)
@@ -282,5 +353,11 @@ object Plots {
   def main(argv: Array[String]): Unit = {
     Scalaio2025.plotThreshold()
     Scalaio2025.plotAverageCsv()
+  }
+}
+
+object Histograms {
+  def main(argv: Array[String]): Unit = {
+    Scalaio2025.histogram()
   }
 }
