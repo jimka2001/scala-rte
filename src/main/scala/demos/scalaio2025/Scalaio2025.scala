@@ -79,8 +79,8 @@ object Scalaio2025 {
   }
 
 
-  def genCsvClassicME(num_repetitions: Int): Unit = {
-    genCsvClassic(num_repetitions, avoidEmpty=false, csv=tunedMECsv)
+  def genCsvTunedME(num_repetitions: Int): Unit = {
+    genCsvTuned(num_repetitions, avoidEmpty=false, csv=tunedMECsv)
   }
 
   def genCsvNaive(num_repetitions: Int): Unit = {
@@ -88,7 +88,7 @@ object Scalaio2025 {
     genCsv(num_repetitions, naiveCsv, randomNaiveRte)
   }
 
-  def genCsvClassic(num_repetitions: Int, avoidEmpty:Boolean=true,csv:String=tunedCsv): Unit = {
+  def genCsvTuned(num_repetitions: Int, avoidEmpty:Boolean=true,csv:String=tunedCsv): Unit = {
     import rte.Random.randomRte
     genCsv(num_repetitions, csv, (n:Int) => randomRte(n, avoidEmpty=avoidEmpty))
   }
@@ -328,10 +328,10 @@ object GenCsvBalanced {
   }
 }
 
-object GenCsvClassic {
+object GenCsvTuned {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.length == 0) 500 else argv(0).toInt)
-    Scalaio2025.genCsvClassic(limit)
+    val limit:Int = (if (argv.length == 0) 100 else argv(0).toInt)
+    Scalaio2025.genCsvTuned(limit)
   }
 }
 
@@ -342,10 +342,10 @@ object GenCsvNaive {
   }
 }
 
-object GenCsvClassicME {
+object GenCsvTunedME {
   def main(argv: Array[String]): Unit = {
     val limit:Int = (if (argv.length == 0) 500 else argv(0).toInt)
-    Scalaio2025.genCsvClassicME(limit)
+    Scalaio2025.genCsvTunedME(limit)
   }
 }
 
