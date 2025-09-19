@@ -2,7 +2,6 @@ package demos.scalaio2025
 
 import adjuvant.Adjuvant.callWithTimeout
 import adjuvant.GnuPlot.gnuPlot
-import rte.Random.{randomNaiveRte, randomRte, randomTotallyBalancedRte}
 import rte.Rte
 
 import java.io.FileWriter
@@ -14,8 +13,8 @@ object Scalaio2025 {
 
   val statisticsResource: String = Paths.get("src/main/resources/statistics").toString + "/"
   val naiveCsv:String = statisticsResource + "naive.csv"
-  val classicCsv:String = statisticsResource + "classic.csv"
-  val classicMECsv:String = statisticsResource + "classicME.csv" // classic but maybe empty = true
+  val tunedCsv:String = statisticsResource + "tuned.csv"
+  val tunedMECsv:String = statisticsResource + "tunedME.csv" // tuned but maybe empty = true
   val balancedCsv:String = statisticsResource + "balanced.csv"
 
   def withLock[A](lockFile:String, f: () => A): A = {
@@ -81,7 +80,7 @@ object Scalaio2025 {
 
 
   def genCsvClassicME(num_repetitions: Int): Unit = {
-    genCsvClassic(num_repetitions, avoidEmpty=false, csv=classicMECsv)
+    genCsvClassic(num_repetitions, avoidEmpty=false, csv=tunedMECsv)
   }
 
   def genCsvNaive(num_repetitions: Int): Unit = {
@@ -89,12 +88,13 @@ object Scalaio2025 {
     genCsv(num_repetitions, naiveCsv, randomNaiveRte)
   }
 
-  def genCsvClassic(num_repetitions: Int, avoidEmpty:Boolean=true,csv:String=classicCsv): Unit = {
+  def genCsvClassic(num_repetitions: Int, avoidEmpty:Boolean=true,csv:String=tunedCsv): Unit = {
+    import rte.Random.randomRte
     genCsv(num_repetitions, csv, (n:Int) => randomRte(n, avoidEmpty=avoidEmpty))
   }
 
   def genCsv(num_repetitions: Int,
-             csv:String=classicCsv,
+             csv:String=tunedCsv,
              genRte:(Int=>Rte)): Unit = {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
@@ -117,6 +117,7 @@ object Scalaio2025 {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
+    import rte.Random.randomTotallyBalancedRte
     for {
       r <- 0 to num_repetitions} {
       for {m <- 4 to 8
@@ -169,7 +170,7 @@ object Scalaio2025 {
   def plotThreshold(): Unit = {
     import scala.io.Source
 
-    for {str <- Seq("balanced", "classic", "classicME", "naive")
+    for {str <- Seq("balanced", "tuned", "tunedME", "naive")
          alllines = readCsvLines(str, 4)
          } {
       // build a map to associate a depth to all CvsLines of that depth
@@ -188,7 +189,7 @@ object Scalaio2025 {
                               view = true)
     }
     for {depth <- (4 to 8)
-         descrs = for {str <- Seq("balanced", "classic", "classicME", "naive")
+         descrs = for {str <- Seq("balanced", "tuned", "tunedME", "naive")
                        alllines = readCsvLines(str, 4).filter(_.depth == depth)
                        xys = genThresholdCurve(alllines)
                        } yield (s"${str} samples=${alllines.length}", xys)
@@ -229,7 +230,7 @@ object Scalaio2025 {
                             plotWith = "points",
                             view = true)
 
-    for {str <- Seq("classic", "classicME", "naive")
+    for {str <- Seq("tuned", "tunedME", "naive")
          alllines = readCsvLines(str, 4)} {
 
       val sample_count = alllines.size
