@@ -361,3 +361,26 @@ object Histograms {
     Scalaio2025.histogram()
   }
 }
+
+object ViewAst {
+
+  import rte.Rte.rteViewAst
+  import rte.Random._
+  import xymbolyco.GraphViz.dfaView
+  import xymbolyco.Minimize.minimize
+
+  def main(argv: Array[String]): Unit = {
+    val depth: Int = (if (argv.length == 0) 5 else argv(0).toInt)
+    for {(algo, gen) <- Seq( ("naive", () => randomNaiveRte(depth)),
+                             //("tunedME", () => randomRte(depth, false)),
+                             //("tuned", () => randomRte(depth, true)),
+                             ("balanced", () => randomTotallyBalancedRte(0.90F, depth))
+                             )
+         rte = gen()
+         dfa = minimize(rte.toDfa())
+         } {
+      rteViewAst(rte, title = algo)
+      dfaView(dfa, title = algo)
+    }
+  }
+}
