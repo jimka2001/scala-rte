@@ -60,6 +60,11 @@ object Random {
     (0 until length).map { _ => randomRte(depth, option) }
   }
 
+  private val leafTypes = locally{
+    import genus.RandomType.interestingTypes
+    interestingTypes().filter(td => td.inhabited != Some(false)).to(Vector)
+  }
+
   // Generate an RTE which corresponds (on average) in shape closely to a balanced
   // binary tree.  The goal is to sample languages uniformly rather than sampling
   // syntactic structure of the RTE uniformly.
@@ -72,7 +77,7 @@ object Random {
     def tree012ToRte(tree:Tree012):Rte = {
       tree match {
         case Tree012Leaf() => randCase(EmptySet,
-                                       List((0.90, () => Singleton(RandomType.randomType(0))),
+                                       List((0.90, () => Singleton(randElement(leafTypes))),
                                             (0.05, () => Sigma),
                                             (0.05, () => EmptySeq)))
         case Tree012Unary(_, child) =>
@@ -82,17 +87,19 @@ object Random {
 
         case Tree012Binary(_, left, right) =>
           // And, Or, Cat
-          randElement(Seq((a:Rte, b:Rte) => And(a, b),
-                          (a:Rte, b:Rte) => Or(a, b),
-                          (a:Rte, b:Rte) => Cat(a, b)))(tree012ToRte(left), tree012ToRte(right))
+          randCase(EmptySet,
+                   List((0.70, () => Cat(tree012ToRte(left), tree012ToRte(right))),
+                        (0.15, () => Or(tree012ToRte(left), tree012ToRte(right))),
+                        (0.15, () => And(tree012ToRte(left), tree012ToRte(right)))))
       }
     }
-    //(printf "generating tree of depth %d:  %s <= count < %s\n" depth (pow 2 depth) (pow 2 (inc depth)))
     // a binary tree of depth=n has 2^n <= m < 2^(n+1) leaves
     // so generate a random number 2^n <= rand < 2^(n+1)
     // i.e 2^n + (rand-int 2^(n+1) - 2^n)
     //    2^n + (rand-int 2^n)
-    val tree = Tree012.rand(probability_binary, depth)
+    // since the Tree012 always has empty leaves, we must generate a tree of
+    // depth-1, so that plus the leaves it has depth=depth.
+    val tree = Tree012.rand(probability_binary, depth-1)
     val rte = tree012ToRte(tree)
 
     rte
