@@ -478,7 +478,7 @@ object Rte {
                  title: String = "",
                  dotFileCB: String => Unit = (_ => ()),
                  habitation:Boolean=true):(Vector[SimpleTypeD], String) = {
-    GraphViz.rteView(rte, title=title, dotFileCB=println, habitation=true)
+    GraphViz.rteView(rte, title=title, dotFileCB=dotFileCB, habitation=habitation)
   }
 
   def rteViewDfa(rte: Rte,
