@@ -59,20 +59,30 @@ object Scalaio2025 {
   // write an entry to the csv file so we can plot later
 
   def writeCsvStatistic(depth: Int, genRte: (Int => Rte), csvFileName: String, probability: Option[Float]): Unit = {
+
+    import xymbolyco.Minimize.minimize
     val rte = genRte(depth)
+    val balance=rte.measureBalance()
     val actualSize = rte.linearize().size
     val timeout = depth*4000
     for {dfa <- callWithTimeout(timeout,
                                 () => rte.toDfa(true),
-                                () => println(s"cancelling after ${timeout}ms depth=$depth, csv=$csvFileName"))} {
-      val stateCount = dfa.Qids.size
-      val transitionCount = dfa.Q.map(q => q.transitions.size).sum
+                                () => println(s"cancelling DFA generation after ${timeout}ms depth=$depth, csv=$csvFileName"))
+         stateCount = dfa.Qids.size
+         transitionCount = dfa.Q.map(q => q.transitions.size).sum
+         mindfa <- callWithTimeout(timeout,
+                                   () => minimize(dfa),
+                                   () => println(s"cancelling DFA minimization after ${timeout}ms state-count=${stateCount} transition-count=${transitionCount}"))
+         minStateCount = mindfa.Qids.size
+         minTransitionCount = mindfa.Q.map(q => q.transitions.size).sum
+         } {
       mergeFile(csvFileName)((outFile: FileWriter) => {
+        outFile.write(s"$depth,$actualSize,$stateCount,$transitionCount,$minStateCount,$minTransitionCount")
+        outFile.write(f",$balance%.3f")
         probability match {
           case Some(probability) =>
-            outFile.write(s"$depth,$actualSize,$stateCount,$transitionCount,$probability")
-          case None =>
-            outFile.write(s"$depth,$actualSize,$stateCount,$transitionCount")
+            outFile.write(f",$probability%.2f")
+          case _ => ()
         }
       })
     }

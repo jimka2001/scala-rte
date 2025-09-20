@@ -308,6 +308,27 @@ abstract class Rte {
     }
     bfs(Set[Rte](this), Vector[Rte](this), Vector[Rte](this))
   }
+
+  def measureBalance():Double = {
+    // shortest branch / longest branch length
+    // if perfectly balanced ==> 1.0
+    // otherwise returns
+    def shortest(depth:Double, rtes:Seq[Rte]):Double = {
+      if (rtes.exists(r => r.children().isEmpty))
+        depth
+      else
+        shortest(depth+1, rtes.flatMap(r => r.children()))
+    }
+
+    def longest(depth:Double, rtes:Seq[Rte]):Double = {
+      if (rtes.forall(r => r.children().isEmpty))
+        depth
+      else
+        longest(depth+1, rtes.flatMap(r => r.children()))
+    }
+
+    longest(1.0,Seq(this)) / shortest(1.0,Seq(this))
+  }
 }
 
 // abstract class for grouping subclasses of Rte which do not
