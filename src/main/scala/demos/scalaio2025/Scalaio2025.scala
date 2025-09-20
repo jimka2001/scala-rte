@@ -163,17 +163,18 @@ object Scalaio2025 {
     xys.sortBy(_._1)
   }
 
-  def readCsvLines(str:String, width:Int):Vector[CsvLine] = {
+  def readCsvLines(str:String):Vector[CsvLine] = {
     import java.io.InputStream
     import scala.io.{BufferedSource, Source}
     val s: InputStream = getClass.getResourceAsStream(s"/statistics/${str}.csv")
     val fp = Source.createBufferedSource(s)
 
     val csvlines = fp.getLines()
-      .map(line => line.split(",").to(Vector).take(width))
-      .collect { case Vector(depth, _, _, node_count, state_count, transition_count, balance, probability) =>
+      .map(line => line.split(",").to(Vector))
+      .collect {
+        case Vector(depth, node_count, _, _, state_count, transition_count, balance, probability) =>
         CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, balance.toFloat, probability.toFloat)
-      case Vector(depth, _, _, node_count, state_count, balance, transition_count) =>
+      case Vector(depth, node_count, _, _, state_count, transition_count, balance) =>
         CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, balance.toFloat)
       }
       .to(Vector)
@@ -217,11 +218,11 @@ object Scalaio2025 {
       gnu.write("$MyData << EOD\n")
       gnu.write("State-count")
       for{ str <- algos
-           depthlines = readCsvLines(str, 4).filter(_.depth == depth)
+           depthlines = readCsvLines(str).filter(_.depth == depth)
            num_samples = depthlines.length} gnu.write(s" \"$str samples=${num_samples}\"")
       gnu.write("\n")
       val mixed = for {str <- algos
-                       depthlines = readCsvLines(str, 4).filter(_.depth == depth)
+                       depthlines = readCsvLines(str).filter(_.depth == depth)
                        xys = for {(state_count, sclines) <- depthlines.groupBy(_.state_count).to(Seq).sortBy(_._1)
                                   percentage = 100 * sclines.length.toDouble / depthlines.length
                                   } yield (state_count, percentage)
@@ -268,7 +269,7 @@ object Scalaio2025 {
                     "tuned",
                     //"tunedME",
                     "naive")
-         alllines = readCsvLines(str, 4)
+         alllines = readCsvLines(str)
          depthmap = alllines.groupBy(_.depth)
          } {
       // build a map to associate a depth to all CvsLines of that depth
@@ -291,7 +292,7 @@ object Scalaio2025 {
                                   "tuned",
                                   //"tunedME",
                                   "naive")
-                       alllines = readCsvLines(str, 4).filter(_.depth == depth)
+                       alllines = readCsvLines(str).filter(_.depth == depth)
                        xys = genThresholdCurve(alllines)
                        } yield (s"${str} samples=${alllines.length}", xys)
          } gnuPlot(descrs.to(Seq))(title = s"Threshold depth=${depth}",
@@ -306,7 +307,7 @@ object Scalaio2025 {
 
   def plotAverageCsv(): Unit = {
 
-    val alllines = readCsvLines("balanced", 5)
+    val alllines = readCsvLines("balanced")
     val sample_count = alllines.size
     val descrs = for {(percentage, tuples) <- alllines.groupBy(_.probability)
                       xys = for {(node_count, tuples) <- tuples.groupBy(_.node_count)
@@ -332,7 +333,7 @@ object Scalaio2025 {
                             view = true)
 
     for {str <- Seq("tuned", "tunedME", "naive")
-         alllines = readCsvLines(str, 4)} {
+         alllines = readCsvLines(str)} {
 
       val sample_count = alllines.size
       val xys = (for {(node_count, tuples) <- alllines.groupBy(_.node_count)
