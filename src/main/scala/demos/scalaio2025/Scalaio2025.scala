@@ -210,13 +210,16 @@ object Scalaio2025 {
          } {
       gnu.write(gnuheader(basename,depth) + "\n\n")
       gnu.write("$MyData << EOD\n")
-      gnu.write("State-count " + algos.mkString(" ") + "\n")
+      gnu.write("State-count")
+      for{ str <- algos
+           depthlines = readCsvLines(str, 4).filter(_.depth == depth)
+           num_samples = depthlines.length} gnu.write(s" \"$str samples=${num_samples}\"")
+      gnu.write("\n")
       val mixed = for {str <- algos
                        depthlines = readCsvLines(str, 4).filter(_.depth == depth)
                        xys = for {(state_count, sclines) <- depthlines.groupBy(_.state_count).to(Seq).sortBy(_._1)
                                   percentage = 100 * sclines.length.toDouble / depthlines.length
                                   } yield (state_count, percentage)
-                       _ = println(xys)
                        sc_to_percent = xys.to(Map)
                        max_count = counts.max
                        restPercent = (for{(sc,percent) <- xys
@@ -376,6 +379,7 @@ object Plots {
   def main(argv: Array[String]): Unit = {
     Scalaio2025.plotThreshold()
     Scalaio2025.plotAverageCsv()
+    Scalaio2025.histogram()
   }
 }
 
