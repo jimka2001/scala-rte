@@ -63,7 +63,7 @@ object Scalaio2025 {
     import xymbolyco.Minimize.minimize
     val rte = genRte(depth)
     val balance=rte.measureBalance()
-    val actualSize = rte.linearize().size
+    val nodeCount = rte.linearize().size
     val timeout = depth*4000
     for {dfa <- callWithTimeout(timeout,
                                 () => rte.toDfa(true),
@@ -77,7 +77,7 @@ object Scalaio2025 {
          minTransitionCount = mindfa.Q.map(q => q.transitions.size).sum
          } {
       mergeFile(csvFileName)((outFile: FileWriter) => {
-        outFile.write(s"$depth,$actualSize,$stateCount,$transitionCount,$minStateCount,$minTransitionCount")
+        outFile.write(s"$depth,$nodeCount,$stateCount,$transitionCount,$minStateCount,$minTransitionCount")
         outFile.write(f",$balance%.3f")
         probability match {
           case Some(probability) =>
@@ -143,7 +143,12 @@ object Scalaio2025 {
     }
   }
 
-  case class CsvLine(depth: Int, node_count: Int, state_count: Int, transition_count: Int, probability: Float = 0.0F)
+  case class CsvLine(depth: Int,
+                     node_count: Int,
+                     state_count: Int,
+                     transition_count: Int,
+                     balance: Float,
+                     probability: Float = 0.0F)
 
   def genThresholdCurve(cvslines:Seq[CsvLine]):Seq[(Double,Double)] = {
     val num_per_depth = cvslines.size
@@ -166,10 +171,10 @@ object Scalaio2025 {
 
     val csvlines = fp.getLines()
       .map(line => line.split(",").to(Vector).take(width))
-      .collect { case Vector(depth, node_count, state_count, transition_count, probability) =>
-        CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, probability.toFloat)
-      case Vector(depth, node_count, state_count, transition_count) =>
-        CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt)
+      .collect { case Vector(depth, _, _, node_count, state_count, transition_count, balance, probability) =>
+        CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, balance.toFloat, probability.toFloat)
+      case Vector(depth, _, _, node_count, state_count, balance, transition_count) =>
+        CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, balance.toFloat)
       }
       .to(Vector)
     fp.close()
