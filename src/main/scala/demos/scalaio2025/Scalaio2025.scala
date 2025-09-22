@@ -108,7 +108,7 @@ object Scalaio2025 {
   def genCsv(num_repetitions: Int,
              csv: String = tunedCsv,
              prefix:String,
-             genRte: (Int => Rte)): Unit = {
+             genRte: Int => Rte): Unit = {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
@@ -146,6 +146,28 @@ object Scalaio2025 {
     }
   }
 
+  def imbalanceFactor(node_count:Int, total:Int):Double = {
+    // compute an imbalance factor.
+    // 1 ==> perfectly balanced
+    // > 1 ==> average path length > perfect path length
+    // < 1 ==> average path length < perfect path length
+    import scala.math.log
+    if (node_count == 1 && total == 0)
+      1.0
+    else {
+      // number of total nodes, leaf + internal = 2^d - 1 + 2^d
+      val d = log(node_count + 1) / log(2)
+      // balanced path total length from root to leaf = num leafs * average length i.e. n*d
+      val imbalanced_total = d * node_count
+      //println(f"node_count = $node_count")
+      //println(f"total = $total")
+      //println(f"d=$d imbalanced_total=$balanced_total")
+      val ibf = imbalanced_total / total.toDouble
+      //println(f"bf = $bf")
+      assert(total > 0)
+      ibf
+    }
+  }
 
   case class CsvLine(depth: Int,
                      node_count: Int,
@@ -157,17 +179,8 @@ object Scalaio2025 {
                      longest:Int,
                      total:Int,
                      probability: Double = 0.0F) {
-    def balance():Double = {
-      // compute a balance factor.
-      // 1 ==> perfectly balanced
-      // > 1 ==> average path length > perfect path length
-      // < 1 ==> average path length < perfect path length
-      import scala.math.log
-      // number of total nodes, leaf + internal = 2^d - 1 + 2^d
-      val d = log(node_count + 1)/log(2)
-      // balanced path total length from root to leaf = num leafs * average length i.e. n*d
-      val balanced_total = d * node_count
-      total.toDouble / balanced_total
+    def imbalance():Double = {
+      imbalanceFactor(node_count, total)
     }
   }
 
@@ -184,7 +197,7 @@ object Scalaio2025 {
         case Vector(depth, node_count, state_pre_count, transition_pre_count, state_count, transition_count,
         shortest, longest, total, probability) =>
           CsvLine(depth.toInt, node_count.toInt, state_pre_count.toInt, transition_pre_count.toInt, state_count.toInt, transition_count.toInt,
-            shortest.toInt, longest.toInt, total.toInt.toInt, probability.toDouble)
+            shortest.toInt, longest.toInt, total.toInt, probability.toDouble)
         case Vector(depth, node_count, state_pre_count, transition_pre_count, state_count, transition_count,
         shortest, longest, total) =>
           CsvLine(depth.toInt, node_count.toInt, state_pre_count.toInt, transition_pre_count.toInt, state_count.toInt, transition_count.toInt,
@@ -208,8 +221,6 @@ object Scalaio2025 {
     xys.sortBy(_._1)
   }
 
-
-
   def histogram(): Unit = {
     import java.io._
     def gnuheader(basename: String, depth: Option[Int]): String = {
@@ -232,11 +243,10 @@ object Scalaio2025 {
     }
 
     def gnufooter(algos:Seq[String]): String = {
-      """|
-         |plot $MyData using 2:xtic(1) ti col, \
-         |     $MyData using 3 ti col, \
-         |     $MyData using 4 ti col, \
-         |     $MyData using 5 ti col""".stripMargin
+      Seq("plot $MyData using 2:xtic(1) ti col,",
+        "     $MyData using 3 ti col,",
+        "     $MyData using 4 ti col,",
+        "     $MyData using 5 ti col").take(algos.length).mkString(" \\\n")
     }
 
     def histo(depth: Option[Int]): Unit = {
@@ -306,8 +316,6 @@ object Scalaio2025 {
 
   // make plot of y vs x where y = percentage of samples where number of state_counts > x
   def plotThreshold(): Unit = {
-    import scala.io.Source
-
     for {str <- Seq("balanced",
       "tuned",
       //"tunedME",
@@ -378,10 +386,10 @@ object Scalaio2025 {
          alllines = readCsvLines(str)} {
 
       val sample_count = alllines.size
-      val xys = (for {(node_count, tuples) <- alllines.groupBy(_.node_count)
+      val xys = for {(node_count, tuples) <- alllines.groupBy(_.node_count)
                       state_counts = tuples.map(_.state_count)
                       average = state_counts.sum / state_counts.size.toDouble
-                      } yield (node_count.toDouble, average))
+                      } yield (node_count.toDouble, average)
       val descrs = Seq((str, xys.to(List).sortBy(_._1)))
       gnuPlot(descrs)(title = f"Average ${str} node count (${sample_count} samples)",
         xAxisLabel = "AST node count",
@@ -414,12 +422,12 @@ object Scalaio2025 {
   def plotBalance2(): Unit = {
     val descrs = for {str <- Seq("tuned", "tunedME", "naive", "balanced")
                       alllines = readCsvLines(str)
-                      grouped = alllines.groupBy(cl => cl.balance())
+                      grouped = alllines.groupBy(cl => cl.imbalance())
                       // for each value of balance, compute the percentage of state_count <= 2
                       xys = for {(balance, cvslines) <- grouped
                                  num_samples = cvslines.length
                                  num_small = cvslines.count(cl => cl.state_count <= 2)
-                                 } yield (balance.toDouble, (100.0 * num_small) / num_samples)
+                                 } yield (balance, (100.0 * num_small) / num_samples)
                       } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
     gnuPlot(descrs.to(Seq))(title = "2 Balances",
       xAxisLabel = "Balance",
@@ -434,14 +442,14 @@ object Scalaio2025 {
     val descrs = for {str <- Seq("tuned", "tunedME", "naive", "balanced")
                       alllines = readCsvLines(str)
                       num_samples = alllines.length
-                      grouped = alllines.groupBy(_.balance)
+                      grouped = alllines.groupBy(_.imbalance())
                       // for each value of balance, compute the percentage of state_count <= 2
-                      xys = for {(balance, cvslines) <- grouped
-                                 num_small = alllines.count(cl => cl.balance() <= balance && cl.state_count <= 2)
-                                 } yield (balance, (100.0 * num_small) / num_samples)
+                      xys = for {(imbalance, _) <- grouped
+                                 num_small = alllines.count(cl => cl.imbalance() <= imbalance && cl.state_count <= 2)
+                                 } yield (imbalance, (100.0 * num_small) / num_samples)
                       } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
     gnuPlot(descrs.to(Seq))(title = "Running Balances",
-      xAxisLabel = "Balance ",
+      xAxisLabel = "Imbalance Factor",
       yAxisLabel = "Percentage count >= 2",
       plotWith = "lines",
       gnuFileCB = println,
@@ -453,28 +461,28 @@ object Scalaio2025 {
 
 object GenCsvBalanced {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.length == 0) 100 else argv(0).toInt)
+    val limit:Int = if (argv.length == 0) 100 else argv(0).toInt
     Scalaio2025.genCsvBalanced(limit)
   }
 }
 
 object GenCsvTuned {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.length == 0) 100 else argv(0).toInt)
+    val limit:Int = if (argv.length == 0) 100 else argv(0).toInt
     Scalaio2025.genCsvTuned(limit)
   }
 }
 
 object GenCsvNaive {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.length == 0) 100 else argv(0).toInt)
+    val limit:Int = if (argv.length == 0) 100 else argv(0).toInt
     Scalaio2025.genCsvNaive(limit)
   }
 }
 
 object GenCsvTunedME {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = (if (argv.length == 0) 500 else argv(0).toInt)
+    val limit:Int = if (argv.length == 0) 500 else argv(0).toInt
     Scalaio2025.genCsvTunedME(limit)
   }
 }
@@ -509,7 +517,7 @@ object TestBalance {
   def main(argv:Array[String]):Unit = {
     val rte1 = Or(Sigma, Or(EmptySet,Or(Sigma,EmptySeq)))
     println(rte1.measureBalance())
-    println(rte1.linearize.length)
+    println(rte1.linearize().length)
     rteViewAst(rte1, "testing")
 
     val rte2 = Or(Sigma, Or(Sigma, Or(Sigma, Or(Sigma, Or(Sigma,EmptySeq)))))
@@ -529,8 +537,8 @@ object ViewAst {
   import xymbolyco.Minimize.minimize
 
   def main(argv: Array[String]): Unit = {
-    val depth: Int = (if (argv.length == 0) 5 else argv(0).toInt)
-    for {(algo, gen) <- Seq( ("naive", () => randomNaiveRte(depth)),
+    val depth: Int = if (argv.length == 0) 4 else argv(0).toInt
+    for {(algo, gen) <- Seq( //("naive", () => randomNaiveRte(depth)),
                              //("tunedME", () => randomRte(depth, false)),
                              //("tuned", () => randomRte(depth, true)),
                              ("balanced", () => randomTotallyBalancedRte(0.90F, depth))
@@ -540,6 +548,8 @@ object ViewAst {
          } {
       rteViewAst(rte, title = algo)
       println(rte.measureBalance())
+      println(rte.linearize().length)
+      println(Scalaio2025.imbalanceFactor(rte.linearize().length, 1))
       dfaView(dfa, title = algo)
     }
   }
