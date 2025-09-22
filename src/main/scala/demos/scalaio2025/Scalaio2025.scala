@@ -12,12 +12,12 @@ import scala.sys.process.stringSeqToProcess
 object Scalaio2025 {
 
   val statisticsResource: String = Paths.get("src/main/resources/statistics").toString + "/"
-  val naiveCsv:String = statisticsResource + "naive.csv"
-  val tunedCsv:String = statisticsResource + "tuned.csv"
-  val tunedMECsv:String = statisticsResource + "tunedME.csv" // tuned but maybe empty = true
-  val balancedCsv:String = statisticsResource + "balanced.csv"
+  val naiveCsv: String = statisticsResource + "naive.csv"
+  val tunedCsv: String = statisticsResource + "tuned.csv"
+  val tunedMECsv: String = statisticsResource + "tunedME.csv" // tuned but maybe empty = true
+  val balancedCsv: String = statisticsResource + "balanced.csv"
 
-  def withLock[A](lockFile:String, f: () => A): A = {
+  def withLock[A](lockFile: String, f: () => A): A = {
     import adjuvant.FileLock.callInBlock
     callInBlock(lockFile + ".lock")(f)
   }
@@ -27,7 +27,7 @@ object Scalaio2025 {
    * @param csvFileName name of a CSV file in resources/statistics
    * @param writeRecord function that writes one record into the given FileWriter
    */
-  def mergeFile(csvFileName: String, prefix:String="")(writeRecord: FileWriter => Unit): Unit = {
+  def mergeFile(csvFileName: String, prefix: String = "")(writeRecord: FileWriter => Unit): Unit = {
     // create temporary files ending in ~ so that .gitignore will ignore them.
     val tmp1 = statisticsResource + prefix + UUID.randomUUID().toString + "~"
     val tmp2 = statisticsResource + prefix + UUID.randomUUID().toString + "~"
@@ -62,17 +62,17 @@ object Scalaio2025 {
 
     import xymbolyco.Minimize.minimize
     val rte = genRte(depth)
-    val balance=rte.measureBalance()
+    val balance = rte.measureBalance()
     val nodeCount = rte.linearize().size
-    val timeout = depth*4000
+    val timeout = depth * 4000
     for {dfa <- callWithTimeout(timeout,
-                                () => rte.toDfa(true),
-                                () => println(s"cancelling DFA generation after ${timeout}ms depth=$depth, csv=$csvFileName"))
+      () => rte.toDfa(true),
+      () => println(s"cancelling DFA generation after ${timeout}ms depth=$depth, csv=$csvFileName"))
          stateCount = dfa.Qids.size
          transitionCount = dfa.Q.map(q => q.transitions.size).sum
          mindfa <- callWithTimeout(timeout,
-                                   () => minimize(dfa),
-                                   () => println(s"cancelling DFA minimization after ${timeout}ms state-count=${stateCount} transition-count=${transitionCount}"))
+           () => minimize(dfa),
+           () => println(s"cancelling DFA minimization after ${timeout}ms state-count=${stateCount} transition-count=${transitionCount}"))
          minStateCount = mindfa.Qids.size
          minTransitionCount = mindfa.Q.map(q => q.transitions.size).sum
          } {
@@ -90,7 +90,7 @@ object Scalaio2025 {
 
 
   def genCsvTunedME(num_repetitions: Int): Unit = {
-    genCsvTuned(num_repetitions, avoidEmpty=false, csv=tunedMECsv)
+    genCsvTuned(num_repetitions, avoidEmpty = false, csv = tunedMECsv)
   }
 
   def genCsvNaive(num_repetitions: Int): Unit = {
@@ -98,14 +98,14 @@ object Scalaio2025 {
     genCsv(num_repetitions, naiveCsv, randomNaiveRte)
   }
 
-  def genCsvTuned(num_repetitions: Int, avoidEmpty:Boolean=true,csv:String=tunedCsv): Unit = {
+  def genCsvTuned(num_repetitions: Int, avoidEmpty: Boolean = true, csv: String = tunedCsv): Unit = {
     import rte.Random.randomRte
-    genCsv(num_repetitions, csv, (n:Int) => randomRte(n, avoidEmpty=avoidEmpty))
+    genCsv(num_repetitions, csv, (n: Int) => randomRte(n, avoidEmpty = avoidEmpty))
   }
 
   def genCsv(num_repetitions: Int,
-             csv:String=tunedCsv,
-             genRte:(Int=>Rte)): Unit = {
+             csv: String = tunedCsv,
+             genRte: (Int => Rte)): Unit = {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
@@ -120,7 +120,6 @@ object Scalaio2025 {
       }
     }
   }
-
 
 
   def genCsvBalanced(num_repetitions: Int): Unit = {
@@ -150,20 +149,20 @@ object Scalaio2025 {
                      balance: Float,
                      probability: Float = 0.0F)
 
-  def genThresholdCurve(cvslines:Seq[CsvLine]):Seq[(Double,Double)] = {
+  def genThresholdCurve(cvslines: Seq[CsvLine]): Seq[(Double, Double)] = {
     val num_per_depth = cvslines.size
     val state_count_to_dfa_count = cvslines
       .groupBy(_.state_count)
       .collect { case (state_count, cvslines) => (state_count, cvslines.size) }
     val xys = for {(this_state_count, _) <- state_count_to_dfa_count.toList
-         // compute percentage of cvslines which have state_count > this_state_count
-         // 1st, how many cvslines have state_count > this_state_count
-         n = state_count_to_dfa_count.collect { case (state_count, count) if count <= this_state_count => count }.sum
-         } yield (this_state_count.toDouble, 100.0 * n.toDouble / num_per_depth)
+                   // compute percentage of cvslines which have state_count > this_state_count
+                   // 1st, how many cvslines have state_count > this_state_count
+                   n = state_count_to_dfa_count.collect { case (state_count, count) if count <= this_state_count => count }.sum
+                   } yield (this_state_count.toDouble, 100.0 * n.toDouble / num_per_depth)
     xys.sortBy(_._1)
   }
 
-  def readCsvLines(str:String):Vector[CsvLine] = {
+  def readCsvLines(str: String): Vector[CsvLine] = {
     import java.io.InputStream
     import scala.io.{BufferedSource, Source}
     val s: InputStream = getClass.getResourceAsStream(s"/statistics/${str}.csv")
@@ -173,18 +172,18 @@ object Scalaio2025 {
       .map(line => line.split(",").to(Vector))
       .collect {
         case Vector(depth, node_count, _, _, state_count, transition_count, balance, probability) =>
-        CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, balance.toFloat, probability.toFloat)
-      case Vector(depth, node_count, _, _, state_count, transition_count, balance) =>
-        CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, balance.toFloat)
+          CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, balance.toFloat, probability.toFloat)
+        case Vector(depth, node_count, _, _, state_count, transition_count, balance) =>
+          CsvLine(depth.toInt, node_count.toInt, state_count.toInt, transition_count.toInt, balance.toFloat)
       }
       .to(Vector)
     fp.close()
     csvlines
   }
 
-  def histogram():Unit = {
+  def histogram(): Unit = {
     import java.io._
-    def gnuheader(basename:String, depth:Int): String = {
+    def gnuheader(basename: String, depth: Int): String = {
       "set terminal pngcairo size 600,400\n" +
         s"set output '${basename}.png'\n" +
         """|
@@ -196,28 +195,30 @@ object Scalaio2025 {
            |set xtics rotate by -45
            |set yrange [0:100]
            |""".stripMargin +
-           s"set title \"DFA State distribution for Rte of depth=$depth\"\n"
+        s"set title \"DFA State distribution for Rte of depth=$depth\"\n"
     }
-    def gnufooter():String = {
+
+    def gnufooter(): String = {
       """|
          |plot $MyData using 2:xtic(1) ti col, \
          |     $MyData using 3 ti col, \
          |     $MyData using 4 ti col""".stripMargin
     }
+
     for {depth <- 4 to 8
          counts = (1 to 10).to(List)
          basename = s"histogram-${depth}"
          gnuFileName = basename + ".gnu"
          gnu = new PrintWriter(new File(gnuFileName))
          algos = Seq("balanced",
-                     "tuned",
-                     //"tunedME",
-                     "naive")
+           "tuned",
+           //"tunedME",
+           "naive")
          } {
-      gnu.write(gnuheader(basename,depth) + "\n\n")
+      gnu.write(gnuheader(basename, depth) + "\n\n")
       gnu.write("$MyData << EOD\n")
       gnu.write("State-count")
-      for{ str <- algos
+      for {str <- algos
            depthlines = readCsvLines(str).filter(_.depth == depth)
            num_samples = depthlines.length} gnu.write(s" \"$str samples=${num_samples}\"")
       gnu.write("\n")
@@ -228,19 +229,19 @@ object Scalaio2025 {
                                   } yield (state_count, percentage)
                        sc_to_percent = xys.to(Map)
                        max_count = counts.max
-                       restPercent = (for{(sc,percent) <- xys
-                                          if sc > max_count
-                                          } yield percent).sum
-                       tuples = for{sc<-counts} yield (sc, sc_to_percent.getOrElse(sc, 0.0))
+                       restPercent = (for {(sc, percent) <- xys
+                                           if sc > max_count
+                                           } yield percent).sum
+                       tuples = for {sc <- counts} yield (sc, sc_to_percent.getOrElse(sc, 0.0))
                        } yield (str, restPercent, tuples)
-      val outOfRange = (for{(str,restPercent,_) <- mixed
-                            } yield (str, restPercent)).to(Map)
-      val matrix = for{(str,_,tuples) <- mixed
-                       (sc, percent) <- tuples} yield (str, sc, percent)
+      val outOfRange = (for {(str, restPercent, _) <- mixed
+                             } yield (str, restPercent)).to(Map)
+      val matrix = for {(str, _, tuples) <- mixed
+                        (sc, percent) <- tuples} yield (str, sc, percent)
       val grouped = matrix.groupBy(_._2)
 
-      for{sc <- counts
-          triples = grouped(sc)} {
+      for {sc <- counts
+           triples = grouped(sc)} {
         gnu.write(s"${sc} ")
         for {str <- algos
              triple <- triples
@@ -250,8 +251,8 @@ object Scalaio2025 {
         gnu.write("\n")
       }
       gnu.write("""">10" """)
-      for{str <- algos
-          percent = outOfRange(str)} gnu.write(f" $percent%.3f")
+      for {str <- algos
+           percent = outOfRange(str)} gnu.write(f" $percent%.3f")
       gnu.write("\n")
       gnu.write("EOD\n\n")
       gnu.write(gnufooter())
@@ -266,9 +267,9 @@ object Scalaio2025 {
     import scala.io.Source
 
     for {str <- Seq("balanced",
-                    "tuned",
-                    //"tunedME",
-                    "naive")
+      "tuned",
+      //"tunedME",
+      "naive")
          alllines = readCsvLines(str)
          depthmap = alllines.groupBy(_.depth)
          } {
@@ -280,28 +281,28 @@ object Scalaio2025 {
                         } yield (s"depth=${depth}", xys.sortBy(_._1))
 
       gnuPlot(curves.to(Seq))(title = s"Analysis of ${str} for ${alllines.size} Samples",
-                              xAxisLabel = "DFA state count",
-                              xLog = true,
-                              grid = true,
-                              yLog = true,
-                              yAxisLabel = "Percentage dfa <= state count",
-                              view = true)
+        xAxisLabel = "DFA state count",
+        xLog = true,
+        grid = true,
+        yLog = true,
+        yAxisLabel = "Percentage dfa <= state count",
+        view = true)
     }
     for {depth <- (4 to 8)
          descrs = for {str <- Seq("balanced",
-                                  "tuned",
-                                  //"tunedME",
-                                  "naive")
+           "tuned",
+           //"tunedME",
+           "naive")
                        alllines = readCsvLines(str).filter(_.depth == depth)
                        xys = genThresholdCurve(alllines)
                        } yield (s"${str} samples=${alllines.length}", xys)
          } gnuPlot(descrs.to(Seq))(title = s"Threshold depth=${depth}",
-                                   xAxisLabel = "DFA state count",
-                                   xLog = true,
-                                   grid = true,
-                                   yLog = true,
-                                   yAxisLabel = "Percentage dfa <= state count",
-                                   view = true)
+      xAxisLabel = "DFA state count",
+      xLog = true,
+      grid = true,
+      yLog = true,
+      yAxisLabel = "Percentage dfa <= state count",
+      view = true)
   }
 
 
@@ -316,40 +317,76 @@ object Scalaio2025 {
                                  } yield (node_count.toDouble, average)
                       descr = (s"percentage=$percentage", xys.to(List).sortBy(_._1))
                       _ = gnuPlot(Seq(descr))(title = s"Average balanced percentage=${percentage} node count (${tuples.size} samples)",
-                                              xAxisLabel = "AST node count",
-                                              yAxisLabel = "DFA state count",
-                                              yLog = true,
-                                              grid = true,
-                                              plotWith = "points",
-                                              view = true)
+                        xAxisLabel = "AST node count",
+                        yAxisLabel = "DFA state count",
+                        yLog = true,
+                        grid = true,
+                        plotWith = "points",
+                        view = true)
                       } yield descr
 
     gnuPlot(descrs.to(Seq))(title = s"Average balanced node count (${sample_count} samples)",
-                            xAxisLabel = "AST node count",
-                            yAxisLabel = "DFA state count",
-                            yLog = true,
-                            grid = true,
-                            plotWith = "points",
-                            view = true)
+      xAxisLabel = "AST node count",
+      yAxisLabel = "DFA state count",
+      yLog = true,
+      grid = true,
+      plotWith = "points",
+      view = true)
 
     for {str <- Seq("tuned", "tunedME", "naive")
          alllines = readCsvLines(str)} {
 
       val sample_count = alllines.size
       val xys = (for {(node_count, tuples) <- alllines.groupBy(_.node_count)
-                     state_counts = tuples.map(_.state_count)
-                     average = state_counts.sum / state_counts.size.toDouble
-                     } yield (node_count.toDouble, average))
-      val descr = Seq((str, xys.to(List).sortBy(_._1)))
-      gnuPlot(descr)(title = f"Average ${str} node count (${sample_count} samples)",
-                     xAxisLabel = "AST node count",
-                     yAxisLabel = "DFA state count",
-                     yLog = true,
-                     grid = true,
-                     gnuFileCB = println,
-                     plotWith = "points",
-                     view = true)
+                      state_counts = tuples.map(_.state_count)
+                      average = state_counts.sum / state_counts.size.toDouble
+                      } yield (node_count.toDouble, average))
+      val descrs = Seq((str, xys.to(List).sortBy(_._1)))
+      gnuPlot(descrs)(title = f"Average ${str} node count (${sample_count} samples)",
+        xAxisLabel = "AST node count",
+        yAxisLabel = "DFA state count",
+        yLog = true,
+        grid = true,
+        gnuFileCB = println,
+        plotWith = "points",
+        view = true)
     }
+  }
+
+  def plotBalance1(): Unit = {
+    val descrs = for {str <- Seq("tuned", "tunedME", "naive", "balanced")
+                      alllines = readCsvLines(str)
+                      grouped = alllines.groupBy(_.balance)
+                      xys = for {(balance, cvslines) <- grouped
+                                 ratios = cvslines.map { case CsvLine(_, node_count, state_count, _, _, _) => node_count.toDouble / state_count }
+                                 } yield (balance.toDouble, ratios.sum / ratios.length)
+                      } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
+    gnuPlot(descrs.to(Seq))(title = "Balances",
+      xAxisLabel = "Balance",
+      yAxisLabel = "node:state ratio",
+      plotWith = "points",
+      gnuFileCB = println,
+      view = true
+    )
+  }
+
+  def plotBalance2(): Unit = {
+    val descrs = for {str <- Seq("tuned", "tunedME", "naive", "balanced")
+                      alllines = readCsvLines(str)
+                      grouped = alllines.groupBy(_.balance)
+                      // for each value of balance, compute the percentage of state_count <= 2
+                      xys = for {(balance, cvslines) <- grouped
+                                 num_samples = cvslines.length
+                                 num_small = cvslines.count{case CsvLine(_, node_count, state_count, _, _, _) => state_count <= 2}
+                                 } yield (balance.toDouble, (100.0 * num_small) / num_samples)
+                      } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
+    gnuPlot(descrs.to(Seq))(title = "Balances",
+      xAxisLabel = "Balance",
+      yAxisLabel = "Percentage count >= 2",
+      plotWith = "points",
+      gnuFileCB = println,
+      view = true
+    )
   }
 }
 
@@ -378,6 +415,13 @@ object GenCsvTunedME {
   def main(argv: Array[String]): Unit = {
     val limit:Int = (if (argv.length == 0) 500 else argv(0).toInt)
     Scalaio2025.genCsvTunedME(limit)
+  }
+}
+
+object BalancePlot {
+  def main(array: Array[String]):Unit = {
+    Scalaio2025.plotBalance1()
+    Scalaio2025.plotBalance2()
   }
 }
 
