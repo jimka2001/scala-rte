@@ -309,25 +309,37 @@ abstract class Rte {
     bfs(Set[Rte](this), Vector[Rte](this), Vector[Rte](this))
   }
 
-  def measureBalance():Double = {
-    // shortest branch / longest branch length
-    // if perfectly balanced ==> 1.0
-    // otherwise returns
-    def shortest(depth:Double, rtes:Seq[Rte]):Double = {
+  def measureBalance():(Int,Int,Int) = {
+    // compute length of shortest branch
+    def shortest(depth:Int, rtes:Seq[Rte]):Int = {
       if (rtes.exists(r => r.children().isEmpty))
         depth
       else
         shortest(depth+1, rtes.flatMap(r => r.children()))
     }
 
-    def longest(depth:Double, rtes:Seq[Rte]):Double = {
+    // compte length of longest branch
+    def longest(depth:Int, rtes:Seq[Rte]):Int = {
       if (rtes.forall(r => r.children().isEmpty))
         depth
       else
         longest(depth+1, rtes.flatMap(r => r.children()))
     }
 
-    longest(1.0,Seq(this)) / shortest(1.0,Seq(this))
+    // sum the length of all the branches.
+    def total(depth:Int, rtes:Seq[Rte]):Int = {
+      rtes.foldLeft(0){case (acc:Int,rte:Rte) =>
+        val children = rte.children()
+        if (children.isEmpty)
+          acc + depth
+        else {
+          val t = total(depth+1,children)
+          t + acc
+        }
+      }
+    }
+
+    (shortest(0,Seq(this)), longest(0,Seq(this)), total(0, Seq(this)))
   }
 }
 
