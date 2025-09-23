@@ -428,7 +428,7 @@ object Scalaio2025 {
                                  } yield (balance, ratios.sum / ratios.length)
                       } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
     gnuPlot(descrs.to(Seq))(title = "1 Balances",
-      xAxisLabel = "Balance",
+      xAxisLabel = "Imbalance factor",
       yAxisLabel = "node:state ratio",
       plotWith = "points",
       gnuFileCB = println,
@@ -437,19 +437,23 @@ object Scalaio2025 {
   }
 
   def plotBalance2(): Unit = {
+    import scala.math.abs
+    val delta_balance = 0.25
     val descrs = for {str <- Seq("tuned", "tunedME", "naive", "balanced")
                       alllines = readCsvLines(str)
                       grouped = alllines.groupBy(cl => cl.imbalance())
+                      _ = println()
                       // for each value of balance, compute the percentage of state_count <= 2
-                      xys = for {(balance, cvslines) <- grouped
-                                 num_samples = cvslines.length
-                                 num_small = cvslines.count(cl => cl.state_count <= 2)
+                      xys = for {(balance, _) <- grouped
+                                 cls = alllines.filter{cl => abs(cl.imbalance() - balance) <= delta_balance }
+                                 num_samples = cls.length
+                                 num_small = cls.count(cl => cl.state_count <= 2)
                                  } yield (balance, (100.0 * num_small) / num_samples)
                       } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
     gnuPlot(descrs.to(Seq))(title = "2 Balances",
-      xAxisLabel = "Balance",
-      yAxisLabel = "Percentage count >= 2",
-      plotWith = "points",
+      xAxisLabel = "Imbalance factor",
+      yAxisLabel = "Percentage count >= 2 for x=imbalance",
+      plotWith = "lines",
       gnuFileCB = println,
       view = true
     )
@@ -467,7 +471,7 @@ object Scalaio2025 {
                       } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
     gnuPlot(descrs.to(Seq))(title = "Running Balances",
       xAxisLabel = "Imbalance Factor",
-      yAxisLabel = "Percentage count >= 2",
+      yAxisLabel = "Percentage count >= 2 for imblance <= x",
       plotWith = "lines",
       gnuFileCB = println,
       grid = true,
@@ -478,28 +482,28 @@ object Scalaio2025 {
 
 object GenCsvBalanced {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = if (argv.length == 0) 100 else argv(0).toInt
+    val limit:Int = if (argv.length == 0) 10 else argv(0).toInt
     Scalaio2025.genCsvBalanced(limit)
   }
 }
 
 object GenCsvTuned {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = if (argv.length == 0) 100 else argv(0).toInt
+    val limit:Int = if (argv.length == 0) 200 else argv(0).toInt
     Scalaio2025.genCsvTuned(limit)
   }
 }
 
 object GenCsvNaive {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = if (argv.length == 0) 100 else argv(0).toInt
+    val limit:Int = if (argv.length == 0) 50 else argv(0).toInt
     Scalaio2025.genCsvNaive(limit)
   }
 }
 
 object GenCsvTunedME {
   def main(argv: Array[String]): Unit = {
-    val limit:Int = if (argv.length == 0) 500 else argv(0).toInt
+    val limit:Int = if (argv.length == 0) 200 else argv(0).toInt
     Scalaio2025.genCsvTunedME(limit)
   }
 }
