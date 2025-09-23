@@ -150,9 +150,9 @@ object Scalaio2025 {
     for {
       r <- 0 to num_repetitions} {
       for {m <- 4 to 8
-           depth <- m to 8
-           futures = for {p <- List(0.25F, 0.50F, 0.75F, 0.90F)} yield Future {
-             println(s"r=$r m=$m depth=$depth, percentage=$p")
+           p = 0.90F
+           futures = for { depth <- m to 8} yield Future {
+             println(s"r=$r m=$m depth=$depth")
              writeCsvStatistic(depth=depth, genRte=(n: Int) => randomTotallyBalancedRte(p, n), prefix="balanced",
                csvFileName=balancedCsv, probability=Some(p))
            }
@@ -373,31 +373,6 @@ object Scalaio2025 {
   }
 
   def plotAverageCsv(): Unit = {
-
-    val alllines = readCsvLines("balanced")
-    val sample_count = alllines.size
-    val descrs = for {(percentage, tuples) <- alllines.groupBy(_.probability)
-                      xys = for {(node_count, tuples) <- tuples.groupBy(_.node_count)
-                                 state_counts = tuples.map(_.state_count)
-                                 average = state_counts.sum / state_counts.size.toDouble
-                                 } yield (node_count.toDouble, average)
-                      descr = (s"percentage=$percentage", xys.to(List).sortBy(_._1))
-                      _ = gnuPlot(Seq(descr))(title = s"Average balanced percentage=${percentage} node count (${tuples.size} samples)",
-                        xAxisLabel = "AST node count",
-                        yAxisLabel = "DFA state count",
-                        yLog = true,
-                        grid = true,
-                        plotWith = "points",
-                        view = true)
-                      } yield descr
-
-    gnuPlot(descrs.to(Seq))(title = s"Average balanced node count (${sample_count} samples)",
-      xAxisLabel = "AST node count",
-      yAxisLabel = "DFA state count",
-      yLog = true,
-      grid = true,
-      plotWith = "points",
-      view = true)
 
     for {str <- Seq("tuned", "tunedME", "naive")
          alllines = readCsvLines(str)} {
