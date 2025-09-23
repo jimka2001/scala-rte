@@ -71,7 +71,7 @@ object Scalaio2025 {
             case Some(s) => s"$s,"
             case None => "-1,"
           })
-        outFile.write(f",$shortest,$longest,$total")
+        outFile.write(f"$shortest,$longest,$total")
         probability match {
           case Some(probability) =>
             outFile.write(f",$probability%.2f")
@@ -211,7 +211,7 @@ object Scalaio2025 {
       .filter(line => line.length > 1 && '#' != line(0)) // skip comments and empty lines
       .map(line => line.split(",").to(Vector))
       .collect {
-        case Vector(depth, node_count, state_pre_count, transition_pre_count, state_count, transition_count,
+        case line@Vector(depth, node_count, state_pre_count, transition_pre_count, state_count, transition_count,
         shortest, longest, total, probability) =>
           CsvLine(depth.toInt, node_count.toInt, state_pre_count.toInt, transition_pre_count.toInt, state_count.toInt, transition_count.toInt,
             shortest.toInt, longest.toInt, total.toInt, probability.toDouble)
@@ -222,7 +222,8 @@ object Scalaio2025 {
       }
       .to(Vector)
     fp.close()
-    csvlines
+    // TODO - at the moment we just remove CsvLine objects containing -1, meaning the measurement timed-out.
+    csvlines.filter{cl => cl.state_count > 0 && cl.transition_count > 0}
   }
 
   def genThresholdCurve(cvslines: Seq[CsvLine]): Seq[(Double, Double)] = {
@@ -351,7 +352,7 @@ object Scalaio2025 {
         xAxisLabel = "DFA state count",
         xLog = true,
         grid = true,
-        yLog = true,
+        yLog = false,
         yAxisLabel = "Percentage dfa <= state count",
         view = true)
     }
@@ -367,7 +368,7 @@ object Scalaio2025 {
       xAxisLabel = "DFA state count",
       xLog = true,
       grid = true,
-      yLog = true,
+      yLog = false,
       yAxisLabel = "Percentage dfa <= state count",
       view = true)
   }
@@ -520,8 +521,6 @@ object TestBalance {
     println(rte2.measureBalance())
     println(rte2.linearize().length)
     rteViewAst(rte2, "testing2")
-
-
   }
 }
 
