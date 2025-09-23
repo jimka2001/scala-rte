@@ -60,25 +60,17 @@ object Scalaio2025 {
 
   def writeCsvStatistic(depth: Int, genRte: (Int => Rte), prefix:String, csvFileName: String,
                         probability: Option[Float]): Unit = {
-
-    import xymbolyco.Minimize.minimize
-    val rte = genRte(depth)
-    val (shortest, longest, total) = rte.measureBalance()
-    val nodeCount = rte.linearize().size
-    val timeout = depth * depth * 4000
-    for {dfa <- callWithTimeout(timeout,
-      () => rte.toDfa(true),
-      () => println(s"cancelling DFA generation after ${timeout}ms depth=$depth, csv=$csvFileName"))
-         stateCount = dfa.Qids.size
-         transitionCount = dfa.Q.map(q => q.transitions.size).sum
-         mindfa <- callWithTimeout(timeout,
-           () => minimize(dfa),
-           () => println(s"cancelling DFA minimization after ${timeout}ms state-count=${stateCount} transition-count=${transitionCount}"))
-         minStateCount = mindfa.Qids.size
-         minTransitionCount = mindfa.Q.map(q => q.transitions.size).sum
-         } {
+    def report(rte:Rte, nodeCount:Int, stateCount:Option[Int], transitionCount:Option[Int],
+               minStateCount:Option[Int], minTransitionCount:Option[Int]):Unit = {
+      val (shortest, longest, total) = rte.measureBalance()
       mergeFile(csvFileName)((outFile: FileWriter) => {
-        outFile.write(s"$depth,$nodeCount,$stateCount,$transitionCount,$minStateCount,$minTransitionCount")
+        outFile.write(s"$depth,$nodeCount,")
+        for {op <- Seq(stateCount, transitionCount, minStateCount, minTransitionCount)
+             } outFile.write(
+          op match {
+            case Some(s) => s"$s,"
+            case None => "-1,"
+          })
         outFile.write(f",$shortest,$longest,$total")
         probability match {
           case Some(probability) =>
@@ -86,6 +78,31 @@ object Scalaio2025 {
           case _ => ()
         }
       })
+    }
+    import xymbolyco.Minimize.minimize
+    val rte = genRte(depth)
+
+    val nodeCount = rte.linearize().size
+    val timeout = depth * depth * 4000
+    for {dfa <- callWithTimeout(timeout,
+      () => rte.toDfa(true),
+      () => {
+        println(s"cancelling DFA generation after ${timeout}ms depth=$depth, csv=$csvFileName")
+        report(rte, nodeCount, None, None, None, None)
+      })
+         stateCount = dfa.Qids.size
+         transitionCount = dfa.Q.map(q => q.transitions.size).sum
+         mindfa <- callWithTimeout(timeout,
+           () => minimize(dfa),
+           () => {
+             println(s"cancelling DFA minimization after ${timeout}ms state-count=${stateCount} transition-count=${transitionCount}")
+             report(rte, nodeCount, Some(stateCount), Some(transitionCount), None, None)
+           }
+         )
+         minStateCount = mindfa.Qids.size
+         minTransitionCount = mindfa.Q.map(q => q.transitions.size).sum
+         } {
+      report(rte, nodeCount, Some(stateCount), Some(transitionCount), Some(minStateCount), Some(minTransitionCount))
     }
   }
 
