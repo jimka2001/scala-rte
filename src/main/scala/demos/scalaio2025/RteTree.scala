@@ -1,4 +1,4 @@
-package demos.scalaio2025
+package demos.rte
 
 import adjuvant.Adjuvant.{callWithTimeout, openGraphicalFile}
 import adjuvant.GnuPlot.gnuPlot
@@ -9,7 +9,7 @@ import java.nio.file.Paths
 import java.util.UUID
 import scala.sys.process.stringSeqToProcess
 
-object Scalaio2025 {
+object RteTree {
 
   val statisticsResource: String = Paths.get("src/main/resources/statistics").toString + "/"
   val naiveCsv: String = statisticsResource + "naive.csv"
@@ -459,51 +459,51 @@ object Scalaio2025 {
 object GenCsvBalanced {
   def main(argv: Array[String]): Unit = {
     val limit:Int = if (argv.length == 0) 10 else argv(0).toInt
-    Scalaio2025.genCsvBalanced(limit)
+    RteTree.genCsvBalanced(limit)
   }
 }
 
 object GenCsvTuned {
   def main(argv: Array[String]): Unit = {
     val limit:Int = if (argv.length == 0) 200 else argv(0).toInt
-    Scalaio2025.genCsvTuned(limit)
+    RteTree.genCsvTuned(limit)
   }
 }
 
 object GenCsvNaive {
   def main(argv: Array[String]): Unit = {
     val limit:Int = if (argv.length == 0) 50 else argv(0).toInt
-    Scalaio2025.genCsvNaive(limit)
+    RteTree.genCsvNaive(limit)
   }
 }
 
 object GenCsvTunedME {
   def main(argv: Array[String]): Unit = {
     val limit:Int = if (argv.length == 0) 200 else argv(0).toInt
-    Scalaio2025.genCsvTunedME(limit)
+    RteTree.genCsvTunedME(limit)
   }
 }
 
 object BalancePlot {
   def main(array: Array[String]):Unit = {
-    Scalaio2025.plotBalance1()
-    Scalaio2025.plotBalance2()
-    Scalaio2025.plotBalance3()
+    RteTree.plotBalance1()
+    RteTree.plotBalance2()
+    RteTree.plotBalance3()
   }
 }
 
 object Plots {
   def main(argv: Array[String]): Unit = {
-    Scalaio2025.plotThreshold()
-    Scalaio2025.plotAverageCsv()
-    Scalaio2025.histogram()
+    RteTree.plotThreshold()
+    RteTree.plotAverageCsv()
+    RteTree.histogram()
     BalancePlot.main(argv)
   }
 }
 
 object Histograms {
   def main(argv: Array[String]): Unit = {
-    Scalaio2025.histogram()
+    RteTree.histogram()
   }
 }
 
@@ -544,7 +544,7 @@ object ViewAst {
       rteViewAst(rte, title = algo)
       println(rte.measureBalance())
       println(rte.linearize().length)
-      println(Scalaio2025.imbalanceFactor(rte.linearize().length, 1))
+      println(RteTree.imbalanceFactor(rte.linearize().length, 1))
       dfaView(dfa, title = algo)
     }
   }
