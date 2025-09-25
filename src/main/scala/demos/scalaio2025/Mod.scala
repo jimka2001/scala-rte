@@ -96,10 +96,11 @@ object TestExpr {
   import adjuvant.Adjuvant.returnPercentages
 
   def main(argv: Array[String]): Unit = {
-    val p = 8
+    val depth = 6
+    val p = 5
     val m = 100000
-    println("Balanced", returnPercentages(m, () => eval(balancedRand(3, p), p)))
-    println("Naive   ", returnPercentages(m, () => eval(naiveRand(3, p), p)))
+    println("Balanced", returnPercentages(m, () => eval(balancedRand(depth, p), p)))
+    println("Naive   ", returnPercentages(m, () => eval(naiveRand(depth, p), p)))
     println("All     ", ModDemo.allProducts(p))
   }
 }
