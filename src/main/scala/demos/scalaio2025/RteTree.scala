@@ -111,9 +111,9 @@ object RteTree {
   }
 
   def genCsvNaive(num_repetitions: Int): Unit = {
-    import rte.Random.randomNaiveRte
-    genCsv(num_repetitions, naiveCsv, prefix="native",
-      genRte=randomNaiveRte)
+    import rte.Random.randomNaiveRteByDepth
+    genCsv(num_repetitions, naiveCsv, prefix="naive",
+           genRte=randomNaiveRteByDepth)
   }
 
   def genCsvTuned(num_repetitions: Int, avoidEmpty: Boolean = true, prefix:String="tuned",csv: String = tunedCsv): Unit = {

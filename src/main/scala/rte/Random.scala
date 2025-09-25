@@ -49,11 +49,11 @@ object Random {
       randCase(() => EmptySet,
                List((0.1, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
                     (0.1, () => Singleton(RandomType.randomType(0, false))),
-                    (0.2, () => Cat(randomNaiveRte(depth-1), randomNaiveRte(depth-1))),
-                    (0.2, () => And(randomNaiveRte(depth-1), randomNaiveRte(depth-1))),
-                    (0.2, () => Or(randomNaiveRte(depth-1), randomNaiveRte(depth-1))),
-                    (0.1, () => Star(randomNaiveRte(depth-1))),
-                    (0.1, () => Not(randomNaiveRte(depth-1)))))
+                    (0.2, () => Cat(randomNaiveRteByDepth(depth-1), randomNaiveRteByDepth(depth-1))),
+                    (0.2, () => And(randomNaiveRteByDepth(depth-1), randomNaiveRteByDepth(depth-1))),
+                    (0.2, () => Or(randomNaiveRteByDepth(depth-1), randomNaiveRteByDepth(depth-1))),
+                    (0.1, () => Star(randomNaiveRteByDepth(depth-1))),
+                    (0.1, () => Not(randomNaiveRteByDepth(depth-1)))))
   }
 
   def randomSeq(depth: Int, length: Int, option: Boolean = true): Seq[Rte] = {
