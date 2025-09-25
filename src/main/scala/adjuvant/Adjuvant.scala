@@ -409,14 +409,14 @@ object Adjuvant {
   // There are 4 possible pairs, the first will be chosen with 25% likelihood,
   // the second with 33% likelihood, the third with 10%.
   // If none of these three is selected, the default will be chosen.
-  def randCase[A](default: A, pairs: List[(Double, () => A)]) = {
+  def randCase[A](default: () => A, pairs: Seq[(Double, () => A)]) = {
     val d = random.nextDouble()
     assert(pairs.size > 0)
 
     def loop(total: Double, pairs: List[(Double, () => A)]): A = {
       pairs match {
         case Nil =>
-          default
+          default()
         case (prob, f) :: _ if (d < total + prob) =>
           f()
         case (prob, _) :: rest =>
@@ -424,7 +424,7 @@ object Adjuvant {
       }
     }
 
-    loop(0.0, pairs)
+    loop(0.0, pairs.to(List))
   }
 
 
@@ -456,5 +456,14 @@ object Adjuvant {
       javaFuture.cancel(true)
       executor.shutdown()
     }
+  }
+
+  // call a 0-ary function ()=>A, `n`-many times, return a Map[A,Int] which counts
+  // the number of times each return value is obtained
+  def measureFrequencies[A](n:Int, f:(()=>A)):Map[A,Int] = {
+    (1 to n).foldLeft(Map[A,Int]())((acc:Map[A,Int], _:Int) => {
+      val a:A = f()
+      acc + (a -> (1 + acc.getOrElse(a,0)))
+    })
   }
 }

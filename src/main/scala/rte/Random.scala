@@ -41,12 +41,12 @@ object Random {
     // a naive random Rte of depth <= n is either a leaf or a node whose
     //  children are naive random Rtes of depth <= n-1
     if (depth == 0)
-      randCase(EmptySet,
+      randCase(() => EmptySet,
                List((0.1, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
                     (0.9, () => Singleton(RandomType.randomType(0, false))),
                     ))
     else
-      randCase(EmptySet,
+      randCase(() => EmptySet,
                List((0.1, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
                     (0.1, () => Singleton(RandomType.randomType(0, false))),
                     (0.2, () => Cat(randomNaiveRte(depth-1), randomNaiveRte(depth-1))),
@@ -76,7 +76,7 @@ object Random {
 
     def tree012ToRte(tree:Tree012):Rte = {
       tree match {
-        case Tree012Leaf() => randCase(EmptySet,
+        case Tree012Leaf() => randCase(() => EmptySet,
                                        List((0.90, () => Singleton(randElement(leafTypes))),
                                             (0.05, () => Sigma),
                                             (0.05, () => EmptySeq)))
@@ -87,7 +87,7 @@ object Random {
 
         case Tree012Binary(_, left, right) =>
           // And, Or, Cat
-          randCase(EmptySet,
+          randCase(() => EmptySet,
                    List((0.70, () => Cat(tree012ToRte(left), tree012ToRte(right))),
                         (0.15, () => Or(tree012ToRte(left), tree012ToRte(right))),
                         (0.15, () => And(tree012ToRte(left), tree012ToRte(right)))))
