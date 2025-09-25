@@ -62,32 +62,13 @@ object Expr {
 
 }
 
-object TestExpr {
-
-  import Expr.{eval, balancedRand, naiveRand}
-  import adjuvant.Adjuvant.returnPercentages
-
-  def main(argv: Array[String]): Unit = {
-    val p = 53
-    val m = 100000
-    println("Balanced", returnPercentages(m, () => eval(balancedRand(3, p), p)))
-    println("Naive   ", returnPercentages(m, () => eval(naiveRand(3, p), p)))
-
-  }
-}
-
-
 object ModDemo {
 
-  // print a histogram of percentages of all the values
-  // of a*b mod p
-  def main(argv: Array[String]): Unit = {
-    val p = 11
-
+  def allProducts(p:Int):Seq[(Int,Double)] = {
     val size = (p * p).toDouble
 
-    val products = (for {a <- 0 to p - 1
-                         b <- 0 to p - 1} yield (a, b))
+    (for {a <- 0 to p - 1
+          b <- 0 to p - 1} yield (a, b))
       .foldLeft(Map[Int, Int]()) {
         case (acc, (a, b)) =>
           val prod = a * b % p
@@ -97,6 +78,29 @@ object ModDemo {
       .map { case (prod, count) => (prod, 100 * count / size) }
       .sortBy(_._2)
       .reverse
-    println(products)
+  }
+
+  // print a histogram of percentages of all the values
+  // of a*b mod p
+  def main(argv: Array[String]): Unit = {
+    val p = 2
+
+    println(allProducts(p))
   }
 }
+
+
+object TestExpr {
+
+  import Expr.{eval, balancedRand, naiveRand}
+  import adjuvant.Adjuvant.returnPercentages
+
+  def main(argv: Array[String]): Unit = {
+    val p = 8
+    val m = 100000
+    println("Balanced", returnPercentages(m, () => eval(balancedRand(3, p), p)))
+    println("Naive   ", returnPercentages(m, () => eval(naiveRand(3, p), p)))
+    println("All     ", ModDemo.allProducts(p))
+  }
+}
+

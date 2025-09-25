@@ -458,12 +458,19 @@ object Adjuvant {
     }
   }
 
-  // call a 0-ary function ()=>A, `n`-many times, return a Map[A,Int] which counts
-  // the number of times each return value is obtained
-  def measureFrequencies[A](n:Int, f:(()=>A)):Map[A,Int] = {
+  // call a 0-ary function ()=>A, `n`-many times, return a List([A,Double)] which measures
+  // the number of times each return value is obtained.
+  // each pair (a,x) in the return value indicates that `a` was the return value x percent of the time.
+  // e.g., ("hello", 12.5) means "hello" was the return value 12.5 percent of the calls to `f`
+  // after `f` was called `n` times.
+  def returnPercentages[A](n:Int, f:(()=>A)):List[(A,Double)] = {
+    val denom = n.toDouble
+
     (1 to n).foldLeft(Map[A,Int]())((acc:Map[A,Int], _:Int) => {
       val a:A = f()
       acc + (a -> (1 + acc.getOrElse(a,0)))
-    })
+    }).to(List)
+      .sortBy(pair => -pair._2)
+      .map{ case (x:A, c:Int) => (x, 100 * c / denom)}
   }
 }
