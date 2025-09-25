@@ -25,7 +25,7 @@ package rte
 import adjuvant.AdjFunSuite
 import adjuvant.Adjuvant.callWithTimeout
 import org.scalatest.funsuite.AnyFunSuite
-import rte.Random.{randomRte, randomTotallyBalancedRte}
+import rte.Random.{randomRte, randomTotallyBalancedRteByDepth}
 
 //noinspection RedundantDefaultArgument
 class RteDfaTestSuite extends AdjFunSuite {
@@ -61,7 +61,7 @@ class RteDfaTestSuite extends AdjFunSuite {
   test("rte balanced to dfa"){
     for {depth <- 5 to 6
          rep <- 1 to num_random_tests/10
-         rt = randomTotallyBalancedRte(0.75F, depth)
+         rt = randomTotallyBalancedRteByDepth(0.75F, depth)
          dfa <- callWithTimeout(2000 * depth, ()=> rt.toDfa())
          } {
       //println(List(depth,rep))

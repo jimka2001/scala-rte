@@ -146,15 +146,15 @@ object RteTree {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
-    import rte.Random.randomTotallyBalancedRte
+    import rte.Random.randomTotallyBalancedRteByDepth
     for {
       r <- 0 to num_repetitions} {
       for {m <- 4 to 8
            p = 0.90F
            futures = for { depth <- m to 8} yield Future {
              println(s"r=$r m=$m depth=$depth")
-             writeCsvStatistic(depth=depth, genRte=(n: Int) => randomTotallyBalancedRte(p, n), prefix="balanced",
-               csvFileName=balancedCsv, probability=Some(p))
+             writeCsvStatistic(depth=depth, genRte=(n: Int) => randomTotallyBalancedRteByDepth(p, n), prefix="balanced",
+                               csvFileName=balancedCsv, probability=Some(p))
            }
            combined = Future.sequence(futures)
            } {
@@ -533,10 +533,10 @@ object ViewAst {
 
   def main(argv: Array[String]): Unit = {
     val depth: Int = if (argv.length == 0) 4 else argv(0).toInt
-    for {(algo, gen) <- Seq( //("naive", () => randomNaiveRte(depth)),
+    for {(algo, gen) <- Seq( ("naive", () => randomNaiveRteBySize(1 << depth)),
                              //("tunedME", () => randomRte(depth, false)),
                              //("tuned", () => randomRte(depth, true)),
-                             ("balanced", () => randomTotallyBalancedRteBySize(0.90F, 5))
+                             ("balanced", () => randomTotallyBalancedRteBySize(0.90F, 1 << depth))
                              )
          rte = gen()
          dfa = minimize(rte.toDfa())

@@ -38,6 +38,7 @@ object Random {
   }
 
   def randomNaiveRteBySize(leaves:Int):Rte = {
+    println(s"randomNaiveRteBySize($leaves)")
     if (leaves == 1)
       randCase(() => EmptySet,
                List((0.1, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
@@ -47,13 +48,15 @@ object Random {
       val leftSize = random.between(1, leaves)
       lazy val left = randomNaiveRteBySize(leftSize)
       lazy val right = randomNaiveRteBySize(leaves - leftSize)
+      lazy val mid = randomNaiveRteBySize(leaves)
+      println(s"   dividing $leaves into $leftSize + ${leaves - leftSize}")
       randCase(() => EmptySet,
                List(
                     (0.2, () => Cat(left, right)),
                     (0.2, () => And(left,right)),
                     (0.2, () => Or(left,right)),
-                    (0.2, () => Star(randomNaiveRteByDepth(leaves))),
-                    (0.2, () => Not(randomNaiveRteByDepth(leaves)))))
+                    (0.2, () => Star(mid)),
+                    (0.2, () => Not(mid))))
     }
 
   }
@@ -116,8 +119,8 @@ object Random {
   // syntactic structure of the RTE uniformly.
   //
   // probability_binary: float strictly between 0.0 and 1.0
-  def randomTotallyBalancedRte(probability_binary:Float,
-                               depth:Int) = {
+  def randomTotallyBalancedRteByDepth(probability_binary:Float,
+                                      depth:Int) = {
     import adjuvant.{Tree012, Tree012Binary, Tree012Leaf, Tree012Unary}
 
     def tree012ToRte(tree:Tree012):Rte = {
