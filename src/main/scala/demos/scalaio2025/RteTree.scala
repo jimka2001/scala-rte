@@ -536,7 +536,7 @@ object ViewAst {
     for {(algo, gen) <- Seq( //("naive", () => randomNaiveRte(depth)),
                              //("tunedME", () => randomRte(depth, false)),
                              //("tuned", () => randomRte(depth, true)),
-                             ("balanced", () => randomTotallyBalancedRte(0.90F, depth))
+                             ("balanced", () => randomTotallyBalancedRteBySize(0.90F, 5))
                              )
          rte = gen()
          dfa = minimize(rte.toDfa())
