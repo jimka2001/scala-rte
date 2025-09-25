@@ -111,6 +111,29 @@ class AdjuvantTestSuite extends AdjFunSuite {
     assert(! eql(diff(Seq(1,2,3),Seq(1L, 2L, 3L)), Seq[Any](1.0,2,3)))
   }
 
+  test("randCase") {
+    import adjuvant.Adjuvant.returnPercentages
+    def f(): Int = {
+      randCase(() => 0, // 100 - 45 - 20 - 10
+               Seq((0.45, () => 1),
+                   (0.20, () => 2),
+                   (0.10, () => 3)))
+    }
+
+    for {r <- 0 to num_random_tests
+         (n, percent) <- returnPercentages(100000, f)
+         expected = n match {
+           case 0 => 100 - 45 - 20 - 10
+           case 1 => 45
+           case 2 => 20
+           case 3 => 10
+         }
+         } {
+      assert(scala.math.abs(percent - expected) < 1.0,
+             s"expecting percent=${expected}, got=$percent")
+    }
+  }
+
 //  test("xyzzy"){
 //    val one:Long = 1
 //    one match {
