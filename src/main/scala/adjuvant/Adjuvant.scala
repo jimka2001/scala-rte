@@ -471,6 +471,25 @@ object Adjuvant {
       acc + (a -> (1 + acc.getOrElse(a,0)))
     }).to(List)
       .sortBy(pair => -pair._2)
-      .map{ case (x:A, c:Int) => (x, 100 * c / denom)}
+      .map{ case (x, c:Int) => (x, 100 * c / denom)}
+  }
+
+  abstract class Node
+  case class InternalNode(n: Int, left: Node, right: Node) extends Node
+  case class LeafNode() extends Node
+
+  def balancedRandTreeBySize(internalNodeCount:Int):Node = {
+    val population = scala.util.Random.shuffle((0 until internalNodeCount).to(List))
+
+    def insert(node: Node, a: Int): Node = {
+      node match {
+        case InternalNode(n, left, right) if a < n => InternalNode(n, insert(left, a), right)
+        case InternalNode(n, left, right) => InternalNode(n, left, insert(right, a))
+        case LeafNode() => InternalNode(a, LeafNode(), LeafNode())
+      }
+    }
+
+    val default: Node = LeafNode()
+    population.foldLeft(default)(insert)
   }
 }
