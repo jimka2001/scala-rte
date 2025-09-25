@@ -27,15 +27,31 @@ object Expr {
   // a tree of depth-d-or-less is either a leaf
   // or a node whose two children are each
   // trees of depth-(d-1)-or-less
-  def naiveRand(depth: Int, p: Int): Expr = {
+  def naiveRandByDepth(depth: Int, p: Int): Expr = {
     if (depth == 0)
       Const(random.nextInt(p))
     else
       randCase(() => Const(random.nextInt(p)),
-               Seq((0.333, () => Plus(naiveRand(depth - 1, p), naiveRand(depth - 1, p))),
-                    (0.333, () => Times(naiveRand(depth - 1, p), naiveRand(depth - 1, p)))
+               Seq((0.333, () => Plus(naiveRandByDepth(depth - 1, p), naiveRandByDepth(depth - 1, p))),
+                   (0.333, () => Times(naiveRandByDepth(depth - 1, p), naiveRandByDepth(depth - 1, p)))
                    //(0.5, () => Times(naiveRand(depth - 1, p), naiveRand(depth - 1, p)))
                    ))
+  }
+
+  def naiveRandBySize(leaves: Int, p: Int): Expr = {
+        assert(leaves > 0)
+    if (leaves == 1)
+      Const(random.nextInt(p))
+    else {
+      val leftSize = random.between(1, leaves)
+      val left = naiveRandBySize(leftSize, p)
+      val right = naiveRandBySize(leaves - leftSize, p)
+      // println(s"$leaves = $leftSize + ${leaves - leftSize}")
+      if (random.nextInt(2) == 0)
+        Plus(left,right)
+      else
+        Times(left,right)
+    }
   }
 
   // generate a randomly selected Expr tree of depth approximately d.
@@ -44,8 +60,12 @@ object Expr {
   // then building a binary search tree by inserting this list iterative
   // in shuffled order into a tree starting with the empty tree,
   // finally building a Expr tree the same share as the binary search tree.
-  def balancedRand(depth: Int, p: Int): Expr = {
+  def balancedRandByDepth(depth: Int, p: Int): Expr = {
     val nodeCount = random.between(1 << depth, 1 << (depth + 1))
+    balancedRandBySize(nodeCount, p)
+  }
+
+  def balancedRandBySize(nodeCount:Int, p:Int):Expr = {
     val population = scala.util.Random.shuffle((0 until nodeCount).to(List))
 
     abstract class Node
@@ -103,18 +123,31 @@ object ModDemo {
   }
 }
 
+object TestExprBySize {
+  import Expr.{eval, balancedRandBySize, naiveRandBySize}
+  import adjuvant.Adjuvant.returnPercentages
 
-object TestExpr {
+  def main(argv: Array[String]): Unit = {
+    val size = 1 << 6
+    val p = 5
+    val m = 100
+    println("Balanced", returnPercentages(m, () => eval(balancedRandBySize(size, p), p)))
+    println("Naive   ", returnPercentages(m, () => eval(naiveRandBySize(size, p), p)))
+    println("All     ", ModDemo.allProducts(p))
+  }
+}
 
-  import Expr.{eval, balancedRand, naiveRand}
+object TestExprByDepth {
+
+  import Expr.{eval, balancedRandByDepth, naiveRandByDepth}
   import adjuvant.Adjuvant.returnPercentages
 
   def main(argv: Array[String]): Unit = {
     val depth = 6
     val p = 5
     val m = 100000
-    println("Balanced", returnPercentages(m, () => eval(balancedRand(depth, p), p)))
-    println("Naive   ", returnPercentages(m, () => eval(naiveRand(depth, p), p)))
+    println("Balanced", returnPercentages(m, () => eval(balancedRandByDepth(depth, p), p)))
+    println("Naive   ", returnPercentages(m, () => eval(naiveRandByDepth(depth, p), p)))
     println("All     ", ModDemo.allProducts(p))
   }
 }
