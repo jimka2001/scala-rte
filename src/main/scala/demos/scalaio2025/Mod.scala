@@ -76,7 +76,7 @@ object ModDemo {
       }
       .to(List)
       .map { case (prod, count) => (prod, 100 * count / size) }
-      .sortBy(_._2)
+      .sortBy(pair => (pair._2, pair._1))
       .reverse
   }
 
