@@ -112,13 +112,35 @@ object RteTree {
                       alllines = readCsvLines(str)
                       xys = genThresholdCurve(alllines)
                       } yield (s"${str} samples=${alllines.length}", xys)
-   gnuPlot(descrs.to(Seq))(title = s"Threshold",
+   gnuPlot(descrs.to(Seq))(title = "Threshold",
       xAxisLabel = "DFA state count",
       xLog = true,
       grid = true,
       yLog = false,
       yAxisLabel = "Percentage dfa <= state count",
       view = true)
+  }
+
+  // for each algorithm  we generate a curve of (x,y) pairs
+  //   where x = rte leaf count
+  //         y = count of unique dfas produced
+  //    for now we count the raw number of different dfas, later we need to normalize by how
+  //         many rtes of this leaf size contributed to the sample.
+  def plotDiversity():Unit = {
+    val descrs = for {str <- Seq("tuned", "tunedME", "naive", "balanced")
+                      alllines = readCsvLines(str)
+                      numsamples = alllines.length
+                      xys = for {(leafCount:Int, csvlines) <- alllines.groupBy(_.leaf_count)
+                                 diversity = csvlines.map(cl => (cl. state_pre_count,
+                                   cl.transition_pre_count,
+                                   cl.state_count,
+                                   cl.transition_count)).distinct.length
+                                 } yield (leafCount.toDouble, diversity.toDouble)
+         } yield (s"$str - $numsamples samples", xys.toList.sortBy(_._1))
+    gnuPlot(descrs.to(Seq))(title="Diversity",
+                            xAxisLabel = "RTE leaf count",
+                            yAxisLabel = "Unique DFA count",
+                            view = true)
   }
 
   def plotAverageCsv(): Unit = {
@@ -247,6 +269,7 @@ object BalancePlot {
 object Plots {
   import demos.scalaio2025.GnuPlot.histogram
   def main(argv: Array[String]): Unit = {
+    RteTree.plotDiversity()
     RteTree.plotThreshold()
     RteTree.plotAverageCsv()
     histogram()
