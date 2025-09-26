@@ -309,6 +309,15 @@ abstract class Rte {
     bfs(Set[Rte](this), Vector[Rte](this), Vector[Rte](this))
   }
 
+  def countLeaves():Int = {
+    val cs = this.children()
+
+    if (cs.isEmpty)
+      1
+    else
+      cs.map(child => child.countLeaves()).sum
+  }
+
   def measureBalance():(Int,Int,Int) = {
     // compute length of shortest branch
     def shortest(depth:Int, rtes:Seq[Rte]):Int = {

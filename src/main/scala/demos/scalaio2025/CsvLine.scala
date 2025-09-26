@@ -2,6 +2,7 @@ package demos.scalaio2025
 
 
 case class CsvLine(node_count: Int,
+                   leaf_count: Int,
                    state_pre_count:Int,
                    transition_pre_count:Int,
                    state_count: Int,
@@ -94,12 +95,13 @@ object CsvLine {
     import xymbolyco.Minimize.minimize
     val rte = genRte()
     val nodeCount = rte.linearize().size
+    val leafCount = rte.countLeaves()
     val (shortest, longest, total) = rte.measureBalance()
-    def report(nodeCount:Int, stateCount:Option[Int], transitionCount:Option[Int],
+    def report(nodeCount:Int, leafCount:Int, stateCount:Option[Int], transitionCount:Option[Int],
                minStateCount:Option[Int], minTransitionCount:Option[Int]):Unit = {
 
       mergeFile(csvFileName,prefix)((outFile: FileWriter) => {
-        outFile.write(s"$nodeCount,")
+        outFile.write(s"$nodeCount,$leafCount,")
         for {op <- Seq(stateCount, transitionCount, minStateCount, minTransitionCount)
              } outFile.write(
           op match {
@@ -116,7 +118,7 @@ object CsvLine {
                                 () => rte.toDfa(true),
                                 () => {
                                   println(s"cancelling DFA generation after ${timeout}ms nodeCount=$nodeCount, csv=$csvFileName")
-                                  report(nodeCount, None, None, None, None)
+                                  report(nodeCount, leafCount, None, None, None, None)
                                 })
          stateCount = dfa.Qids.size
          transitionCount = dfa.Q.map(q => q.transitions.size).sum
@@ -124,13 +126,13 @@ object CsvLine {
                                    () => minimize(dfa),
                                    () => {
                                      println(s"cancelling DFA minimization after ${timeout}ms state-count=${stateCount} transition-count=${transitionCount}")
-                                     report(nodeCount, Some(stateCount), Some(transitionCount), None, None)
+                                     report(nodeCount, leafCount, Some(stateCount), Some(transitionCount), None, None)
                                    }
                                    )
          minStateCount = mindfa.Qids.size
          minTransitionCount = mindfa.Q.map(q => q.transitions.size).sum
          } {
-      report(nodeCount, Some(stateCount), Some(transitionCount), Some(minStateCount), Some(minTransitionCount))
+      report(nodeCount, leafCount, Some(stateCount), Some(transitionCount), Some(minStateCount), Some(minTransitionCount))
     }
   }
 
@@ -145,9 +147,11 @@ object CsvLine {
       .filter(line => line.length > 1 && '#' != line(0)) // skip comments and empty lines
       .map(line => line.split(",").to(Vector))
       .collect {
-        case Vector(node_count, state_pre_count, transition_pre_count, state_count, transition_count,
+        case Vector(node_count, leaf_count,
+                    state_pre_count, transition_pre_count, state_count, transition_count,
                     shortest, longest, total) =>
           CsvLine(node_count.toInt,
+                  leaf_count.toInt,
                   state_pre_count.toInt, transition_pre_count.toInt,
                   state_count.toInt, transition_count.toInt,
                   shortest.toInt, longest.toInt, total.toInt)
