@@ -51,7 +51,25 @@ object CsvLine {
 
   def withLock[A](lockFile: String, f: () => A): A = {
     import adjuvant.FileLock.callInBlock
-    callInBlock(lockFile + ".lock")(f)
+    // Don't put the lock file in the resource directory because
+    //   it confuses the compiler.  if the scala code tries to compile
+    //   while the lock file is there, java thinks the link is broken
+    //   and fails to compile.
+    // So we take a path like
+    //       src/main/resources/statistics/naive.csv
+    //  and insert ../../ after the right-most /
+    // --> src/main/resources/statistics/../../naive.csv
+
+    val components = lockFile.split('/').to(Vector)
+    val leading = components.dropRight(1)
+    val trailing = components.takeRight(1)
+    val alernative = leading ++ Vector("../..") ++ trailing
+    val alternativePath = (if (lockFile(0) == '/')
+      "/" + alernative.mkString("/")
+    else
+      alernative.mkString("/"))
+    println(s"lockfile=$lockFile")
+    callInBlock( alternativePath + ".lock")(f)
   }
 
   /**
