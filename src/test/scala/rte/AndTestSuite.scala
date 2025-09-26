@@ -25,7 +25,7 @@ import adjuvant.Adjuvant.{eql, fixedPoint}
 import adjuvant.AdjFunSuite
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
-import rte.Random.randomRte
+import rte.Random.randomRteByDepth
 import rte.RteImplicits._
 
 
@@ -153,9 +153,9 @@ class AndTestSuite extends AdjFunSuite {
     val trd2 = Singleton(genus.SAtomic(classOf[TestD2]))
     for {depth <- 0 to 5
          _ <- 1 to num_random_tests/2
-         r1 = randomRte(depth)
-         r2 = randomRte(depth)
-         r3 = randomRte(depth)
+         r1 = randomRteByDepth(depth)
+         r2 = randomRteByDepth(depth)
+         r3 = randomRteByDepth(depth)
          } {
       // removing duplicates
       assert(And(r1, r1).canonicalize == r1.canonicalize,
@@ -242,10 +242,10 @@ class AndTestSuite extends AdjFunSuite {
              == Sigma)
     for {depth <- 0 to 3
          _ <- 1 to num_random_tests/2
-         r1 = randomRte(depth)
-         r2 = randomRte(depth)
-         r3 = randomRte(depth)
-         r4 = randomRte(depth)
+         r1 = randomRteByDepth(depth)
+         r2 = randomRteByDepth(depth)
+         r3 = randomRteByDepth(depth)
+         r4 = randomRteByDepth(depth)
          } {
 
       // And(a,Or(x,y),b) --> Or(And(a,x,b),And(a,y,b))
@@ -353,10 +353,10 @@ class AndTestSuite extends AdjFunSuite {
   test("canonicalize and 253") {
     for {depth <- 0 to 1
          _ <- 1 to num_random_tests
-         r1 = randomRte(depth)
-         r2 = randomRte(depth)
-         r3 = randomRte(depth)
-         r4 = randomRte(depth)
+         r1 = randomRteByDepth(depth)
+         r2 = randomRteByDepth(depth)
+         r3 = randomRteByDepth(depth)
+         r4 = randomRteByDepth(depth)
          } {
       assert(And(r1, Or(r2, r3).canonicalize, r4).canonicalize ~=
                And(r1, Or(r2, r3), r4).canonicalize,
@@ -410,9 +410,9 @@ class AndTestSuite extends AdjFunSuite {
     val trd2 = Singleton(genus.SAtomic(classOf[TestD2]))
     for {depth <- 0 to 4
          _ <- 1 to num_random_tests
-         r1 = randomRte(depth)
-         r2 = randomRte(depth)
-         r3 = randomRte(depth)
+         r1 = randomRteByDepth(depth)
+         r2 = randomRteByDepth(depth)
+         r3 = randomRteByDepth(depth)
          } {
 
       assert(And(r1, Not(r1)).canonicalize ~= EmptySet,

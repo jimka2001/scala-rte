@@ -1,6 +1,6 @@
 package rte
 
-import rte.Random.randomRte
+import rte.Random.randomRteByDepth
 
 object sanityTest {
   def check1() = {
@@ -52,7 +52,7 @@ object sanityTest2 {
   def main(argv: Array[String]): Unit = {
     for {depth <- 5 to 7
          _ <- 1 to 2000
-         rt = randomRte(depth)
+         rt = randomRteByDepth(depth)
          } {
       rt.toDfa()
     }

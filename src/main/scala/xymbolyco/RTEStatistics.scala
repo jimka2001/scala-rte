@@ -29,7 +29,7 @@ import xymbolyco.Profiling.check
 import adjuvant.GnuPlot._
 import xymbolyco.Extract.dfaToRte
 import org.scalacheck.Gen
-import rte.Random.randomRte
+import rte.Random.randomRteByDepth
 
 case class RTEStatistics(rte: Rte) {
 //object contains a map of the transitions
@@ -68,7 +68,7 @@ object mystats {
       //using a map to count DFAs (creating couples of size->count, incrementing at each DFA
       val mymap: Map[Double, Double] = Map().withDefaultValue(0)
       val data = Range(0, number).foldLeft(mymap) { (acc, _) =>
-        val fr = f(randomRte(depth + 1))
+        val fr = f(randomRteByDepth(depth + 1))
         acc + (fr -> (acc(fr) + 1))
       }
       //converting map to sequence of doubles, then adding the sequence of doubles to curve sequence
@@ -96,7 +96,7 @@ object mystats {
       //builds map of double->double, rte, counts all values
       val mymap: Map[Double, Double] = Map().withDefaultValue(0)
       val data = Range(0, num * depth).foldLeft(mymap) { (acc, x) =>
-        val fr = f(randomRte((x / num) + 1))
+        val fr = f(randomRteByDepth((x / num) + 1))
         acc + (fr -> (acc(fr) + 1))
       }
       //adds curve to sequence of curves
@@ -190,7 +190,7 @@ object mystats {
                         maxsize: Int = 20,
                         sizevar: Int = 5,
                         fbool: Boolean,
-                        frte: (Int, Boolean) => Rte = randomRte,
+                        frte: (Int, Boolean) => Rte = randomRteByDepth,
                         f: Rte => Double = brz): Unit = {
     //sequence that will contain all curves
     val myseq: Seq[(String, Seq[(Double, Double)])] =
@@ -219,7 +219,7 @@ object mystats {
                                maxsize: Int = 20,
                                sizevar: Int = 5,
                                fbool: Boolean,
-                               frte: (Int, Boolean) => Rte = randomRte): Unit = {
+                               frte: (Int, Boolean) => Rte = randomRteByDepth): Unit = {
     //sequence that will contain all the curves
     var myseq: Seq[(String, Seq[(Double, Double)])] = Seq()
     //seq of strings to name the curves

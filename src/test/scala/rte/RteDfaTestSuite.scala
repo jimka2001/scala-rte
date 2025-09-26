@@ -25,7 +25,7 @@ package rte
 import adjuvant.AdjFunSuite
 import adjuvant.Adjuvant.callWithTimeout
 import org.scalatest.funsuite.AnyFunSuite
-import rte.Random.{randomRte, randomTotallyBalancedRteByDepth}
+import rte.Random.{randomRteByDepth, randomTotallyBalancedRteByDepth}
 
 //noinspection RedundantDefaultArgument
 class RteDfaTestSuite extends AdjFunSuite {
@@ -51,7 +51,7 @@ class RteDfaTestSuite extends AdjFunSuite {
 
     for {depth <- 5 to 6
          rep <- 1 to num_random_tests/10
-         rt = randomRte(depth)
+         rt = randomRteByDepth(depth)
          dfa <- callWithTimeout(2000 * depth, ()=> rt.toDfa())
          } {
       //println(List(depth,rep))
@@ -74,7 +74,7 @@ class RteDfaTestSuite extends AdjFunSuite {
 
     for {depth <- 5 to 6
          rep <- 1 to 3
-         rt = randomRte(depth).canonicalize
+         rt = randomRteByDepth(depth).canonicalize
          } {
 
       dfaToPng(rt.toDfa(), title=s"depth=$depth,rep=$rep")
@@ -83,7 +83,7 @@ class RteDfaTestSuite extends AdjFunSuite {
   test("dfa minimize") {
     for {depth <- 4 to 5
          _ <- 1 to num_random_tests/10
-         dfa = randomRte(depth).toDfa()
+         dfa = randomRteByDepth(depth).toDfa()
          } {
       xymbolyco.Minimize.minimize(dfa)
     }
@@ -91,7 +91,7 @@ class RteDfaTestSuite extends AdjFunSuite {
   test("dfa trim") {
     for {depth <- 5 to 6
          _ <- 1 to 10
-         dfa = randomRte(depth).toDfa()
+         dfa = randomRteByDepth(depth).toDfa()
          } {
       xymbolyco.Minimize.removeNonAccessible(dfa)
       xymbolyco.Minimize.removeNonCoAccessible(dfa)

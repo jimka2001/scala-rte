@@ -1,28 +1,9 @@
 package demos.scalaio2025
 
 object GnuPlot {
-  def imbalanceFactor(node_count:Int, total:Int):Double = {
-    // compute an imbalance factor.
-    // 1 ==> perfectly balanced
-    // > 1 ==> average path length > perfect path length
-    // < 1 ==> average path length < perfect path length
-    import scala.math.log
-    if (node_count == 1 && total == 0)
-      1.0
-    else {
-      // number of total nodes, leaf + internal = 2^d - 1 + 2^d
-      val d = log(node_count + 1) / log(2)
-      // balanced path total length from root to leaf = num leafs * average length i.e. n*d
-      val imbalanced_total = d * node_count
-      //println(f"node_count = $node_count")
-      //println(f"total = $total")
-      //println(f"d=$d imbalanced_total=$balanced_total")
-      val ibf = imbalanced_total / total.toDouble
-      //println(f"bf = $bf")
-      assert(total > 0)
-      ibf
-    }
-  }
+  import demos.scalaio2025.CsvLine.{readCsvLines}
+  import scala.sys.process.stringSeqToProcess
+  import adjuvant.Adjuvant.{openGraphicalFile}
 
   def histogram(): Unit = {
     import java.io._

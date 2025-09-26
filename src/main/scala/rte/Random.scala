@@ -12,7 +12,7 @@ object Random {
   // any ANDs or NOTs in the RTE, and that any of the SimpleTypeDs will not be empty either
   // this way we are also excluding the EmptySeq, EmptySet, and notSigma explicitly, while also not allowing
   // the recursive call for the randomTypeD to create any EmptyTypes
-  def randomRte(depth: Int, avoidEmpty: Boolean = true): Rte = {
+  def randomRteByDepth(depth: Int, avoidEmpty: Boolean = true): Rte = {
 
     val rteVector = Vector(notEmptySeq,
                            Sigma,
@@ -23,11 +23,11 @@ object Random {
     val generators: Seq[() => Rte] = Vector(
       () => rteVector(random.nextInt(rteVector.length - (if (avoidEmpty) 3 else 0))),
       () => Or(randomSeq(depth - 1, random.nextInt(3) + 2, avoidEmpty)),
-      () => Star(randomRte(depth - 1, avoidEmpty)),
+      () => Star(randomRteByDepth(depth - 1, avoidEmpty)),
       () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
       () => Singleton(RandomType.randomType(0, Some(!avoidEmpty))),
       () => And(randomSeq(depth - 1, 2, avoidEmpty)),
-      () => Not(randomRte(depth - 1, avoidEmpty)))
+      () => Not(randomRteByDepth(depth - 1, avoidEmpty)))
 
     if (depth <= 0)
       Singleton(RandomType.randomType(0, Some(!avoidEmpty)))
@@ -38,7 +38,6 @@ object Random {
   }
 
   def randomNaiveRteBySize(leaves:Int):Rte = {
-    println(s"randomNaiveRteBySize($leaves)")
     if (leaves == 1)
       randCase(() => EmptySet,
                List((0.1, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
@@ -49,7 +48,6 @@ object Random {
       lazy val left = randomNaiveRteBySize(leftSize)
       lazy val right = randomNaiveRteBySize(leaves - leftSize)
       lazy val mid = randomNaiveRteBySize(leaves)
-      println(s"   dividing $leaves into $leftSize + ${leaves - leftSize}")
       randCase(() => EmptySet,
                List(
                     (0.2, () => Cat(left, right)),
@@ -81,7 +79,7 @@ object Random {
   }
 
   def randomSeq(depth: Int, length: Int, option: Boolean = true): Seq[Rte] = {
-    (0 until length).map { _ => randomRte(depth, option) }
+    (0 until length).map { _ => randomRteByDepth(depth, option) }
   }
 
   private val leafTypes = locally{
@@ -111,6 +109,7 @@ object Random {
                           ))
         }
     }
+    // number of internal nodes is 1 fewer than the number of leaves
     nodeToRte(balancedRandTreeBySize(leaves - 1))
   }
 

@@ -25,7 +25,7 @@ package rte
 import adjuvant.AdjFunSuite
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
-import rte.Random.randomRte
+import rte.Random.randomRteByDepth
 import rte.RteImplicits._
 
 class CatTestSuite extends AdjFunSuite {
@@ -42,8 +42,8 @@ class CatTestSuite extends AdjFunSuite {
     assert(Cat().canonicalize == EmptySeq)
     for {depth <- 0 to 4
          _ <- 1 to num_random_tests
-         r1 = randomRte(depth)
-         r2 = randomRte(depth)
+         r1 = randomRteByDepth(depth)
+         r2 = randomRteByDepth(depth)
          } {
       assert(Cat(r1).canonicalize == r1.canonicalize)
       assert(Cat(EmptySet, r1).canonicalize == EmptySet)

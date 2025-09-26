@@ -29,7 +29,7 @@ import adjuvant.AdjFunSuite
 import RandomType.randomType
 import adjuvant.Adjuvant.callWithTimeout
 import genus.Types.mysteryType
-import rte.Random.randomRte
+import rte.Random.randomRteByDepth
 import xymbolyco.Dfa
 import xymbolyco.Extract.{dfaToRte, extractRte}
 import xymbolyco.GraphViz.dfaView
@@ -91,8 +91,8 @@ class RteTestSuite extends AdjFunSuite {
   test("operators") {
     for {depth <- 1 to 5
          _ <- 1 to num_random_tests
-         r1 = randomRte(depth)
-         r2 = randomRte(depth)} {
+         r1 = randomRteByDepth(depth)
+         r2 = randomRteByDepth(depth)} {
       assert((r1 | r2) == Or(r1, r2))
       assert((r1 & r2) == And(r1, r2))
       assert(r1 ++ r2 == Cat(r1, r2)) // check that reversing the arguments works correctly
@@ -113,7 +113,7 @@ class RteTestSuite extends AdjFunSuite {
   test("canonicalize random") {
     for {depth <- 0 to 5
          _ <- 1 to num_random_tests
-         r1 = randomRte(depth = depth)
+         r1 = randomRteByDepth(depth = depth)
          } {
       r1.canonicalize
     }
@@ -234,8 +234,8 @@ class RteTestSuite extends AdjFunSuite {
     assert(Not(EmptySet).canonicalize == Star(Sigma))
     for {depth <- 0 to 2
          _ <- 1 to num_random_tests / 2
-         r1 = randomRte(depth)
-         r2 = randomRte(depth)
+         r1 = randomRteByDepth(depth)
+         r2 = randomRteByDepth(depth)
          } {
 
       assert(Not(Not(r1)).canonicalize ~= r1.canonicalize)
@@ -396,9 +396,9 @@ class RteTestSuite extends AdjFunSuite {
       a
     }
     for {n <- 0 to 10
-         rte1 = randomRte(depth)
-         rte2 = randomRte(depth)
-         rte3 = randomRte(depth)
+         rte1 = randomRteByDepth(depth)
+         rte2 = randomRteByDepth(depth)
+         rte3 = randomRteByDepth(depth)
          dfa1 <- callWithTimeout(2000*depth, () => Cat(rte1, Star(rte2), Not(rte2), rte3).toDfa(1))
          dfa2 <- callWithTimeout(2000*depth, () => Cat(rte2, Star(rte3), Not(rte3), rte1).toDfa(2))
          dfau = dfaUnion(dfa1, dfa2, arbitrate = arbitrate)

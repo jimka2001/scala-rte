@@ -25,7 +25,7 @@ import adjuvant.AdjFunSuite
 import genus.RandomType.Abstract1
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
-import rte.Random.randomRte
+import rte.Random.randomRteByDepth
 import rte._
 import xymbolyco.Minimize.minimize
 import xymbolyco.Thompson._
@@ -372,7 +372,7 @@ class ThompsonTestSuite  extends AdjFunSuite {
     import xymbolyco.Dfa.dfaEquivalent
     for {depth <- 0 until 3
          rep <- 0 until num_random_tests / 10
-         pattern = randomRte(depth)
+         pattern = randomRteByDepth(depth)
          dfa_thompson = try {
            constructThompsonDfa(pattern, 42)
          } catch {
