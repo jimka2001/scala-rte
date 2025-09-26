@@ -102,7 +102,9 @@ object RteTree {
   // make plot of y vs x where y = percentage of samples where number of state_counts > x
   def plotThreshold(): Unit = {
 
-    val descrs = for {str <- Seq("balanced", "tuned", "tunedME", "naive")
+    val descrs = for {str <- Seq("balanced",
+      //"tuned", "tunedME",
+      "naive")
                       alllines = readCsvLines(str)
                       xys = genThresholdCurve(alllines)
                       } yield (s"${str} samples=${alllines.length}", xys)
@@ -140,17 +142,18 @@ object RteTree {
 
   def plotAverageCsv(): Unit = {
 
-    for {str <- Seq("tuned", "tunedME", "naive", "balanced")
+    for {str <- Seq(//"tuned", "tunedME",
+      "naive", "balanced")
          alllines = readCsvLines(str)} {
 
       val sample_count = alllines.size
-      val xys = for {(node_count, tuples) <- alllines.groupBy(_.node_count)
+      val xys = for {(leaf_count, tuples) <- alllines.groupBy(_.leaf_count)
                       state_counts = tuples.map(_.state_count)
                       average = state_counts.sum / state_counts.size.toDouble
-                      } yield (node_count.toDouble, average)
+                      } yield (leaf_count.toDouble, average)
       val descrs = Seq((str, xys.to(List).sortBy(_._1)))
       gnuPlot(descrs)(title = f"Average ${str} node count (${sample_count} samples)",
-        xAxisLabel = "AST node count",
+        xAxisLabel = "AST leaf count",
         yAxisLabel = "DFA state count",
         yLog = true,
         grid = true,
@@ -161,7 +164,8 @@ object RteTree {
   }
 
   def plotBalance1(): Unit = {
-    val descrs = for {str <- Seq("tuned", "tunedME", "naive", "balanced")
+    val descrs = for {str <- Seq(//"tuned", "tunedME",
+      "naive", "balanced")
                       alllines = readCsvLines(str)
                       grouped = alllines.groupBy(cl => cl.longest.toDouble / cl.shortest)
                       xys = for {(balance, cvslines) <- grouped
@@ -180,7 +184,8 @@ object RteTree {
   def plotBalance2(): Unit = {
     import scala.math.abs
     val delta_balance = 0.25
-    val descrs = for {str <- Seq("tuned", "tunedME", "naive", "balanced")
+    val descrs = for {str <- Seq(//"tuned", "tunedME",
+      "naive", "balanced")
                       alllines = readCsvLines(str)
                       grouped = alllines.groupBy(cl => cl.imbalance())
                       _ = println()
@@ -201,7 +206,8 @@ object RteTree {
   }
 
   def plotBalance3(): Unit = {
-    val descrs = for {str <- Seq("tuned", "tunedME", "naive", "balanced")
+    val descrs = for {str <- Seq(//"tuned", "tunedME",
+      "naive", "balanced")
                       alllines = readCsvLines(str)
                       num_samples = alllines.length
                       grouped = alllines.groupBy(_.imbalance())
