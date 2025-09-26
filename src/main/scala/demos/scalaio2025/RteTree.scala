@@ -9,9 +9,11 @@ import java.io.FileWriter
 import java.nio.file.Paths
 import java.util.UUID
 import scala.sys.process.stringSeqToProcess
+import scala.util.Random
 
 object RteTree {
 
+  val random = new Random
   val statisticsResource: String = Paths.get("src/main/resources/statistics").toString + "/"
   val naiveCsv: String = statisticsResource + "naive.csv"
   val tunedCsv: String = statisticsResource + "tuned.csv"
@@ -59,13 +61,18 @@ object RteTree {
   // record targetSize
   // write an entry to the csv file so we can plot later
 
-  def writeCsvStatistic(depth: Int, genRte: (Int => Rte), prefix:String, csvFileName: String,
+  def writeCsvStatistic(genRte: (() => Rte), prefix:String, csvFileName: String,
                         probability: Option[Float]): Unit = {
-    def report(rte:Rte, nodeCount:Int, stateCount:Option[Int], transitionCount:Option[Int],
+
+    import xymbolyco.Minimize.minimize
+    val rte = genRte()
+    val nodeCount = rte.linearize().size
+    val (shortest, longest, total) = rte.measureBalance()
+    def report(nodeCount:Int, stateCount:Option[Int], transitionCount:Option[Int],
                minStateCount:Option[Int], minTransitionCount:Option[Int]):Unit = {
-      val (shortest, longest, total) = rte.measureBalance()
+
       mergeFile(csvFileName)((outFile: FileWriter) => {
-        outFile.write(s"$depth,$nodeCount,")
+        outFile.write(s"$nodeCount,")
         for {op <- Seq(stateCount, transitionCount, minStateCount, minTransitionCount)
              } outFile.write(
           op match {
@@ -80,16 +87,13 @@ object RteTree {
         }
       })
     }
-    import xymbolyco.Minimize.minimize
-    val rte = genRte(depth)
 
-    val nodeCount = rte.linearize().size
-    val timeout = depth * depth * 4000
+    val timeout = longest * longest * 4000
     for {dfa <- callWithTimeout(timeout,
       () => rte.toDfa(true),
       () => {
-        println(s"cancelling DFA generation after ${timeout}ms depth=$depth, csv=$csvFileName")
-        report(rte, nodeCount, None, None, None, None)
+        println(s"cancelling DFA generation after ${timeout}ms nodeCount=$nodeCount, csv=$csvFileName")
+        report(nodeCount, None, None, None, None)
       })
          stateCount = dfa.Qids.size
          transitionCount = dfa.Q.map(q => q.transitions.size).sum
@@ -97,13 +101,13 @@ object RteTree {
            () => minimize(dfa),
            () => {
              println(s"cancelling DFA minimization after ${timeout}ms state-count=${stateCount} transition-count=${transitionCount}")
-             report(rte, nodeCount, Some(stateCount), Some(transitionCount), None, None)
+             report(nodeCount, Some(stateCount), Some(transitionCount), None, None)
            }
          )
          minStateCount = mindfa.Qids.size
          minTransitionCount = mindfa.Q.map(q => q.transitions.size).sum
          } {
-      report(rte, nodeCount, Some(stateCount), Some(transitionCount), Some(minStateCount), Some(minTransitionCount))
+      report(nodeCount, Some(stateCount), Some(transitionCount), Some(minStateCount), Some(minTransitionCount))
     }
   }
 
@@ -113,20 +117,20 @@ object RteTree {
 
   def genCsvNaive(num_repetitions: Int): Unit = {
     import rte.Random.randomNaiveRteByDepth
-    genCsv(num_repetitions, naiveCsv, prefix="naive",
-           genRte=randomNaiveRteByDepth)
+    genCsvByDepth(num_repetitions, naiveCsv, prefix="naive",
+                  genRte=randomNaiveRteByDepth)
   }
 
   def genCsvTuned(num_repetitions: Int, avoidEmpty: Boolean = true, prefix:String="tuned",csv: String = tunedCsv): Unit = {
     import rte.Random.randomRte
-    genCsv(num_repetitions, csv=csv, prefix=prefix,
-      genRte=(n: Int) => randomRte(n, avoidEmpty = avoidEmpty))
+    genCsvByDepth(num_repetitions, csv=csv, prefix=prefix,
+                  genRte=(n: Int) => randomRte(n, avoidEmpty = avoidEmpty))
   }
 
-  def genCsv(num_repetitions: Int,
-             csv: String = tunedCsv,
-             prefix:String,
-             genRte: Int => Rte): Unit = {
+  def genCsvByDepth(num_repetitions: Int,
+                    csv: String,
+                    prefix:String,
+                    genRte: Int => Rte): Unit = {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
@@ -134,11 +138,29 @@ object RteTree {
       for {m <- 4 to 7
            futures = (m to 8).map((depth) => Future {
              println(s"r=$r m=$m depth=$depth")
-             writeCsvStatistic(depth=depth, genRte=genRte, prefix=prefix, csvFileName=csv, probability=None)
+             writeCsvStatistic(genRte=()=>genRte(depth), prefix=prefix, csvFileName=csv, probability=None)
            })
            combined = Future.sequence(futures)} {
         Await.result(combined, Duration.Inf)
       }
+    }
+  }
+
+  def genCsvBySize(num_repetitions: Int,
+                   csv: String,
+                   prefix:String,
+                   genRte: Int => Rte): Unit = {
+    import scala.concurrent.duration._
+    import scala.concurrent.ExecutionContext.Implicits.global
+    import scala.concurrent.{Await, Future}
+    for {m <- 0 to num_repetitions
+         futures = (0 to 5).map((depth) => Future {
+           val size = random.between(3, 1<<6)
+           println(s"m=$m size=$size")
+           writeCsvStatistic(genRte=()=>genRte(size), prefix=prefix, csvFileName=csv, probability=None)
+         })
+         combined = Future.sequence(futures)} {
+      Await.result(combined, Duration.Inf)
     }
   }
 
@@ -154,7 +176,7 @@ object RteTree {
            p = 0.90F
            futures = for { depth <- m to 8} yield Future {
              println(s"r=$r m=$m depth=$depth")
-             writeCsvStatistic(depth=depth, genRte=(n: Int) => randomTotallyBalancedRteByDepth(p, n), prefix="balanced",
+             writeCsvStatistic(genRte=() => randomTotallyBalancedRteByDepth(p, depth), prefix="balanced",
                                csvFileName=balancedCsv, probability=Some(p))
            }
            combined = Future.sequence(futures)
