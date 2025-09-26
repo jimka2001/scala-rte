@@ -57,7 +57,6 @@ object Random {
                     (0.2, () => Star(mid)),
                     (0.2, () => Not(mid))))
     }
-
   }
 
   def randomNaiveRteByDepth(depth: Int):Rte = {
