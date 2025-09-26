@@ -10,6 +10,8 @@ object BalancePlot {
     RteTree.plotBalance1()
     RteTree.plotBalance2()
     RteTree.plotBalance3()
+    RteTree.plotBalance4()
+    RteTree.plotBalance5()
   }
 }
 

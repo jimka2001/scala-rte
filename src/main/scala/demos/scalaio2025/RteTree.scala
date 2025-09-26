@@ -207,7 +207,7 @@ object RteTree {
 
   def plotBalance3(): Unit = {
     val descrs = for {str <- Seq(//"tuned", "tunedME",
-      "naive", "balanced")
+                                 "naive", "balanced")
                       alllines = readCsvLines(str)
                       num_samples = alllines.length
                       grouped = alllines.groupBy(_.imbalance())
@@ -217,13 +217,66 @@ object RteTree {
                                  } yield (imbalance, (100.0 * num_small) / num_samples)
                       } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
     gnuPlot(descrs.to(Seq))(title = "Running Balances",
-      xAxisLabel = "Imbalance Factor",
-      yAxisLabel = "Percentage count >= 2 for imblance <= x",
-      plotWith = "lines",
-      gnuFileCB = println,
-      grid = true,
-      view = true
-    )
+                            xAxisLabel = "Imbalance Factor",
+                            yAxisLabel = "Percentage count >= 2 for imblance <= x",
+                            plotWith = "lines",
+                            gnuFileCB = println,
+                            grid = true,
+                            view = true
+                            )
+  }
+
+  def plotBalance4(): Unit = {
+    import scala.math.log
+    val descrs = for {str <- Seq(//"tuned", "tunedME",
+                                 "naive", "balanced")
+                      alllines = readCsvLines(str)
+                      num_samples = alllines.length
+                      xys = for {cl <- alllines
+                                 aspect_ratio = cl.longest / log(cl.leaf_count)
+                                 } yield (aspect_ratio, cl.state_count.toDouble)
+                      } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
+    gnuPlot(descrs.to(Seq))(title = "Running Balances per Aspect Ratio",
+                            xAxisLabel = "Aspect Ratio",
+                            yAxisLabel = "DFA state count",
+                            plotWith = "points",
+                            gnuFileCB = println,
+                            grid = true,
+                            view = true
+                            )
+  }
+
+  def plotBalance5(): Unit = {
+    import scala.math.log
+    def integral(xys:List[(Double,Double)], acc:List[(Double,Double)]):List[(Double,Double)] = {
+      xys match {
+        case (x1, y1)::(x2,y2)::_ =>
+          val average_x = (x1 + x2) / 2.0
+          val average_y = (y1 + y2) / 2.0
+          val delta_x = x2 - x1
+          val trap_area = delta_x * average_y
+          val sum = acc.head._2
+          integral(xys.tail, (average_x, sum+trap_area)::acc)
+        case _ => acc
+      }
+    }
+    val descrs = for {str <- Seq(//"tuned", "tunedME",
+                                 "naive", "balanced")
+                      alllines = readCsvLines(str)
+                      num_samples = alllines.length
+                      xys_pre = (for {cl <- alllines
+                                 aspect_ratio = cl.longest / log(cl.leaf_count)
+                                 } yield (aspect_ratio, cl.state_count.toDouble)).to(List).sortBy(_._1)
+                      xys = integral(xys_pre, List((xys_pre.head._1, 0.0)))
+                      } yield (str + s" ${alllines.length} samples", xys)
+    gnuPlot(descrs.to(Seq))(title = "Running Sums Balances per Aspect Ratio",
+                            xAxisLabel = "Aspect Ratio",
+                            yAxisLabel = "DFA state count",
+                            plotWith = "lines",
+                            gnuFileCB = println,
+                            grid = true,
+                            view = true
+                            )
   }
 }
 
