@@ -3,12 +3,6 @@ package demos.scalaio2025
 import adjuvant.Adjuvant.{callWithTimeout, openGraphicalFile}
 import adjuvant.GnuPlot.gnuPlot
 import rte.Rte
-import demos.scalaio2025.CsvLine
-
-import java.io.FileWriter
-import java.nio.file.Paths
-import java.util.UUID
-import scala.sys.process.stringSeqToProcess
 import scala.util.Random
 
 object RteTree {
@@ -113,37 +107,12 @@ object RteTree {
 
   // make plot of y vs x where y = percentage of samples where number of state_counts > x
   def plotThreshold(): Unit = {
-    for {str <- Seq("balanced",
-      "tuned",
-      //"tunedME",
-      "naive")
-         alllines = readCsvLines(str)
-         depthmap = alllines.groupBy(_.depth)
-         } {
-      // build a map to associate a depth to all CvsLines of that depth
-      // we will create one curve for each depth
 
-      val curves = for {(depth, cvslines) <- depthmap
-                        xys = genThresholdCurve(cvslines)
-                        } yield (s"depth=${depth}", xys.sortBy(_._1))
-
-      gnuPlot(curves.to(Seq))(title = s"Analysis of ${str} for ${alllines.size} Samples",
-        xAxisLabel = "DFA state count",
-        xLog = true,
-        grid = true,
-        yLog = false,
-        yAxisLabel = "Percentage dfa <= state count",
-        view = true)
-    }
-    for {depth <- (4 to 8)
-         descrs = for {str <- Seq("balanced",
-           "tuned",
-           //"tunedME",
-           "naive")
-                       alllines = readCsvLines(str).filter(_.depth == depth)
-                       xys = genThresholdCurve(alllines)
-                       } yield (s"${str} samples=${alllines.length}", xys)
-         } gnuPlot(descrs.to(Seq))(title = s"Threshold depth=${depth}",
+    val descrs = for {str <- Seq("balanced", "tuned", "tunedME", "naive")
+                      alllines = readCsvLines(str)
+                      xys = genThresholdCurve(alllines)
+                      } yield (s"${str} samples=${alllines.length}", xys)
+   gnuPlot(descrs.to(Seq))(title = s"Threshold",
       xAxisLabel = "DFA state count",
       xLog = true,
       grid = true,

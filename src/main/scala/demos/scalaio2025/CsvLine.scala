@@ -1,8 +1,7 @@
 package demos.scalaio2025
 
 
-case class CsvLine(depth: Int,
-                   node_count: Int,
+case class CsvLine(node_count: Int,
                    state_pre_count:Int,
                    transition_pre_count:Int,
                    state_count: Int,
@@ -146,9 +145,11 @@ object CsvLine {
       .filter(line => line.length > 1 && '#' != line(0)) // skip comments and empty lines
       .map(line => line.split(",").to(Vector))
       .collect {
-        case Vector(depth, node_count, state_pre_count, transition_pre_count, state_count, transition_count,
+        case Vector(node_count, state_pre_count, transition_pre_count, state_count, transition_count,
                     shortest, longest, total) =>
-          CsvLine(depth.toInt, node_count.toInt, state_pre_count.toInt, transition_pre_count.toInt, state_count.toInt, transition_count.toInt,
+          CsvLine(node_count.toInt,
+                  state_pre_count.toInt, transition_pre_count.toInt,
+                  state_count.toInt, transition_count.toInt,
                   shortest.toInt, longest.toInt, total.toInt)
       }
       .to(Vector)

@@ -7,11 +7,7 @@ object GnuPlot {
 
   def histogram(): Unit = {
     import java.io._
-    def gnuheader(basename: String, depth: Option[Int]): String = {
-      val depthComment = depth match {
-        case Some(d) => s"of depth=$d"
-        case None => ""
-      }
+    def gnuheader(basename: String): String = {
       "set terminal pngcairo size 600,400\n" +
         s"set output '${basename}.png'\n" +
         """|
@@ -25,7 +21,7 @@ object GnuPlot {
            |set xlabel "DFA state count"
            |set ylabel "Percentage of DFAs of this state count"
            |""".stripMargin +
-        s"set title \"DFA State distribution for Rte " + depthComment + "\"\n"
+        s"set title \"DFA State distribution for Rte "+ "\"\n"
     }
 
     def gnufooter(algos:Seq[String]): String = {
@@ -35,30 +31,22 @@ object GnuPlot {
           "     $MyData using 5 ti col").take(algos.length).mkString(" \\\n")
     }
 
-    def histo(depth: Option[Int]): Unit = {
+    def histo(): Unit = {
       val counts = (1 to 10).to(List)
-      val basename = depth match {
-        case Some(d) => s"histogram-${d}"
-        case None => "histogram"
-      }
+      val basename = "histogram"
       val gnuFileName = basename + ".gnu"
       val gnu = new PrintWriter(new File(gnuFileName))
       val algos = Seq("balanced", "tuned", "tunedME", "naive")
 
-      def readlines(str:String):Vector[CsvLine] = depth match {
-        case None => readCsvLines(str)
-        case Some(depth) => readCsvLines(str).filter(_.depth == depth)
-      }
-
-      gnu.write(gnuheader(basename, depth) + "\n\n")
+      gnu.write(gnuheader(basename) + "\n\n")
       gnu.write("$MyData << EOD\n")
       gnu.write("State-count")
       for {str <- algos
-           depthlines = readlines(str)
+           depthlines = readCsvLines(str)
            num_samples = depthlines.length} gnu.write(s" \"$str samples=${num_samples}\"")
       gnu.write("\n")
       val mixed = for {str <- algos
-                       depthlines = readlines(str)
+                       depthlines = readCsvLines(str)
                        xys = for {(state_count, sclines) <- depthlines.groupBy(_.state_count).to(Seq).sortBy(_._1)
                                   percentage = 100 * sclines.length.toDouble / depthlines.length
                                   } yield (state_count, percentage)
@@ -96,8 +84,7 @@ object GnuPlot {
       openGraphicalFile(basename + ".png")
     }
 
-    (4 to 8).foreach(depth => histo(Some(depth)))
-    histo(None)
+    histo()
   }
 
 }
