@@ -13,6 +13,12 @@ object BalancePlot {
   }
 }
 
+object DiversityPlot {
+  def main(array: Array[String]):Unit = {
+    RteTree.plotDiversity()
+  }
+}
+
 object Plots {
   import demos.scalaio2025.GnuPlot.histogram
   def main(argv: Array[String]): Unit = {

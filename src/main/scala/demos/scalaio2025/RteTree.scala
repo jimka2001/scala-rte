@@ -121,7 +121,8 @@ object RteTree {
   //    for now we count the raw number of different dfas, later we need to normalize by how
   //         many rtes of this leaf size contributed to the sample.
   def plotDiversity():Unit = {
-    val descrs = for {str <- Seq("tuned", "tunedME", "naive", "balanced")
+    val descrs = for {str <- Seq(//"tuned", "tunedME",
+                                 "naive", "balanced")
                       alllines = readCsvLines(str)
                       numsamples = alllines.length
                       xys = for {(leafCount:Int, csvlines) <- alllines.groupBy(_.leaf_count)
