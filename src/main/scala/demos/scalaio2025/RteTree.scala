@@ -25,11 +25,26 @@ object RteTree {
                   genRte=randomNaiveRteBySize)
   }
 
+
+  def genCsvBalanced(num_repetitions: Int): Unit = {
+    import scala.concurrent.duration._
+    import scala.concurrent.ExecutionContext.Implicits.global
+    import scala.concurrent.{Await, Future}
+    import rte.Random.randomTotallyBalancedRteBySize
+    val p = 0.90F
+    genCsvBySize(num_repetitions, balancedCsv, prefix="balanced",
+                 genRte=(leaves:Int) => randomTotallyBalancedRteBySize(p, leaves))
+  }
+
   def genCsvTuned(num_repetitions: Int, avoidEmpty: Boolean = true, prefix:String="tuned",csv: String = tunedCsv): Unit = {
     import rte.Random.randomRteByDepth
     genCsvByDepth(num_repetitions, csv=csv, prefix=prefix,
                   genRte=(depth: Int) => {
-                    randomRteByDepth(depth, avoidEmpty = avoidEmpty)})
+                    val rte = randomRteByDepth(depth, avoidEmpty = avoidEmpty)
+                    println(s"       depth=$depth  leaves=${rte.countLeaves()}")
+                    rte
+                  }
+                  )
   }
 
   def genCsvByDepth(num_repetitions: Int,
@@ -57,10 +72,10 @@ object RteTree {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
-    for {m <- 0 to num_repetitions
+    for {r <- 0 to num_repetitions
          futures = (0 to 5).map((depth) => Future {
            val size = random.between(3, 1<<6)
-           println(s"m=$m size=$size")
+           println(s"r=$r size=$size")
            writeCsvStatistic(genRte=()=>genRte(size), prefix=prefix, csvFileName=csv)
          })
          combined = Future.sequence(futures)} {
@@ -69,28 +84,7 @@ object RteTree {
   }
 
 
-  def genCsvBalanced(num_repetitions: Int): Unit = {
-    import scala.concurrent.duration._
-    import scala.concurrent.ExecutionContext.Implicits.global
-    import scala.concurrent.{Await, Future}
-    import rte.Random.randomTotallyBalancedRteBySize
-    for {
-      r <- 0 to num_repetitions} {
-      for {m <- 4 to 8
-           p = 0.90F
-           futures = for { depth <- m to 8
-                           size = random.between(1<<depth, 1 << (depth+1))
-                           } yield Future {
 
-             writeCsvStatistic(genRte=() => randomTotallyBalancedRteBySize(p, size), prefix="balanced",
-                               csvFileName=balancedCsv)
-           }
-           combined = Future.sequence(futures)
-           } {
-        Await.result(combined, Duration.Inf)
-      }
-    }
-  }
 
   def genThresholdCurve(cvslines: Seq[CsvLine]): Seq[(Double, Double)] = {
     val num_per_depth = cvslines.size

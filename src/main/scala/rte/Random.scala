@@ -22,11 +22,11 @@ object Random {
                            EmptySet)
     val generators: Seq[() => Rte] = Vector(
       () => rteVector(random.nextInt(rteVector.length - (if (avoidEmpty) 3 else 0))),
-      () => Or(randomSeq(depth - 1, random.nextInt(3) + 2, avoidEmpty)),
+      () => Or(randomSeqByDepth(depth - 1, random.nextInt(3) + 2, avoidEmpty)),
       () => Star(randomRteByDepth(depth - 1, avoidEmpty)),
-      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
+      () => Cat(randomSeqByDepth(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
       () => Singleton(RandomType.randomType(0, Some(!avoidEmpty))),
-      () => And(randomSeq(depth - 1, 2, avoidEmpty)),
+      () => And(randomSeqByDepth(depth - 1, 2, avoidEmpty)),
       () => Not(randomRteByDepth(depth - 1, avoidEmpty)))
 
     if (depth <= 0)
@@ -36,6 +36,7 @@ object Random {
       g()
     }
   }
+
 
   def randomNaiveRteBySize(leaves:Int):Rte = {
     if (leaves == 1)
@@ -78,7 +79,7 @@ object Random {
                     (0.1, () => Not(randomNaiveRteByDepth(depth-1)))))
   }
 
-  def randomSeq(depth: Int, length: Int, option: Boolean = true): Seq[Rte] = {
+  def randomSeqByDepth(depth: Int, length: Int, option: Boolean = true): Seq[Rte] = {
     (0 until length).map { _ => randomRteByDepth(depth, option) }
   }
 
