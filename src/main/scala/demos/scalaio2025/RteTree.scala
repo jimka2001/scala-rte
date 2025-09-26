@@ -1,4 +1,4 @@
-package demos.rte
+package demos.scalaio2025
 
 import adjuvant.Adjuvant.{callWithTimeout, openGraphicalFile}
 import adjuvant.GnuPlot.gnuPlot
