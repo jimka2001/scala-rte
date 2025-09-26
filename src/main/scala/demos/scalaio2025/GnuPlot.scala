@@ -22,6 +22,8 @@ object GnuPlot {
            |set key outside top center horizontal
            |set xtics rotate by -45
            |set yrange [0:100]
+           |set xlabel "DFA state count"
+           |set ylabel "Percentage of DFAs of this state count"
            |""".stripMargin +
         s"set title \"DFA State distribution for Rte " + depthComment + "\"\n"
     }
