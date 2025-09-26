@@ -68,7 +68,6 @@ object CsvLine {
       "/" + alernative.mkString("/")
     else
       alernative.mkString("/"))
-    println(s"lockfile=$lockFile")
     callInBlock( alternativePath + ".lock")(f)
   }
 
