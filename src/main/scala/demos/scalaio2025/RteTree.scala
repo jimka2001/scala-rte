@@ -123,7 +123,7 @@ object RteTree {
 
   def plotAverageCsv(): Unit = {
 
-    for {str <- Seq("tuned", "tunedME", "naive")
+    for {str <- Seq("tuned", "tunedME", "naive", "balanced")
          alllines = readCsvLines(str)} {
 
       val sample_count = alllines.size
