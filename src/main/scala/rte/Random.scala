@@ -1,6 +1,6 @@
 package rte
 
-import adjuvant.Adjuvant.{randCase, randElement}
+import adjuvant.Adjuvant.{randCase, randElement, biasedGaussian}
 import genus.RandomType
 import rte.Rte.{notEmptySeq, notSigma, sigmaStar}
 
@@ -41,11 +41,13 @@ object Random {
   def randomNaiveRteBySize(leaves:Int):Rte = {
     if (leaves == 1)
       randCase(() => EmptySet,
-               List((0.1, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
-                    (0.9, () => Singleton(RandomType.randomType(0, false))),
+               List((0.1, () => randElement(Seq(Sigma, EmptySeq
+                                                // , EmptySet
+                                                ))),
+                    (0.9, () => Singleton(RandomType.randomType(0, true))),
                     ))
     else {
-      val leftSize = random.between(1, leaves)
+      val leftSize = biasedGaussian(1, leaves, Some(10))
       lazy val left = randomNaiveRteBySize(leftSize)
       lazy val right = randomNaiveRteBySize(leaves - leftSize)
       lazy val mid = randomNaiveRteBySize(leaves)
@@ -104,8 +106,9 @@ object Random {
                             (a:Rte,b:Rte)=>Or(a,b)))(nodeToRte(left), nodeToRte(right))
           case LeafNode() =>
             randCase(() => EmptySet,
-                     List((0.1, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
-                          (0.9, () => Singleton(RandomType.randomType(0, false))),
+                     List((0.1, () => randElement(Seq(Sigma, EmptySeq// , EmptySet
+                                                      ))),
+                          (0.9, () => Singleton(RandomType.randomType(0, true))),
                           ))
         }
     }

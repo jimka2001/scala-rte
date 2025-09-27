@@ -265,14 +265,17 @@ object RteTree {
                       alllines = readCsvLines(str)
                       num_samples = alllines.length
                       xys_pre = (for {cl <- alllines
-                                 aspect_ratio = cl.longest / log(cl.leaf_count)
+                      // Aspect ratio is an approximation of length / width.
+                      // By length, we mean distance from top to bottom of the AST (rte) tree
+                      // By width, we mean
+                                 aspect_ratio = cl.longest.toDouble / cl.leaf_count // (log(cl.leaf_count)/log(2))
                                  } yield (aspect_ratio, cl.state_count.toDouble)).to(List).sortBy(_._1)
                       xys = integral(xys_pre, List((xys_pre.head._1, 0.0)))
                       } yield (str + s" ${alllines.length} samples", xys)
     gnuPlot(descrs.to(Seq))(title = "Running Sums Balances per Aspect Ratio",
                             xAxisLabel = "Aspect Ratio",
                             yAxisLabel = "DFA state count",
-                            plotWith = "lines",
+                            plotWith = "points",
                             gnuFileCB = println,
                             grid = true,
                             view = true
@@ -303,10 +306,9 @@ object ViewAst {
   import rte.Random._
   import xymbolyco.GraphViz.dfaView
   import xymbolyco.Minimize.minimize
-  import demos.scalaio2025.CsvLine
 
   def main(argv: Array[String]): Unit = {
-    val depth: Int = if (argv.length == 0) 4 else argv(0).toInt
+    val depth: Int = if (argv.length == 0) 6 else argv(0).toInt
     for {(algo, gen) <- Seq( ("naive", () => randomNaiveRteBySize(1 << depth)),
                              //("tunedME", () => randomRte(depth, false)),
                              //("tuned", () => randomRte(depth, true)),
