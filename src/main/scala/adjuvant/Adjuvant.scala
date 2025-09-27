@@ -507,16 +507,20 @@ object Adjuvant {
     val s = sigma.getOrElse(range.toDouble / 6.0) // default sigma = range/6
     var x = range // initialize outside valid range
 
-    // sample until within half-range
-    while (x >= range / 2) {
-      x = math.abs(random.nextGaussian() * s).toInt
+    if (range <= 1)
+      n
+    else {
+
+      // sample until within half-range
+      while (x >= range / 2) {
+        x = math.abs(random.nextGaussian() * s).toInt
+      }
+
+      // mirror for symmetry and shift into [n, m)
+      val biased = if (random.nextBoolean()) x else range - 1 - x
+      n + biased
     }
-
-    // mirror for symmetry and shift into [n, m)
-    val biased = if (random.nextBoolean()) x else range - 1 - x
-    n + biased
   }
-
 
 
 }
