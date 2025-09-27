@@ -47,7 +47,7 @@ object Random {
                     (0.9, () => Singleton(RandomType.randomType(0, true))),
                     ))
     else {
-      val leftSize = biasedGaussian(1, leaves, Some(10))
+      val leftSize = biasedGaussian(1, leaves)
       lazy val left = randomNaiveRteBySize(leftSize)
       lazy val right = randomNaiveRteBySize(leaves - leftSize)
       lazy val mid = randomNaiveRteBySize(leaves)
