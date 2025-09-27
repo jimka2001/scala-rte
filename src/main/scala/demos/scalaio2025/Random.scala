@@ -3,22 +3,27 @@ package demos.scalaio2025
 import genus.RandomType.interestingTypes
 import adjuvant.Adjuvant.{biasedGaussian, randCase, randElement}
 import rte.Rte
-import rte.{EmptySet,Sigma,EmptySeq,Singleton,Cat,Or,And,Star,Not}
+import rte.{And, Cat, EmptySeq, EmptySet, Not, Or, Sigma, Singleton, Star}
+import genus.{SOr, SimpleTypeD}
 
 object Random {
   import scala.util.Random
   val random = new Random
-  val inhabitedTypes = interestingTypes().filter(td => td.inhabited != Some(false))
+  // compute vector of types which are either inhabited or indeterminate, excluding provably empty
+  val inhabitedTypes:Vector[SimpleTypeD]  = interestingTypes().filter(td => td.inhabited != Some(false))
+  // compute approx n^2 / 2 union types, all possible non-trivial unions of inhabitedTypes
+  val unionTypes:Vector[SimpleTypeD] = for{i <- inhabitedTypes.indices.toVector
+                      td1 = inhabitedTypes(i)
+                      j <- inhabitedTypes.indices
+                      if i < j
+                      td2 = inhabitedTypes(j)
+                      } yield SOr(td1, td2)
+  val inhabitedLeaves:Vector[Rte] = Vector(Sigma, EmptySeq) ++ (inhabitedTypes ++ unionTypes).map(td => Singleton(td))
 
   def randomNaiveRteBySize(leaves:Int):Rte = {
-    if (leaves == 1)
-      randCase(() => EmptySet,
-               List((0.1, () => randElement(Seq(Sigma, EmptySeq
-                                                // , EmptySet
-                                                ))),
-                    (0.9, () => Singleton(randElement(inhabitedTypes)))
-                    ))
-    else {
+    if (leaves == 1) {
+      randElement(inhabitedLeaves)
+    } else {
       val leftSize = biasedGaussian(1, leaves)
       lazy val left = randomNaiveRteBySize(leftSize)
       lazy val right = randomNaiveRteBySize(leaves - leftSize)
@@ -50,11 +55,7 @@ object Random {
                             (a:Rte,b:Rte)=>And(a,b),
                             (a:Rte,b:Rte)=>Or(a,b)))(nodeToRte(left), nodeToRte(right))
           case LeafNode() =>
-            randCase(() => EmptySet,
-                     List((0.1, () => randElement(Seq(Sigma, EmptySeq// , EmptySet
-                                                      ))),
-                          (0.9, () => Singleton(randElement(inhabitedTypes)))
-                          ))
+            randElement(inhabitedLeaves)
         }
     }
     // number of internal nodes is 1 fewer than the number of leaves

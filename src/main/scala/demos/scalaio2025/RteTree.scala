@@ -304,7 +304,7 @@ object ViewAst {
   import xymbolyco.Minimize.minimize
 
   def main(argv: Array[String]): Unit = {
-    val depth: Int = if (argv.length == 0) 4 else argv(0).toInt
+    val depth: Int = if (argv.length == 0) 5 else argv(0).toInt
     for {(algo, gen) <- Seq( ("naive", () => randomNaiveRteBySize(1 << depth)),
                              //("tunedME", () => randomRte(depth, false)),
                              //("tuned", () => randomRte(depth, true)),
