@@ -1,12 +1,14 @@
 package rte
 
-import adjuvant.Adjuvant.{randCase, randElement, biasedGaussian}
+import adjuvant.Adjuvant.{biasedGaussian, randCase, randElement}
 import genus.RandomType
 import rte.Rte.{notEmptySeq, notSigma, sigmaStar}
 
 object Random {
   import scala.util.Random
   val random = new Random
+
+
 
   // Here we are passing along an avoidEmpty boolean that will be true when we do not wish there to be
   // any ANDs or NOTs in the RTE, and that any of the SimpleTypeDs will not be empty either
@@ -38,28 +40,7 @@ object Random {
   }
 
 
-  def randomNaiveRteBySize(leaves:Int):Rte = {
-    if (leaves == 1)
-      randCase(() => EmptySet,
-               List((0.1, () => randElement(Seq(Sigma, EmptySeq
-                                                // , EmptySet
-                                                ))),
-                    (0.9, () => Singleton(RandomType.randomType(0, true))),
-                    ))
-    else {
-      val leftSize = biasedGaussian(1, leaves, Some(10))
-      lazy val left = randomNaiveRteBySize(leftSize)
-      lazy val right = randomNaiveRteBySize(leaves - leftSize)
-      lazy val mid = randomNaiveRteBySize(leaves)
-      randCase(() => EmptySet,
-               List(
-                    (0.2, () => Cat(left, right)),
-                    (0.2, () => And(left,right)),
-                    (0.2, () => Or(left,right)),
-                    (0.2, () => Star(mid)),
-                    (0.2, () => Not(mid))))
-    }
-  }
+
 
   def randomNaiveRteByDepth(depth: Int):Rte = {
     // a naive random Rte of depth <= n is either a leaf or a node whose
@@ -87,33 +68,6 @@ object Random {
   private val leafTypes = locally{
     import genus.RandomType.interestingTypes
     interestingTypes().filter(td => td.inhabited != Some(false)).to(Vector)
-  }
-
-  def randomTotallyBalancedRteBySize(probability_binary:Float,
-                                     leaves:Int):Rte = {
-    import adjuvant.Adjuvant.{Node, InternalNode, LeafNode, balancedRandTreeBySize}
-
-    def nodeToRte(node:Node):Rte = {
-      if (random.between(0.0, 1.0) > probability_binary)
-        // Star, Not
-        randElement(Seq((t) => Star(t),
-                        (t) => Not(t)))(nodeToRte(node))
-      else
-        node match {
-          case InternalNode(_,left,right) =>
-            randElement(Seq((a:Rte,b:Rte)=>Cat(a,b),
-                            (a:Rte,b:Rte)=>And(a,b),
-                            (a:Rte,b:Rte)=>Or(a,b)))(nodeToRte(left), nodeToRte(right))
-          case LeafNode() =>
-            randCase(() => EmptySet,
-                     List((0.1, () => randElement(Seq(Sigma, EmptySeq// , EmptySet
-                                                      ))),
-                          (0.9, () => Singleton(RandomType.randomType(0, true))),
-                          ))
-        }
-    }
-    // number of internal nodes is 1 fewer than the number of leaves
-    nodeToRte(balancedRandTreeBySize(leaves - 1))
   }
 
   // Generate an RTE which corresponds (on average) in shape closely to a balanced

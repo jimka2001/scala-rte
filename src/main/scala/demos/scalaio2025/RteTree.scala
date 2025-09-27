@@ -1,6 +1,5 @@
 package demos.scalaio2025
 
-import adjuvant.Adjuvant.{callWithTimeout, openGraphicalFile}
 import adjuvant.GnuPlot.gnuPlot
 import rte.Rte
 import scala.util.Random
@@ -20,17 +19,14 @@ object RteTree {
   }
 
   def genCsvNaive(num_repetitions: Int): Unit = {
-    import rte.Random.randomNaiveRteBySize
+    import demos.scalaio2025.Random.randomNaiveRteBySize
     genCsvBySize(num_repetitions, naiveCsv, prefix="naive",
                   genRte=randomNaiveRteBySize)
   }
 
 
   def genCsvBalanced(num_repetitions: Int): Unit = {
-    import scala.concurrent.duration._
-    import scala.concurrent.ExecutionContext.Implicits.global
-    import scala.concurrent.{Await, Future}
-    import rte.Random.randomTotallyBalancedRteBySize
+    import demos.scalaio2025.Random.randomTotallyBalancedRteBySize
     val p = 0.90F
     genCsvBySize(num_repetitions, balancedCsv, prefix="balanced",
                  genRte=(leaves:Int) => randomTotallyBalancedRteBySize(p, leaves))
@@ -303,12 +299,12 @@ object TestBalance {
 object ViewAst {
 
   import rte.Rte.rteViewAst
-  import rte.Random._
+  import demos.scalaio2025.Random._
   import xymbolyco.GraphViz.dfaView
   import xymbolyco.Minimize.minimize
 
   def main(argv: Array[String]): Unit = {
-    val depth: Int = if (argv.length == 0) 6 else argv(0).toInt
+    val depth: Int = if (argv.length == 0) 4 else argv(0).toInt
     for {(algo, gen) <- Seq( ("naive", () => randomNaiveRteBySize(1 << depth)),
                              //("tunedME", () => randomRte(depth, false)),
                              //("tuned", () => randomRte(depth, true)),
