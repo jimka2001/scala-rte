@@ -1,5 +1,7 @@
 package demos.scalaio2025
 
+import demos.scalaio2025.RteTree.algos
+
 object GnuPlot {
   import demos.scalaio2025.CsvLine.{readCsvLines}
   import scala.sys.process.stringSeqToProcess
@@ -36,9 +38,6 @@ object GnuPlot {
       val basename = "histogram"
       val gnuFileName = basename + ".gnu"
       val gnu = new PrintWriter(new File(gnuFileName))
-      val algos = Seq("balanced",
-        // "tuned", "tunedME",
-        "naive")
 
       gnu.write(gnuheader(basename) + "\n\n")
       gnu.write("$MyData << EOD\n")
