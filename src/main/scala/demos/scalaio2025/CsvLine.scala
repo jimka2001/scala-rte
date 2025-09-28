@@ -158,6 +158,7 @@ object CsvLine {
     import java.io.InputStream
     import scala.io.{Source}
     val s: InputStream = getClass.getResourceAsStream(s"/statistics/${str}.csv")
+    assert(s != null, s"failed to open ${str}.cvs")
     val fp = Source.createBufferedSource(s)
 
     val csvlines = fp.getLines()
