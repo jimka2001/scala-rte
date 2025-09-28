@@ -10,7 +10,7 @@ object RteTree {
   import demos.scalaio2025.Random.randomTotallyBalancedRteBySize
   val random = new Random
 
-  val algos = Seq("naive", "balanced")
+  val algos = Seq("naive-mid", "naive-edge", "balanced")
 
   val csv = Map("naive-mid" -> (statisticsResource + "naive-mid.csv"),
                 "naive-edge" -> (statisticsResource + "naive-edge.csv"),
