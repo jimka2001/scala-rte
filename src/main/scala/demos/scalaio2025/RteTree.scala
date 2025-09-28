@@ -6,32 +6,21 @@ import scala.util.Random
 
 object RteTree {
   import demos.scalaio2025.CsvLine.{statisticsResource,writeCsvStatistic,readCsvLines}
+  import demos.scalaio2025.Random.randomNaiveRteBySize
+  import demos.scalaio2025.Random.randomTotallyBalancedRteBySize
   val random = new Random
 
   val algos = Seq("naive", "balanced")
 
-  val naiveCsv: String = statisticsResource + "naive.csv"
-  val balancedCsv: String = statisticsResource + "balanced.csv"
+  val csv = Map("naive" -> (statisticsResource + "naive.csv"),
+                "balanced" -> (statisticsResource + "balanced.csv" ))
 
-
-  def genCsvNaive(num_repetitions: Int): Unit = {
-    import demos.scalaio2025.Random.randomNaiveRteBySize
-    genCsvBySize(num_repetitions, naiveCsv, prefix="naive",
-                  genRte=randomNaiveRteBySize)
-  }
-
-
-  def genCsvBalanced(num_repetitions: Int): Unit = {
-    import demos.scalaio2025.Random.randomTotallyBalancedRteBySize
-    genCsvBySize(num_repetitions, balancedCsv, prefix="balanced",
-                 genRte=randomTotallyBalancedRteBySize)
-  }
-
+  val genRte = Map("naive" -> randomNaiveRteBySize _,
+                   "balanced" -> randomTotallyBalancedRteBySize _
+                   )
 
   def genCsvBySize(num_repetitions: Int,
-                   csv: String,
-                   prefix:String,
-                   genRte: Int => Rte): Unit = {
+                   algo:String): Unit = {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
@@ -39,7 +28,7 @@ object RteTree {
          futures = (0 to 5).map((depth) => Future {
            val size = random.between(3, 1<<6)
            println(s"r=$r size=$size")
-           writeCsvStatistic(genRte=()=>genRte(size), prefix=prefix, csvFileName=csv)
+           writeCsvStatistic(genRte=() => genRte(algo)(size), prefix=algo, csvFileName=csv(algo))
          })
          combined = Future.sequence(futures)} {
       Await.result(combined, Duration.Inf)
@@ -255,18 +244,13 @@ object TestBalance {
 object ViewAst {
 
   import rte.Rte.rteViewAst
-  import demos.scalaio2025.Random._
   import xymbolyco.GraphViz.dfaView
   import xymbolyco.Minimize.minimize
 
   def main(argv: Array[String]): Unit = {
-    val depth: Int = if (argv.length == 0) 5 else argv(0).toInt
-    for {(algo, gen) <- Seq( ("naive", () => randomNaiveRteBySize(1 << depth)),
-                             //("tunedME", () => randomRte(depth, false)),
-                             //("tuned", () => randomRte(depth, true)),
-                             ("balanced", () => randomTotallyBalancedRteBySize(1 << depth))
-                             )
-         rte = gen()
+    val depth: Int = if (argv.length == 0) 4 else argv(0).toInt
+    for {algo <- RteTree.algos
+         rte = RteTree.genRte(algo)(1 << depth)
          dfa = minimize(rte.toDfa())
          } {
       rteViewAst(rte, title = algo)
