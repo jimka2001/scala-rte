@@ -51,6 +51,32 @@ object RteTree {
     xys.sortBy(_._1)
   }
 
+  def plotPopulation(): Unit = {
+    val descrs1 = for {str <- algos
+                      alllines = readCsvLines(str)
+                      xys = for {(leaf_count, csvlines) <- alllines.groupBy(cl => cl.leaf_count)
+                                 } yield (leaf_count.toDouble, csvlines.length.toDouble)
+                      } yield (s"${str} samples=${alllines.length}", xys.to(List).sortBy(_._2))
+    gnuPlot(descrs1.to(Seq))(title="Population (leaf count)",
+                            xAxisLabel = "Leaf Count",
+                            yAxisLabel = "Rte count",
+                            view = true,
+                            grid= true)
+
+    val descrs2 = for {str <- algos
+                      alllines = readCsvLines(str)
+                      xys = for {(state_count, csvlines) <- alllines.groupBy(cl => cl.state_count)
+                                 } yield (state_count.toDouble, csvlines.length.toDouble)
+                      } yield (s"${str} samples=${alllines.length}", xys.to(List).sortBy(_._2))
+    gnuPlot(descrs2.to(Seq))(title="Population (state count)",
+                            xAxisLabel = "Dfa State Count",
+                            yAxisLabel = "Rte count",
+                            view = true,
+                            grid= true)
+
+
+  }
+
   // make plot of y vs x where y = percentage of samples where number of state_counts > x
   def plotThreshold(): Unit = {
 

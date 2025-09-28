@@ -24,6 +24,7 @@ object DiversityPlot {
 object Plots {
   import demos.scalaio2025.GnuPlot.histogram
   def main(argv: Array[String]): Unit = {
+    RteTree.plotPopulation()
     RteTree.plotDiversity()
     RteTree.plotThreshold()
     RteTree.plotAverageCsv()
