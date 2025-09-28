@@ -57,9 +57,9 @@ object RteTree {
                       xys = for {(leaf_count, csvlines) <- alllines.groupBy(cl => cl.leaf_count)
                                  } yield (leaf_count.toDouble, csvlines.length.toDouble)
                       } yield (s"${str} samples=${alllines.length}", xys.to(List).sortBy(_._1))
-    gnuPlot(descrs1.to(Seq))(title="Population (leaf count)",
+    gnuPlot(descrs1.to(Seq))(title="Rte Leaf Count Histogram",
                             xAxisLabel = "Leaf Count",
-                            yAxisLabel = "Rte count",
+                            yAxisLabel = "Frequency",
                             view = true,
                             grid= true)
 
@@ -68,8 +68,8 @@ object RteTree {
                       xys = for {(state_count, csvlines) <- alllines.groupBy(cl => cl.state_count)
                                  } yield (state_count.toDouble, csvlines.length.toDouble )
                       } yield (s"${str} samples=${alllines.length}", xys.to(List).sortBy(_._1))
-    gnuPlot(descrs2.to(Seq))(title="Population (DFA state count)",
-                            xAxisLabel = "Dfa State Count",
+    gnuPlot(descrs2.to(Seq))(title="DFA State Count Histogram",
+                            xAxisLabel = "DFA State Count",
                             yAxisLabel = "Frequency",
       yLog = true, xLog = true,
                             view = true,
