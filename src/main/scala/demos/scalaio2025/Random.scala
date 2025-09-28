@@ -39,10 +39,9 @@ object Random {
   }
 
 
-  def randomTotallyBalancedRteBySize(probability_binary:Float,
-                                     leaves:Int):Rte = {
+  def randomTotallyBalancedRteBySize(leaves:Int):Rte = {
     import adjuvant.Adjuvant.{Node, InternalNode, LeafNode, balancedRandTreeBySize}
-
+    val probability_binary:Double = 0.9
     def nodeToRte(node:Node):Rte = {
       if (random.between(0.0, 1.0) > probability_binary)
         // Star, Not

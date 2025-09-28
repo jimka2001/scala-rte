@@ -5,18 +5,14 @@ import rte.Rte
 import scala.util.Random
 
 object RteTree {
-  import demos.scalaio2025.CsvLine.{statisticsResource,mergeFile,writeCsvStatistic,readCsvLines}
+  import demos.scalaio2025.CsvLine.{statisticsResource,writeCsvStatistic,readCsvLines}
   val random = new Random
 
+  val algos = Seq("naive", "balanced")
+
   val naiveCsv: String = statisticsResource + "naive.csv"
-  val tunedCsv: String = statisticsResource + "tuned.csv"
-  val tunedMECsv: String = statisticsResource + "tunedME.csv" // tuned but maybe empty = true
   val balancedCsv: String = statisticsResource + "balanced.csv"
 
-
-  def genCsvTunedME(num_repetitions: Int): Unit = {
-    genCsvTuned(num_repetitions, avoidEmpty = false, prefix="tunedME", csv = tunedMECsv)
-  }
 
   def genCsvNaive(num_repetitions: Int): Unit = {
     import demos.scalaio2025.Random.randomNaiveRteBySize
@@ -27,37 +23,8 @@ object RteTree {
 
   def genCsvBalanced(num_repetitions: Int): Unit = {
     import demos.scalaio2025.Random.randomTotallyBalancedRteBySize
-    val p = 0.90F
     genCsvBySize(num_repetitions, balancedCsv, prefix="balanced",
-                 genRte=(leaves:Int) => randomTotallyBalancedRteBySize(p, leaves))
-  }
-
-  def genCsvTuned(num_repetitions: Int, avoidEmpty: Boolean = true, prefix:String="tuned",csv: String = tunedCsv): Unit = {
-    import rte.Random.randomRteByDepth
-    genCsvByDepth(num_repetitions, csv=csv, prefix=prefix,
-                  genRte=(depth: Int) => {
-                    val rte = randomRteByDepth(depth, avoidEmpty = avoidEmpty)
-                    println(s"       depth=$depth  leaves=${rte.countLeaves()}")
-                    rte
-                  }
-                  )
-  }
-
-  def genCsvByDepth(num_repetitions: Int,
-                    csv: String,
-                    prefix:String,
-                    genRte: Int => Rte): Unit = {
-    import scala.concurrent.duration._
-    import scala.concurrent.ExecutionContext.Implicits.global
-    import scala.concurrent.{Await, Future}
-    for {r <- 0 to num_repetitions
-         futures = for{ depth <- (5 to 8)
-                        } yield Future {
-           println(s"r=$r depth=$depth")
-           writeCsvStatistic(genRte=()=>genRte(depth), prefix=prefix, csvFileName=csv)
-         }
-         combined = Future.sequence(futures)
-         } Await.result(combined, Duration.Inf)
+                 genRte=randomTotallyBalancedRteBySize)
   }
 
 
@@ -80,8 +47,6 @@ object RteTree {
   }
 
 
-
-
   def genThresholdCurve(cvslines: Seq[CsvLine]): Seq[(Double, Double)] = {
     val num_per_depth = cvslines.size
     val state_count_to_dfa_count = cvslines
@@ -98,9 +63,7 @@ object RteTree {
   // make plot of y vs x where y = percentage of samples where number of state_counts > x
   def plotThreshold(): Unit = {
 
-    val descrs = for {str <- Seq("balanced",
-      //"tuned", "tunedME",
-      "naive")
+    val descrs = for {str <- algos
                       alllines = readCsvLines(str)
                       xys = genThresholdCurve(alllines)
                       } yield (s"${str} samples=${alllines.length}", xys)
@@ -119,8 +82,7 @@ object RteTree {
   //    for now we count the raw number of different dfas, later we need to normalize by how
   //         many rtes of this leaf size contributed to the sample.
   def plotDiversity():Unit = {
-    val descrs = for {str <- Seq(//"tuned", "tunedME",
-                                 "naive", "balanced")
+    val descrs = for {str <- algos
                       alllines = readCsvLines(str)
                       numsamples = alllines.length
                       xys = for {(leafCount:Int, csvlines) <- alllines.groupBy(_.leaf_count)
@@ -138,8 +100,7 @@ object RteTree {
 
   def plotAverageCsv(): Unit = {
 
-    for {str <- Seq(//"tuned", "tunedME",
-      "naive", "balanced")
+    for {str <- algos
          alllines = readCsvLines(str)} {
 
       val sample_count = alllines.size
@@ -160,8 +121,7 @@ object RteTree {
   }
 
   def plotBalance1(): Unit = {
-    val descrs = for {str <- Seq(//"tuned", "tunedME",
-      "naive", "balanced")
+    val descrs = for {str <- algos
                       alllines = readCsvLines(str)
                       grouped = alllines.groupBy(cl => cl.longest.toDouble / cl.shortest)
                       xys = for {(balance, cvslines) <- grouped
@@ -180,8 +140,7 @@ object RteTree {
   def plotBalance2(): Unit = {
     import scala.math.abs
     val delta_balance = 0.25
-    val descrs = for {str <- Seq(//"tuned", "tunedME",
-      "naive", "balanced")
+    val descrs = for {str <- algos
                       alllines = readCsvLines(str)
                       grouped = alllines.groupBy(cl => cl.imbalance())
                       _ = println()
@@ -202,8 +161,7 @@ object RteTree {
   }
 
   def plotBalance3(): Unit = {
-    val descrs = for {str <- Seq(//"tuned", "tunedME",
-                                 "naive", "balanced")
+    val descrs = for {str <- algos
                       alllines = readCsvLines(str)
                       num_samples = alllines.length
                       grouped = alllines.groupBy(_.imbalance())
@@ -224,8 +182,7 @@ object RteTree {
 
   def plotBalance4(): Unit = {
     import scala.math.log
-    val descrs = for {str <- Seq(//"tuned", "tunedME",
-                                 "naive", "balanced")
+    val descrs = for {str <- algos
                       alllines = readCsvLines(str)
                       num_samples = alllines.length
                       xys = for {cl <- alllines
@@ -256,8 +213,7 @@ object RteTree {
         case _ => acc
       }
     }
-    val descrs = for {str <- Seq(//"tuned", "tunedME",
-                                 "naive", "balanced")
+    val descrs = for {str <- algos
                       alllines = readCsvLines(str)
                       num_samples = alllines.length
                       xys_pre = (for {cl <- alllines
@@ -308,7 +264,7 @@ object ViewAst {
     for {(algo, gen) <- Seq( ("naive", () => randomNaiveRteBySize(1 << depth)),
                              //("tunedME", () => randomRte(depth, false)),
                              //("tuned", () => randomRte(depth, true)),
-                             ("balanced", () => randomTotallyBalancedRteBySize(0.90F, 1 << depth))
+                             ("balanced", () => randomTotallyBalancedRteBySize(1 << depth))
                              )
          rte = gen()
          dfa = minimize(rte.toDfa())
