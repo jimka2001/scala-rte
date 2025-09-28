@@ -264,7 +264,7 @@ object RteTree {
                       // Aspect ratio is an approximation of length / width.
                       // By length, we mean distance from top to bottom of the AST (rte) tree
                       // By width, we mean
-                                 aspect_ratio = cl.longest.toDouble / cl.leaf_count // (log(cl.leaf_count)/log(2))
+                                 aspect_ratio = cl.longest.toDouble /  (log(cl.leaf_count)/log(2))
                                  } yield (aspect_ratio, cl.state_count.toDouble)).to(List).sortBy(_._1)
                       xys = integral(xys_pre, List((xys_pre.head._1, 0.0)))
                       } yield (str + s" ${alllines.length} samples", xys)
