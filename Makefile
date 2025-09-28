@@ -5,19 +5,14 @@ balanced:
 		sbt "runMain demos.scalaio2025.GenCsvBalanced 50" ; \
 	done
 
-tuned:
+naive-mid:
 	for i in $$(seq 1 10); do \
-		sbt "runMain demos.scalaio2025.GenCsvTuned 50" ; \
+		sbt "runMain demos.scalaio2025.GenCsvNaiveMid 50"  ; \
 	done
 
-tunedME:
+naive-edge:
 	for i in $$(seq 1 10); do \
-		sbt "runMain demos.scalaio2025.GenCsvTunedME 50" ; \
-	done
-
-naive:
-	for i in $$(seq 1 10); do \
-		sbt "runMain demos.scalaio2025.GenCsvNaive 50"  ; \
+		sbt "runMain demos.scalaio2025.GenCsvNaiveEdge 50"  ; \
 	done
 
 

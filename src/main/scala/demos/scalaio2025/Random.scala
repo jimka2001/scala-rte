@@ -20,14 +20,28 @@ object Random {
                       } yield SOr(td1, td2)
   val inhabitedLeaves:Vector[Rte] = Vector(Sigma, EmptySeq) ++ (inhabitedTypes ++ unionTypes).map(td => Singleton(td))
 
-  def randomNaiveRteBySize(leaves:Int):Rte = {
+  def randomNaiveRteBySizeEdge(leaves:Int):Rte = {
+    randomNaiveRteBySize(leaves, (n) => biasedGaussian(1, n))
+  }
+
+  def randomNaiveRteBySizeMid(leaves:Int):Rte = {
+    randomNaiveRteBySize(leaves, (n)=> {
+      if (n == 2 || n == 3)
+        1
+      else
+        random.between(1, n / 2) + random.between(1, n / 2)
+    })
+  }
+
+  private def randomNaiveRteBySize(leaves:Int, pivot:Int => Int):Rte = {
     if (leaves == 1) {
       randElement(inhabitedLeaves)
     } else {
-      val leftSize = biasedGaussian(1, leaves)
-      lazy val left = randomNaiveRteBySize(leftSize)
-      lazy val right = randomNaiveRteBySize(leaves - leftSize)
-      lazy val mid = randomNaiveRteBySize(leaves)
+      val leftSize = pivot(leaves)
+      assert( leftSize < leaves)
+      lazy val left = randomNaiveRteBySize(leftSize, pivot)
+      lazy val right = randomNaiveRteBySize(leaves - leftSize, pivot)
+      lazy val mid = randomNaiveRteBySize(leaves, pivot)
       randCase(() => EmptySet,
                List(
                  (0.2, () => Cat(left, right)),
