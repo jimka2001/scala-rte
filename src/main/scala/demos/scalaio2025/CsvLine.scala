@@ -16,6 +16,7 @@ case class CsvLine(node_count: Int,
 }
 
 object CsvLine {
+
   import java.nio.file.Paths
   import java.io.FileWriter
   import java.util.UUID
@@ -25,7 +26,7 @@ object CsvLine {
 
   val statisticsResource: String = Paths.get("src/main/resources/statistics").toString + "/"
 
-  def imbalanceFactor(node_count:Int, total:Int):Double = {
+  def imbalanceFactor(node_count: Int, total: Int): Double = {
     // compute an imbalance factor.
     // 1 ==> perfectly balanced
     // > 1 ==> average path length > perfect path length
@@ -68,7 +69,7 @@ object CsvLine {
       "/" + alernative.mkString("/")
     else
       alernative.mkString("/"))
-    callInBlock( alternativePath + ".lock")(f)
+    callInBlock(alternativePath + ".lock")(f)
   }
 
   /**
@@ -107,17 +108,18 @@ object CsvLine {
   // record targetSize
   // write an entry to the csv file so we can plot later
 
-  def writeCsvStatistic(genRte: (() => Rte), prefix:String, csvFileName: String): Unit = {
+  def writeCsvStatistic(genRte: (() => Rte), prefix: String, csvFileName: String): Unit = {
 
     import xymbolyco.Minimize.minimize
     val rte = genRte()
     val nodeCount = rte.linearize().size
     val leafCount = rte.countLeaves()
     val (shortest, longest, total) = rte.measureBalance()
-    def report(nodeCount:Int, leafCount:Int, stateCount:Option[Int], transitionCount:Option[Int],
-               minStateCount:Option[Int], minTransitionCount:Option[Int]):Unit = {
 
-      mergeFile(csvFileName,prefix)((outFile: FileWriter) => {
+    def report(nodeCount: Int, leafCount: Int, stateCount: Option[Int], transitionCount: Option[Int],
+               minStateCount: Option[Int], minTransitionCount: Option[Int]): Unit = {
+
+      mergeFile(csvFileName, prefix)((outFile: FileWriter) => {
         outFile.write(s"$nodeCount,$leafCount,")
         for {op <- Seq(stateCount, transitionCount, minStateCount, minTransitionCount)
              } outFile.write(
@@ -132,20 +134,20 @@ object CsvLine {
 
     val timeout = Seq(longest * longest * 4000, 5000).max
     for {dfa <- callWithTimeout(timeout,
-                                () => rte.toDfa(true),
-                                () => {
-                                  println(s"cancelling DFA generation after ${timeout}ms nodeCount=$nodeCount, csv=$csvFileName")
-                                  report(nodeCount, leafCount, None, None, None, None)
-                                })
+      () => rte.toDfa(true),
+      () => {
+        println(s"cancelling DFA generation after ${timeout}ms nodeCount=$nodeCount, csv=$csvFileName")
+        report(nodeCount, leafCount, None, None, None, None)
+      })
          stateCount = dfa.Qids.size
          transitionCount = dfa.Q.map(q => q.transitions.size).sum
          mindfa <- callWithTimeout(timeout,
-                                   () => minimize(dfa),
-                                   () => {
-                                     println(s"cancelling DFA minimization after ${timeout}ms state-count=${stateCount} transition-count=${transitionCount}")
-                                     report(nodeCount, leafCount, Some(stateCount), Some(transitionCount), None, None)
-                                   }
-                                   )
+           () => minimize(dfa),
+           () => {
+             println(s"cancelling DFA minimization after ${timeout}ms state-count=${stateCount} transition-count=${transitionCount}")
+             report(nodeCount, leafCount, Some(stateCount), Some(transitionCount), None, None)
+           }
+         )
          minStateCount = mindfa.Qids.size
          minTransitionCount = mindfa.Q.map(q => q.transitions.size).sum
          } {
@@ -154,7 +156,7 @@ object CsvLine {
   }
 
 
-  def readCsvLines(str: String): Vector[CsvLine] = {
+  def readAllCsvLines(str: String): Vector[CsvLine] = {
     import java.io.InputStream
     import scala.io.{Source}
     val s: InputStream = getClass.getResourceAsStream(s"/statistics/${str}.csv")
@@ -166,17 +168,21 @@ object CsvLine {
       .map(line => line.split(",").to(Vector))
       .collect {
         case Vector(node_count, leaf_count,
-                    state_pre_count, transition_pre_count, state_count, transition_count,
-                    shortest, longest, total) =>
+        state_pre_count, transition_pre_count, state_count, transition_count,
+        shortest, longest, total) =>
           CsvLine(node_count.toInt,
-                  leaf_count.toInt,
-                  state_pre_count.toInt, transition_pre_count.toInt,
-                  state_count.toInt, transition_count.toInt,
-                  shortest.toInt, longest.toInt, total.toInt)
+            leaf_count.toInt,
+            state_pre_count.toInt, transition_pre_count.toInt,
+            state_count.toInt, transition_count.toInt,
+            shortest.toInt, longest.toInt, total.toInt)
       }
       .to(Vector)
     fp.close()
+    csvlines
+  }
+
+  def readCsvLines(str: String): Vector[CsvLine] = {
     // TODO - at the moment we just remove CsvLine objects containing -1, meaning the measurement timed-out.
-    csvlines.filter{cl => cl.state_count > 0 && cl.transition_count > 0}
+    readAllCsvLines(str).filter { cl => cl.state_count > 0 && cl.transition_count > 0 }
   }
 }

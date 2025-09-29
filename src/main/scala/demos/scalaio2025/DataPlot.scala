@@ -21,6 +21,12 @@ object DiversityPlot {
   }
 }
 
+object TimeOutPlot {
+  def main(array: Array[String]):Unit = {
+    RteTree.plotTimeOut()
+  }
+}
+
 object Plots {
   import demos.scalaio2025.GnuPlot.histogram
   def main(argv: Array[String]): Unit = {
@@ -30,6 +36,7 @@ object Plots {
     RteTree.plotAverageCsv()
     histogram()
     BalancePlot.main(argv)
+    RteTree.plotTimeOut()
   }
 }
 

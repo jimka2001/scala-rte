@@ -5,7 +5,7 @@ import rte.Rte
 import scala.util.Random
 
 object RteTree {
-  import demos.scalaio2025.CsvLine.{statisticsResource,writeCsvStatistic,readCsvLines}
+  import demos.scalaio2025.CsvLine.{statisticsResource,writeCsvStatistic,readCsvLines,readAllCsvLines}
   import demos.scalaio2025.Random.{randomNaiveRteBySizeMid,randomNaiveRteBySizeEdge}
   import demos.scalaio2025.Random.randomTotallyBalancedRteBySize
   val random = new Random
@@ -114,6 +114,23 @@ object RteTree {
                             xAxisLabel = "RTE leaf count",
                             yAxisLabel = "Unique DFA count",
                             view = true)
+  }
+
+  def plotTimeOut():Unit = {
+    val descrs = for {str <- algos
+         alllines = readAllCsvLines(str)
+         xys = for{(leaf_count, csvlines) <- alllines.filter((cl) => cl.state_count <= 0 || cl.transition_count <= 0)groupBy(_.leaf_count)
+                   } yield (leaf_count.toDouble, csvlines.length.toDouble)
+                      if (xys.size > 0)
+         } yield (s"$str - ${alllines.length} samples", xys.toList.sortBy(_._1))
+    println(descrs)
+    gnuPlot(descrs.to(Seq))(title="Time Outs",
+      xAxisLabel = "RTE leaf count",
+      yAxisLabel = "Frequency",
+      grid = true,
+      gnuFileCB = println,
+      plotWith = "points",
+      view = true)
   }
 
   def plotAverageCsv(): Unit = {
