@@ -18,4 +18,11 @@ naive-edge:
 
 
 
+simple:
+	sbt "runMain demos.scalaio2025.GenCsvNaiveEdge 10"
+	sbt "runMain demos.scalaio2025.GenCsvNaiveMid 10"
+	sbt "runMain demos.scalaio2025.GenCsvBalanced 10"
+
+
+
 

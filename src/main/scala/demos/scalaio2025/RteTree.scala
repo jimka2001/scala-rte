@@ -27,7 +27,7 @@ object RteTree {
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
     for {r <- 0 to num_repetitions
-         futures = (0 to 5).map((depth) => Future {
+         futures = (0 to 5).map((_) => Future {
            val size = random.between(3, 1<<6)
            println(s"r=$r size=$size")
            writeCsvStatistic(genRte=() => genRte(algo)(size), prefix=algo, csvFileName=csv(algo))
@@ -116,14 +116,30 @@ object RteTree {
                             view = true)
   }
 
+  def plotTimes():Unit = {
+    val descrs = for {str <- algos
+                      alllines = readCsvLines(str)
+                      xys = for{(leaf_count, csvlines) <- alllines.groupBy(_.leaf_count)
+                                avg = csvlines.map(_.duration).sum / csvlines.length.toDouble
+                                } yield (leaf_count.toDouble, avg / 1000)
+                      } yield (s"$str - ${alllines.length} samples", xys.toList.sortBy(_._1))
+    gnuPlot(descrs.to(Seq))(title="Computation Time",
+      xAxisLabel = "RTE leaf count",
+      yAxisLabel = "Computation Time (sec)",
+      grid = true,
+      yLog = true,
+      gnuFileCB = println,
+      plotWith = "linespoints",
+      view = true)
+  }
+
   def plotTimeOut():Unit = {
     val descrs = for {str <- algos
-         alllines = readAllCsvLines(str)
-         xys = for{(leaf_count, csvlines) <- alllines.filter((cl) => cl.state_count <= 0 || cl.transition_count <= 0)groupBy(_.leaf_count)
-                   } yield (leaf_count.toDouble, csvlines.length.toDouble)
+                      alllines = readAllCsvLines(str)
+                      xys = for{(leaf_count, csvlines) <- alllines.filter((cl) => cl.state_count <= 0 || cl.transition_count <= 0).groupBy(_.leaf_count)
+                                } yield (leaf_count.toDouble, csvlines.length.toDouble)
                       if (xys.size > 0)
-         } yield (s"$str - ${alllines.length} samples", xys.toList.sortBy(_._1))
-    println(descrs)
+                      } yield (s"$str - ${alllines.length} samples", xys.toList.sortBy(_._1))
     gnuPlot(descrs.to(Seq))(title="Time Outs",
       xAxisLabel = "RTE leaf count",
       yAxisLabel = "Frequency",

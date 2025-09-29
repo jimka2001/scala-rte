@@ -9,7 +9,8 @@ case class CsvLine(node_count: Int,
                    transition_count: Int,
                    shortest:Int,
                    longest:Int,
-                   total:Int) {
+                   total:Int,
+                   duration:Int) {
   def imbalance():Double = {
     CsvLine.imbalanceFactor(node_count, total)
   }
@@ -117,7 +118,8 @@ object CsvLine {
     val (shortest, longest, total) = rte.measureBalance()
 
     def report(nodeCount: Int, leafCount: Int, stateCount: Option[Int], transitionCount: Option[Int],
-               minStateCount: Option[Int], minTransitionCount: Option[Int]): Unit = {
+               minStateCount: Option[Int], minTransitionCount: Option[Int],
+               durationMS:Long): Unit = {
 
       mergeFile(csvFileName, prefix)((outFile: FileWriter) => {
         outFile.write(s"$nodeCount,$leafCount,")
@@ -127,17 +129,22 @@ object CsvLine {
             case Some(s) => s"$s,"
             case None => "-1,"
           })
-        outFile.write(f"$shortest,$longest,$total")
+        outFile.write(f"$shortest,$longest,$total,$durationMS")
 
       })
     }
 
+    // timeout in ms
     val timeout = Seq(longest * longest * 4000, 5000).max
+    import java.time.{Duration, LocalDateTime}
+
+    val start = LocalDateTime.now()
+
     for {dfa <- callWithTimeout(timeout,
       () => rte.toDfa(true),
       () => {
         println(s"cancelling DFA generation after ${timeout}ms nodeCount=$nodeCount, csv=$csvFileName")
-        report(nodeCount, leafCount, None, None, None, None)
+        report(nodeCount, leafCount, None, None, None, None, timeout.toLong)
       })
          stateCount = dfa.Qids.size
          transitionCount = dfa.Q.map(q => q.transitions.size).sum
@@ -145,13 +152,16 @@ object CsvLine {
            () => minimize(dfa),
            () => {
              println(s"cancelling DFA minimization after ${timeout}ms state-count=${stateCount} transition-count=${transitionCount}")
-             report(nodeCount, leafCount, Some(stateCount), Some(transitionCount), None, None)
+             report(nodeCount, leafCount, Some(stateCount), Some(transitionCount), None, None, timeout)
            }
          )
          minStateCount = mindfa.Qids.size
          minTransitionCount = mindfa.Q.map(q => q.transitions.size).sum
          } {
-      report(nodeCount, leafCount, Some(stateCount), Some(transitionCount), Some(minStateCount), Some(minTransitionCount))
+      val end = LocalDateTime.now()
+      val duration = Duration.between(start, end)
+      report(nodeCount, leafCount, Some(stateCount), Some(transitionCount), Some(minStateCount), Some(minTransitionCount),
+        duration.toMillis)
     }
   }
 
@@ -169,12 +179,12 @@ object CsvLine {
       .collect {
         case Vector(node_count, leaf_count,
         state_pre_count, transition_pre_count, state_count, transition_count,
-        shortest, longest, total) =>
+        shortest, longest, total, duration) =>
           CsvLine(node_count.toInt,
             leaf_count.toInt,
             state_pre_count.toInt, transition_pre_count.toInt,
             state_count.toInt, transition_count.toInt,
-            shortest.toInt, longest.toInt, total.toInt)
+            shortest.toInt, longest.toInt, total.toInt, duration.toInt)
       }
       .to(Vector)
     fp.close()

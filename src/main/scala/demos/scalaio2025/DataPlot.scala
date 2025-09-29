@@ -37,6 +37,7 @@ object Plots {
     histogram()
     BalancePlot.main(argv)
     RteTree.plotTimeOut()
+    RteTree.plotTimes()
   }
 }
 

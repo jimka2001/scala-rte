@@ -1,9 +1,6 @@
 package demos.scalaio2025
 
-object DataGen {
-  def main(argv: Array[String]): Unit = {
-  }
-}
+
 
 // tested
 object GenCsvBalanced {
