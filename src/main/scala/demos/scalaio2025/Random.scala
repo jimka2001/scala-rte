@@ -44,11 +44,11 @@ object Random {
       lazy val mid = randomNaiveRteBySize(leaves, pivot)
       randCase(() => EmptySet,
                List(
-                 (0.2, () => Cat(left, right)),
-                 (0.2, () => And(left,right)),
-                 (0.2, () => Or(left,right)),
-                 (0.2, () => Star(mid)),
-                 (0.2, () => Not(mid))))
+                 (0.3, () => Cat(left, right)),
+                 (0.3, () => And(left,right)),
+                 (0.3, () => Or(left,right)),
+                 (0.05, () => Star(mid)),
+                 (0.05, () => Not(mid))))
     }
   }
 
