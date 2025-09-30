@@ -70,8 +70,7 @@ object ViewAst {
       rteViewAst(rte, title = algo)
       println(rte.measureBalance())
       println(rte.linearize().length)
-      println(CsvLine.imbalanceFactor(rte.linearize().length, 1))
-      dfaView(dfa, title = algo)
+      dfaView(dfa, title = algo, abbrev=true)
     }
   }
 }

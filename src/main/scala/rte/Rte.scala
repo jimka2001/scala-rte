@@ -327,7 +327,7 @@ abstract class Rte {
         shortest(depth+1, rtes.flatMap(r => r.children()))
     }
 
-    // compte length of longest branch
+    // compute length of longest branch
     def longest(depth:Int, rtes:Seq[Rte]):Int = {
       if (rtes.forall(r => r.children().isEmpty))
         depth
@@ -514,13 +514,15 @@ object Rte {
     seq.sortBy(_.toString)
   }
 
-
-
   def rteViewAst(rte:Rte,
                  title: String = "",
                  dotFileCB: String => Unit = (_ => ()),
-                 habitation:Boolean=true):(Vector[SimpleTypeD], String) = {
-    GraphViz.rteView(rte, title=title, dotFileCB=dotFileCB, habitation=habitation)
+                 habitation:Boolean=true,
+    // typeLegend controls whether a legend of types
+    //   appears in the png file.  otherwise the legend will be
+    //   printed to stdout
+                 typeLegend:Boolean=false):(Vector[SimpleTypeD], String) = {
+    GraphViz.rteView(rte, title=title, dotFileCB=dotFileCB, habitation=habitation,typeLegend=typeLegend)
   }
 
   def rteViewDfa(rte: Rte,
@@ -530,11 +532,14 @@ object Rte {
                  showSink: Boolean = true,
                  dotFileCB: String => Unit = (_ => ()),
                  givenLabels: Seq[SimpleTypeD] = Seq(),
-                 printLatex: Boolean = false): (Vector[SimpleTypeD],String) = {
+    // typeLegend controls whether a legend of transition types
+    //   appears in the png file.  otherwise the legend will be
+    //   printed to stdout
+                 typeLegend:Boolean=false): (Vector[SimpleTypeD],String) = {
 
     xymbolyco.GraphViz.dfaView[Any,SimpleTypeD,Boolean](rte.toDfa(true),
                                                         title, abbrev, label, showSink,
-                                                        dotFileCB, givenLabels, printLatex)
+                                                        dotFileCB, givenLabels, typeLegend=typeLegend)
   }
 
 }

@@ -1,7 +1,7 @@
 package adjuvant
 
 object GraphViz {
-  def multiLineString(str:String,maxLine:Int=60):String = {
+  def multiLineString(str:String,sep:String="\\l",maxLine:Int=60):String = {
     if (str.size <= maxLine)
       str
     else {
@@ -10,11 +10,11 @@ object GraphViz {
       val tab = "    "
       (maxLine to 1 by -1).find(i => delimeters.contains(str(i))) match {
         case Some(k) =>
-          val suffix = multiLineString(str.drop(k+1),maxLine)
+          val suffix = multiLineString(str.drop(k+1),sep,maxLine)
           if (suffix == "")
             str
           else
-            str.take(k + 1) + "\\l" + tab + suffix
+            str.take(k + 1) + sep + tab + suffix
         case None =>
           str
       }
@@ -24,7 +24,7 @@ object GraphViz {
   // run dot and return the png path
   def runDot[A](title:String,
              label:Option[String],
-             toPng:(String,String)=>A):(A,String) = {
+             toPng:(String,String,String)=>A):(A,String) = {
     import java.io.{File, OutputStream}
     val prefix = if (title == "")
       "rte"
@@ -36,11 +36,13 @@ object GraphViz {
     val dotPath = dot.getAbsolutePath
     val alt = File.createTempFile(prefix+"-", ".plain")
     val altPath = alt.getAbsolutePath
+    val latex = File.createTempFile(prefix+"-", ".tex")
+    val latexPath = latex.getAbsolutePath
     val longTitle:String = label match {
       case None => title
       case Some(lab) => s"$title\\l-- $lab"
     }
-    val a:A = toPng(dotPath, longTitle)
+    val a:A = toPng(dotPath, latexPath, longTitle)
     locally {
       import sys.process._
       Seq("dot", "-Tplain", dotPath, "-o", altPath).! // write file containing coordinates
