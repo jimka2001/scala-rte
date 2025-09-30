@@ -30,7 +30,6 @@ object GraphViz {
 
   def rteToPng(rte: Rte,
                title: String,
-               label:Option[String]=None,
                givenTypes:Vector[SimpleTypeD] = defaultTypeVector,
                dotFileCB: String => Unit = fDummy,
                habitation: Boolean = true,
@@ -50,7 +49,7 @@ object GraphViz {
       mergedTypes
     }
 
-    runDot(title, label, toPng)
+    runDot(title, toPng)
   }
 
 
@@ -159,7 +158,7 @@ object GraphViz {
       println(s"Types legend for title=$title")
       for {(td, idx) <- mergedTypes.zipWithIndex
            if usedTypes.contains(td)
-           } println(s"t${idx} = " + multiLineString(td.toString,sep="\n"))
+           } println(s"  t${idx} = " + multiLineString(td.toString,sep="\n"))
     }
     if ( title != "") {
       write("""  labelloc="t";""")

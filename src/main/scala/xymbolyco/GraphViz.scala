@@ -79,8 +79,7 @@ object GraphViz {
       dotFileCB(dotPathName)
       a
     }
-    runDot(title, label, toPng)
-
+    runDot(title, toPng)
   }
 
   def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],
@@ -209,14 +208,15 @@ object GraphViz {
       for {(lab, (i, t)) <- labelMap.toSeq.sortBy(_._2._1)
             if usedLabels.contains(lab)
             multiLab = multiLineString(dfa.labeler.toDot(lab),sep="\n")
-            } println( s"t$i= $multiLab")
+            } println( s"  t$i= $multiLab")
     }
     if (abbrev || title != "") {
       write("""  labelloc="t";""")
       write("\n  label=\"")
       write(title)
-      if (abbrev && typeLegend)
+      if (abbrev && typeLegend) {
         write(transitionLabelText)
+      }
       write("\"\n")
     }
 
