@@ -1,7 +1,5 @@
 package demos.scalaio2025
 
-import adjuvant.GnuPlot.gnuPlot
-import rte.Rte
 import scala.util.Random
 
 object RteTree {
@@ -22,13 +20,15 @@ object RteTree {
                    )
 
   def genCsvBySize(num_repetitions: Int,
-                   algo:String): Unit = {
+                   algo:String,
+                   minLeaf:Int=1<<6,
+                   maxLeaf:Int=1<<7): Unit = {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
     for {r <- 0 to num_repetitions
          futures = (0 to 5).map((_) => Future {
-           val size = random.between(3, 1<<6)
+           val size = random.between(minLeaf, maxLeaf)
            println(s"r=$r size=$size")
            writeCsvStatistic(genRte=() => genRte(algo)(size), prefix=algo, csvFileName=csv(algo))
          })
