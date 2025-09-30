@@ -1,0 +1,155 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage{xspace}
+\usepackage{pgf}
+\usepackage{tikz}
+\usetikzlibrary{patterns}
+\usetikzlibrary{shapes.arrows}
+\tikzstyle{accepting}=[accepting by double]
+%%\tikzset{outer sep=2mm, accepting/.style={double distance=3.5mm}}
+\usepackage{appendixnumberbeamer}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\usepackage{textcomp}
+\usepackage{color}
+\usepackage[subpreambles=true]{standalone}
+
+\input{scalaio-colors}
+\input{scalaio-commands}
+\input{scalaio-listings}
+
+
+\title{Balanced Sampling as a Tool for Useful PBT Random Tree Generation}
+\author{Jim E. Newton}
+\institute{EPITA Research Laboratory}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}{Overview}
+\tableofcontents
+\end{frame}
+}
+
+
+\begin{frame}{Motivation}
+  \begin{itemize}
+  \item Property-Based Testing (PBT) requires object generation.
+
+  \item Select objects (uniformly?) from an infinite space $T$.
+
+  \item If $f:S\to T$ is a function which is not surjective, then uniform selection in $S$
+    does not correspond to uniformity in $T$.
+    
+  \item OBSERVATION:  When we select $s\in S$ then generate $f(s)\in T$ we often find that $f(s)$ is probably trivial.  
+    
+  \item GOAL: improve uniformity in $T$ by biasing the selection in $S$.
+
+  \end{itemize}
+
+\end{frame}
+
+\input{rtes}
+
+
+
+
+\newsavebox\exnotebox
+\begin{lrbox}{\exnotebox}
+  \begin{minipage}{6.5cm}
+    \input{exnotebox}
+  \end{minipage}
+\end{lrbox}
+
+
+\begin{frame}{RTEs}{Surface Syntax and AST}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+  \begin{itemize}
+  \item Mathematical notation:\\
+  \quad\textcolor{greeny}{$(Int \cdot (Double \cup Float)^+)^*$}
+  \item Scala notation: AST\\
+    \usebox\exnotebox
+  \item Leaf nodes interface to Scala Type System
+  \end{itemize}
+    \end{column}%
+    \begin{column}{0.45\textwidth}
+      \scalebox{0.7}{\input{strex-scala}}
+    \end{column}%
+  \end{columns}%
+\end{frame}
+
+
+\begin{frame}{\code{RTE} class quasi-ADT}
+  \scalebox{0.9}{\input{rte-adt}}
+
+\end{frame}
+
+
+
+\begin{frame}{RTE Library}
+  \begin{itemize}
+  \item RTE operations include union, intersection, complement, Kleene-star
+  \item Habitation, Subset, Emptiness checks
+  \item Need to test RTE by generating random RTE/AST
+  \item Membership check (RE-matching)
+  \item Random generation of RTE/AST
+  \end{itemize}
+
+\end{frame}
+
+\newsavebox\examplegenrte
+\begin{lrbox}{\examplegenrte}
+  \begin{minipage}{12cm}
+    \input{genrte}
+  \end{minipage}
+\end{lrbox}
+
+\begin{frame}{Generatee a Random RTE/AST}
+  \usebox\examplegenrte
+\end{frame}
+
+
+\input{re-match} % matching (a 1 1.0 b "a" "an" "the" -5 2 22 222 d 2/3)
+
+
+
+\begin{frame}{Generating random DFA}
+
+  How to generate a random DFA?
+
+  \begin{itemize}
+  \item We can construct DFA from RTE
+  \item ... so generate random RTE (as seen earlier)
+  \item ... and construct DFA
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Successful: Generation of DFA from RTE}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \includegraphics[width=\textwidth, height=0.9\textheight, keepaspectratio]{balanced-rte}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \includegraphics[width=\textwidth, height=0.9\textheight, keepaspectratio]{balanced-dfa}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Dubious: Generation of DFA from RTE}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \includegraphics[width=\textwidth, height=0.9\textheight, keepaspectratio]{rte-naive-edge}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \includegraphics[width=3cm, keepaspectratio]{dfa-naive-edge}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\input{conclusion}
+\end{document}

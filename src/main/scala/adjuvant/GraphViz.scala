@@ -23,19 +23,16 @@ object GraphViz {
 
   // run dot and return the png path
   def runDot[A](title:String,
-             toPng:(String,String,String)=>A):(A,String) = {
+                prefix:String,
+                toPng:(String,String,String)=>A):(A,String) = {
     import java.io.{File, OutputStream}
-    val prefix = if (title == "")
-      "rte"
-    else
-      title
-    val png = File.createTempFile(prefix+"-", ".png")
+    val png = File.createTempFile(prefix+"-"+title+"-", ".png")
     val pngPath = png.getAbsolutePath
-    val dot = File.createTempFile(prefix+"-", ".dot")
+    val dot = File.createTempFile(prefix+"-"+title+"-", ".dot")
     val dotPath = dot.getAbsolutePath
-    val alt = File.createTempFile(prefix+"-", ".plain")
+    val alt = File.createTempFile(prefix+"-"+title+"-", ".plain")
     val altPath = alt.getAbsolutePath
-    val latex = File.createTempFile(prefix+"-", ".tex")
+    val latex = File.createTempFile(prefix+"-"+title+"-", ".tex")
     val latexPath = latex.getAbsolutePath
 
     val a:A = toPng(dotPath, latexPath, title)

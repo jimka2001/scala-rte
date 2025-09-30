@@ -79,7 +79,7 @@ object GraphViz {
       dotFileCB(dotPathName)
       a
     }
-    runDot(title, toPng)
+    runDot(title, "dfa", toPng)
   }
 
   def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],

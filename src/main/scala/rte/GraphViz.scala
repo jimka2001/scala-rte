@@ -49,7 +49,7 @@ object GraphViz {
       mergedTypes
     }
 
-    runDot(title, toPng)
+    runDot(title, "rte", toPng)
   }
 
 

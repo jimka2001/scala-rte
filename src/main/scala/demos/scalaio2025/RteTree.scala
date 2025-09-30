@@ -67,10 +67,10 @@ object ViewAst {
          rte = RteTree.genRte(algo)(1 << depth)
          dfa = minimize(rte.toDfa())
          } {
-      rteViewAst(rte, title = algo)
+      rteViewAst(rte, title = algo, dotFileCB=(str)=>println(s"RTE $str"))
       println(rte.measureBalance())
       println(rte.linearize().length)
-      dfaView(dfa, title = algo, abbrev=true)
+      dfaView(dfa, title = algo, abbrev=true,dotFileCB=(str)=>println(s"DFA $str"))
     }
   }
 }
