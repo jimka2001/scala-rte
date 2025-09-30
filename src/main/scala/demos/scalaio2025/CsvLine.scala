@@ -1,6 +1,7 @@
 package demos.scalaio2025
 
 
+import scala.math.log
 case class CsvLine(node_count: Int,
                    leaf_count: Int,
                    state_pre_count:Int,
@@ -11,8 +12,23 @@ case class CsvLine(node_count: Int,
                    longest:Int,
                    total:Int,
                    duration:Int) {
+
+  def ratioLongestShortest():Double = {
+    longest.toDouble / shortest
+  }
+
+  // > 1 ==> average path length > perfect path length [portrait]
+  // < 1 ==> average path length < perfect path length [landscape]
   def imbalance():Double = {
-    CsvLine.imbalanceFactor(node_count, total)
+    CsvLine.imbalanceFactor(node_count, leaf_count, total)
+  }
+  // Aspect ratio is an approximation of width / length.
+  // > 1 ==> average path length > perfect path length [portrait]
+  // < 1 ==> average path length < perfect path length [landscape]
+  // By length, we mean longest distance from top to bottom of the AST (rte) tree
+  // By width, we mean log(leaf_count)
+  def aspectRatio():Double = {
+    (log(leaf_count) / log(2)) / longest.toDouble
   }
 }
 
@@ -27,22 +43,23 @@ object CsvLine {
 
   val statisticsResource: String = Paths.get("src/main/resources/statistics").toString + "/"
 
-  def imbalanceFactor(node_count: Int, total: Int): Double = {
-    // compute an imbalance factor.
+
+  def imbalanceFactor(node_count: Int, leaf_count:Int, total: Int): Double = {
+    // compute a imbalance factor.
+    // This factor measures the extent to which the tree is deeper than it would
+    //  be if it were balanced.
     // 1 ==> perfectly balanced
-    // > 1 ==> average path length > perfect path length
-    // < 1 ==> average path length < perfect path length
+    // > 1 ==> average path length > perfect path length [portrait]
+    // < 1 ==> average path length < perfect path length [landscape]
     import scala.math.log
     if (node_count == 1 && total == 0)
       1.0
     else {
-      // number of total nodes, leaf + internal = 2^d - 1 + 2^d
+      // total number of nodes, leaf + internal = 2^d - 1 + 2^d
+      // compute d, length of a branch if perfectly balanced
       val d = log(node_count + 1) / log(2)
       // balanced path total length from root to leaf = num leafs * average length i.e. n*d
-      val imbalanced_total = d * node_count
-      //println(f"node_count = $node_count")
-      //println(f"total = $total")
-      //println(f"d=$d imbalanced_total=$balanced_total")
+      val imbalanced_total = d * leaf_count
       val ibf = imbalanced_total / total.toDouble
       //println(f"bf = $bf")
       assert(total > 0)
