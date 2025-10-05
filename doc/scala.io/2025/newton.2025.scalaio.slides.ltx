@@ -56,23 +56,20 @@
 \end{frame}
 
 \begin{frame}{Motivation}
-    \input{map-s-to-t}
-
+  \only<1>{\input{map-s-to-t}}%
+  \only<2>{\input{thought-balloon}}%
 
   \begin{itemize}
-
   \item OBSERVATION:  When we select $s\in S$ then generate $f(s)\in T$ we often find that $f(s)$ is  trivial.  
     
   \item GOAL: improve uniformity in $T$ by biasing the selection in $S$.
 
-  \item CONCRETELY: uniformly sample Finite Automata by:
+  \item<2>{ CONCRETELY: uniformly sample Finite Automata by:
     \begin{enumerate}
     \item  Biased sample of Regular Expressions
     \item  Convert Regular Expression to Finite Automaton
     \end{enumerate}
-
-
-
+}
   \end{itemize}
 
 \end{frame}
