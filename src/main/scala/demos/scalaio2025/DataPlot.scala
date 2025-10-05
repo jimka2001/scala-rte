@@ -16,6 +16,7 @@ object DataPlot {
     val gnuFileName = reportDir + base + ".gnu"
     val pngFileName = reportDir + base + ".png"
     (fn:String) => locally {
+      println(fn)
       Seq("cp", fn, gnuFileName).!
       runGnuPlot("png", gnuFileName, pngFileName)
       ()
@@ -160,7 +161,6 @@ object DataPlot {
         view = true
       )
   }
-
 
   def plotPopulation(): Unit = {
     val descrs1 = for {str <- algos

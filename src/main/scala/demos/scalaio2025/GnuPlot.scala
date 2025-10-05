@@ -1,5 +1,6 @@
 package demos.scalaio2025
 
+import adjuvant.GnuPlot.runGnuPlot
 import demos.scalaio2025.RteTree.algos
 
 object GnuPlot {
@@ -81,7 +82,9 @@ object GnuPlot {
       gnu.write("EOD\n\n")
       gnu.write(gnufooter(algos))
       gnu.close()
-      Seq(adjuvant.GnuPlot.gnuPlotPath, gnuFileName).!
+
+      runGnuPlot("png", gnuFileName, basename + ".png")
+
       openGraphicalFile(basename + ".png")
     }
 
