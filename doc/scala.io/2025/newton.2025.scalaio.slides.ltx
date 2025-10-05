@@ -172,5 +172,63 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}{Requirements}
+  \begin{itemize}
+
+  \item If we want to generate \emph{large} DFAs, we necessarily must generate \emph{large} RTE (AST).
+
+  \item However, this is not sufficient.  Many large RTEs generate small/trivial DFAs.
+
+  \item    Why?
+  \end{itemize} 
+\end{frame}
+
+
+\begin{frame}{Requirements}
+  \begin{columns}
+    
+    \begin{column}{0.55\textwidth}
+      \begin{itemize}
+      \item   Why?
+
+      \item Because of so-called \emph{annihilators}.
+        
+      \item Whenever an input $X=\emptyset$ then $X \cap Y = \emptyset$.
+        
+      \item Thus all the tree which generated $Y$ has no effect on the result.
+      \end{itemize}      
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \includegraphics[width=\textwidth, height=0.9\textheight, keepaspectratio]{rte-naive-edge}
+    \end{column}
+
+  
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}{Recommendations}
+  \begin{columns}
+    \begin{column}{0.4\textwidth}
+      \textcolor{red}{UNIFORM\\ --- \emph{Portrait} --- narrow and deep}
+
+      \medskip
+
+      
+      \includegraphics[width=0.8\textwidth, height=0.8\textheight, keepaspectratio]{generations-uniform}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \textcolor{greeny}{BALANCED\\ --- \emph{Landscape} --- shallow and wide}
+
+      \medskip
+
+      \includegraphics[width=0.9\textwidth, height=0.6\textheight, keepaspectratio]{generations-balanced}    
+    \end{column}
+  \end{columns}
+
+  
+\end{frame}
+
+
 \input{conclusion}
 \end{document}

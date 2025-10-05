@@ -1,13 +1,26 @@
 package demos.scalaio2025
 
-import adjuvant.GnuPlot.gnuPlot
+import adjuvant.GnuPlot.{gnuPlot, runGnuPlot}
 import demos.scalaio2025.CsvLine.readCsvLines
 import demos.scalaio2025.DataPlot.{plotTimeOut, plotTimes}
-import demos.scalaio2025.RteTree.{algos}
-import demos.scalaio2025.CsvLine.{readAllCsvLines}
+import demos.scalaio2025.RteTree.algos
+import demos.scalaio2025.CsvLine.readAllCsvLines
 
+import scala.sys.process.stringSeqToProcess
+import scala.language.postfixOps
 
 object DataPlot {
+  def plotCB(base:String): (String=>Unit) = {
+    assert(!base.contains("."))
+    val reportDir = "/Users/jnewton/Repos/rte/scala-rte/doc/scala.io/2025/includes/"
+    val gnuFileName = reportDir + base + ".gnu"
+    val pngFileName = reportDir + base + ".png"
+    (fn:String) => locally {
+      Seq("cp", fn, gnuFileName).!
+      runGnuPlot("png", gnuFileName, pngFileName)
+      ()
+    }
+  }
   def plotAverageCsv(): Unit = {
 
     for {str <- algos
@@ -24,7 +37,7 @@ object DataPlot {
         yAxisLabel = "DFA state count",
         yLog = true,
         grid = true,
-        gnuFileCB = println,
+        gnuFileCB = plotCB(s"plot-average-$str-node-count"),
         plotWith = "points",
         view = true)
     }
@@ -41,7 +54,7 @@ object DataPlot {
       xAxisLabel = "Ratio longest to shortest",
       yAxisLabel = "node:state ratio",
       plotWith = "points",
-      gnuFileCB = println,
+      gnuFileCB = plotCB(s"plot-ratio-longest-to-shortest"),
       view = true
     )
   }
@@ -67,7 +80,7 @@ object DataPlot {
       xAxisLabel = xlabel,
       yAxisLabel = "Percentage count >= 2 for x=imbalance",
       plotWith = "lines",
-      gnuFileCB = println,
+      gnuFileCB = plotCB("plot-local-average"),
       view = true
     )
   }
@@ -86,7 +99,7 @@ object DataPlot {
       xAxisLabel = "Imbalance factor, <<< landscape|portrait >>> ",
       yAxisLabel = "Percentage count >= 2 for imbalance <= x",
       plotWith = "lines",
-      gnuFileCB = println,
+      gnuFileCB = plotCB("plot-running-balances"),
       grid = true,
       view = true
     )
@@ -107,7 +120,7 @@ object DataPlot {
       xAxisLabel = xlabel,
       yAxisLabel = "DFA state count",
       plotWith = "points",
-      gnuFileCB = println,
+      gnuFileCB = plotCB(f"plot-dfa-state-count-vs-$xlabel"),
       grid = true,
       view = true
     )
@@ -127,9 +140,9 @@ object DataPlot {
       }
     }
 
-    for {(imb, xlabel) <- Seq(((cl:CsvLine) => cl.aspectRatio(), "Aspect Ratio"),
-      ((cl:CsvLine) => cl.imbalance(), "Imbalance Factor"),
-      ((cl:CsvLine) => cl.ratioLongestShortest(), "Ratio longest:shortest"))
+    for {(imb, xlabel) <- Seq(((cl:CsvLine) => cl.aspectRatio(), "Aspect-Ratio"),
+      ((cl:CsvLine) => cl.imbalance(), "Imbalance-Factor"),
+      ((cl:CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
          descrs = for {algo <- algos
                        alllines = readCsvLines(algo)
                        num_samples = alllines.length
@@ -142,11 +155,12 @@ object DataPlot {
         xAxisLabel = xlabel,
         yAxisLabel = "DFA state count",
         plotWith = "lines",
-        gnuFileCB = println,
+        gnuFileCB = plotCB(f"plot-running-sum-balances-per-$xlabel"),
         grid = true,
         view = true
       )
   }
+
 
   def plotPopulation(): Unit = {
     val descrs1 = for {str <- algos
@@ -157,6 +171,7 @@ object DataPlot {
     gnuPlot(descrs1.to(Seq))(title="Rte Leaf Count Histogram",
       xAxisLabel = "Leaf Count",
       yAxisLabel = "Frequency",
+      gnuFileCB = plotCB("plot-rte-leaf-count-histogram"),
       view = true,
       grid= true)
 
@@ -169,6 +184,7 @@ object DataPlot {
       xAxisLabel = "DFA State Count",
       yAxisLabel = "Frequency",
       yLog = true, xLog = true,
+      gnuFileCB = plotCB("plot-dfa-state-count-histogram"),
       view = true,
       grid= true)
   }
@@ -198,6 +214,7 @@ object DataPlot {
       xLog = true,
       grid = true,
       yLog = false,
+      gnuFileCB = plotCB(f"plot-threshold"),
       yAxisLabel = "Percentage dfa <= state count",
       view = true)
   }
@@ -221,6 +238,7 @@ object DataPlot {
     gnuPlot(descrs.to(Seq))(title="Diversity",
       xAxisLabel = "RTE leaf count",
       yAxisLabel = "Unique DFA count",
+      gnuFileCB = plotCB(f"diversity"),
       view = true)
   }
 
@@ -236,7 +254,7 @@ object DataPlot {
       yAxisLabel = "Average Computation Time (sec)",
       grid = true,
       yLog = true,
-      gnuFileCB = println,
+      gnuFileCB = plotCB(f"plot-computation-time"),
       plotWith = "linespoints",
       view = true)
   }
@@ -252,7 +270,7 @@ object DataPlot {
       xAxisLabel = "RTE leaf count",
       yAxisLabel = "Frequency",
       grid = true,
-      gnuFileCB = println,
+      gnuFileCB = plotCB("plot-time-outs"),
       plotWith = "points",
       view = true)
   }

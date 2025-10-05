@@ -134,18 +134,13 @@ object GnuPlot {
         data._2.nonEmpty && data._3.nonEmpty
       })
         terminals.foreach { terminal =>
-          import sys.process._
+
           val outputFileName = makeTmpFileName(outputFileBaseName, terminal)
 
           if (verbose)
             println(s"[generating $outputFileName")
           gnu.write("\n")
-          val process = Process(Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName),
-                                None,
-                                // The LC_CTYPE env var prevents the following diagnostic from gnuplot
-                                // Fontconfig warning: ignoring UTF-8: not a valid region tag
-                                "LC_CTYPE" -> "en_US.UTF-8")
-          val exitCode = (process #>> new File(outputFileName)).!
+          val exitCode = runGnuPlot(terminal, gnuName, outputFileName)
 
           if (exitCode != 0)
             println(s"finished $outputFileName with exit code=$exitCode verbose=$verbose]")
@@ -155,6 +150,16 @@ object GnuPlot {
             openGraphicalFile(outputFileName)
         }
     }
+  }
+  def runGnuPlot(terminal:String, gnuName:String, outputFileName:String):Int = {
+    import sys.process._
+    import java.io._
+    val process = Process(Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName),
+      None,
+      // The LC_CTYPE env var prevents the following diagnostic from gnuplot
+      // Fontconfig warning: ignoring UTF-8: not a valid region tag
+      "LC_CTYPE" -> "en_US.UTF-8")
+    (process #>> new File(outputFileName)).!
   }
 
   // Create a plot using gnuplot (which we assume is stalled
