@@ -62,9 +62,9 @@ object DataPlot {
   def plotBalanceLocalAverage(): Unit = {
     import scala.math.abs
     val delta_balance = 0.25
-    for {(imb, xlabel) <- Seq(((cl: CsvLine) => cl.aspectRatio(), "Aspect Ratio"),
-      ((cl: CsvLine) => cl.imbalance(), "Imbalance Factor"),
-      ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio longest:shortest"))
+    for {(imb, xlabel) <- Seq(((cl: CsvLine) => cl.aspectRatio(), "Aspect-Ratio"),
+      ((cl: CsvLine) => cl.imbalance(), "Imbalance-Factor"),
+      ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
          descrs = for {str <- algos
                        alllines = readCsvLines(str)
                        grouped = alllines.groupBy(imb)
@@ -106,9 +106,9 @@ object DataPlot {
   }
 
   def plotBalanceDfaCountVsAspectRatio(): Unit = {
-    for {(imb, xlabel) <- Seq(((cl: CsvLine) => cl.aspectRatio(), "Aspect Ratio"),
-      ((cl: CsvLine) => cl.imbalance(), "Imbalance Factor"),
-      ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio longest:shortest"))
+    for {(imb, xlabel) <- Seq(((cl: CsvLine) => cl.aspectRatio(), "Aspect-Ratio"),
+      ((cl: CsvLine) => cl.imbalance(), "Imbalance-Factor"),
+      ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
          descrs = for {str <- algos
                        alllines = readCsvLines(str)
                        num_samples = alllines.length
