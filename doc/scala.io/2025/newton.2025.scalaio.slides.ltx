@@ -37,16 +37,41 @@
 
 \begin{frame}{Motivation}
   \begin{itemize}
-  \item Property-Based Testing (PBT) requires object generation.
+  \item<1->{ Property-Based Testing (PBT) requires object generation.}
 
-  \item Select objects (uniformly?) from an infinite space $T$.
+  \item<1->{ Select objects (uniformly?) from an infinite space $T$.
 
-  \item If $f:S\to T$ is a function which is not surjective, then uniform selection in $S$
-    does not correspond to uniformity in $T$.
+    \input{set-t}
+}
+
+  \item<2->{ Selecting uniformly in $T$ may be difficult, so we may prefer to sample in another space $S$, and then convert object $s\in S$ to $f(s) = t \in T$.
+
+    \input{map-s-to-t}
+}
+
+  \item<3>{Sadly uniform selection in $S$
+    may not deliver uniformity in $T$.}
     
-  \item OBSERVATION:  When we select $s\in S$ then generate $f(s)\in T$ we often find that $f(s)$ is probably trivial.  
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Motivation}
+    \input{map-s-to-t}
+
+
+  \begin{itemize}
+
+  \item OBSERVATION:  When we select $s\in S$ then generate $f(s)\in T$ we often find that $f(s)$ is  trivial.  
     
   \item GOAL: improve uniformity in $T$ by biasing the selection in $S$.
+
+  \item CONCRETELY: uniformly sample Finite Automata by:
+    \begin{enumerate}
+    \item  Biased sample of Regular Expressions
+    \item  Convert Regular Expression to Finite Automaton
+    \end{enumerate}
+
+
 
   \end{itemize}
 
@@ -149,7 +174,6 @@
     \end{column}
   \end{columns}
 \end{frame}
-
 
 \input{conclusion}
 \end{document}
