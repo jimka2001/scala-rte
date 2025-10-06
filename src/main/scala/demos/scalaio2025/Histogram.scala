@@ -3,7 +3,7 @@ package demos.scalaio2025
 import adjuvant.GnuPlot.runGnuPlot
 import demos.scalaio2025.RteTree.algos
 
-object GnuPlot {
+object Histogram {
   import demos.scalaio2025.CsvLine.{readCsvLines}
   import scala.sys.process.stringSeqToProcess
   import adjuvant.Adjuvant.{openGraphicalFile}

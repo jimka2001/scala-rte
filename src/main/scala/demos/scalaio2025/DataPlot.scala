@@ -299,7 +299,7 @@ object TimeOutPlot {
 }
 
 object Plots {
-  import demos.scalaio2025.GnuPlot.histogram
+  import demos.scalaio2025.Histogram.histogram
   def main(argv: Array[String]): Unit = {
     DataPlot.plotPopulation()
     DataPlot.plotDiversity()
@@ -313,7 +313,7 @@ object Plots {
 }
 
 object Histograms {
-  import demos.scalaio2025.GnuPlot.histogram
+  import demos.scalaio2025.Histogram.histogram
   def main(argv: Array[String]): Unit = {
     histogram()
   }
