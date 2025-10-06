@@ -6,10 +6,10 @@ set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
 set title "Diversity"
-plot "-" using 1:2 with linespoints title "naive-mid - 845 samples",\
-    "-" using 1:2 with linespoints title "naive-edge - 849 samples",\
-    "-" using 1:2 with linespoints title "balanced - 844 samples"
-#naive-mid - 845 samples
+plot "-" using 1:2 with linespoints title "naive-mid - 864 samples",\
+    "-" using 1:2 with linespoints title "naive-edge - 868 samples",\
+    "-" using 1:2 with linespoints title "balanced - 863 samples"
+#naive-mid - 864 samples
 3.0 1.0
 4.0 4.0
 5.0 4.0
@@ -57,7 +57,7 @@ plot "-" using 1:2 with linespoints title "naive-mid - 845 samples",\
 47.0 5.0
 48.0 6.0
 49.0 1.0
-50.0 4.0
+50.0 14.0
 51.0 1.0
 53.0 1.0
 54.0 1.0
@@ -135,7 +135,7 @@ plot "-" using 1:2 with linespoints title "naive-mid - 845 samples",\
 126.0 2.0
 127.0 5.0
 end
-#naive-edge - 849 samples
+#naive-edge - 868 samples
 3.0 4.0
 4.0 2.0
 5.0 6.0
@@ -183,7 +183,7 @@ end
 47.0 8.0
 48.0 3.0
 49.0 5.0
-50.0 4.0
+50.0 11.0
 51.0 4.0
 52.0 1.0
 53.0 5.0
@@ -262,7 +262,7 @@ end
 126.0 3.0
 127.0 2.0
 end
-#balanced - 844 samples
+#balanced - 863 samples
 3.0 4.0
 4.0 5.0
 5.0 4.0
@@ -310,7 +310,7 @@ end
 47.0 5.0
 48.0 3.0
 49.0 6.0
-50.0 8.0
+50.0 16.0
 51.0 7.0
 52.0 3.0
 53.0 3.0

@@ -7,7 +7,7 @@ set key font ',15'
 set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
-set title "Average naive-edge node count (849 samples)"
+set title "Average naive-edge node count (868 samples)"
 plot "-" using 1:2 with points title "naive-edge"
 #naive-edge
 3.0 3.75
@@ -57,7 +57,7 @@ plot "-" using 1:2 with points title "naive-edge"
 47.0 4.916666666666667
 48.0 2.5714285714285716
 49.0 8.166666666666666
-50.0 2.2857142857142856
+50.0 3.730769230769231
 51.0 3.625
 52.0 1.0
 53.0 2.142857142857143

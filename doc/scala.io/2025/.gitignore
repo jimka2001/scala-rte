@@ -10,3 +10,4 @@ includes/balanced-rte.pdf
 includes/balanced-dfa.pdf
 includes/rte-naive-edge.pdf
 includes/dfa-naive-edge.pdf
+includes/plot*.png

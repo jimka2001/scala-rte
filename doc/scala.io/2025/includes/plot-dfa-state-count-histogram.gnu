@@ -8,22 +8,22 @@ set key font ',15'
 set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
-set title "DFA State Count Histogram"
-plot "-" using 1:2 with linespoints title "naive-mid samples=845",\
-    "-" using 1:2 with linespoints title "naive-edge samples=849",\
-    "-" using 1:2 with linespoints title "balanced samples=844"
-#naive-mid samples=845
-1.0 476.0
+set title "DFA State Count Histogram "
+plot "-" using 1:2 with linespoints title "naive-mid samples=864",\
+    "-" using 1:2 with linespoints title "naive-edge samples=868",\
+    "-" using 1:2 with linespoints title "balanced samples=863"
+#naive-mid samples=864
+1.0 485.0
 2.0 52.0
-3.0 44.0
+3.0 45.0
 4.0 35.0
-5.0 28.0
+5.0 29.0
 6.0 22.0
-7.0 13.0
-8.0 6.0
+7.0 14.0
+8.0 8.0
 9.0 10.0
-10.0 13.0
-11.0 14.0
+10.0 14.0
+11.0 15.0
 12.0 8.0
 13.0 10.0
 14.0 8.0
@@ -31,8 +31,8 @@ plot "-" using 1:2 with linespoints title "naive-mid samples=845",\
 16.0 2.0
 17.0 6.0
 18.0 3.0
-19.0 4.0
-20.0 5.0
+19.0 5.0
+20.0 6.0
 21.0 1.0
 22.0 2.0
 23.0 2.0
@@ -46,7 +46,7 @@ plot "-" using 1:2 with linespoints title "naive-mid samples=845",\
 31.0 6.0
 32.0 2.0
 33.0 5.0
-34.0 2.0
+34.0 3.0
 35.0 1.0
 36.0 2.0
 37.0 1.0
@@ -84,19 +84,19 @@ plot "-" using 1:2 with linespoints title "naive-mid samples=845",\
 277.0 1.0
 1193.0 1.0
 end
-#naive-edge samples=849
-1.0 392.0
+#naive-edge samples=868
+1.0 402.0
 2.0 33.0
-3.0 116.0
+3.0 119.0
 4.0 74.0
-5.0 47.0
-6.0 26.0
-7.0 30.0
+5.0 48.0
+6.0 27.0
+7.0 31.0
 8.0 16.0
 9.0 12.0
 10.0 10.0
-11.0 15.0
-12.0 6.0
+11.0 16.0
+12.0 7.0
 13.0 4.0
 14.0 2.0
 15.0 8.0
@@ -105,7 +105,7 @@ end
 18.0 5.0
 19.0 4.0
 20.0 1.0
-21.0 1.0
+21.0 2.0
 22.0 2.0
 23.0 1.0
 25.0 2.0
@@ -138,22 +138,22 @@ end
 476.0 1.0
 3002.0 1.0
 end
-#balanced samples=844
-1.0 401.0
+#balanced samples=863
+1.0 411.0
 2.0 42.0
-3.0 81.0
+3.0 83.0
 4.0 47.0
 5.0 40.0
 6.0 27.0
-7.0 23.0
-8.0 21.0
+7.0 25.0
+8.0 22.0
 9.0 14.0
 10.0 8.0
 11.0 9.0
 12.0 9.0
-13.0 4.0
+13.0 5.0
 14.0 6.0
-15.0 2.0
+15.0 3.0
 16.0 5.0
 17.0 5.0
 18.0 8.0
@@ -164,7 +164,7 @@ end
 23.0 3.0
 24.0 2.0
 25.0 1.0
-26.0 1.0
+26.0 2.0
 27.0 6.0
 28.0 2.0
 29.0 2.0
@@ -188,6 +188,7 @@ end
 55.0 1.0
 58.0 1.0
 61.0 1.0
+67.0 1.0
 70.0 1.0
 74.0 1.0
 78.0 1.0

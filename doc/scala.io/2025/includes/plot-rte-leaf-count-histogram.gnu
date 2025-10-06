@@ -7,10 +7,10 @@ set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
 set title "Rte Leaf Count Histogram"
-plot "-" using 1:2 with linespoints title "naive-mid samples=845",\
-    "-" using 1:2 with linespoints title "naive-edge samples=849",\
-    "-" using 1:2 with linespoints title "balanced samples=844"
-#naive-mid samples=845
+plot "-" using 1:2 with linespoints title "naive-mid samples=864",\
+    "-" using 1:2 with linespoints title "naive-edge samples=868",\
+    "-" using 1:2 with linespoints title "balanced samples=863"
+#naive-mid samples=864
 3.0 3.0
 4.0 6.0
 5.0 5.0
@@ -58,7 +58,7 @@ plot "-" using 1:2 with linespoints title "naive-mid samples=845",\
 47.0 11.0
 48.0 10.0
 49.0 4.0
-50.0 8.0
+50.0 27.0
 51.0 4.0
 53.0 3.0
 54.0 4.0
@@ -136,7 +136,7 @@ plot "-" using 1:2 with linespoints title "naive-mid samples=845",\
 126.0 5.0
 127.0 7.0
 end
-#naive-edge samples=849
+#naive-edge samples=868
 3.0 4.0
 4.0 3.0
 5.0 6.0
@@ -184,7 +184,7 @@ end
 47.0 12.0
 48.0 7.0
 49.0 6.0
-50.0 7.0
+50.0 26.0
 51.0 8.0
 52.0 3.0
 53.0 7.0
@@ -263,7 +263,7 @@ end
 126.0 6.0
 127.0 5.0
 end
-#balanced samples=844
+#balanced samples=863
 3.0 5.0
 4.0 5.0
 5.0 6.0
@@ -311,7 +311,7 @@ end
 47.0 8.0
 48.0 5.0
 49.0 9.0
-50.0 11.0
+50.0 30.0
 51.0 10.0
 52.0 5.0
 53.0 4.0

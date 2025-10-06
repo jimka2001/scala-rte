@@ -7,7 +7,7 @@ set key font ',15'
 set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
-set title "Average balanced node count (844 samples)"
+set title "Average balanced node count (863 samples)"
 plot "-" using 1:2 with points title "balanced"
 #balanced
 3.0 2.6
@@ -57,7 +57,7 @@ plot "-" using 1:2 with points title "balanced"
 47.0 31.5
 48.0 5.4
 49.0 18.22222222222222
-50.0 5.2727272727272725
+50.0 7.233333333333333
 51.0 29.2
 52.0 28.0
 53.0 9.75

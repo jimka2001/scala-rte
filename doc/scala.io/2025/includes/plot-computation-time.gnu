@@ -8,10 +8,10 @@ set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
 set title "Computation Time"
-plot "-" using 1:2 with linespoints title "naive-mid - 845 samples",\
-    "-" using 1:2 with linespoints title "naive-edge - 849 samples",\
-    "-" using 1:2 with linespoints title "balanced - 844 samples"
-#naive-mid - 845 samples
+plot "-" using 1:2 with linespoints title "naive-mid - 864 samples",\
+    "-" using 1:2 with linespoints title "naive-edge - 868 samples",\
+    "-" using 1:2 with linespoints title "balanced - 863 samples"
+#naive-mid - 864 samples
 3.0 0.053
 4.0 0.05583333333333334
 5.0 0.049
@@ -59,7 +59,7 @@ plot "-" using 1:2 with linespoints title "naive-mid - 845 samples",\
 47.0 1.113090909090909
 48.0 0.9759
 49.0 0.41575
-50.0 2.55
+50.0 1.3414444444444444
 51.0 0.2465
 53.0 0.5373333333333333
 54.0 0.2395
@@ -137,7 +137,7 @@ plot "-" using 1:2 with linespoints title "naive-mid - 845 samples",\
 126.0 1.2398
 127.0 3.5555714285714286
 end
-#naive-edge - 849 samples
+#naive-edge - 868 samples
 3.0 0.0925
 4.0 0.068
 5.0 0.051
@@ -185,7 +185,7 @@ end
 47.0 0.26958333333333334
 48.0 0.634
 49.0 0.4453333333333333
-50.0 0.48942857142857144
+50.0 0.1951923076923077
 51.0 0.209625
 52.0 0.29433333333333334
 53.0 0.331
@@ -264,7 +264,7 @@ end
 126.0 0.7768333333333334
 127.0 0.9966
 end
-#balanced - 844 samples
+#balanced - 863 samples
 3.0 0.0424
 4.0 0.0434
 5.0 0.09783333333333333
@@ -312,7 +312,7 @@ end
 47.0 11.7855
 48.0 0.38780000000000003
 49.0 22.11688888888889
-50.0 1.176909090909091
+50.0 0.5373
 51.0 18.768099999999997
 52.0 1.0032
 53.0 1.50525

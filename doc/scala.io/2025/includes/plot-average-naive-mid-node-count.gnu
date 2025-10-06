@@ -7,7 +7,7 @@ set key font ',15'
 set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
-set title "Average naive-mid node count (845 samples)"
+set title "Average naive-mid node count (864 samples)"
 plot "-" using 1:2 with points title "naive-mid"
 #naive-mid
 3.0 3.0
@@ -57,7 +57,7 @@ plot "-" using 1:2 with points title "naive-mid"
 47.0 2.5454545454545454
 48.0 3.6
 49.0 1.0
-50.0 13.625
+50.0 9.0
 51.0 1.0
 53.0 1.0
 54.0 1.0

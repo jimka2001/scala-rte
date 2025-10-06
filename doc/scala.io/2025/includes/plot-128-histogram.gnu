@@ -8,22 +8,22 @@ set xtics rotate by -45
 set grid
 set xlabel "DFA state count"
 set ylabel "Percentage of DFAs per state count"
-set title "DFA State distribution for Rte "
+set title "DFA State distribution for Rte 128-"
 
 
 
 $MyData << EOD
-"DFA state count" "naive-mid samples=864" "naive-edge samples=868" "balanced samples=863"
-"1" 56.134 46.313 47.625 
-"2" 6.019 3.802 4.867 
-"3" 5.208 13.710 9.618 
-"4" 4.051 8.525 5.446 
-"5" 3.356 5.530 4.635 
-"6" 2.546 3.111 3.129 
-"7" 1.620 3.571 2.897 
-"8" 0.926 1.843 2.549 
-"9" 1.157 1.382 1.622 
-">= 10" 18.981 12.212 17.613 
+"DFA state count" "naive-mid samples=271" "naive-edge samples=279" "balanced samples=272"
+"1" 63.838 50.179 54.412 
+"2" 6.273 5.735 5.882 
+"3" 2.952 9.677 5.147 
+"4" 1.845 3.584 4.779 
+"5" 1.845 5.376 2.206 
+"6" 2.583 2.509 2.574 
+"7" 1.107 2.151 2.206 
+"8" 1.107 2.509 0.368 
+"9" 2.214 2.151 1.471 
+">= 10" 16.236 16.129 20.956 
 EOD
 
 plot $MyData using 2:xtic(1) ti col, \
