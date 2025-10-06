@@ -1,12 +1,12 @@
 # 
-set xlabel "Imbalance factor, <<< landscape|portrait >>> " font ",15"
+set xlabel "Imbalance-Factor" font ",15"
 set ylabel "Percentage count >= 2 for imbalance <= x" font ",15"
 set grid
 set key font ',15'
 set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
-set title "Running Balances 50-"
+set title "Running Balances 50- for Imbalance-Factor"
 plot "-" using 1:2 with lines title "naive-mid 896 samples",\
     "-" using 1:2 with lines title "naive-edge 902 samples",\
     "-" using 1:2 with lines title "balanced 889 samples"
