@@ -1,5 +1,3 @@
-set terminal pngcairo size 600,400
-set output 'histogram.png'
 
 set boxwidth 0.9 absolute
 set style fill solid 1.00 border lt -1
@@ -9,7 +7,7 @@ set key outside top center horizontal
 set xtics rotate by -45
 set yrange [0:100]
 set xlabel "DFA state count"
-set ylabel "Percentage of DFAs of this state count"
+set ylabel "Percentage of DFAs per state count"
 set title "DFA State distribution for Rte "
 
 

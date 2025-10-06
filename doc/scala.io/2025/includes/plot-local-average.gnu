@@ -1,11 +1,11 @@
 # 
-set xlabel "Ratio longest:shortest" font ",15"
+set xlabel "Ratio-longest:shortest" font ",15"
 set ylabel "Percentage count >= 2 for x=imbalance" font ",15"
 set key font ',15'
 set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
-set title "Local average Ratio longest:shortest"
+set title "Local average Ratio-longest:shortest"
 plot "-" using 1:2 with lines title "naive-mid 845 samples",\
     "-" using 1:2 with lines title "naive-edge 849 samples",\
     "-" using 1:2 with lines title "balanced 844 samples"
