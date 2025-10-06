@@ -295,9 +295,23 @@ object Adjuvant {
     fileName
   }
 
+  val tmpDirBase:String = "/tmp/" + System.getProperty("user.name") + "/folders"
+
+  locally{
+    import scala.sys.process.stringSeqToProcess
+    Seq("mkdir", "-p", tmpDirBase).!
+  }
+
   def makeTmpFileName(prefix: String, suffix: String): String = {
+    import java.nio.file.{Paths, Files}
+    import java.util.UUID
+    
     if (suffix != "" && suffix(0) != '.')
       makeTmpFileName(prefix, "." + suffix)
+    else if (Files.exists(Paths.get(tmpDirBase))) {
+      val uniq = UUID.randomUUID().toString
+      tmpDirBase + "/" + prefix + uniq + suffix
+    }
     else {
       import java.io.File
       File.createTempFile(prefix + "-", suffix).getAbsolutePath
@@ -430,6 +444,15 @@ object Adjuvant {
     loop(0.0, pairs.to(List))
   }
 
+  def check_for_thread_interrupt(message:String=""): Unit = {
+    // if this code is being called from a unit test with a timeout
+    // when we have to explicitly check for thread interrupt
+    // if the assertion fails, we simply cause a failed unit test
+    if (Thread.currentThread().isInterrupted)
+      println(s"Thread interrupted " + message)
+    assert(!Thread.currentThread().isInterrupted,
+      "Thread interrupted in Extract.extractRte()")
+  }
 
   // Thanks
   // https://scastie.scala-lang.org/MLynxriyRsWmOkigA0TdQQ
