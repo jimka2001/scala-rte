@@ -300,14 +300,13 @@ object TimeOutPlot {
 }
 
 object Plots {
-  import demos.scalaio2025.Histogram.histogram
-  import DataPlot.plotCB
   def main(argv: Array[String]): Unit = {
     DataPlot.plotPopulation()
     DataPlot.plotDiversity()
     DataPlot.plotThreshold()
     DataPlot.plotAverageCsv()
-    histogram(plotCB("plot-histogram"))
+    Histogram.plotHistogram()
+
     BalancePlot.main(argv)
     plotTimeOut()
     plotTimes()
@@ -315,9 +314,7 @@ object Plots {
 }
 
 object Histograms {
-  import demos.scalaio2025.Histogram.histogram
-  import DataPlot.plotCB
   def main(argv: Array[String]): Unit = {
-    histogram(plotCB("plot-histogram"))
+    Histogram.plotHistogram()
   }
 }

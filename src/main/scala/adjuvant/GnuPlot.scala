@@ -155,11 +155,14 @@ object GnuPlot {
     import sys.process._
     import java.io._
     val cmd = Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName)
+    // println(cmd)
+    // println(s" --> $outputFileName")
     val process = Process(cmd,
       None,
       // The LC_CTYPE env var prevents the following diagnostic from gnuplot
       // Fontconfig warning: ignoring UTF-8: not a valid region tag
       "LC_CTYPE" -> "en_US.UTF-8")
+    Seq("rm", "-f", outputFileName).!
     (process #>> new File(outputFileName)).!
   }
 
@@ -248,6 +251,88 @@ object GnuPlot {
       case data => throw new NotImplementedError(s"invalid data: $data, in $dataToPlot")
     }
     gpd.plot(dataToPlot = curves)
+  }
+
+  def histogram(basename:String,
+                xlabel:String,
+                ylabel:String,
+                title:String,
+                gnuFileCB:String=>Unit,
+                buckets:Seq[(String,Seq[Int])],
+                keepIf:Int=>Boolean,
+                otherLabel:String = "other") = {
+    import java.io._
+    import adjuvant.Adjuvant.{openGraphicalFile}
+    assert(! xlabel.contains("\""))
+    assert(! xlabel.contains("\\"))
+    assert(! ylabel.contains("\""))
+    assert(! ylabel.contains("\\"))
+
+    def gnuheader(): String = {
+      f"""|
+         |set boxwidth 0.9 absolute
+         |set style fill solid 1.00 border lt -1
+         |set style histogram clustered gap 5 title textcolor lt -1
+         |set style data histograms
+         |set key outside top center horizontal
+         |set xtics rotate by -45
+         |set grid
+         |set xlabel "$xlabel"
+         |set ylabel "$ylabel"
+         |set title "$title"
+         |""".stripMargin +
+        s"\n"
+    }
+    def gnufooter(): String = {
+      val line1 = "plot $MyData using 2:xtic(1) ti col,"
+      val lines = for {i <- buckets.indices.tail
+           } yield "     $MyData using " + (i+2).toString + " ti col,"
+      (Seq(line1) ++ lines).mkString(" \\\n")
+    }
+
+    val gnuFileName = basename + ".gnu"
+    val gnu = new PrintWriter(new File(gnuFileName))
+    gnu.write(gnuheader() + "\n\n")
+    gnu.write("$MyData << EOD\n")
+    gnu.write(s"\"$xlabel\"")
+    for {(label, counts) <- buckets
+         num_samples = counts.length} gnu.write(s" \"$label samples=${num_samples}\"")
+    gnu.write("\n")
+    // create map of label -> xys, where xys = Seq((Some(count), percentage), (Some(count), percentage) ...)
+    val data = for {(label, counts) <- buckets
+                    groups = counts.groupBy(n => n).to(Seq).sortBy(_._1)
+                    xys = for {(state_count, samples) <- groups
+                               if keepIf(state_count)
+                               percentage = 100.0 * samples.length.toDouble / counts.length
+                               } yield (Some(state_count), percentage)
+                    leftOverPercent = 100.0 - xys.map(_._2).sum
+                    } yield (label, xys.sortBy(_._1.get) ++ Seq((None, leftOverPercent)))
+
+    val counts = (for {(label, xys) <- data
+                      (col, percent) <- xys
+                      c <- col} yield c).distinct.sorted.map(c=>Some(c)) ++ Seq(None)
+    for {sc1 <- counts
+         } {
+      val label = sc1 match {
+        case Some(p) => p.toString
+        case None => otherLabel
+      }
+      val percentages = for {(_bucket_label, xys) <- data
+                         (sc2, percent) <- xys
+                         if sc2 == sc1
+                         } yield f"$percent%.3f"
+      val text = percentages.mkString(" ")
+      gnu.write(s"\"$label\" $text \n")
+    }
+    gnu.write("EOD\n\n")
+    gnu.write(gnufooter())
+    gnu.close()
+
+    gnuFileCB(gnuFileName)
+    runGnuPlot("png", gnuFileName, basename + ".png")
+
+    openGraphicalFile(basename + ".png")
+
   }
 
   def main(argv: Array[String]): Unit = {
