@@ -16,8 +16,6 @@ object DataPlot {
     val gnuFileName = reportDir + base + ".gnu"
     val pngFileName = reportDir + base + ".png"
     (fn:String) => locally {
-      println(fn)
-      println(f" copy to $gnuFileName")
       Seq("cp", fn, gnuFileName).!
       runGnuPlot("png", gnuFileName, pngFileName)
       ()
@@ -44,29 +42,32 @@ object DataPlot {
         view = true)
     }
   }
-  def plotRatioLongestShortest(): Unit = {
+  def plotRatioLongestShortest(prefix:String=""): Unit = {
     val descrs = for {str <- algos
-                      alllines = readCsvLines(str)
+                      alllines = readCsvLines(str,prefix)
                       grouped = alllines.groupBy(cl => cl.ratioLongestShortest())
                       xys = for {(balance, cvslines) <- grouped
                                  ratios = cvslines.map(cl => cl.node_count.toDouble / cl.state_count )
                                  } yield (balance, ratios.sum / ratios.length)
                       } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
-    gnuPlot(descrs.to(Seq))(title = "Ratio Longest to Shortest",
+    gnuPlot(descrs.to(Seq))(title = s"Ratio Longest to Shortest $prefix",
       xAxisLabel = "Ratio longest to shortest",
       yAxisLabel = "node:state ratio",
       plotWith = "points",
-      gnuFileCB = plotCB(s"plot-ratio-longest-to-shortest"),
+      gnuFileCB = plotCB(s"plot-${prefix}ratio-longest-to-shortest"),
       view = true
     )
   }
 
+  val imbalanceAlgos = Seq(((cl: CsvLine) => cl.aspectRatio(), "Aspect-Ratio"),
+    ((cl: CsvLine) => cl.imbalance(), "Imbalance-Factor"),
+    ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
+
+
   def plotBalanceLocalAverage(): Unit = {
     import scala.math.abs
     val delta_balance = 0.25
-    for {(imb, xlabel) <- Seq(((cl: CsvLine) => cl.aspectRatio(), "Aspect-Ratio"),
-      ((cl: CsvLine) => cl.imbalance(), "Imbalance-Factor"),
-      ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
+    for {(imb, algoName) <- imbalanceAlgos
          descrs = for {str <- algos
                        alllines = readCsvLines(str)
                        grouped = alllines.groupBy(imb)
@@ -78,8 +79,8 @@ object DataPlot {
                                   } yield (balance, (100.0 * num_small) / num_samples)
                        } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
          }
-    gnuPlot(descrs.to(Seq))(title = "Local average " + xlabel,
-      xAxisLabel = xlabel,
+    gnuPlot(descrs.to(Seq))(title = "Local average " + algoName,
+      xAxisLabel = algoName,
       yAxisLabel = "Percentage count >= 2 for x=imbalance",
       plotWith = "lines",
       gnuFileCB = plotCB("plot-local-average"),
@@ -87,48 +88,49 @@ object DataPlot {
     )
   }
 
-  def plotBalance3(): Unit = {
-    val descrs = for {str <- algos
-                      alllines = readCsvLines(str)
-                      num_samples = alllines.length
-                      grouped = alllines.groupBy(_.imbalance())
-                      // for each value of balance, compute the percentage of state_count <= 2
-                      xys = for {(imbalance, _) <- grouped
-                                 num_small = alllines.count(cl => cl.imbalance() <= imbalance && cl.state_count <= 2)
-                                 } yield (imbalance, (100.0 * num_small) / num_samples)
-                      } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
-    gnuPlot(descrs.to(Seq))(title = "Running Balances",
-      xAxisLabel = "Imbalance factor, <<< landscape|portrait >>> ",
-      yAxisLabel = "Percentage count >= 2 for imbalance <= x",
-      plotWith = "lines",
-      gnuFileCB = plotCB("plot-running-balances"),
-      grid = true,
-      view = true
-    )
+  def plotBalance3(prefix:String=""): Unit = {
+    for {(imb, algoName) <- imbalanceAlgos} {
+      val descrs = for {str <- algos
+                        alllines = readCsvLines(str, prefix)
+                        num_samples = alllines.length
+                        grouped = alllines.groupBy(imb)
+                        // for each value of balance, compute the percentage of state_count <= 2
+                        xys = for {(imbalance, _) <- grouped
+                                   num_small = alllines.count(cl => imb(cl) <= imbalance && cl.state_count <= 2)
+                                   } yield (imbalance, (100.0 * num_small) / num_samples)
+                        } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
+
+      gnuPlot(descrs.to(Seq))(title = s"Running Balances $prefix for $algoName",
+        xAxisLabel = algoName,
+        yAxisLabel = "Percentage count >= 2 for imbalance <= x",
+        plotWith = "lines",
+        gnuFileCB = plotCB(s"plot-${prefix}running-balances-$algoName"),
+        grid = true,
+        view = true
+      )
+    }
   }
 
-  def plotBalanceDfaCountVsAspectRatio(): Unit = {
-    for {(imb, xlabel) <- Seq(((cl: CsvLine) => cl.aspectRatio(), "Aspect-Ratio"),
-      ((cl: CsvLine) => cl.imbalance(), "Imbalance-Factor"),
-      ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
+  def plotBalanceDfaCountVsAspectRatio(prefix:String=""): Unit = {
+    for {(imb, xlabel) <- imbalanceAlgos
          descrs = for {str <- algos
-                       alllines = readCsvLines(str)
+                       alllines = readCsvLines(str,prefix)
                        num_samples = alllines.length
                        xys = for {cl <- alllines
                                   } yield (imb(cl), cl.state_count.toDouble)
                        } yield (str + s" ${num_samples} samples", xys.to(List).sortBy(_._1))
          }
-    gnuPlot(descrs.to(Seq))(title = "DFA state count vs " + xlabel,
+    gnuPlot(descrs.to(Seq))(title = s"DFA state count ${prefix} vs " + xlabel,
       xAxisLabel = xlabel,
       yAxisLabel = "DFA state count",
       plotWith = "points",
-      gnuFileCB = plotCB(f"plot-dfa-state-count-vs-$xlabel"),
+      gnuFileCB = plotCB(s"plot-${prefix}dfa-state-count-vs-$xlabel"),
       grid = true,
       view = true
     )
   }
 
-  def plotBalanceRunningSum(): Unit = {
+  def plotBalanceRunningSum(prefix:String=""): Unit = {
     def integral(xys: List[(Double, Double)], acc: List[(Double, Double)]): List[(Double, Double)] = {
       xys match {
         case (x1, y1) :: (x2, y2) :: _ =>
@@ -142,28 +144,26 @@ object DataPlot {
       }
     }
 
-    for {(imb, xlabel) <- Seq(((cl:CsvLine) => cl.aspectRatio(), "Aspect-Ratio"),
-      ((cl:CsvLine) => cl.imbalance(), "Imbalance-Factor"),
-      ((cl:CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
+    for {(imb, xlabel) <- imbalanceAlgos
          descrs = for {algo <- algos
-                       alllines = readCsvLines(algo)
+                       alllines = readCsvLines(algo,prefix)
                        num_samples = alllines.length
                        xys_pre = (for {cl <- alllines
                                        } yield (imb(cl), cl.state_count.toDouble)).to(List).sortBy(_._1)
                        xys = integral(xys_pre, List((xys_pre.head._1, 0.0)))
                        } yield (algo + s" ${num_samples} samples", xys)
          }
-      gnuPlot(descrs.to(Seq))(title = "Running Sum Balances per " + xlabel,
+      gnuPlot(descrs.to(Seq))(title = s"Running Sum Balances $prefix per " + xlabel,
         xAxisLabel = xlabel,
         yAxisLabel = "DFA state count",
         plotWith = "lines",
-        gnuFileCB = plotCB(f"plot-running-sum-balances-per-$xlabel"),
+        gnuFileCB = plotCB(s"plot-${prefix}running-sum-balances-per-$xlabel"),
         grid = true,
         view = true
       )
   }
 
-  def plotPopulation(): Unit = {
+  def plotPopulation(prefix:String=""): Unit = {
     val descrs1 = for {str <- algos
                        alllines = readCsvLines(str)
                        xys = for {(leaf_count, csvlines) <- alllines.groupBy(cl => cl.leaf_count)
@@ -177,15 +177,15 @@ object DataPlot {
       grid= true)
 
     val descrs2 = for {str <- algos
-                       alllines = readCsvLines(str)
+                       alllines = readCsvLines(str,prefix)
                        xys = for {(state_count, csvlines) <- alllines.groupBy(cl => cl.state_count)
                                   } yield (state_count.toDouble, csvlines.length.toDouble )
                        } yield (s"${str} samples=${alllines.length}", xys.to(List).sortBy(_._1))
-    gnuPlot(descrs2.to(Seq))(title="DFA State Count Histogram",
+    gnuPlot(descrs2.to(Seq))(title=s"DFA State Count Histogram $prefix",
       xAxisLabel = "DFA State Count",
       yAxisLabel = "Frequency",
       yLog = true, xLog = true,
-      gnuFileCB = plotCB("plot-dfa-state-count-histogram"),
+      gnuFileCB = plotCB(s"plot-${prefix}dfa-state-count-histogram"),
       view = true,
       grid= true)
   }
@@ -204,18 +204,18 @@ object DataPlot {
   }
 
   // make plot of y vs x where y = percentage of samples where number of state_counts > x
-  def plotThreshold(): Unit = {
+  def plotThreshold(prefix:String=""): Unit = {
 
     val descrs = for {str <- algos
-                      alllines = readCsvLines(str)
+                      alllines = readCsvLines(str,prefix)
                       xys = genThresholdCurve(alllines)
                       } yield (s"${str} samples=${alllines.length}", xys)
-    gnuPlot(descrs.to(Seq))(title = "Threshold",
-      xAxisLabel = "DFA state count",
+    gnuPlot(descrs.to(Seq))(title = s"Threshold $prefix",
+      xAxisLabel = s"DFA state count $prefix",
       xLog = true,
       grid = true,
       yLog = false,
-      gnuFileCB = plotCB(f"plot-threshold"),
+      gnuFileCB = plotCB(s"plot-${prefix}threshold"),
       yAxisLabel = "Percentage dfa <= state count",
       view = true)
   }
@@ -226,21 +226,47 @@ object DataPlot {
   //    for now we count the raw number of different dfas, later we need to normalize by how
   //         many rtes of this leaf size contributed to the sample.
   def plotDiversity():Unit = {
-    val descrs = for {str <- algos
-                      alllines = readCsvLines(str)
-                      numsamples = alllines.length
-                      xys = for {(leafCount:Int, csvlines) <- alllines.groupBy(_.leaf_count)
-                                 diversity = csvlines.map(cl => (cl. state_pre_count,
-                                   cl.transition_pre_count,
-                                   cl.state_count,
-                                   cl.transition_count)).distinct.length
-                                 } yield (leafCount.toDouble, diversity.toDouble)
-                      } yield (s"$str - $numsamples samples", xys.toList.sortBy(_._1))
-    gnuPlot(descrs.to(Seq))(title="Diversity",
-      xAxisLabel = "RTE leaf count",
-      yAxisLabel = "Unique DFA count",
-      gnuFileCB = plotCB(f"diversity"),
-      view = true)
+    locally {
+      val descrs = for {str <- algos
+                        alllines = readCsvLines(str)
+                        numsamples = alllines.length
+                        xys = for {(leafCount: Int, csvlines) <- alllines.groupBy(_.leaf_count)
+                                   diversity = csvlines.map(cl => (cl.state_pre_count,
+                                     cl.transition_pre_count,
+                                     cl.state_count,
+                                     cl.transition_count)).distinct.length
+                                   } yield (leafCount.toDouble, diversity.toDouble)
+                        } yield (s"$str - $numsamples samples", xys.toList.sortBy(_._1))
+      gnuPlot(descrs.to(Seq))(title = "Diversity",
+        xAxisLabel = "RTE leaf count",
+        yAxisLabel = "Unique DFA count",
+        gnuFileCB = plotCB(f"plot-diversity"),
+        view = true)
+    }
+    locally {
+      import scala.math.log
+      val descrs = for {str <- algos
+                        alllines = for{prefix <- Seq("", "64-", "128-")
+                                       line <- readCsvLines(str,prefix)
+                                       } yield line
+                        numsamples = alllines.length
+                        xys = for {(leafCount: Int, csvlines) <- alllines.groupBy(_.leaf_count)
+                                   line_count = csvlines.length
+                                   if line_count > 1  // only plot points if line_count > 1 because we need the log_2
+                                   log_line_count = log(line_count)/log(2)
+                                   diversity = csvlines.map(cl => (cl.state_pre_count,
+                                     cl.transition_pre_count,
+                                     cl.state_count,
+                                     cl.transition_count)).distinct.length
+                                   } yield (leafCount.toDouble, diversity.toDouble / log_line_count)
+                        } yield (s"$str - $numsamples samples", xys.toList.sortBy(_._1))
+      gnuPlot(descrs.to(Seq))(title = "Diversity Per log(Sample)",
+        xAxisLabel = "RTE leaf count",
+        yAxisLabel = "Unique DFA count / log(sample count)",
+        plotWith = "lines",
+        gnuFileCB = plotCB(f"plot-diversity-per-sample"),
+        view = true)
+    }
   }
 
   def plotTimes():Unit = {
@@ -262,7 +288,9 @@ object DataPlot {
 
   def plotTimeOut():Unit = {
     val descrs = for {str <- algos
-                      alllines = readAllCsvLines(str)
+      alllines = for{prefix <- Seq("", "64-", "128-")
+                     line <- readAllCsvLines(str,prefix)
+      } yield line
                       xys = for{(leaf_count, csvlines) <- alllines.filter((cl) => cl.state_count <= 0 || cl.transition_count <= 0).groupBy(_.leaf_count)
                                 } yield (leaf_count.toDouble, csvlines.length.toDouble)
                       if (xys.size > 0)
@@ -280,10 +308,18 @@ object DataPlot {
 object BalancePlot {
   def main(array: Array[String]):Unit = {
     DataPlot.plotRatioLongestShortest()
+    DataPlot.plotRatioLongestShortest("64-")
+    DataPlot.plotRatioLongestShortest("128-")
     DataPlot.plotBalanceLocalAverage()
     DataPlot.plotBalance3()
+    DataPlot.plotBalance3("64-")
+    DataPlot.plotBalance3("128-")
     DataPlot.plotBalanceDfaCountVsAspectRatio()
+    DataPlot.plotBalanceDfaCountVsAspectRatio("64-")
+    DataPlot.plotBalanceDfaCountVsAspectRatio("128-")
     DataPlot.plotBalanceRunningSum()
+    DataPlot.plotBalanceRunningSum("64-")
+    DataPlot.plotBalanceRunningSum("128-")
   }
 }
 
@@ -299,22 +335,28 @@ object TimeOutPlot {
   }
 }
 
+object Histograms {
+  def main(argv: Array[String]): Unit = {
+    Histogram.plotHistogram()
+    Histogram.plotHistogram("64-")
+    Histogram.plotHistogram("128-")
+  }
+}
+
 object Plots {
   def main(argv: Array[String]): Unit = {
     DataPlot.plotPopulation()
+    DataPlot.plotPopulation("64-")
+    DataPlot.plotPopulation("128-")
     DataPlot.plotDiversity()
     DataPlot.plotThreshold()
+    DataPlot.plotThreshold("64-")
+    DataPlot.plotThreshold("128-")
     DataPlot.plotAverageCsv()
-    Histogram.plotHistogram()
+    Histograms.main(argv)
 
     BalancePlot.main(argv)
     plotTimeOut()
     plotTimes()
-  }
-}
-
-object Histograms {
-  def main(argv: Array[String]): Unit = {
-    Histogram.plotHistogram()
   }
 }

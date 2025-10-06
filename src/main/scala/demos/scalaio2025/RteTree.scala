@@ -10,9 +10,13 @@ object RteTree {
 
   val algos = Seq("naive-mid", "naive-edge", "balanced")
 
-  val csv = Map("naive-mid" -> (statisticsResource + "naive-mid.csv"),
-                "naive-edge" -> (statisticsResource + "naive-edge.csv"),
-                "balanced" -> (statisticsResource + "balanced.csv" ))
+  def csv(algo:String, prefix:String=""):String = {
+    algo match {
+      case "naive-mid"  => (statisticsResource + prefix + "naive-mid.csv")
+      case "naive-edge" => (statisticsResource + prefix + "naive-edge.csv")
+      case "balanced"   => (statisticsResource + prefix + "balanced.csv")
+    }
+  }
 
   val genRte = Map("naive-edge" -> randomNaiveRteBySizeEdge _,
                    "naive-mid" -> randomNaiveRteBySizeMid _,
@@ -21,18 +25,21 @@ object RteTree {
 
   def genCsvBySize(num_repetitions: Int,
                    algo:String,
+                   prefix:String = "",
+                   lot:Int = 6,
                    minLeaf:Int=1<<6,
                    maxLeaf:Int=1<<7): Unit = {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.{Await, Future}
-    for {r <- 0 to num_repetitions
-         futures = (0 to 5).map((_) => Future {
-           val size = random.between(minLeaf, maxLeaf)
-           println(s"r=$r size=$size")
-           writeCsvStatistic(genRte=() => genRte(algo)(size), prefix=algo, csvFileName=csv(algo))
+    for {r <- 0 until num_repetitions
+         futures = (0 until lot).map((_) => Future {
+           val size = random.between(minLeaf, maxLeaf+1)
+           println(s"r=$r size=$size algo=$algo")
+           writeCsvStatistic(genRte=() => genRte(algo)(size), prefix=algo, csvFileName=csv(algo,prefix))
          })
          combined = Future.sequence(futures)} {
+
       Await.result(combined, Duration.Inf)
     }
   }

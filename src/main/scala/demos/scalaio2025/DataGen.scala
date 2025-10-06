@@ -26,3 +26,19 @@ object GenCsvNaiveMid {
   }
 }
 
+object GenCsvFixedLeafCount {
+  import demos.scalaio2025.RteTree.algos
+
+  def main(argv: Array[String]): Unit = {
+    val num_repetitions:Int = if (argv.length == 0) 1 else argv(0).toInt
+    val leaf_count:Int = if (argv.length <= 1) 64 else argv(1).toInt
+    for {algo <- algos}
+      RteTree.genCsvBySize(num_repetitions,
+        algo = algo,
+        prefix = s"${leaf_count}-",
+        lot = 1,
+        minLeaf = leaf_count,
+        maxLeaf = leaf_count)
+  }
+}
+

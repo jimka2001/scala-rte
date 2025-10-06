@@ -9,18 +9,18 @@ object Histogram {
   import adjuvant.GnuPlot.histogram
   import DataPlot.plotCB
 
-  def plotHistogram() = {
+  def plotHistogram(prefix:String="") = {
 
     val buckets = for{algo <- algos
-                      csvlines = readCsvLines(algo)
+                      csvlines = readCsvLines(algo,prefix)
                       state_counts = csvlines.map(_.state_count)
                       } yield ( algo, state_counts)
 
-    histogram(basename="histogram",
+    histogram(basename= prefix + "histogram",
       xlabel = "DFA state count",
       ylabel = "Percentage of DFAs per state count",
-      title = "DFA State distribution for Rte",
-      gnuFileCB = plotCB("plot-histogram"),
+      title = f"DFA State distribution for Rte $prefix",
+      gnuFileCB = plotCB(s"plot-${prefix}histogram"),
       buckets = buckets,
       keepIf = (c:Int) => c <= 9,
       otherLabel = ">= 10")

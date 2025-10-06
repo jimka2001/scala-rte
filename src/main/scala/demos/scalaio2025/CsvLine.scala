@@ -127,7 +127,6 @@ object CsvLine {
   // write an entry to the csv file so we can plot later
 
   def writeCsvStatistic(genRte: (() => Rte), prefix: String, csvFileName: String): Unit = {
-
     import xymbolyco.Minimize.minimize
     val rte = genRte()
     val nodeCount = rte.linearize().size
@@ -183,33 +182,37 @@ object CsvLine {
   }
 
 
-  def readAllCsvLines(str: String): Vector[CsvLine] = {
+  def readAllCsvLines(str: String,prefix:String=""): Vector[CsvLine] = {
     import java.io.InputStream
     import scala.io.{Source}
-    val s: InputStream = getClass.getResourceAsStream(s"/statistics/${str}.csv")
-    assert(s != null, s"failed to open ${str}.cvs")
-    val fp = Source.createBufferedSource(s)
+    val resource:String = s"/statistics/${prefix}${str}.csv"
+    val filePath:String = getClass.getResource(resource).getPath
+    withLock(filePath,() => {
+      val s: InputStream = getClass.getResourceAsStream(resource)
+      assert(s != null, s"failed to open $resource")
+      val fp = Source.createBufferedSource(s)
 
-    val csvlines = fp.getLines()
-      .filter(line => line.length > 1 && '#' != line(0)) // skip comments and empty lines
-      .map(line => line.split(",").to(Vector))
-      .collect {
-        case Vector(node_count, leaf_count,
-        state_pre_count, transition_pre_count, state_count, transition_count,
-        shortest, longest, total, duration) =>
-          CsvLine(node_count.toInt,
-            leaf_count.toInt,
-            state_pre_count.toInt, transition_pre_count.toInt,
-            state_count.toInt, transition_count.toInt,
-            shortest.toInt, longest.toInt, total.toInt, duration.toInt)
-      }
-      .to(Vector)
-    fp.close()
-    csvlines
+      val csvlines = fp.getLines()
+        .filter(line => line.length > 1 && '#' != line(0)) // skip comments and empty lines
+        .map(line => line.split(",").to(Vector))
+        .collect {
+          case Vector(node_count, leaf_count,
+          state_pre_count, transition_pre_count, state_count, transition_count,
+          shortest, longest, total, duration) =>
+            CsvLine(node_count.toInt,
+              leaf_count.toInt,
+              state_pre_count.toInt, transition_pre_count.toInt,
+              state_count.toInt, transition_count.toInt,
+              shortest.toInt, longest.toInt, total.toInt, duration.toInt)
+        }
+        .to(Vector)
+      fp.close()
+      csvlines
+    })
   }
 
-  def readCsvLines(str: String): Vector[CsvLine] = {
+  def readCsvLines(str: String,prefix:String=""): Vector[CsvLine] = {
     // TODO - at the moment we just remove CsvLine objects containing -1, meaning the measurement timed-out.
-    readAllCsvLines(str).filter { cl => cl.state_count > 0 && cl.transition_count > 0 }
+    readAllCsvLines(str,prefix).filter { cl => cl.state_count > 0 && cl.transition_count > 0 }
   }
 }
