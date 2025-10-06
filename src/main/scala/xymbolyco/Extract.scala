@@ -24,7 +24,7 @@ package xymbolyco
 
 import rte._
 import genus._
-import adjuvant.Adjuvant.fixedPoint
+import adjuvant.Adjuvant.{check_for_thread_interrupt,fixedPoint}
 
 object Extract {
   def dfaToRte[E](dfa:Dfa[Any,SimpleTypeD,E],default:E):Map[E,Rte] = {
@@ -102,8 +102,7 @@ object Extract {
         // if this code is being called from a unit test with a timeout
         // when we have to explicitly check for thread interrupt
         // if the assertion fails, we simply cause a failed unit test
-        assert(! Thread.currentThread().isInterrupted,
-               s"Thread interrupted in Extract.extractRte()")
+        check_for_thread_interrupt("in Extract.extractRte()")
         Tuple3(src,
           replacement.canonicalize,
           dst)

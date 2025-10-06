@@ -28,6 +28,7 @@ object Types {
 
   import scala.runtime.BoxedUnit
   import scala.language.implicitConversions
+  import adjuvant.Adjuvant.check_for_thread_interrupt
 
   // allow implicit conversions from c:Class[_] to AtomicType(c)
   //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)
@@ -120,6 +121,7 @@ object Types {
           val (td1, (factors, disjoints)) = pair
           lazy val a = SAnd(u, td1).canonicalize(Some(NormalForm.Dnf))
           lazy val b = SAnd(nc, td1).canonicalize(Some(NormalForm.Dnf))
+          check_for_thread_interrupt(s"in mdtd on $td1")
           if (u.disjoint(td1).contains(true))
             Map(td1 -> (factors + n, disjoints + u))
           else if (n.disjoint(td1).contains(true))

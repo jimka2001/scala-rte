@@ -178,15 +178,7 @@ abstract class Rte {
       val fts = rt.firstTypes
 
       val wrts = mdtd(fts)
-      def check_for_thread_interrupt(): Unit = {
-        // if this code is being called from a unit test with a timeout
-        // when we have to explicitly check for thread interrupt
-        // if the assertion fails, we simply cause a failed unit test
-        if (Thread.currentThread().isInterrupted)
-          println(s"Thread interrupted in Extract.extractRte() while computing derivatives of $rt")
-        assert(!Thread.currentThread().isInterrupted,
-               "Thread interrupted in Extract.extractRte()")
-      }
+
       wrts.map { case (td, (factors, disjoints)) => (td,
         // Here we call rt.derivative, but we pass along the correct-by-construction
         //   factors and disjoint types.  The Singleton:disjointDown method takes
@@ -194,7 +186,7 @@ abstract class Rte {
         //   in question is a subtype or a disjoint type of the type in question.
 
         try locally {
-          check_for_thread_interrupt()
+          check_for_thread_interrupt(s"in Extract.extractRte() while computing derivatives of $rt")
           rt.derivative(Some(td),
                         factors.toList.sortBy(_.toString),
                         disjoints.toList.sortBy(_.toString)).canonicalize
