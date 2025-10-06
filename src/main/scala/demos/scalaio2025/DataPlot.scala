@@ -17,6 +17,7 @@ object DataPlot {
     val pngFileName = reportDir + base + ".png"
     (fn:String) => locally {
       println(fn)
+      println(f" copy to $gnuFileName")
       Seq("cp", fn, gnuFileName).!
       runGnuPlot("png", gnuFileName, pngFileName)
       ()
@@ -300,12 +301,13 @@ object TimeOutPlot {
 
 object Plots {
   import demos.scalaio2025.Histogram.histogram
+  import DataPlot.plotCB
   def main(argv: Array[String]): Unit = {
     DataPlot.plotPopulation()
     DataPlot.plotDiversity()
     DataPlot.plotThreshold()
     DataPlot.plotAverageCsv()
-    histogram()
+    histogram(plotCB("plot-histogram"))
     BalancePlot.main(argv)
     plotTimeOut()
     plotTimes()
@@ -314,7 +316,8 @@ object Plots {
 
 object Histograms {
   import demos.scalaio2025.Histogram.histogram
+  import DataPlot.plotCB
   def main(argv: Array[String]): Unit = {
-    histogram()
+    histogram(plotCB("plot-histogram"))
   }
 }

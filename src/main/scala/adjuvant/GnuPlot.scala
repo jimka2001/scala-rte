@@ -154,7 +154,8 @@ object GnuPlot {
   def runGnuPlot(terminal:String, gnuName:String, outputFileName:String):Int = {
     import sys.process._
     import java.io._
-    val process = Process(Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName),
+    val cmd = Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName)
+    val process = Process(cmd,
       None,
       // The LC_CTYPE env var prevents the following diagnostic from gnuplot
       // Fontconfig warning: ignoring UTF-8: not a valid region tag

@@ -8,11 +8,11 @@ object Histogram {
   import scala.sys.process.stringSeqToProcess
   import adjuvant.Adjuvant.{openGraphicalFile}
 
-  def histogram(): Unit = {
+  def histogram(gnuFileCB:String=>Unit): Unit = {
     import java.io._
     def gnuheader(basename: String): String = {
-      "set terminal pngcairo size 600,400\n" +
-        s"set output '${basename}.png'\n" +
+      // "set terminal pngcairo size 600,400\n" +
+        // s"set output '${basename}.png'\n" +
         """|
            |set boxwidth 0.9 absolute
            |set style fill solid 1.00 border lt -1
@@ -22,7 +22,7 @@ object Histogram {
            |set xtics rotate by -45
            |set yrange [0:100]
            |set xlabel "DFA state count"
-           |set ylabel "Percentage of DFAs of this state count"
+           |set ylabel "Percentage of DFAs per state count"
            |""".stripMargin +
         s"set title \"DFA State distribution for Rte "+ "\"\n"
     }
@@ -83,6 +83,7 @@ object Histogram {
       gnu.write(gnufooter(algos))
       gnu.close()
 
+      gnuFileCB(gnuFileName)
       runGnuPlot("png", gnuFileName, basename + ".png")
 
       openGraphicalFile(basename + ".png")
