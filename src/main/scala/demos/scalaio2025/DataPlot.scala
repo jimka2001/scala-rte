@@ -21,49 +21,54 @@ object DataPlot {
       ()
     }
   }
+
   def plotAverageCsv(): Unit = {
 
-    for {str <- algos
-         alllines = readCsvLines(str)} {
-
+    for {algo <- algos
+         alllines = for {prefix <- Seq("", "64-", "128-")
+                         line <- readCsvLines(algo)} yield line
+         }{
       val sample_count = alllines.size
       val xys = for {(leaf_count, tuples) <- alllines.groupBy(_.leaf_count)
                      state_counts = tuples.map(_.state_count)
                      average = state_counts.sum / state_counts.size.toDouble
                      } yield (leaf_count.toDouble, average)
-      val descrs = Seq((str, xys.to(List).sortBy(_._1)))
-      gnuPlot(descrs)(title = f"Average ${str} node count (${sample_count} samples)",
+      val descrs = Seq((algo, xys.to(List).sortBy(_._1)))
+      gnuPlot(descrs)(title = f"Average ${algo} node count (${sample_count} samples)",
         xAxisLabel = "AST leaf count",
         yAxisLabel = "DFA state count",
         yLog = true,
         grid = true,
-        gnuFileCB = plotCB(s"plot-average-$str-node-count"),
+        gnuFileCB = plotCB(s"plot-average-$algo-node-count"),
         plotWith = "points",
         view = true)
     }
   }
-  def plotRatioLongestShortest(prefix:String=""): Unit = {
-    val descrs = for {str <- algos
-                      alllines = readCsvLines(str,prefix)
-                      grouped = alllines.groupBy(cl => cl.ratioLongestShortest())
-                      xys = for {(balance, cvslines) <- grouped
-                                 ratios = cvslines.map(cl => cl.node_count.toDouble / cl.state_count )
-                                 } yield (balance, ratios.sum / ratios.length)
-                      } yield (str + s" ${alllines.length} samples", xys.to(List).sortBy(_._1))
-    gnuPlot(descrs.to(Seq))(title = s"Ratio Longest to Shortest $prefix",
-      xAxisLabel = "Ratio longest to shortest",
-      yAxisLabel = "node:state ratio",
-      plotWith = "points",
-      gnuFileCB = plotCB(s"plot-${prefix}ratio-longest-to-shortest"),
-      view = true
-    )
-  }
+  
 
   val imbalanceAlgos = Seq(((cl: CsvLine) => cl.aspectRatio(), "Aspect-Ratio"),
     ((cl: CsvLine) => cl.imbalance(), "Imbalance-Factor"),
     ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
 
-
+  def plotStateLossage(prefix:String=""): Unit = {
+    for {(imb, algoName) <- imbalanceAlgos
+         } {
+      val descrs = for {algo <- algos
+                        cvslines = readCsvLines(algo, prefix)
+                        xys = for {cl <- cvslines
+                                   if cl.node_count != 0
+                                   } yield (imb(cl), cl.state_count / cl.node_count.toDouble )
+                        } yield (algo + s" ${cvslines.length} samples", xys.to(List).sortBy(_._1))
+      gnuPlot(descrs.to(Seq))(title = s"Lossage: Ratio node count per state count $prefix",
+        xAxisLabel = algoName,
+        yAxisLabel = "lossage",
+        yLog = true,
+        plotWith = "points",
+        gnuFileCB = plotCB(s"plot-${prefix}lossage-${algoName}"),
+        view = true
+      )
+    }
+  }
   def plotBalanceLocalAverage(): Unit = {
     import scala.math.abs
     val delta_balance = 0.25
@@ -124,6 +129,7 @@ object DataPlot {
       xAxisLabel = xlabel,
       yAxisLabel = "DFA state count",
       plotWith = "points",
+      yLog = true,
       gnuFileCB = plotCB(s"plot-${prefix}dfa-state-count-vs-$xlabel"),
       grid = true,
       view = true
@@ -163,29 +169,35 @@ object DataPlot {
       )
   }
 
-  def plotPopulation(prefix:String=""): Unit = {
-    val descrs1 = for {str <- algos
+  def plotLeafCountPopulation(): Unit = {
+    val descrs = for {str <- algos
                        alllines = readCsvLines(str)
                        xys = for {(leaf_count, csvlines) <- alllines.groupBy(cl => cl.leaf_count)
-                                  } yield (leaf_count.toDouble, csvlines.length.toDouble)
+                                  } yield (leaf_count.toDouble, csvlines.length.toDouble)                
                        } yield (s"${str} samples=${alllines.length}", xys.to(List).sortBy(_._1))
-    gnuPlot(descrs1.to(Seq))(title="Rte Leaf Count Histogram",
+    gnuPlot(descrs.to(Seq))(title="Rte Leaf Count Histogram",
       xAxisLabel = "Leaf Count",
       yAxisLabel = "Frequency",
       gnuFileCB = plotCB("plot-rte-leaf-count-histogram"),
+      plotWith = "points",
+      pointSize = 1.25,
       view = true,
       grid= true)
+  }
 
-    val descrs2 = for {str <- algos
+  def plotStateCountPopulation(prefix:String=""): Unit = {
+    val descrs = for {str <- algos
                        alllines = readCsvLines(str,prefix)
                        xys = for {(state_count, csvlines) <- alllines.groupBy(cl => cl.state_count)
                                   } yield (state_count.toDouble, csvlines.length.toDouble )
                        } yield (s"${str} samples=${alllines.length}", xys.to(List).sortBy(_._1))
-    gnuPlot(descrs2.to(Seq))(title=s"DFA State Count Histogram $prefix",
+    gnuPlot(descrs.to(Seq))(title=s"DFA State Count Histogram $prefix",
       xAxisLabel = "DFA State Count",
       yAxisLabel = "Frequency",
       yLog = true, xLog = true,
       gnuFileCB = plotCB(s"plot-${prefix}dfa-state-count-histogram"),
+      plotWith = "points",
+      pointSize = 1.25,
       view = true,
       grid= true)
   }
@@ -198,7 +210,7 @@ object DataPlot {
     val xys = for {(this_state_count, _) <- state_count_to_dfa_count.toList
                    // compute percentage of cvslines which have state_count > this_state_count
                    // 1st, how many cvslines have state_count > this_state_count
-                   n = state_count_to_dfa_count.collect { case (state_count, count) if state_count <= this_state_count => count}.sum
+                   n = state_count_to_dfa_count.collect { case (state_count, count) if state_count >= this_state_count => count}.sum
                    } yield (this_state_count.toDouble, 100.0 * n.toDouble / num_per_depth)
     xys.sortBy(_._1)
   }
@@ -214,9 +226,9 @@ object DataPlot {
       xAxisLabel = s"DFA state count $prefix",
       xLog = true,
       grid = true,
-      yLog = false,
+      yLog = true,
       gnuFileCB = plotCB(s"plot-${prefix}threshold"),
-      yAxisLabel = "Percentage dfa <= state count",
+      yAxisLabel = "Percentage dfa >= state count",
       view = true)
   }
 
@@ -240,6 +252,8 @@ object DataPlot {
       gnuPlot(descrs.to(Seq))(title = "Diversity",
         xAxisLabel = "RTE leaf count",
         yAxisLabel = "Unique DFA count",
+        plotWith = "points",
+        pointSize = 1.24,
         gnuFileCB = plotCB(f"plot-diversity"),
         view = true)
     }
@@ -299,17 +313,23 @@ object DataPlot {
       xAxisLabel = "RTE leaf count",
       yAxisLabel = "Frequency",
       grid = true,
+      pointSize = 2.0,
       gnuFileCB = plotCB("plot-time-outs"),
       plotWith = "points",
       view = true)
   }
 }
 
+object LossagePlot {
+  def main(array: Array[String]):Unit = {
+    DataPlot.plotStateLossage()
+    DataPlot.plotStateLossage("64-")
+    DataPlot.plotStateLossage("128-")
+  }
+}
+
 object BalancePlot {
   def main(array: Array[String]):Unit = {
-    DataPlot.plotRatioLongestShortest()
-    DataPlot.plotRatioLongestShortest("64-")
-    DataPlot.plotRatioLongestShortest("128-")
     DataPlot.plotBalanceLocalAverage()
     DataPlot.plotRunningNonTrivalVsImbalance()
     DataPlot.plotRunningNonTrivalVsImbalance("64-")
@@ -332,6 +352,7 @@ object DiversityPlot {
 object TimeOutPlot {
   def main(array: Array[String]):Unit = {
     plotTimeOut()
+    plotTimes()
   }
 }
 
@@ -343,20 +364,40 @@ object Histograms {
   }
 }
 
-object Plots {
+object Average {
   def main(argv: Array[String]): Unit = {
-    DataPlot.plotPopulation()
-    DataPlot.plotPopulation("64-")
-    DataPlot.plotPopulation("128-")
-    DataPlot.plotDiversity()
+    DataPlot.plotAverageCsv()
+  }
+}
+
+object PopulationPlot {
+  def main(argv:Array[String]):Unit = {
+    DataPlot.plotLeafCountPopulation()
+    DataPlot.plotStateCountPopulation()
+    DataPlot.plotStateCountPopulation("64-")
+    DataPlot.plotStateCountPopulation("128-")
+  }
+}
+
+object ThresholdPlot {
+  def main(argv:Array[String]):Unit = {
     DataPlot.plotThreshold()
     DataPlot.plotThreshold("64-")
     DataPlot.plotThreshold("128-")
-    DataPlot.plotAverageCsv()
-    Histograms.main(argv)
+  }
+}
 
+
+object Plots {
+  def main(argv: Array[String]): Unit = {
+    PopulationPlot.main(argv)
+    DiversityPlot.main(argv)
+    ThresholdPlot.main(argv)
+    Average.main(argv)
+    Histograms.main(argv)
     BalancePlot.main(argv)
-    plotTimeOut()
-    plotTimes()
+    LossagePlot.main(argv)
+    TimeOutPlot.main(argv)
+    DiversityPlot.main(argv)
   }
 }

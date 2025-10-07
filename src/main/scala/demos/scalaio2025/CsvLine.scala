@@ -17,8 +17,6 @@ case class CsvLine(node_count: Int,
     longest.toDouble / shortest
   }
 
-  // > 1 ==> average path length > perfect path length [portrait]
-  // < 1 ==> average path length < perfect path length [landscape]
   def imbalance():Double = {
     CsvLine.imbalanceFactor(node_count, leaf_count, total)
   }

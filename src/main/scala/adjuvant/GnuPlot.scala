@@ -54,6 +54,7 @@ object GnuPlot {
                                // outputFileBaseName is basename without the .pdf, .gnu, .png etc. and without leading path
                                outputFileBaseName: String = "curves",
                                plotWith: String = "linespoints",
+                               pointSize: Double = 0.8,
                                key: String = "horizontal bmargin",
                                gnuFileCB: String => Unit = (_) => (),
                                verbose: Boolean,
@@ -96,29 +97,37 @@ object GnuPlot {
       gnu.write("set key font ',15'\n")
       gnu.write("set xtics font ',15'\n")
       gnu.write("set ytics font ',15'\n")
+      if (plotWith == "points") {
+        for {i <- dataToPlot.indices} {
+          gnu.write(s"set style line ${i+1} pt 7 ps ${pointSize}\n")
+        }
+      }
       gnu.write(s"set key $key\n") // TODO can also use set key at x,y
       if ("" != title)
         gnu.write(s"""set title "$title"\n""")
       gnu.write("plot ")
       val footer: String = withOutputToString { prFooter =>
         val header: String = withOutputToString { prHeader =>
-          def plot(title: String, xys: Seq[(Double, Double)]): Unit = {
+          def plot(title: String, i:Int, xys: Seq[(Double, Double)]): Unit = {
             prHeader(""""-" using 1:2""")
             prHeader(s" with $plotWith")
+            if (plotWith == "points"){
+              prHeader(s" ls $i")
+            }
             prHeader(s""" title "$title"""")
             prFooter(s"""#$title\n""")
             xys.foreach { case (x, y) =>
-              prFooter(s"$x $y\n")
+              prFooter(f"$x%.3f $y%.3f\n")
             }
             prFooter("end\n")
           }
 
           if (dataToPlot.nonEmpty) {
-            plot(dataToPlot.head._1, dataToPlot.head._2.zip(dataToPlot.head._3))
+            plot(dataToPlot.head._1, 1, dataToPlot.head._2.zip(dataToPlot.head._3))
 
-            dataToPlot.tail.foreach { case (curveTitle, xs, ys) =>
+            dataToPlot.zipWithIndex.tail.foreach { case ((curveTitle, xs, ys),i) =>
               prHeader(",\\\n    ")
-              plot(curveTitle, xs.zip(ys))
+              plot(curveTitle, i+1, xs.zip(ys))
             }
           }
         }
@@ -205,6 +214,7 @@ object GnuPlot {
                   // outputFileBaseName is basename without the .pdf, .gnu, .png etc. and without leading path
                   outputFileBaseName: String = "curves",
                   plotWith: String = "linespoints",
+                  pointSize:Double = 0.8,
                   key: String = "horizontal bmargin",
                   gnuFileCB: String => Unit = (_) => (),
                   verbose: Boolean = false,
@@ -220,6 +230,7 @@ object GnuPlot {
                                 grid = grid,
                                 outputFileBaseName = outputFileBaseName,
                                 plotWith = plotWith,
+                                pointSize = pointSize,
                                 key = key,
                                 gnuFileCB = gnuFileCB,
                                 verbose = verbose,

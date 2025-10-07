@@ -76,10 +76,17 @@ object mystats {
       myseq :+= ("Depth :".concat((j+1).toString), mytempseq)
     }
     //build graph with each curve
-    gnuPlot(myseq)(Set("png"), "", "", "Number of States per Sigma-DFA",
-                   false, "Proportion of sigma DFAs", false,
-                   false, "DFAsizeperdepth", "linespoints",
-                   "horizontal bmargin", _ => (), false, viewPlots)
+    gnuPlot(myseq)(terminals=Set("png"),
+      title="",
+      comment="", xAxisLabel="Number of States per Sigma-DFA",
+      xLog=false,
+      yAxisLabel="Proportion of sigma DFAs",
+      yLog=false,
+      grid= false,
+      outputFileBaseName="DFAsizeperdepth",
+      plotWith="linespoints",
+      key="horizontal bmargin",
+      view=viewPlots)
   }
 
   //creates a gnu plot from a given rte depth
@@ -106,7 +113,7 @@ object mystats {
     gnuPlot(myseq)(Set("png"), title = "", comment = "", xAxisLabel = "Number of States per Sigma-DFA",
                    xLog = true, yAxisLabel = "Proportion of sigma DFAs", yLog = true,
                    grid = false, outputFileBaseName = "DFAsizeperdepth", plotWith = "linespoints",
-                   key = "horizontal bmargin", _ => (), verbose = false, view = viewPlots)
+                   key = "horizontal bmargin", verbose = false, view = viewPlots)
   }
 
   //functions to use as arguments for statisticsizeperdepth
@@ -133,22 +140,25 @@ object mystats {
     //sequence that will contain all curves
     val r = scala.util.Random
     val myseq: Seq[(String, Seq[(Double, Double)])] =
-    for (i <- minsize/sizevar to (maxsize/sizevar)) yield {
-      //using a map to count DFAs (creating couples of size->count, incrementing at each DFA
-      val mymap: Map[Double, Double] = Map().withDefaultValue(0)
-      val data = (0 until number).foldLeft(mymap) { (acc, x) =>
-        val rte = dfaToRte(RandomDFAGautier.RandomDFA(i * sizevar, r.nextInt(3), 2, 1, 42, typeDepth, None), 42)(42)
-        val fr = f(rte)
-        acc + (fr -> (acc(fr) + 1))
+      for (i <- minsize / sizevar to (maxsize / sizevar)) yield {
+        //using a map to count DFAs (creating couples of size->count, incrementing at each DFA
+        val mymap: Map[Double, Double] = Map().withDefaultValue(0)
+        val data = (0 until number).foldLeft(mymap) { (acc, x) =>
+          val rte = dfaToRte(RandomDFAGautier.RandomDFA(i * sizevar, r.nextInt(3), 2, 1, 42, typeDepth, None), 42)(42)
+          val fr = f(rte)
+          acc + (fr -> (acc(fr) + 1))
+        }
+        //converting map to sequence of doubles, then adding the sequence of doubles to curve sequence
+        (s"Random DFA Size : {(i * sizevar)}", data.toSeq.map(a => (a._1, (a._2 * 100) / number)).sorted)
       }
-      //converting map to sequence of doubles, then adding the sequence of doubles to curve sequence
-      (s"Random DFA Size : {(i * sizevar)}", data.toSeq.map(a => (a._1, (a._2 * 100) / number)).sorted)
-    }
     //build graph with each curve
-    gnuPlot(myseq)(Set("png"), "", "", "Number of States per Sigma-DFA from a random DFA",
-                   false, "Proportion of sigma DFAs", false,
-                   false, "DFAsizeperdepth", "linespoints",
-                   "horizontal bmargin", _ => (), false, viewPlots)
+    gnuPlot(myseq)(terminals = Set("png"),
+      xAxisLabel = "Number of States per Sigma-DFA from a random DFA",
+      yAxisLabel = "Proportion of sigma DFAs",
+      outputFileBaseName = "DFAsizeperdepth",
+      plotWith = "linespoints",
+      key = "horizontal bmargin",
+      view = viewPlots)
   }
 
   //creates a GNUPLOT, the dfas generated are generated from an rte, the rte is extracted from a random DFA of a given size
@@ -176,10 +186,11 @@ object mystats {
       myseq :+= (fnames(i), data.toSeq.map(a => (a._1, (a._2 * 100) / num * ((maxsize - minsize) / sizevar))).sorted)
     }
     //creates gnuplot
-    gnuPlot(myseq)(Set("png"), title = "", comment = "", xAxisLabel = "Number of States per Sigma-DFA from a Random DFA",
-                   xLog = true, yAxisLabel = "Proportion of sigma DFAs", yLog = true,
-                   grid = false, outputFileBaseName = "DFAsizeperdepth", plotWith = "linespoints",
-                   key = "horizontal bmargin", _ => (), verbose = false, view = viewPlots)
+    gnuPlot(myseq)(terminals=Set("png"),
+      xAxisLabel = "Number of States per Sigma-DFA from a Random DFA",
+      xLog = true, yAxisLabel = "Proportion of sigma DFAs", yLog = true,
+      grid = false, outputFileBaseName = "DFAsizeperdepth", plotWith = "linespoints",
+      key = "horizontal bmargin", verbose = false, view = viewPlots)
   }
 
   //creates a GNUPLOT, the dfas generated are generated from an rte using a given function(f), the rte is generated from a given function(frte)
@@ -205,10 +216,13 @@ object mystats {
         (s"Random DFA Size : {(i * sizevar)}", data.toSeq.map(a => (a._1, (a._2 * 100) / number)).sorted)
       }
     //build graph with each curve
-    gnuPlot(myseq)(Set("png"), "", "", "Number of States per Sigma-DFA from a random DFA",
-                   false, "Proportion of sigma DFAs", false,
-                   false, "DFAsizeperdepth", "linespoints",
-                   "horizontal bmargin", _ => (), false, viewPlots)
+    gnuPlot(myseq)(terminals = Set("png"),
+      xAxisLabel = "Number of States per Sigma-DFA from a random DFA",
+      yAxisLabel = "Proportion of sigma DFAs",
+      outputFileBaseName = "DFAsizeperdepth",
+      plotWith = "linespoints",
+      key = "horizontal bmargin",
+      view = viewPlots)
   }
 
   //creates a GNUPLOT, the dfas generated are generated from an rte, the rte is generated by a given function (frte)
@@ -242,7 +256,7 @@ object mystats {
     gnuPlot(myseq)(Set("png"), title = "", comment = "", xAxisLabel = "Number of States per Sigma-DFA from a Random DFA",
                    xLog = true, yAxisLabel = "Proportion of sigma DFAs", yLog = true,
                    grid = false, outputFileBaseName = "DFAsizeperdepth", plotWith = "linespoints",
-                   key = "horizontal bmargin", _ => (), verbose = false, view = viewPlots)
+                   key = "horizontal bmargin", verbose = false, view = viewPlots)
   }
   def main(argv: Array[String]):Unit=
   {

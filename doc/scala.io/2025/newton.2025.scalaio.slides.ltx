@@ -228,76 +228,23 @@
  
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-diversity.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Diversity
-    \end{column}
-  \end{columns}
-\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% Plots
+%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-diversity-per-sample.png}  
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-rte-leaf-count-histogram.png}
     \end{column}
     \begin{column}{.35\textwidth}
-      Diversity Per Sample
+      Sampling Population.  How many RE's were generated of each leaf-count.
     \end{column}
   \end{columns}
 \end{frame}
 
 
-
-%1
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-balanced-node-count.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%2
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-naive-edge-node-count.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%3
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-naive-mid-node-count.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%4
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-computation-time.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Computation Times per RTE size (leaf count)
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%5
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
@@ -340,6 +287,101 @@
     \end{column}
   \end{columns}
 \end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-time-outs.png}
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Time-outs
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-diversity.png}  
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Diversity
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-balanced-node-count.png}  
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Average DFA state counts vs RTE leaf counts
+    \end{column}
+  \end{columns}
+\end{frame}
+
+%2
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-naive-edge-node-count.png}  
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Average DFA state counts vs RTE leaf counts
+    \end{column}
+  \end{columns}
+\end{frame}
+
+%3
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-naive-mid-node-count.png}  
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Average DFA state counts vs RTE leaf counts
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-diversity-per-sample.png}  
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Diversity Per Sample
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+
+
+
+
+
+
+%1
+
+%4
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-computation-time.png}  
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Computation Times per\\ RTE size (leaf count)
+    \end{column}
+  \end{columns}
+\end{frame}
+
+%5
 
 % use this box via:    \usebox\arbox
 \newsavebox\arbox
@@ -498,7 +540,7 @@
 \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Ratio-longest:shortest.png}
     \end{column}
     \begin{column}{.35\textwidth}
-      DFA state count \\vs $\rho$
+      DFA state count vs $\rho$
 
       \usebox\lsrbox
     \end{column}
@@ -518,7 +560,7 @@
       \medskip
       
       
-      DFA state count \\vs $\rho$
+      DFA state count vs $\rho$
 
       \usebox\lsrbox
 
@@ -537,7 +579,7 @@
       \medskip
       
       
-      DFA state count \\vs $\rho$
+      DFA state count vs $\rho$
 
       \usebox\lsrbox
 
@@ -557,59 +599,58 @@
 \end{frame}
 
 %10
+
+
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-ratio-longest-to-shortest.png}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-lossage-Imbalance-Factor.png}
     \end{column}
     \begin{column}{.35\textwidth}
-      Ratio Longest to Shortest
+
+      Lossage = $\lambda = \frac{state~count}{node~count}$
+
+      $\lambda > 1$ is good.
+
     \end{column}
   \end{columns}
 \end{frame}
 
-
-
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-ratio-longest-to-shortest.png}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-lossage-Imbalance-Factor.png}
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
 
       \medskip
 
-      Ratio Longest to Shortest
+      Lossage = $\lambda = \frac{state~count}{node~count}$
+
+      $\lambda > 1$ is good.
+
     \end{column}
   \end{columns}
 \end{frame}
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-ratio-longest-to-shortest.png}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-lossage-Imbalance-Factor.png}
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
 
       \medskip
 
-      Ratio Longest to Shortest
+      Lossage = $\lambda = \frac{state~count}{node~count}$
+
+      $\lambda > 1$ is good.
+
     \end{column}
   \end{columns}
 \end{frame}
 
-%11
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-rte-leaf-count-histogram.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Sampling Population.  How many RE's were generated of each leaf-count.
-    \end{column}
-  \end{columns}
-\end{frame}
 
 %12 Aspect-Ratio
 \begin{frame}
@@ -618,7 +659,7 @@
       \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-balances-Aspect-Ratio.png}
     \end{column}
     \begin{column}{.33\textwidth}
-      Running Balances: Aspect-Ratio\\Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
+      Running Balances:\\percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
       \usebox\arbox
     \end{column}
@@ -636,8 +677,8 @@
       \textcolor{orange}{Limited to RTEs of exactly 64 leaf nodes}
 
       \medskip
-      Running Balances: Aspect-Ratio\\
-      Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
+      Running Balances:\\
+      percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
       \usebox\arbox
     \end{column}
@@ -653,8 +694,8 @@
       \textcolor{orange}{Limited to RTEs of exactly 128 leaf nodes}
 
       \medskip
-      Running Balances: Aspect-Ratio\\
-      Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
+      Running Balances:\\
+      percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
       \usebox\arbox
     \end{column}
@@ -668,7 +709,7 @@
 \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-balances-Imbalance-Factor.png}
     \end{column}
     \begin{column}{.33\textwidth}
-      Running Balances: Imbalance-Factor\\Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
+      Running Balances:\\percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
       \medskip
 
@@ -690,8 +731,8 @@
       \textcolor{orange}{Limited to RTEs of exactly 64 leaf nodes}
 
       \medskip
-      Running Balances: Imbalance-Factor\\
-      Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
+      Running Balances:\\
+      percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
       \usebox\imbfbox
     \end{column}
@@ -707,8 +748,8 @@
       \textcolor{orange}{Limited to RTEs of exactly 128 leaf nodes}
 
       \medskip
-      Running Balances: Imbalance-Factor\\
-      Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
+      Running Balances:\\
+      percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
       \medskip
 
@@ -725,7 +766,7 @@
 \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-balances-Ratio-longest:shortest.png}
     \end{column}
     \begin{column}{.33\textwidth}
-      Running Balances: Ratio-longest:shortest\\Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
+      Running Balances:\\percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
       \usebox\lsrbox
     \end{column}
@@ -743,8 +784,8 @@
       \textcolor{orange}{Limited to RTEs of exactly 64 leaf nodes}
 
       \medskip
-      Running Balances: Ratio-longest:shortest\\
-      Measurement of percentage of DFAs having $\geq 2$ states vs $\rho$
+      Running Balances:\\
+      percentage of DFAs having $\geq 2$ states vs $\rho$
 
       \usebox\lsrbox
     \end{column}
@@ -760,8 +801,8 @@
       \textcolor{orange}{Limited to RTEs of exactly 128 leaf nodes}
 
       \medskip
-      Running Balances: Ratio-longest:shortest\\
-      Measurement of percentage of DFAs having $\geq 2$ states vs $\rho$
+      Running Balances:\\
+      percentage of DFAs having $\geq 2$ states vs $\rho$
 
       \usebox\lsrbox
     \end{column}
@@ -949,10 +990,6 @@
 \end{frame}
 
 
-%18
-\begin{frame}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-time-outs.png}
-\end{frame}
 
 %19
 \begin{frame}
