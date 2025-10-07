@@ -51,6 +51,7 @@ object DataPlot {
     ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
 
   def plotStateLossage(prefix:String=""): Unit = {
+    import scala.util.Random.shuffle
     for {(imb, algoName) <- imbalanceAlgos
          } {
       val descrs = for {algo <- algos
@@ -58,13 +59,21 @@ object DataPlot {
                         xys = for {cl <- cvslines
                                    if cl.node_count != 0
                                    } yield (imb(cl), cl.state_count / cl.node_count.toDouble )
-                        } yield (algo + s" ${cvslines.length} samples", xys.to(List).sortBy(_._1))
+                        } yield (algo + s" ${cvslines.length} samples", shuffle(xys.to(List)))
       gnuPlot(descrs.to(Seq))(title = s"Lossage: Ratio node count per state count $prefix",
         xAxisLabel = algoName,
         yAxisLabel = "lossage",
         yLog = true,
         plotWith = "points",
         gnuFileCB = plotCB(s"plot-${prefix}lossage-${algoName}"),
+        view = true
+      )
+      gnuPlot(descrs.to(Seq))(title = s"Lossage: Ratio node count per state count $prefix",
+        xAxisLabel = algoName,
+        yAxisLabel = "lossage",
+        yLog = true,
+        plotWith = "lines",
+        gnuFileCB = plotCB(s"plot-${prefix}lossage-${algoName}-ratsnest"),
         view = true
       )
     }
@@ -117,23 +126,34 @@ object DataPlot {
   }
 
   def plotBalanceDfaCountVsAspectRatio(prefix:String=""): Unit = {
+    import scala.util.Random.shuffle
     for {(imb, xlabel) <- imbalanceAlgos
          descrs = for {str <- algos
                        alllines = readCsvLines(str,prefix)
                        num_samples = alllines.length
                        xys = for {cl <- alllines
                                   } yield (imb(cl), cl.state_count.toDouble)
-                       } yield (str + s" ${num_samples} samples", xys.to(List).sortBy(_._1))
-         }
-    gnuPlot(descrs.to(Seq))(title = s"DFA state count ${prefix} vs " + xlabel,
-      xAxisLabel = xlabel,
-      yAxisLabel = "DFA state count",
-      plotWith = "points",
-      yLog = true,
-      gnuFileCB = plotCB(s"plot-${prefix}dfa-state-count-vs-$xlabel"),
-      grid = true,
-      view = true
-    )
+                       } yield (str + s" ${num_samples} samples", shuffle(xys.to(List)))
+         } {
+      gnuPlot(descrs.to(Seq))(title = s"DFA state count ${prefix} vs " + xlabel,
+        xAxisLabel = xlabel,
+        yAxisLabel = "DFA state count",
+        plotWith = "points",
+        yLog = true,
+        gnuFileCB = plotCB(s"plot-${prefix}dfa-state-count-vs-$xlabel"),
+        grid = true,
+        view = true
+      )
+      gnuPlot(descrs.to(Seq))(title = s"DFA state count ${prefix} vs " + xlabel,
+        xAxisLabel = xlabel,
+        yAxisLabel = "DFA state count",
+        plotWith = "lines",
+        yLog = true,
+        gnuFileCB = plotCB(s"plot-${prefix}dfa-state-count-vs-$xlabel-ratsnest"),
+        grid = true,
+        view = true
+      )
+    }
   }
 
   def plotBalanceRunningSum(prefix:String=""): Unit = {
@@ -222,13 +242,13 @@ object DataPlot {
                       alllines = readCsvLines(str,prefix)
                       xys = genThresholdCurve(alllines)
                       } yield (s"${str} samples=${alllines.length}", xys)
-    gnuPlot(descrs.to(Seq))(title = s"Threshold $prefix",
-      xAxisLabel = s"DFA state count $prefix",
+    gnuPlot(descrs.to(Seq))(title = s"Fraction of DFAs larger than given state count $prefix",
+      xAxisLabel = s"DFA state count",
       xLog = true,
       grid = true,
       yLog = true,
       gnuFileCB = plotCB(s"plot-${prefix}threshold"),
-      yAxisLabel = "Percentage dfa >= state count",
+      yAxisLabel = "Percentage",
       view = true)
   }
 

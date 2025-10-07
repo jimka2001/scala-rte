@@ -1,7 +1,7 @@
 package demos.scalaio2025
 
 import genus.RandomType.interestingTypes
-import adjuvant.Adjuvant.{biasedGaussian, randCase, randElement}
+import adjuvant.Adjuvant.{biasedGaussian, weightedCase, randElement}
 import rte.Rte
 import rte.{And, Cat, EmptySeq, EmptySet, Not, Or, Sigma, Singleton, Star}
 import genus.{SOr, SimpleTypeD}
@@ -19,6 +19,15 @@ object Random {
                       td2 = inhabitedTypes(j)
                       } yield SOr(td1, td2)
   val inhabitedLeaves:Vector[Rte] = Vector(Sigma, EmptySeq) ++ (inhabitedTypes ++ unionTypes).map(td => Singleton(td))
+
+  def crazyNaiveRteBySize(leaves:Int):Rte = {
+    randomNaiveRteBySize(leaves, (n) => {
+      if (n == 2 || n == 3)
+        1
+      else
+        2
+    })
+  }
 
   def randomNaiveRteBySizeEdge(leaves:Int):Rte = {
     randomNaiveRteBySize(leaves, (n) => biasedGaussian(1, n))
@@ -42,13 +51,11 @@ object Random {
       lazy val left = randomNaiveRteBySize(leftSize, pivot)
       lazy val right = randomNaiveRteBySize(leaves - leftSize, pivot)
       lazy val mid = randomNaiveRteBySize(leaves, pivot)
-      randCase(() => EmptySet,
-               List(
-                 (0.3, () => Cat(left, right)),
-                 (0.3, () => And(left,right)),
-                 (0.3, () => Or(left,right)),
-                 (0.05, () => Star(mid)),
-                 (0.05, () => Not(mid))))
+      weightedCase((20, () => Cat(left, right)),
+                   (30, () => And(left,right)),
+                   (30, () => Or(left,right)),
+                   (5,  () => Star(mid)),
+                   (15, () => Not(mid)))
     }
   }
 
@@ -71,8 +78,7 @@ object Random {
             randElement(inhabitedLeaves)
         }
     }
-    // number of internal nodes is 1 fewer than the number of leaves
-    nodeToRte(balancedRandTreeBySize(leaves - 1))
+    val skeleton = balancedRandTreeBySize(leaves - 1)
+    nodeToRte(skeleton)
   }
-
 }

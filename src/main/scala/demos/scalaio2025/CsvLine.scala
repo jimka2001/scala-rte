@@ -26,7 +26,7 @@ case class CsvLine(node_count: Int,
   // By length, we mean longest distance from top to bottom of the AST (rte) tree
   // By width, we mean log(leaf_count)
   def aspectRatio():Double = {
-    (log(leaf_count) / log(2)) / longest.toDouble
+    longest.toDouble / (log(leaf_count) / log(2))
   }
 }
 

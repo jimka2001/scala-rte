@@ -229,9 +229,28 @@
 \end{frame}
 
 
+\newsavebox\scalanaive
+\begin{lrbox}{\scalanaive}
+  \begin{minipage}{11cm}
+    \input{scala-naive}
+  \end{minipage}
+\end{lrbox}
+\begin{frame}{Rte Generator}
+  \usebox\scalanaive
+\end{frame}
+
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% Plots
 %%%%%%%%%%%%%%%%%%%%%%
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}{Plots}
+
+\end{frame}
+}
+
+
+
 
 \begin{frame}
   \begin{columns}
@@ -346,8 +365,123 @@
   \end{columns}
 \end{frame}
 
+%19
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-histogram.png}      
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Balanced sampling results in 18 to 19\% of DFAs with 10 states or larger.
+      Uniform sampling results in 12\%.
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-histogram.png}      
+    \end{column}
+    \begin{column}{.35\textwidth}
+      \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes.}
+
+      \medskip
+
+      Balanced sampling results in YYY to XXX\% of DFAs with 10 states or larger.
+      Uniform sampling results in ZZZ\%.
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-histogram.png}      
+    \end{column}
+    \begin{column}{.35\textwidth}
+      \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes.}
+
+      \medskip
+
+      Balanced sampling results in YYY to XXX\% of DFAs with 10 states or larger.
+      Uniform sampling results in ZZZ\%.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-threshold.png}
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Which percent of all DFAs have larger than x-many states?
+
+      Balanced sampling produces 10\% of DFAs larger than 40 states
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-threshold.png}
+    \end{column}
+    \begin{column}{.35\textwidth}
+      \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes.}
+
+      \medskip
+
+      Which percent of all DFAs have larger than x-many states?
+
+      
+      Balanced sampling produces 10\% of DFAs more than 30 states.
+
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-threshold.png}
+    \end{column}
+    \begin{column}{.35\textwidth}
+      \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes.}
+
+      \medskip
+      
+      Which percent of all DFAs have larger than x-many states?
+
+      15\% of Balanced DFAs more than 40 states.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% Supplementary Plots
+%%%%%%%%%%%%%%%%%%%%%%
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}{Supplementary Plots}
+
+\end{frame}
+}
+
+
 
 \begin{frame}
   \begin{columns}
@@ -387,12 +521,12 @@
 \newsavebox\arbox
 \begin{lrbox}{\arbox}
   \begin{minipage}{4cm}
-    \[\rho = \frac{\log_2(leaf~count)}{longest~path}\]
+    \[\rho = \frac{longest~path}{\log_2(leaf~count)}\]
 
     \begin{align*}
       \rho = 1 & \implies \text{balanced}\\
-      \rho > 1 & \implies \text{landscape}\\
-      \rho < 1 & \implies \text{portrait}
+      \rho < 1 & \implies \text{landscape}\\
+      \rho > 1 & \implies \text{portrait}
     \end{align*}
   \end{minipage}
 \end{lrbox}
@@ -403,7 +537,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Aspect-Ratio.png}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
     \end{column}
     \begin{column}{.35\textwidth}
       DFA state count \\vs Aspect Ratio
@@ -418,7 +552,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Aspect-Ratio.png}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
@@ -435,7 +569,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Aspect-Ratio.png}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
@@ -471,7 +605,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Imbalance-Factor.png}  
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Imbalance-Factor-ratsnest.png}  
     \end{column}
     \begin{column}{.35\textwidth}
       DFA state count \\vs Imbalance Factor
@@ -486,7 +620,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Imbalance-Factor.png}  
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Imbalance-Factor-ratsnest.png}  
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
@@ -504,7 +638,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Imbalance-Factor.png}  
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Imbalance-Factor-ratsnest.png}  
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
@@ -537,7 +671,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Ratio-longest:shortest.png}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Ratio-longest:shortest-ratsnest.png}
     \end{column}
     \begin{column}{.35\textwidth}
       DFA state count vs $\rho$
@@ -552,7 +686,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Ratio-longest:shortest.png}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Ratio-longest:shortest-ratsnest.png}
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
@@ -571,7 +705,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Ratio-longest:shortest.png}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Ratio-longest:shortest-ratsnest.png}
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
@@ -604,7 +738,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-lossage-Imbalance-Factor.png}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-lossage-Imbalance-Factor-ratsnest.png}
     \end{column}
     \begin{column}{.35\textwidth}
 
@@ -619,7 +753,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-lossage-Imbalance-Factor.png}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-lossage-Imbalance-Factor-ratsnest.png}
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
@@ -636,7 +770,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-lossage-Imbalance-Factor.png}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-lossage-Imbalance-Factor-ratsnest.png}
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
@@ -816,8 +950,6 @@
 \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-sum-balances-per-Aspect-Ratio.png}
     \end{column}
     \begin{column}{.35\textwidth}
-
-
       \usebox\arbox
     \end{column}
   \end{columns}
@@ -832,7 +964,6 @@
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes}
-
 
       \usebox\arbox
     \end{column}
@@ -941,105 +1072,6 @@
 \end{frame}
 
 %17
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-threshold.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Balanced sampling produces 80\% of DFAs less than 10 states.
-      
-      Uniform sampling produces 90\%.
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-threshold.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes.}
-      \medskip
-      
-      Balanced sampling produces 80\% of DFAs less than 10 states.
-      
-      Uniform sampling produces 90\%.
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-threshold.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes.}
-      \medskip
-      
-      Balanced sampling produces 80\% of DFAs less than 10 states.
-      
-      Uniform sampling produces 90\%.
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-%19
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-histogram.png}      
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Balanced sampling results in 18 to 19\% of DFAs with 10 states or larger.
-      Uniform sampling results in 12\%.
-    \end{column}
-  \end{columns}
-
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-histogram.png}      
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes.}
-
-      \medskip
-
-      Balanced sampling results in YYY to XXX\% of DFAs with 10 states or larger.
-      Uniform sampling results in ZZZ\%.
-    \end{column}
-  \end{columns}
-
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-histogram.png}      
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes.}
-
-      \medskip
-
-      Balanced sampling results in YYY to XXX\% of DFAs with 10 states or larger.
-      Uniform sampling results in ZZZ\%.
-    \end{column}
-  \end{columns}
-
-\end{frame}
 
 \input{conclusion}
 \end{document}

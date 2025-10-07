@@ -444,6 +444,24 @@ object Adjuvant {
     loop(0.0, pairs.to(List))
   }
 
+  def weightedCase[A](pairs:(Int, ()=>A) *) = {
+    // e.g., pairs = List((20, () => "a"),
+    //                    (30, () => "b"),
+    //                    (50, () => "c"))
+    val u = random.between(0,100)
+    val covered = pairs.map(_._1).sum
+    assert( covered == 100, s"total should equal 100, not $covered")
+    def loop(total:Int, pairs:List[(Int, ()=>A)]):A = {
+      pairs match {
+        case (p,f) :: Nil => f()
+        case (p,f) :: _ if u < total + p => f()
+        case (p,_) :: pairs => loop(total+p, pairs)
+        case _ => throw new Exception("This should not occur because of the assertion above")
+      }
+    }
+    loop(0, pairs.to(List))
+  }
+
   def check_for_thread_interrupt(message:String=""): Unit = {
     // if this code is being called from a unit test with a timeout
     // when we have to explicitly check for thread interrupt
@@ -543,5 +561,16 @@ object Adjuvant {
       val biased = if (random.nextBoolean()) x else range - 1 - x
       n + biased
     }
+  }
+
+  def main(argv:Array[String]):Unit = {
+    val data = (for {i <- 0 until 999} yield {
+      weightedCase((10, () => 10),
+        (20, () => 20),
+        (30, () => 30),
+        (40, () => 40)
+      )
+    }).to(Vector).groupBy(x=>x).to(List)
+    print(data.map(p => (p._1, p._2.length)))
   }
 }

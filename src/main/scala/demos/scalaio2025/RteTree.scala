@@ -4,23 +4,25 @@ import scala.util.Random
 
 object RteTree {
   import demos.scalaio2025.CsvLine.{statisticsResource,writeCsvStatistic,readCsvLines,readAllCsvLines}
-  import demos.scalaio2025.Random.{randomNaiveRteBySizeMid,randomNaiveRteBySizeEdge}
+  import demos.scalaio2025.Random.{randomNaiveRteBySizeMid,randomNaiveRteBySizeEdge, crazyNaiveRteBySize}
   import demos.scalaio2025.Random.randomTotallyBalancedRteBySize
   val random = new Random
 
-  val algos = Seq("naive-mid", "naive-edge", "balanced")
+  val algos = Seq("naive-mid", "naive-edge", "balanced", "crazy")
 
   def csv(algo:String, prefix:String=""):String = {
     algo match {
       case "naive-mid"  => (statisticsResource + prefix + "naive-mid.csv")
       case "naive-edge" => (statisticsResource + prefix + "naive-edge.csv")
       case "balanced"   => (statisticsResource + prefix + "balanced.csv")
+      case "crazy"      => (statisticsResource + prefix + "crazy.csv")
     }
   }
 
   val genRte = Map("naive-edge" -> randomNaiveRteBySizeEdge _,
                    "naive-mid" -> randomNaiveRteBySizeMid _,
-                   "balanced" -> randomTotallyBalancedRteBySize _
+                   "balanced" -> randomTotallyBalancedRteBySize _,
+                   "crazy" -> crazyNaiveRteBySize _,
                    )
 
   def genCsvBySize(num_repetitions: Int,

@@ -1,6 +1,6 @@
 package rte
 
-import adjuvant.Adjuvant.{biasedGaussian, randCase, randElement}
+import adjuvant.Adjuvant.{weightedCase, randElement}
 import genus.RandomType
 import rte.Rte.{notEmptySeq, notSigma, sigmaStar}
 
@@ -44,19 +44,16 @@ object Random {
     // a naive random Rte of depth <= n is either a leaf or a node whose
     //  children are naive random Rtes of depth <= n-1
     if (depth == 0)
-      randCase(() => EmptySet,
-               List((0.1, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
-                    (0.9, () => Singleton(RandomType.randomType(0, false))),
-                    ))
+      weightedCase((10, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
+                   (90, () => Singleton(RandomType.randomType(0, false))))
     else
-      randCase(() => EmptySet,
-               List((0.1, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
-                    (0.1, () => Singleton(RandomType.randomType(0, false))),
-                    (0.2, () => Cat(randomNaiveRteByDepth(depth-1), randomNaiveRteByDepth(depth-1))),
-                    (0.2, () => And(randomNaiveRteByDepth(depth-1), randomNaiveRteByDepth(depth-1))),
-                    (0.2, () => Or(randomNaiveRteByDepth(depth-1), randomNaiveRteByDepth(depth-1))),
-                    (0.1, () => Star(randomNaiveRteByDepth(depth-1))),
-                    (0.1, () => Not(randomNaiveRteByDepth(depth-1)))))
+      weightedCase((10, () => randElement(Seq(Sigma, EmptySeq, EmptySet))),
+                   (10, () => Singleton(RandomType.randomType(0, false))),
+                   (20, () => Cat(randomNaiveRteByDepth(depth-1), randomNaiveRteByDepth(depth-1))),
+                   (20, () => And(randomNaiveRteByDepth(depth-1), randomNaiveRteByDepth(depth-1))),
+                   (20, () => Or(randomNaiveRteByDepth(depth-1), randomNaiveRteByDepth(depth-1))),
+                   (10, () => Star(randomNaiveRteByDepth(depth-1))),
+                   (10, () => Not(randomNaiveRteByDepth(depth-1))))
   }
 
   def randomSeqByDepth(depth: Int, length: Int, option: Boolean = true): Seq[Rte] = {
@@ -79,10 +76,9 @@ object Random {
 
     def tree012ToRte(tree:Tree012):Rte = {
       tree match {
-        case Tree012Leaf() => randCase(() => EmptySet,
-                                       List((0.90, () => Singleton(randElement(leafTypes))),
-                                            (0.05, () => Sigma),
-                                            (0.05, () => EmptySeq)))
+        case Tree012Leaf() => weightedCase((90, () => Singleton(randElement(leafTypes))),
+                                           (5,  () => Sigma),
+                                           (5,  () => EmptySeq))
         case Tree012Unary(_, child) =>
           // Star, Not
           randElement(Seq((t) => Star(t),
@@ -90,10 +86,9 @@ object Random {
 
         case Tree012Binary(_, left, right) =>
           // And, Or, Cat
-          randCase(() => EmptySet,
-                   List((0.70, () => Cat(tree012ToRte(left), tree012ToRte(right))),
-                        (0.15, () => Or(tree012ToRte(left), tree012ToRte(right))),
-                        (0.15, () => And(tree012ToRte(left), tree012ToRte(right)))))
+          weightedCase((70, () => Cat(tree012ToRte(left), tree012ToRte(right))),
+                       (15, () => Or(tree012ToRte(left), tree012ToRte(right))),
+                       (15, () => And(tree012ToRte(left), tree012ToRte(right))))
       }
     }
     // a binary tree of depth=n has 2^n <= m < 2^(n+1) leaves

@@ -1,6 +1,6 @@
 package demos.scalaio2025
 
-import adjuvant.Adjuvant.randCase
+import adjuvant.Adjuvant.weightedCase
 
 abstract class Expr
 
@@ -31,11 +31,10 @@ object Expr {
     if (depth == 0)
       Const(random.nextInt(p))
     else
-      randCase(() => Const(random.nextInt(p)),
-               Seq((0.333, () => Plus(naiveRandByDepth(depth - 1, p), naiveRandByDepth(depth - 1, p))),
-                   (0.333, () => Times(naiveRandByDepth(depth - 1, p), naiveRandByDepth(depth - 1, p)))
-                   //(0.5, () => Times(naiveRand(depth - 1, p), naiveRand(depth - 1, p)))
-                   ))
+      weightedCase(
+               (33, () => Plus(naiveRandByDepth(depth - 1, p), naiveRandByDepth(depth - 1, p))),
+               (33, () => Times(naiveRandByDepth(depth - 1, p), naiveRandByDepth(depth - 1, p))),
+               (34, () => Const(random.nextInt(p))))
   }
 
   def naiveRandBySize(leaves: Int, p: Int): Expr = {
@@ -83,9 +82,9 @@ object Expr {
     def nodeToExpr(node: Node): Expr = {
       node match {
         case InternalNode(_, left, right) =>
-          randCase(// () => Times(nodeToExpr(left), nodeToExpr(right)),
-                   () => Plus(nodeToExpr(left), nodeToExpr(right)),
-                   Seq((0.5, () => Times(nodeToExpr(left), nodeToExpr(right)))))
+          weightedCase[Expr](// () => Times(nodeToExpr(left), nodeToExpr(right)),
+                   (50, () => Plus(nodeToExpr(left), nodeToExpr(right))),
+                   (50, () => Times(nodeToExpr(left), nodeToExpr(right))))
         case LeafNode() => Const(random.nextInt(p))
       }
     }
