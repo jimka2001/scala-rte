@@ -231,12 +231,32 @@
 
 \newsavebox\scalanaive
 \begin{lrbox}{\scalanaive}
-  \begin{minipage}{11cm}
-    \input{scala-naive}
+  \begin{minipage}{15cm}
+    \input{scalanaive}
   \end{minipage}
 \end{lrbox}
 \begin{frame}{Rte Generator}
   \usebox\scalanaive
+\end{frame}
+
+\newsavebox\scaladnc
+\begin{lrbox}{\scaladnc}
+  \begin{minipage}{15cm}
+    \input{scaladnc}
+  \end{minipage}
+\end{lrbox}
+\begin{frame}{Rte Divide and Conquor Generator}
+  \usebox\scaladnc
+\end{frame}
+
+\newsavebox\scalabalanced
+\begin{lrbox}{\scalabalanced}
+  \begin{minipage}{15cm}
+    \input{scalabalanced}
+  \end{minipage}
+\end{lrbox}
+\begin{frame}{Rte Balanced Generator}
+  \usebox\scalabalanced
 \end{frame}
 
 

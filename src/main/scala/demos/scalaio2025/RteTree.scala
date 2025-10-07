@@ -4,7 +4,7 @@ import scala.util.Random
 
 object RteTree {
   import demos.scalaio2025.CsvLine.{statisticsResource,writeCsvStatistic,readCsvLines,readAllCsvLines}
-  import demos.scalaio2025.Random.{randomNaiveRteBySizeMid,randomNaiveRteBySizeEdge, crazyNaiveRteBySize}
+  import demos.scalaio2025.Random.{randomNaiveRteMid,randomNaiveRteEdge, crazyNaiveRte}
   import demos.scalaio2025.Random.randomTotallyBalancedRteBySize
   val random = new Random
 
@@ -19,10 +19,10 @@ object RteTree {
     }
   }
 
-  val genRte = Map("naive-edge" -> randomNaiveRteBySizeEdge _,
-                   "naive-mid" -> randomNaiveRteBySizeMid _,
+  val genRte = Map("naive-edge" -> randomNaiveRteEdge _,
+                   "naive-mid" -> randomNaiveRteMid _,
                    "balanced" -> randomTotallyBalancedRteBySize _,
-                   "crazy" -> crazyNaiveRteBySize _,
+                   "crazy" -> crazyNaiveRte _,
                    )
 
   def genCsvBySize(num_repetitions: Int,
