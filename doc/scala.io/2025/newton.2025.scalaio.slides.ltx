@@ -78,7 +78,7 @@
 
 
 
-
+% use this box via:    \usebox\exnotebox
 \newsavebox\exnotebox
 \begin{lrbox}{\exnotebox}
   \begin{minipage}{6.5cm}
@@ -239,6 +239,17 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-diversity-per-sample.png}  
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Diversity Per Sample
+    \end{column}
+  \end{columns}
+\end{frame}
+
 
 
 %1
@@ -298,20 +309,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-dfa-state-count-histogram.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 50 leaf nodes.}
 
-      \medskip
-      
-      Population Histogram of DFA state counts.
-    \end{column}
-  \end{columns}
-\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -343,6 +341,22 @@
   \end{columns}
 \end{frame}
 
+% use this box via:    \usebox\arbox
+\newsavebox\arbox
+\begin{lrbox}{\arbox}
+  \begin{minipage}{4cm}
+    \[\rho = \frac{\log_2(leaf~count)}{longest~path}\]
+
+    \begin{align*}
+      \rho = 1 & \implies \text{balanced}\\
+      \rho > 1 & \implies \text{landscape}\\
+      \rho < 1 & \implies \text{portrait}
+    \end{align*}
+  \end{minipage}
+\end{lrbox}
+
+
+
 %6
 \begin{frame}
   \begin{columns}
@@ -351,24 +365,13 @@
     \end{column}
     \begin{column}{.35\textwidth}
       DFA state count \\vs Aspect Ratio
+
+      \usebox\arbox
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-dfa-state-count-vs-Aspect-Ratio.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 50 leaf nodes.}
 
-      \medskip
-      
-      DFA state count \\vs Aspect Ratio
-    \end{column}
-  \end{columns}
-\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -381,6 +384,8 @@
       \medskip
       
       DFA state count \\vs Aspect Ratio
+
+      \usebox\arbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -397,9 +402,28 @@
       
 
       DFA state count \\vs Aspect Ratio
+
+      \usebox\arbox
     \end{column}
   \end{columns}
 \end{frame}
+
+% use this box via:    \usebox\imbfbox
+\newsavebox\imbfbox
+\begin{lrbox}{\imbfbox}
+  \begin{minipage}{4cm}
+    \[\rho = \frac{actual~total~path~length}{ideal~total~path~length}\]
+
+    \begin{align*}
+      \rho = 1 & \implies \text{balanced}\\
+      \rho < 1 & \implies \text{landscape}\\
+      \rho > 1 & \implies \text{portrait}
+    \end{align*}
+  \end{minipage}
+\end{lrbox}
+
+
+
 
 %7
 \begin{frame}
@@ -409,25 +433,13 @@
     \end{column}
     \begin{column}{.35\textwidth}
       DFA state count \\vs Imbalance Factor
+
+      \usebox\imbfbox
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-dfa-state-count-vs-Imbalance-Factor.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 50 leaf nodes.}
 
-      \medskip
-      
-
-      DFA state count \\vs Imbalance Factor
-    \end{column}
-  \end{columns}
-\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -442,6 +454,7 @@
 
       DFA state count \\vs Imbalance Factor
 
+      \usebox\imbfbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -459,9 +472,24 @@
       
       DFA state count \\vs Imbalance Factor
 
+      \usebox\imbfbox
     \end{column}
   \end{columns}
 \end{frame}
+
+% use this box via:    \usebox\lsrbox
+\newsavebox\lsrbox
+\begin{lrbox}{\lsrbox}
+  \begin{minipage}{4cm}
+    \[\rho = \frac{longest~path}{shortest~path}\]
+
+    \begin{align*}
+      \rho = 1 & \implies \text{balanced}\\
+      \rho > 1 & \implies \text{imbalanced}
+    \end{align*}
+  \end{minipage}
+\end{lrbox}
+
 
 %8
 \begin{frame}
@@ -470,25 +498,14 @@
 \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Ratio-longest:shortest.png}
     \end{column}
     \begin{column}{.35\textwidth}
-      DFA state count \\vs Ratio $\frac{longest}{shortest}$
+      DFA state count \\vs $\rho$
+
+      \usebox\lsrbox
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-dfa-state-count-vs-Ratio-longest:shortest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 50 leaf nodes.}
-      
-      \medskip
-      
-      DFA state count \\vs Ratio $\frac{longest}{shortest}$
-    \end{column}
-  \end{columns}
-\end{frame}
+
 
 \begin{frame}
   \begin{columns}
@@ -501,7 +518,9 @@
       \medskip
       
       
-      DFA state count \\vs Ratio $\frac{longest}{shortest}$
+      DFA state count \\vs $\rho$
+
+      \usebox\lsrbox
 
     \end{column}
   \end{columns}
@@ -518,7 +537,9 @@
       \medskip
       
       
-      DFA state count \\vs Ratio $\frac{longest}{shortest}$
+      DFA state count \\vs $\rho$
+
+      \usebox\lsrbox
 
     \end{column}
   \end{columns}
@@ -547,20 +568,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-ratio-longest-to-shortest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 50 leaf nodes.}
 
-      \medskip
-
-      Ratio Longest to Shortest
-    \end{column}
-  \end{columns}
-\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -607,39 +615,17 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-balances-Aspect-Ratio.png}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-balances-Aspect-Ratio.png}
     \end{column}
     \begin{column}{.33\textwidth}
       Running Balances: Aspect-Ratio\\Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
+      \usebox\arbox
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-running-balances-Aspect-Ratio.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      \textcolor{orange}{Limited to RTEs of exactly 50 leaf nodes}
 
-      \medskip
-
-      Running Balances: Aspect-Ratio\\
-      Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
-
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
-    \end{column}
-  \end{columns}
-\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -653,10 +639,7 @@
       Running Balances: Aspect-Ratio\\
       Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
+      \usebox\arbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -673,10 +656,7 @@
       Running Balances: Aspect-Ratio\\
       Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
+      \usebox\arbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -694,30 +674,12 @@
 
       For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
       
+      \usebox\imbfbox
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-running-balances-Imbalance-Factor.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      \textcolor{orange}{Limited to RTEs of exactly 50 leaf nodes}
 
-      \medskip
-
-      Running Balances: Imbalance-Factor\\
-      Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
-
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
-    \end{column}
-  \end{columns}
-\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -731,10 +693,7 @@
       Running Balances: Imbalance-Factor\\
       Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
+      \usebox\imbfbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -768,34 +727,12 @@
     \begin{column}{.33\textwidth}
       Running Balances: Ratio-longest:shortest\\Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
 
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
+      \usebox\lsrbox
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-running-balances-Ratio-longest:shortest.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      \textcolor{orange}{Limited to RTEs of exactly 50 leaf nodes}
 
-      \medskip
-
-      Running Balances: Ratio-longest:shortest\\
-      Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
-
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
-    \end{column}
-  \end{columns}
-\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -807,12 +744,9 @@
 
       \medskip
       Running Balances: Ratio-longest:shortest\\
-      Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
+      Measurement of percentage of DFAs having $\geq 2$ states vs $\rho$
 
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
+      \usebox\lsrbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -827,12 +761,9 @@
 
       \medskip
       Running Balances: Ratio-longest:shortest\\
-      Measurement of percentage of DFAs having $\geq 2$ states vs imbalance factor.
+      Measurement of percentage of DFAs having $\geq 2$ states vs $\rho$
 
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
+      \usebox\lsrbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -844,29 +775,14 @@
 \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-sum-balances-per-Aspect-Ratio.png}
     \end{column}
     \begin{column}{.35\textwidth}
-      Ratio $\rho = $ Aspect Ratio
-      
-      $\rho = 1 \to \text{perfectly balanced}$
+
+
+      \usebox\arbox
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-running-sum-balances-per-Aspect-Ratio.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 50 leaf nodes}
 
-      \medskip
-
-      Ratio $\rho = $ Aspect Ratio
-      
-      $\rho = 1 \to \text{perfectly balanced}$
-    \end{column}
-  \end{columns}
-\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -876,11 +792,8 @@
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes}
 
-      \medskip
 
-      Ratio $\rho = $ Aspect Ratio
-      
-      $\rho = 1 \to \text{perfectly balanced}$
+      \usebox\arbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -893,10 +806,8 @@
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes}
 
-      \medskip
-      Ratio $\rho = $ Aspect Ratio
-      
-      $\rho = 1 \to \text{perfectly balanced}$
+
+      \usebox\arbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -908,28 +819,14 @@
 \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-sum-balances-per-Imbalance-Factor.png}
     \end{column}
     \begin{column}{.35\textwidth}
-      Ratio $\rho = $ Imbalance Factor
       
-      $\rho = 1 \to \text{perfectly balanced}$
+      \usebox\imbfbox
+
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-running-sum-balances-per-Imbalance-Factor.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 50 leaf nodes}
 
-      \medskip
-      Ratio $\rho = $ Imbalance Factor
-      
-      $\rho = 1 \to \text{perfectly balanced}$
-    \end{column}
-  \end{columns}
-\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -939,11 +836,10 @@
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes}
 
-      \medskip
-
-      Ratio $\rho = $ Imbalance Factor
       
       $\rho = 1 \to \text{perfectly balanced}$
+
+      \usebox\imbfbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -956,11 +852,8 @@
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes}
 
-      \medskip
 
-      Ratio $\rho = $ Imbalance Factor
-      
-      $\rho = 1 \to \text{perfectly balanced}$
+      \usebox\imbfbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -972,29 +865,12 @@
 \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-sum-balances-per-Ratio-longest:shortest.png}
     \end{column}
     \begin{column}{.35\textwidth}
-      Ratio $\rho = \frac{longest~ branch}{shortest~ branch}$
-      
-      $\rho = 1 \to \text{perfectly balanced}$
+      \usebox\lsrbox
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-running-sum-balances-per-Ratio-longest:shortest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
 
-      \textcolor{orange}{Restricted to RTEs with exactly 50 leaf nodes}
-
-      \medskip
-      Ratio $\rho = \frac{longest~ branch}{shortest~ branch}$
-      
-      $\rho = 1 \to \text{perfectly balanced}$
-    \end{column}
-  \end{columns}
-\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -1004,12 +880,8 @@
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes}
 
-      \medskip
 
-
-      Ratio $\rho = \frac{longest~ branch}{shortest~ branch}$
-      
-      $\rho = 1 \to \text{perfectly balanced}$
+      \usebox\lsrbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -1022,11 +894,7 @@
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes}
 
-      \medskip
-
-      Ratio $\rho = \frac{longest~ branch}{shortest~ branch}$
-      
-      $\rho = 1 \to \text{perfectly balanced}$
+      \usebox\lsrbox
     \end{column}
   \end{columns}
 \end{frame}
@@ -1046,22 +914,7 @@
 \end{frame}
 
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-threshold.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 50 leaf nodes}
 
-      \medskip
-      
-      Balanced sampling produces 80\% of DFAs less than 10 states.
-      
-      Uniform sampling produces 90\%.
-    \end{column}
-  \end{columns}
-\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -1115,22 +968,7 @@
 
 \end{frame}
 
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-50-histogram.png}      
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 50 leaf nodes.}
 
-      \medskip
-
-      Balanced sampling results in 18 to 23\% of DFAs with 10 states or larger.
-      Uniform sampling results in 12\%.
-    \end{column}
-  \end{columns}
-
-\end{frame}
 
 \begin{frame}
   \begin{columns}

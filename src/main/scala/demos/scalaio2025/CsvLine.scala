@@ -45,7 +45,7 @@ object CsvLine {
 
 
   def imbalanceFactor(node_count: Int, leaf_count:Int, total: Int): Double = {
-    // compute a imbalance factor.
+    // compute an imbalance factor.
     // This factor measures the extent to which the tree is deeper than it would
     //  be if it were balanced.
     // 1 ==> perfectly balanced
@@ -59,8 +59,8 @@ object CsvLine {
       // compute d, length of a branch if perfectly balanced
       val d = log(node_count + 1) / log(2)
       // balanced path total length from root to leaf = num leafs * average length i.e. n*d
-      val imbalanced_total = d * leaf_count
-      val ibf = imbalanced_total / total.toDouble
+      val balanced_total = d * leaf_count
+      val ibf = total.toDouble / balanced_total
       //println(f"bf = $bf")
       assert(total > 0)
       ibf

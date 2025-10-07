@@ -88,7 +88,7 @@ object DataPlot {
     )
   }
 
-  def plotBalance3(prefix:String=""): Unit = {
+  def plotRunningNonTrivalVsImbalance(prefix:String=""): Unit = {
     for {(imb, algoName) <- imbalanceAlgos} {
       val descrs = for {str <- algos
                         alllines = readCsvLines(str, prefix)
@@ -311,9 +311,9 @@ object BalancePlot {
     DataPlot.plotRatioLongestShortest("64-")
     DataPlot.plotRatioLongestShortest("128-")
     DataPlot.plotBalanceLocalAverage()
-    DataPlot.plotBalance3()
-    DataPlot.plotBalance3("64-")
-    DataPlot.plotBalance3("128-")
+    DataPlot.plotRunningNonTrivalVsImbalance()
+    DataPlot.plotRunningNonTrivalVsImbalance("64-")
+    DataPlot.plotRunningNonTrivalVsImbalance("128-")
     DataPlot.plotBalanceDfaCountVsAspectRatio()
     DataPlot.plotBalanceDfaCountVsAspectRatio("64-")
     DataPlot.plotBalanceDfaCountVsAspectRatio("128-")
