@@ -130,7 +130,7 @@
   \end{minipage}
 \end{lrbox}
 
-\begin{frame}{Generatee a Random RTE/AST}
+\begin{frame}{Generate a Random RTE/AST (depth-based)}
   \usebox\examplegenrte
 \end{frame}
 
@@ -353,7 +353,7 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-balanced-node-count.png}  
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-flajolet-node-count.png}  
     \end{column}
     \begin{column}{.35\textwidth}
       Average DFA state counts vs RTE leaf counts
@@ -378,6 +378,17 @@
   \begin{columns}
     \begin{column}{.8\textwidth}
 \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-naive-mid-node-count.png}  
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Average DFA state counts vs RTE leaf counts
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-comb-node-count.png}  
     \end{column}
     \begin{column}{.35\textwidth}
       Average DFA state counts vs RTE leaf counts

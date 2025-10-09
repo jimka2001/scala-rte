@@ -6,9 +6,9 @@ def randomTotallyBalancedRte(leaves:Int):Rte =
       (5, () => Not(recur(node)))),
       (90, () => node match {
         case InternalNode(_,left,right) =>
-           weightedCase((34, () => Cat(recur(left), recur(right))),
-                        (33, () => And(recur(left), recur(right))),
-                        (33, () => Or( recur(left), recur(right))))
+          weightedCase((34, () => Cat(recur(left), recur(right))),
+                       (33, () => And(recur(left), recur(right))),
+                       (33, () => Or( recur(left), recur(right))))
         case LeafNode() =>
           randElement(inhabitedLeaves)      }))
 

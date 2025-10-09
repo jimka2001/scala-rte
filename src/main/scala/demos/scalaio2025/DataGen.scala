@@ -3,41 +3,52 @@ package demos.scalaio2025
 
 
 // tested
-object GenCsvBalanced {
+object GenCsvFlajolet {
   def main(argv: Array[String]): Unit = {
     val num_repetitions:Int = if (argv.length < 1) 50 else argv(0).toInt
 
-    RteTree.genCsvBySize(num_repetitions, algo="balanced")
+    RteTree.genCsvBySize(num_repetitions, algo="flajolet")
   }
 }
 
 // testing
-object GenCsvNaiveEdge {
+object GenCsvTreeSplitEdge {
   def main(argv: Array[String]): Unit = {
     val num_repetitions:Int = if (argv.length == 0) 50 else argv(0).toInt
-    RteTree.genCsvBySize(num_repetitions, algo="naive-edge")
+    RteTree.genCsvBySize(num_repetitions, algo="tree-split-edge")
   }
 }
 
-object GenCsvNaiveMid {
+object GenCsvTreeSplitLinear {
   def main(argv: Array[String]): Unit = {
     val num_repetitions:Int = if (argv.length == 0) 50 else argv(0).toInt
-    RteTree.genCsvBySize(num_repetitions, algo="naive-mid")
+    RteTree.genCsvBySize(num_repetitions, algo="tree-split-linear")
   }
 }
-object GenCsvCrazy {
+
+object GenCsvTreeSplitMid {
   def main(argv: Array[String]): Unit = {
     val num_repetitions:Int = if (argv.length == 0) 50 else argv(0).toInt
-    RteTree.genCsvBySize(num_repetitions, algo="crazy")
+    RteTree.genCsvBySize(num_repetitions, algo="tree-split-mid")
   }
 }
+
+object GenCsvComb {
+  def main(argv: Array[String]): Unit = {
+    val num_repetitions:Int = if (argv.length == 0) 50 else argv(0).toInt
+    RteTree.genCsvBySize(num_repetitions, algo="comb")
+  }
+}
+
+
 
 object GenCsvFixedLeafCount {
-  import demos.scalaio2025.RteTree.algos
+  import demos.scalaio2025.RteTree
 
   def main(argv: Array[String]): Unit = {
     val num_repetitions:Int = if (argv.length == 0) 1 else argv(0).toInt
     val leaf_count:Int = if (argv.length <= 1) 64 else argv(1).toInt
+    val algos:Seq[String] = if (argv.length <= 2) demos.scalaio2025.RteTree.algos else argv.drop(2).toSeq
     for {algo <- algos}
       RteTree.genCsvBySize(num_repetitions,
         algo = algo,

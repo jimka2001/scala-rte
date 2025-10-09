@@ -184,7 +184,9 @@ object CsvLine {
     import java.io.InputStream
     import scala.io.{Source}
     val resource:String = s"/statistics/${prefix}${str}.csv"
-    val filePath:String = getClass.getResource(resource).getPath
+    val r = getClass.getResource(resource)
+    assert(r != null, s"cannot get resource file $resource")
+    val filePath:String = r.getPath
     withLock(filePath,() => {
       val s: InputStream = getClass.getResourceAsStream(resource)
       assert(s != null, s"failed to open $resource")

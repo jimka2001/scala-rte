@@ -1,10 +1,10 @@
 
 \begin{lstlisting}[style=scalaioScala]
 def genRte(depth: Int): Rte = {
-  val leaves = Vector(Sigma, EmptySeq, EmptySet)
+  val leaves = Seq(Sigma, EmptySeq, EmptySet)
   def rte = genRte(depth-1)
-  val generators: Seq[() => Rte] = Seq(
-      () => leaves(random.nextInt(leaves.length)),
+  val generators: = Seq(
+      () => randomChoice(leaves),
       () => Singleton(genType()),
       () => Or(rte(), rte()),
       () => And(rte(), rte()),
@@ -15,6 +15,6 @@ def genRte(depth: Int): Rte = {
   if (depth <= 0)
     Singleton(genType())
   else
-    generators(random.nextInt(generators.length))()
+    randomChoice(generators)()
 }
 \end{lstlisting}

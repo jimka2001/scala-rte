@@ -3,26 +3,22 @@ package demos.scalaio2025
 import scala.util.Random
 
 object RteTree {
-  import demos.scalaio2025.CsvLine.{statisticsResource,writeCsvStatistic,readCsvLines,readAllCsvLines}
-  import demos.scalaio2025.Random.{randomNaiveRteMid,randomNaiveRteEdge, crazyNaiveRte}
-  import demos.scalaio2025.Random.randomTotallyBalancedRteBySize
+  import demos.scalaio2025.CsvLine.{statisticsResource,writeCsvStatistic}
+  import demos.scalaio2025.Random.{treeSplitRteMid,treeSplitRteEdge,treeSplitRteLinear,combRte}
+  import demos.scalaio2025.Random.flajoletRteBySize
   val random = new Random
 
-  val algos = Seq("naive-mid", "naive-edge", "balanced", "crazy")
+  val algos = Seq("tree-split-linear", "tree-split-mid", "tree-split-edge", "flajolet", "comb")
 
   def csv(algo:String, prefix:String=""):String = {
-    algo match {
-      case "naive-mid"  => (statisticsResource + prefix + "naive-mid.csv")
-      case "naive-edge" => (statisticsResource + prefix + "naive-edge.csv")
-      case "balanced"   => (statisticsResource + prefix + "balanced.csv")
-      case "crazy"      => (statisticsResource + prefix + "crazy.csv")
-    }
+    statisticsResource + prefix + algo + ".csv"
   }
 
-  val genRte = Map("naive-edge" -> randomNaiveRteEdge _,
-                   "naive-mid" -> randomNaiveRteMid _,
-                   "balanced" -> randomTotallyBalancedRteBySize _,
-                   "crazy" -> crazyNaiveRte _,
+  val genRte = Map("tree-split-edge" -> treeSplitRteEdge _,
+                   "tree-split-mid" -> treeSplitRteMid _,
+                   "tree-split-linear" -> treeSplitRteLinear _,
+                   "flajolet" -> flajoletRteBySize _,
+                   "comb" -> combRte _,
                    )
 
   def genCsvBySize(num_repetitions: Int,

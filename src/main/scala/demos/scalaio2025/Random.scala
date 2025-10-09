@@ -20,8 +20,8 @@ object Random {
                       } yield SOr(td1, td2)
   val inhabitedLeaves:Vector[Rte] = Vector(Sigma, EmptySeq) ++ (inhabitedTypes ++ unionTypes).map(td => Singleton(td))
 
-  def crazyNaiveRte(leaves:Int):Rte = {
-    randomNaiveRte(leaves, (n) => {
+  def combRte(leaves:Int):Rte = {
+    treeSplitRte(leaves, (n) => {
       if (n == 2 || n == 3)
         1
       else
@@ -29,12 +29,16 @@ object Random {
     })
   }
 
-  def randomNaiveRteEdge(leaves:Int):Rte = {
-    randomNaiveRte(leaves, (n) => biasedGaussian(1, n))
+  def treeSplitRteLinear(leaves:Int):Rte = {
+    treeSplitRte(leaves, (n) => random.between(1,n))
   }
 
-  def randomNaiveRteMid(leaves:Int):Rte = {
-    randomNaiveRte(leaves, (n)=> {
+  def treeSplitRteEdge(leaves:Int):Rte = {
+    treeSplitRte(leaves, (n) => biasedGaussian(1, n))
+  }
+
+  def treeSplitRteMid(leaves:Int):Rte = {
+    treeSplitRte(leaves, (n)=> {
       if (n == 2 || n == 3)
         1
       else
@@ -42,15 +46,15 @@ object Random {
     })
   }
 
-  private def randomNaiveRte(leaves:Int, pivot:Int => Int):Rte = {
+  private def treeSplitRte(leaves:Int, pivot:Int => Int):Rte = {
     if (leaves == 1) {
       randElement(inhabitedLeaves)
     } else {
       val leftSize = pivot(leaves)
       assert( leftSize < leaves)
-      lazy val left = randomNaiveRte(leftSize, pivot)
-      lazy val right = randomNaiveRte(leaves - leftSize, pivot)
-      lazy val mid = randomNaiveRte(leaves, pivot)
+      lazy val left = treeSplitRte(leftSize, pivot)
+      lazy val right = treeSplitRte(leaves - leftSize, pivot)
+      lazy val mid = treeSplitRte(leaves, pivot)
       weightedCase((20, () => Cat(left, right)),
                    (30, () => And(left,right)),
                    (30, () => Or(left,right)),
@@ -60,7 +64,7 @@ object Random {
   }
 
 
-  def randomTotallyBalancedRteBySize(leaves:Int):Rte = {
+  def flajoletRteBySize(leaves:Int):Rte = {
     import adjuvant.Adjuvant.{Node, InternalNode, LeafNode, balancedRandTreeBySize}
     val probability_binary:Double = 0.9
     def nodeToRte(node:Node):Rte = {
