@@ -56,13 +56,13 @@
 \coordinate (rightside) at ($(R.east)+(6mm,0)$);
 \draw[<->,thick]
   (rightside |- root.north) --
-  node[right,midway] {$\log_2 n$}
+  node[right,midway] {$\text{depth} = \log_2 n$}
   (rightside |- R.south);
 
 % ---------- horizontal width arrow ----------
 \coordinate (Lbot) at ($(L.south)-(0,4mm)$);
 \coordinate (Rbot) at ($(R.south)-(0,4mm)$);
-\draw[<->,thick] (Lbot) -- node[below] {$n$} (Rbot);
+\draw[<->,thick] (Lbot) -- node[below] {$n = 2^{\text{depth}}$} (Rbot);
 
 \end{tikzpicture}
 \end{document}
