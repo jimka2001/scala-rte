@@ -9,7 +9,7 @@ object Histogram {
   import adjuvant.GnuPlot.histogram
   import DataPlot.plotCB
 
-  def plotHistogram(prefix:String="") = {
+  def plotHistogram(prefix:String="", view:Boolean) = {
 
     val buckets = for{algo <- algos
                       csvlines = readCsvLines(algo,prefix)
@@ -23,7 +23,7 @@ object Histogram {
       gnuFileCB = plotCB(s"plot-${prefix}histogram"),
       buckets = buckets,
       keepIf = (c:Int) => c <= 9,
-      otherLabel = ">= 10")
+      otherLabel = ">= 10",
+      view=view)
   }
-
 }

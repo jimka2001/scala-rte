@@ -22,7 +22,7 @@ object DataPlot {
     }
   }
 
-  def plotAverageCsv(): Unit = {
+  def plotAverageCsv(view:Boolean): Unit = {
 
     for {algo <- algos
          alllines = for {prefix <- Seq("", "64-", "128-")
@@ -41,7 +41,7 @@ object DataPlot {
         grid = true,
         gnuFileCB = plotCB(s"plot-average-$algo-node-count"),
         plotWith = "points",
-        view = true)
+        view = view)
     }
   }
   
@@ -50,7 +50,7 @@ object DataPlot {
     ((cl: CsvLine) => cl.imbalance(), "Imbalance-Factor"),
     ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
 
-  def plotStateLossage(prefix:String=""): Unit = {
+  def plotStateLossage(prefix:String="",view:Boolean): Unit = {
     import scala.util.Random.shuffle
     for {(imb, algoName) <- imbalanceAlgos
          } {
@@ -66,7 +66,7 @@ object DataPlot {
         yLog = true,
         plotWith = "points",
         gnuFileCB = plotCB(s"plot-${prefix}lossage-${algoName}"),
-        view = true
+        view = view
       )
       gnuPlot(descrs.to(Seq))(title = s"Lossage: Ratio node count per state count $prefix",
         xAxisLabel = algoName,
@@ -74,11 +74,11 @@ object DataPlot {
         yLog = true,
         plotWith = "lines",
         gnuFileCB = plotCB(s"plot-${prefix}lossage-${algoName}-ratsnest"),
-        view = true
+        view = view
       )
     }
   }
-  def plotBalanceLocalAverage(): Unit = {
+  def plotBalanceLocalAverage(view:Boolean): Unit = {
     import scala.math.abs
     val delta_balance = 0.25
     for {(imb, algoName) <- imbalanceAlgos
@@ -98,11 +98,11 @@ object DataPlot {
       yAxisLabel = "Percentage count >= 2 for x=imbalance",
       plotWith = "lines",
       gnuFileCB = plotCB("plot-local-average"),
-      view = true
+      view = view
     )
   }
 
-  def plotRunningNonTrivalVsImbalance(prefix:String=""): Unit = {
+  def plotRunningNonTrivalVsImbalance(prefix:String="",view:Boolean): Unit = {
     for {(imb, algoName) <- imbalanceAlgos} {
       val descrs = for {str <- algos
                         alllines = readCsvLines(str, prefix)
@@ -120,12 +120,12 @@ object DataPlot {
         plotWith = "lines",
         gnuFileCB = plotCB(s"plot-${prefix}running-balances-$algoName"),
         grid = true,
-        view = true
+        view = view
       )
     }
   }
 
-  def plotBalanceDfaCountVsAspectRatio(prefix:String=""): Unit = {
+  def plotBalanceDfaCountVsAspectRatio(prefix:String="",view:Boolean): Unit = {
     import scala.util.Random.shuffle
     for {(imb, xlabel) <- imbalanceAlgos
          descrs = for {str <- algos
@@ -142,7 +142,7 @@ object DataPlot {
         yLog = true,
         gnuFileCB = plotCB(s"plot-${prefix}dfa-state-count-vs-$xlabel"),
         grid = true,
-        view = true
+        view = view
       )
       gnuPlot(descrs.to(Seq))(title = s"DFA state count ${prefix} vs " + xlabel,
         xAxisLabel = xlabel,
@@ -151,12 +151,12 @@ object DataPlot {
         yLog = true,
         gnuFileCB = plotCB(s"plot-${prefix}dfa-state-count-vs-$xlabel-ratsnest"),
         grid = true,
-        view = true
+        view = view
       )
     }
   }
 
-  def plotBalanceRunningSum(prefix:String=""): Unit = {
+  def plotBalanceRunningSum(prefix:String="", view:Boolean): Unit = {
     def integral(xys: List[(Double, Double)], acc: List[(Double, Double)]): List[(Double, Double)] = {
       xys match {
         case (x1, y1) :: (x2, y2) :: _ =>
@@ -185,11 +185,11 @@ object DataPlot {
         plotWith = "lines",
         gnuFileCB = plotCB(s"plot-${prefix}running-sum-balances-per-$xlabel"),
         grid = true,
-        view = true
+        view = view
       )
   }
 
-  def plotLeafCountPopulation(): Unit = {
+  def plotLeafCountPopulation(view:Boolean): Unit = {
     val descrs = for {str <- algos
                        alllines = readCsvLines(str)
                        xys = for {(leaf_count, csvlines) <- alllines.groupBy(cl => cl.leaf_count)
@@ -201,11 +201,11 @@ object DataPlot {
       gnuFileCB = plotCB("plot-rte-leaf-count-histogram"),
       plotWith = "points",
       pointSize = 1.25,
-      view = true,
+      view = view,
       grid= true)
   }
 
-  def plotStateCountPopulation(prefix:String=""): Unit = {
+  def plotStateCountPopulation(prefix:String="", view:Boolean): Unit = {
     val descrs = for {str <- algos
                        alllines = readCsvLines(str,prefix)
                        xys = for {(state_count, csvlines) <- alllines.groupBy(cl => cl.state_count)
@@ -218,7 +218,7 @@ object DataPlot {
       gnuFileCB = plotCB(s"plot-${prefix}dfa-state-count-histogram"),
       plotWith = "points",
       pointSize = 1.25,
-      view = true,
+      view = view,
       grid= true)
   }
 
@@ -236,7 +236,7 @@ object DataPlot {
   }
 
   // make plot of y vs x where y = percentage of samples where number of state_counts > x
-  def plotThreshold(prefix:String=""): Unit = {
+  def plotThreshold(prefix:String="", view:Boolean): Unit = {
 
     val descrs = for {str <- algos
                       alllines = readCsvLines(str,prefix)
@@ -249,7 +249,7 @@ object DataPlot {
       yLog = true,
       gnuFileCB = plotCB(s"plot-${prefix}threshold"),
       yAxisLabel = "Percentage",
-      view = true)
+      view = view)
   }
 
   // for each algorithm  we generate a curve of (x,y) pairs
@@ -257,7 +257,7 @@ object DataPlot {
   //         y = count of unique dfas produced
   //    for now we count the raw number of different dfas, later we need to normalize by how
   //         many rtes of this leaf size contributed to the sample.
-  def plotDiversity():Unit = {
+  def plotDiversity(view:Boolean):Unit = {
     locally {
       val descrs = for {str <- algos
                         alllines = readCsvLines(str)
@@ -275,7 +275,7 @@ object DataPlot {
         plotWith = "points",
         pointSize = 1.24,
         gnuFileCB = plotCB(f"plot-diversity"),
-        view = true)
+        view = view)
     }
     locally {
       import scala.math.log
@@ -299,11 +299,11 @@ object DataPlot {
         yAxisLabel = "Unique DFA count / log(sample count)",
         plotWith = "lines",
         gnuFileCB = plotCB(f"plot-diversity-per-sample"),
-        view = true)
+        view = view)
     }
   }
 
-  def plotTimes():Unit = {
+  def plotTimes(view:Boolean):Unit = {
     val descrs = for {str <- algos
                       alllines = readCsvLines(str)
                       xys = for{(leaf_count, csvlines) <- alllines.groupBy(_.leaf_count)
@@ -317,10 +317,10 @@ object DataPlot {
       yLog = true,
       gnuFileCB = plotCB(f"plot-computation-time"),
       plotWith = "linespoints",
-      view = true)
+      view = view)
   }
 
-  def plotTimeOut():Unit = {
+  def plotTimeOut(view:Boolean):Unit = {
     val descrs = for {str <- algos
       alllines = for{prefix <- Seq("", "64-", "128-")
                      line <- readAllCsvLines(str,prefix)
@@ -336,88 +336,124 @@ object DataPlot {
       pointSize = 2.0,
       gnuFileCB = plotCB("plot-time-outs"),
       plotWith = "points",
-      view = true)
+      view = view)
   }
 }
 
 object LossagePlot {
   def main(array: Array[String]):Unit = {
-    DataPlot.plotStateLossage()
-    DataPlot.plotStateLossage("64-")
-    DataPlot.plotStateLossage("128-")
+    sup(view=true)
+  }
+
+  def sup(view:Boolean) = {
+    DataPlot.plotStateLossage(view=view)
+    DataPlot.plotStateLossage("64-",view=view)
+    DataPlot.plotStateLossage("128-",view=view)
   }
 }
 
 object BalancePlot {
   def main(array: Array[String]):Unit = {
-    DataPlot.plotBalanceLocalAverage()
-    DataPlot.plotRunningNonTrivalVsImbalance()
-    DataPlot.plotRunningNonTrivalVsImbalance("64-")
-    DataPlot.plotRunningNonTrivalVsImbalance("128-")
-    DataPlot.plotBalanceDfaCountVsAspectRatio()
-    DataPlot.plotBalanceDfaCountVsAspectRatio("64-")
-    DataPlot.plotBalanceDfaCountVsAspectRatio("128-")
-    DataPlot.plotBalanceRunningSum()
-    DataPlot.plotBalanceRunningSum("64-")
-    DataPlot.plotBalanceRunningSum("128-")
+    sup(view=true)
+  }
+
+  def sup(view:Boolean) = {
+    DataPlot.plotBalanceLocalAverage(view=view)
+    DataPlot.plotRunningNonTrivalVsImbalance(view=view)
+    DataPlot.plotRunningNonTrivalVsImbalance("64-",view=view)
+    DataPlot.plotRunningNonTrivalVsImbalance("128-",view=view)
+    DataPlot.plotBalanceDfaCountVsAspectRatio(view=view)
+    DataPlot.plotBalanceDfaCountVsAspectRatio("64-",view=view)
+    DataPlot.plotBalanceDfaCountVsAspectRatio("128-",view=view)
+    DataPlot.plotBalanceRunningSum(view=view)
+    DataPlot.plotBalanceRunningSum("64-",view=view)
+    DataPlot.plotBalanceRunningSum("128-",view=view)
   }
 }
 
 object DiversityPlot {
   def main(array: Array[String]):Unit = {
-    DataPlot.plotDiversity()
+    sup(view=true)
+  }
+
+  def sup(view:Boolean) = {
+    DataPlot.plotDiversity(view=view)
   }
 }
 
 object TimeOutPlot {
   def main(array: Array[String]):Unit = {
-    plotTimeOut()
-    plotTimes()
+    sup(view=true)
+  }
+
+  def sup(view:Boolean) = {
+    plotTimeOut(view=view)
+    plotTimes(view=view)
   }
 }
 
 object Histograms {
   def main(argv: Array[String]): Unit = {
-    Histogram.plotHistogram()
-    Histogram.plotHistogram("64-")
-    Histogram.plotHistogram("128-")
+    sup(view=true)
+  }
+
+  def sup(view:Boolean) = {
+    Histogram.plotHistogram(view=view)
+    Histogram.plotHistogram("64-",view=view)
+    Histogram.plotHistogram("128-",view=view)
   }
 }
 
 object Average {
   def main(argv: Array[String]): Unit = {
-    DataPlot.plotAverageCsv()
+    sup(view=true)
+  }
+
+  def sup(view:Boolean) = {
+    DataPlot.plotAverageCsv(view=view)
   }
 }
 
 object PopulationPlot {
   def main(argv:Array[String]):Unit = {
-    DataPlot.plotLeafCountPopulation()
-    DataPlot.plotStateCountPopulation()
-    DataPlot.plotStateCountPopulation("64-")
-    DataPlot.plotStateCountPopulation("128-")
+    sup(view=false)
+  }
+
+  def sup(view:Boolean) = {
+    DataPlot.plotLeafCountPopulation(view=view)
+    DataPlot.plotStateCountPopulation(view=view)
+    DataPlot.plotStateCountPopulation("64-",view=view)
+    DataPlot.plotStateCountPopulation("128-",view=view)
   }
 }
 
 object ThresholdPlot {
-  def main(argv:Array[String]):Unit = {
-    DataPlot.plotThreshold()
-    DataPlot.plotThreshold("64-")
-    DataPlot.plotThreshold("128-")
+  def main(argv: Array[String]): Unit = {
+    sup(view=false)
+  }
+
+  def sup(view:Boolean) = {
+    DataPlot.plotThreshold(view=view)
+    DataPlot.plotThreshold("64-",view=view)
+    DataPlot.plotThreshold("128-",view=view)
   }
 }
 
 
 object Plots {
   def main(argv: Array[String]): Unit = {
-    PopulationPlot.main(argv)
-    DiversityPlot.main(argv)
-    ThresholdPlot.main(argv)
-    Average.main(argv)
-    Histograms.main(argv)
-    BalancePlot.main(argv)
-    LossagePlot.main(argv)
-    TimeOutPlot.main(argv)
-    DiversityPlot.main(argv)
+    sup(view=false)
+  }
+
+  def sup(view:Boolean) = {
+    PopulationPlot.sup(view=view)
+    DiversityPlot.sup(view=view)
+    ThresholdPlot.sup(view=view)
+    Average.sup(view=view)
+    Histograms.sup(view=view)
+    BalancePlot.sup(view=view)
+    LossagePlot.sup(view=view)
+    TimeOutPlot.sup(view=view)
+    DiversityPlot.sup(view=view)
   }
 }

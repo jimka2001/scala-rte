@@ -61,16 +61,27 @@ object TestBalance {
 }
 
 object ViewAst {
-
+  import rte.Rte
+  import genus.SimpleTypeD
+  import xymbolyco.Dfa
   import rte.Rte.rteViewAst
   import xymbolyco.GraphViz.dfaView
   import xymbolyco.Minimize.minimize
 
+  def genRteDfaPair(algo:String, leaves:Int, states:Int):(Rte,Dfa[Any, SimpleTypeD, Boolean]) = {
+    val rte = RteTree.genRte(algo)(leaves)
+    val dfa = minimize(rte.toDfa())
+    if (dfa.Qids.size < states)
+      genRteDfaPair(algo, leaves, states)
+    else
+      (rte, dfa)
+  }
+
   def main(argv: Array[String]): Unit = {
     val depth: Int = if (argv.length == 0) 4 else argv(0).toInt
+    val minStates:Int = 5 // retry until num states >= minStates
     for {algo <- RteTree.algos
-         rte = RteTree.genRte(algo)(1 << depth)
-         dfa = minimize(rte.toDfa())
+         (rte,dfa) = genRteDfaPair(algo, 1<<depth, minStates)
          } {
       rteViewAst(rte, title = algo, dotFileCB=(str)=>println(s"RTE $str"))
       println(rte.measureBalance())

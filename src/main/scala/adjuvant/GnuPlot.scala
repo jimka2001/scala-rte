@@ -271,7 +271,8 @@ object GnuPlot {
                 gnuFileCB:String=>Unit,
                 buckets:Seq[(String,Seq[Int])],
                 keepIf:Int=>Boolean,
-                otherLabel:String = "other") = {
+                otherLabel:String = "other",
+                view:Boolean) = {
     import java.io._
     import adjuvant.Adjuvant.{openGraphicalFile}
     assert(! xlabel.contains("\""))
@@ -342,20 +343,24 @@ object GnuPlot {
     gnuFileCB(gnuFileName)
     runGnuPlot("png", gnuFileName, basename + ".png")
 
-    openGraphicalFile(basename + ".png")
+    if(view)
+      openGraphicalFile(basename + ".png")
+  }
 
+  def sup(view:Boolean) = {
+    gnuPlot(dataToPlot = Seq( // gnuPlot can handle list of Xs followed by list of Ys
+      ("curve1",
+        Seq(1.0, 2.0, 3, 4), // Xs can be Int or Double
+        Seq(1.0, 2.0, 2.5, 2.75)),
+      // can also handle list of xy pairs
+      ("curve2", Seq((1.0, 2.0), // x can be Double
+        (2, 2.25), // x can also be Int
+        (3, 2.125),
+        (4, 2.012)))))(
+      view = view)
   }
 
   def main(argv: Array[String]): Unit = {
-    gnuPlot(dataToPlot = Seq( // gnuPlot can handle list of Xs followed by list of Ys
-                              ("curve1",
-                                Seq(1.0, 2.0, 3, 4), // Xs can be Int or Double
-                                Seq(1.0, 2.0, 2.5, 2.75)),
-                              // can also handle list of xy pairs
-                              ("curve2", Seq((1.0, 2.0), // x can be Double
-                                             (2, 2.25), // x can also be Int
-                                             (3, 2.125),
-                                             (4, 2.012)))))(
-      view = true)
+    sup(view=false)
   }
 }
