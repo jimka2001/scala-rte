@@ -27,6 +27,10 @@ scalacOptions ++= Seq(
   "-deprecation"
 )
 
+scalacOptions ++= Seq(
+  "--release", "21"
+)
+
 Test / parallelExecution := false
 
 

@@ -35,7 +35,10 @@ object GraphViz {
                          showSink:Boolean=false,
                          dotFileCB:String=>Unit=(_=>()),
                          givenLabels:Seq[L]=Seq(),
-                         printLatex:Boolean=false): (Vector[L],String) = {
+    // typeLegend controls whether a legend of transition types
+    //   appears in the png file.  otherwise the legend will be
+    //   printed to stdout
+                         typeLegend:Boolean=false): (Vector[L],String) = {
     val extendedLabel = (label,dfa.labeler.graphicalText()) match {
       case (_, Seq()) => label
       case (None, strings) => Some(strings.mkString("\\l"))
@@ -44,7 +47,7 @@ object GraphViz {
     val (v, png) = dfaToPng(dfa, title, abbrev=abbrev, label=extendedLabel,
                        showSink=showSink, dotFileCB=dotFileCB,
                        givenLabels=givenLabels,
-                       printLatex=printLatex)
+      typeLegend=typeLegend)
     openGraphicalFile(png)
     (v, png)
   }
@@ -56,21 +59,27 @@ object GraphViz {
                           showSink:Boolean=true,
                           dotFileCB:String=>Unit= _=>(),
                           givenLabels:Seq[L]=Seq(),
-                          printLatex:Boolean=false): (Vector[L],String) = {
-    def toPng(pathname: String,
+    // typeLegend controls whether a legend of transition types
+    //   appears in the png file.  otherwise the legend will be
+    //   printed to stdout
+                          typeLegend:Boolean=false): (Vector[L],String) = {
+    def toPng(dotPathName: String,
+              latexPathName: String,
               title: String): Vector[L] = {
-      val stream = new java.io.FileOutputStream(new java.io.File(pathname))
-      val a = dfaToDot(dfa, stream, title,
+      val dotStream = new java.io.FileOutputStream(new java.io.File(dotPathName))
+      val latexStream = new java.io.FileOutputStream(new java.io.File(latexPathName))
+      val a = dfaToDot(dfa, dotStream, title,
                        abbrev = abbrev,
                        showSink = showSink,
                        givenLabels=givenLabels,
-                       printLatex=printLatex)
-      stream.close()
-      dotFileCB(pathname)
+                       writeLatex=latexStream,
+        typeLegend=typeLegend)
+      dotStream.close()
+      latexStream.close()
+      dotFileCB(dotPathName)
       a
     }
-    runDot(title, label, toPng)
-
+    runDot(title, "dfa", toPng)
   }
 
   def dfaToDot[Sigma,L,E](dfa:Dfa[Sigma,L,E],
@@ -79,7 +88,11 @@ object GraphViz {
                           abbrev:Boolean,
                           showSink:Boolean,
                           givenLabels:Seq[L],
-                          printLatex:Boolean=false): Vector[L] = {
+    // typeLegend controls whether a legend of transition types
+    //   appears in the png file.  otherwise the legend will be
+    //   printed to stdout
+                          typeLegend:Boolean=false,
+                          writeLatex:OutputStream): Vector[L] = {
     val qarr = dfa.Q.toArray
     val sinkStateIds = dfa.findSinkStateIds().filter(id => id != dfa.q0.id)
     val usedLabels: Set[L] = for {q <- dfa.Q
@@ -112,6 +125,14 @@ object GraphViz {
     def write(str: String): Unit = {
       for {c <- str} {
         stream.write(c.toByte)
+      }
+    }
+
+    def latex(str:String):Unit = {
+      // does nothing if printLatex is None,
+      // but prints to open file if printLatex is Some(...)
+      for {c <- str} {
+        writeLatex.write(c.toByte)
       }
     }
 
@@ -174,18 +195,28 @@ object GraphViz {
         drawState(q)
     }
 
+    for {(lab, (i, t)) <- labelMap.toSeq.sortBy(_._2._1)
+         if usedLabels.contains(lab)}
+      latex(s"t$i => " + dfa.labeler.toLaTeX(lab))
+
     lazy val transitionLabelText: String = (for {(lab, (i, t)) <- labelMap.toSeq.sortBy(_._2._1)
                                                  if usedLabels.contains(lab)
-                                                 _ = if (printLatex) println(s"t$i => " + dfa.labeler.toLaTeX(lab))
                                                  multiLab = multiLineString(dfa.labeler.toDot(lab))
                                                  } yield s"\\lt$i= $multiLab").mkString("", "", "\\l")
-
+    if (! typeLegend) {
+      println(s"Type legend for title=$title")
+      for {(lab, (i, t)) <- labelMap.toSeq.sortBy(_._2._1)
+            if usedLabels.contains(lab)
+            multiLab = multiLineString(dfa.labeler.toDot(lab),sep="\n")
+            } println( s"  t$i= $multiLab")
+    }
     if (abbrev || title != "") {
       write("""  labelloc="t";""")
       write("\n  label=\"")
       write(title)
-      if (abbrev)
+      if (abbrev && typeLegend) {
         write(transitionLabelText)
+      }
       write("\"\n")
     }
 

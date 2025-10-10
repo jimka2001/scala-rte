@@ -52,8 +52,7 @@ object Psug2023 {
       dfaView(rt2.toDfa(),
               abbrev = true,
               title = "rt2-not-min",
-              label = Some("Brz " + multiLineString(s"rt2=${rt2.toDot()}",
-                                                    60)),
+              label = Some("Brz " + multiLineString(s"rt2=${rt2.toDot()}")),
               showSink = false)
     }
     for{ seq <- Vector(List(13,"hello","world", 14),

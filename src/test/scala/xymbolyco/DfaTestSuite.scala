@@ -26,6 +26,7 @@ package xymbolyco
 import adjuvant.AdjFunSuite
 import adjuvant.Adjuvant.callWithTimeout
 import org.scalatest.funsuite.AnyFunSuite
+import rte.Random.randomRteByDepth
 import xymbolyco.Minimize.trim
 
 class DfaTestSuite extends AdjFunSuite {
@@ -499,7 +500,7 @@ class DfaTestSuite extends AdjFunSuite {
     // or if we build the Dfa, then negate it.
     for {depth <- 2 to 4
          n <- 0 to 50
-         rte1 = Rte.randomRte(depth)
+         rte1 = randomRteByDepth(depth)
          rte2 = Not(rte1)
          dfa1 <- callWithTimeout(2000*depth, () => rte1.toDfa().negate(true))
          dfa2 <- callWithTimeout(200*depth, () => rte2.toDfa())

@@ -21,13 +21,12 @@
 
 package genus
 
-import org.scalatest.funsuite.AnyFunSuite
 import RandomType.randomType
 import adjuvant.Adjuvant.eql
+import adjuvant.ReflectionUtils.computeSubclassesOf
 import adjuvant.AdjFunSuite
 import genus.RandomType._
 import genus.Types._
-import SAtomic.computeSubclassesOf
 import genus.GenusImplicits
 
 

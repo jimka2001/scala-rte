@@ -109,11 +109,10 @@ object Demo {
     dfaView(rt1.toDfa(),
             abbrev = false,
             title = "rt1",
-            label = Some(multiLineString(s"rt1=${rt1.toDot()}", 60)),
+            label = Some(multiLineString(s"rt1=${rt1.toDot()}", maxLine=60)),
             showSink = false,
             dotFileCB = str => cpTo(str, "padl-example-1"),
-            givenLabels = givenLabels(),
-            printLatex = true)
+            givenLabels = givenLabels())
   }
 
   def example2(): Unit = {
@@ -128,11 +127,10 @@ object Demo {
               abbrev = true,
               title = "rt2-not-min",
               label = Some("Brz " + multiLineString(s"rt2=${rt2.toDot()}",
-                                                    60)),
+                maxLine=60)),
               showSink = false,
               dotFileCB = str => cpTo(str, "padl-not-min-example-2"),
-              givenLabels = givenLabels(),
-              printLatex = false)
+              givenLabels = givenLabels())
     }
     for{ seq <- Vector(List(13,"hello","world", 14),
                        List(13,14),
@@ -158,11 +156,10 @@ object Demo {
             abbrev = true,
             title = "rt2-min",
             label = Some("Brz min " + multiLineString(s"rt2=${rt2.toDot()}",
-                                                      60)),
+              maxLine=60)),
             showSink = false,
             dotFileCB = str => cpTo(str, "padl-min-example-2"),
-            givenLabels = givenLabels(),
-            printLatex = false)
+            givenLabels = givenLabels())
 
   }
 

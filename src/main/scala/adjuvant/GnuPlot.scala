@@ -54,6 +54,7 @@ object GnuPlot {
                                // outputFileBaseName is basename without the .pdf, .gnu, .png etc. and without leading path
                                outputFileBaseName: String = "curves",
                                plotWith: String = "linespoints",
+                               pointSize: Double = 0.8,
                                key: String = "horizontal bmargin",
                                gnuFileCB: String => Unit = (_) => (),
                                verbose: Boolean,
@@ -96,29 +97,37 @@ object GnuPlot {
       gnu.write("set key font ',15'\n")
       gnu.write("set xtics font ',15'\n")
       gnu.write("set ytics font ',15'\n")
+      if (plotWith == "points") {
+        for {i <- dataToPlot.indices} {
+          gnu.write(s"set style line ${i+1} pt 7 ps ${pointSize}\n")
+        }
+      }
       gnu.write(s"set key $key\n") // TODO can also use set key at x,y
       if ("" != title)
         gnu.write(s"""set title "$title"\n""")
       gnu.write("plot ")
       val footer: String = withOutputToString { prFooter =>
         val header: String = withOutputToString { prHeader =>
-          def plot(title: String, xys: Seq[(Double, Double)]): Unit = {
+          def plot(title: String, i:Int, xys: Seq[(Double, Double)]): Unit = {
             prHeader(""""-" using 1:2""")
             prHeader(s" with $plotWith")
+            if (plotWith == "points"){
+              prHeader(s" ls $i")
+            }
             prHeader(s""" title "$title"""")
             prFooter(s"""#$title\n""")
             xys.foreach { case (x, y) =>
-              prFooter(s"$x $y\n")
+              prFooter(f"$x%.3f $y%.3f\n")
             }
             prFooter("end\n")
           }
 
           if (dataToPlot.nonEmpty) {
-            plot(dataToPlot.head._1, dataToPlot.head._2.zip(dataToPlot.head._3))
+            plot(dataToPlot.head._1, 1, dataToPlot.head._2.zip(dataToPlot.head._3))
 
-            dataToPlot.tail.foreach { case (curveTitle, xs, ys) =>
+            dataToPlot.zipWithIndex.tail.foreach { case ((curveTitle, xs, ys),i) =>
               prHeader(",\\\n    ")
-              plot(curveTitle, xs.zip(ys))
+              plot(curveTitle, i+1, xs.zip(ys))
             }
           }
         }
@@ -134,18 +143,13 @@ object GnuPlot {
         data._2.nonEmpty && data._3.nonEmpty
       })
         terminals.foreach { terminal =>
-          import sys.process._
+
           val outputFileName = makeTmpFileName(outputFileBaseName, terminal)
 
           if (verbose)
             println(s"[generating $outputFileName")
           gnu.write("\n")
-          val process = Process(Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName),
-                                None,
-                                // The LC_CTYPE env var prevents the following diagnostic from gnuplot
-                                // Fontconfig warning: ignoring UTF-8: not a valid region tag
-                                "LC_CTYPE" -> "en_US.UTF-8")
-          val exitCode = (process #>> new File(outputFileName)).!
+          val exitCode = runGnuPlot(terminal, gnuName, outputFileName)
 
           if (exitCode != 0)
             println(s"finished $outputFileName with exit code=$exitCode verbose=$verbose]")
@@ -155,6 +159,20 @@ object GnuPlot {
             openGraphicalFile(outputFileName)
         }
     }
+  }
+  def runGnuPlot(terminal:String, gnuName:String, outputFileName:String):Int = {
+    import sys.process._
+    import java.io._
+    val cmd = Seq(gnuPlotPath, "-e", s"set terminal $terminal", gnuName)
+    // println(cmd)
+    // println(s" --> $outputFileName")
+    val process = Process(cmd,
+      None,
+      // The LC_CTYPE env var prevents the following diagnostic from gnuplot
+      // Fontconfig warning: ignoring UTF-8: not a valid region tag
+      "LC_CTYPE" -> "en_US.UTF-8")
+    Seq("rm", "-f", outputFileName).!
+    (process #>> new File(outputFileName)).!
   }
 
   // Create a plot using gnuplot (which we assume is stalled
@@ -196,6 +214,7 @@ object GnuPlot {
                   // outputFileBaseName is basename without the .pdf, .gnu, .png etc. and without leading path
                   outputFileBaseName: String = "curves",
                   plotWith: String = "linespoints",
+                  pointSize:Double = 0.8,
                   key: String = "horizontal bmargin",
                   gnuFileCB: String => Unit = (_) => (),
                   verbose: Boolean = false,
@@ -211,6 +230,7 @@ object GnuPlot {
                                 grid = grid,
                                 outputFileBaseName = outputFileBaseName,
                                 plotWith = plotWith,
+                                pointSize = pointSize,
                                 key = key,
                                 gnuFileCB = gnuFileCB,
                                 verbose = verbose,
@@ -244,16 +264,103 @@ object GnuPlot {
     gpd.plot(dataToPlot = curves)
   }
 
-  def main(argv: Array[String]): Unit = {
+  def histogram(basename:String,
+                xlabel:String,
+                ylabel:String,
+                title:String,
+                gnuFileCB:String=>Unit,
+                buckets:Seq[(String,Seq[Int])],
+                keepIf:Int=>Boolean,
+                otherLabel:String = "other",
+                view:Boolean) = {
+    import java.io._
+    import adjuvant.Adjuvant.{openGraphicalFile}
+    assert(! xlabel.contains("\""))
+    assert(! xlabel.contains("\\"))
+    assert(! ylabel.contains("\""))
+    assert(! ylabel.contains("\\"))
+
+    def gnuheader(): String = {
+      f"""|
+         |set boxwidth 0.9 absolute
+         |set style fill solid 1.00 border lt -1
+         |set style histogram clustered gap 5 title textcolor lt -1
+         |set style data histograms
+         |set key outside top center horizontal
+         |set xtics rotate by -45
+         |set grid
+         |set xlabel "$xlabel"
+         |set ylabel "$ylabel"
+         |set title "$title"
+         |""".stripMargin +
+        s"\n"
+    }
+    def gnufooter(): String = {
+      val line1 = "plot $MyData using 2:xtic(1) ti col,"
+      val lines = for {i <- buckets.indices.tail
+           } yield "     $MyData using " + (i+2).toString + " ti col,"
+      (Seq(line1) ++ lines).mkString(" \\\n")
+    }
+
+    val gnuFileName = basename + ".gnu"
+    val gnu = new PrintWriter(new File(gnuFileName))
+    gnu.write(gnuheader() + "\n\n")
+    gnu.write("$MyData << EOD\n")
+    gnu.write(s"\"$xlabel\"")
+    for {(label, counts) <- buckets
+         num_samples = counts.length} gnu.write(s" \"$label samples=${num_samples}\"")
+    gnu.write("\n")
+    // create map of label -> xys, where xys = Seq((Some(count), percentage), (Some(count), percentage) ...)
+    val data = for {(label, counts) <- buckets
+                    groups = counts.groupBy(n => n).to(Seq).sortBy(_._1)
+                    xys = for {(state_count, samples) <- groups
+                               if keepIf(state_count)
+                               percentage = 100.0 * samples.length.toDouble / counts.length
+                               } yield (Some(state_count), percentage)
+                    leftOverPercent = 100.0 - xys.map(_._2).sum
+                    } yield (label, xys.sortBy(_._1.get) ++ Seq((None, leftOverPercent)))
+
+    val counts = (for {(label, xys) <- data
+                      (col, percent) <- xys
+                      c <- col} yield c).distinct.sorted.map(c=>Some(c)) ++ Seq(None)
+    for {sc1 <- counts
+         } {
+      val label = sc1 match {
+        case Some(p) => p.toString
+        case None => otherLabel
+      }
+      val percentages = for {(_bucket_label, xys) <- data
+                         (sc2, percent) <- xys
+                         if sc2 == sc1
+                         } yield f"$percent%.3f"
+      val text = percentages.mkString(" ")
+      gnu.write(s"\"$label\" $text \n")
+    }
+    gnu.write("EOD\n\n")
+    gnu.write(gnufooter())
+    gnu.close()
+
+    gnuFileCB(gnuFileName)
+    runGnuPlot("png", gnuFileName, basename + ".png")
+
+    if(view)
+      openGraphicalFile(basename + ".png")
+  }
+
+  def sup(view:Boolean) = {
     gnuPlot(dataToPlot = Seq( // gnuPlot can handle list of Xs followed by list of Ys
-                              ("curve1",
-                                Seq(1.0, 2.0, 3, 4), // Xs can be Int or Double
-                                Seq(1.0, 2.0, 2.5, 2.75)),
-                              // can also handle list of xy pairs
-                              ("curve2", Seq((1.0, 2.0), // x can be Double
-                                             (2, 2.25), // x can also be Int
-                                             (3, 2.125),
-                                             (4, 2.012)))))(
-      view = true)
+      ("curve1",
+        Seq(1.0, 2.0, 3, 4), // Xs can be Int or Double
+        Seq(1.0, 2.0, 2.5, 2.75)),
+      // can also handle list of xy pairs
+      ("curve2", Seq((1.0, 2.0), // x can be Double
+        (2, 2.25), // x can also be Int
+        (3, 2.125),
+        (4, 2.012)))))(
+      view = view)
+  }
+
+  def main(argv: Array[String]): Unit = {
+    sup(view=false)
   }
 }

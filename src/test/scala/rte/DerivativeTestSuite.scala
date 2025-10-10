@@ -27,6 +27,7 @@ import org.scalatest.funsuite.AnyFunSuite
 import RandomType.randomType
 import adjuvant.AdjFunSuite
 import genus.Types._
+import rte.Random.randomRteByDepth
 import xymbolyco.GraphViz.dfaView
 import xymbolyco.Profiling
 
@@ -38,20 +39,20 @@ class DerivativeTestSuite extends AdjFunSuite {
     assert(Star(EmptySet).nullable)
     for {depth <- 1 to 5
          _ <- 0 to num_random_tests/10
-         r = Rte.randomRte(depth)} {
+         r = randomRteByDepth(depth)} {
       assert(Star(r).nullable)
       assert(!Not(Star(r)).nullable)
     }
     for {depth <- 1 to 5
          _ <- 1 to num_random_tests
-         r = Rte.randomRte(depth)}
+         r = randomRteByDepth(depth)}
       r.nullable
   }
 
   test("canonicalize nullable"){
     for {depth <- 0 to 5
          _ <- 1 to num_random_tests
-         r1 = Rte.randomRte(depth)
+         r1 = randomRteByDepth(depth)
          } {
       assert(r1.nullable == r1.canonicalize.nullable,
              s"\nr1=$r1 is"
@@ -67,7 +68,7 @@ class DerivativeTestSuite extends AdjFunSuite {
   test("firstTypes") {
     for {depth <- 1 to 5
          _ <- 1 to num_random_tests
-         r = Rte.randomRte(depth)}
+         r = randomRteByDepth(depth)}
       r.firstTypes
   }
 
@@ -170,7 +171,7 @@ class DerivativeTestSuite extends AdjFunSuite {
   test("derivative random") {
     for {depth <- 0 to 5
          _ <- 1 to num_random_tests
-         rt = Rte.randomRte(depth)
+         rt = randomRteByDepth(depth)
          can = rt.canonicalize
          m = mdtd(can.firstTypes)
          (td,(factors,disjoints)) <- m
@@ -214,7 +215,7 @@ class DerivativeTestSuite extends AdjFunSuite {
 
     for {depth <- 0 to 4
          _ <- 1 to num_random_tests
-         rt = Rte.randomRte(depth)
+         rt = randomRteByDepth(depth)
          (intToV,_) = rt.derivatives()
          } {
       assert(intToV.nonEmpty)
@@ -311,7 +312,7 @@ class DerivativeTestSuite extends AdjFunSuite {
   test("derivative not"){
     for {depth <- 0 to 5
          _ <- 1 to num_random_tests
-         rt = Rte.randomRte(depth)
+         rt = randomRteByDepth(depth)
          not_rte = Not(rt)
          (td, (factors, disjoints)) <- mdtd(rt.firstTypes ++ not_rte.firstTypes)
          d1 = not_rte.derivative(Some(td),factors.toList,disjoints.toList)

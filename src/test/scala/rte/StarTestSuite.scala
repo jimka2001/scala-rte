@@ -25,6 +25,7 @@ package rte
 import adjuvant.AdjFunSuite
 import genus._
 import org.scalatest.funsuite.AnyFunSuite
+import rte.Random.randomRteByDepth
 
 class StarTestSuite extends AdjFunSuite {
 
@@ -34,8 +35,8 @@ class StarTestSuite extends AdjFunSuite {
 
     for {depth <- 0 to 5
          _ <- 1 to num_random_tests
-         r1 = Rte.randomRte(depth)
-         r2 = Rte.randomRte(depth)
+         r1 = randomRteByDepth(depth)
+         r2 = randomRteByDepth(depth)
          } {
       assert(Star(Star(r1)).canonicalize == Star(r1).canonicalize)
       assert(Star(r1).canonicalize == Star(r1.canonicalize).canonicalize)

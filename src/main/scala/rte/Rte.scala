@@ -178,15 +178,7 @@ abstract class Rte {
       val fts = rt.firstTypes
 
       val wrts = mdtd(fts)
-      def check_for_thread_interrupt(): Unit = {
-        // if this code is being called from a unit test with a timeout
-        // when we have to explicitly check for thread interrupt
-        // if the assertion fails, we simply cause a failed unit test
-        if (Thread.currentThread().isInterrupted)
-          println(s"Thread interrupted in Extract.extractRte() while computing derivatives of $rt")
-        assert(!Thread.currentThread().isInterrupted,
-               "Thread interrupted in Extract.extractRte()")
-      }
+
       wrts.map { case (td, (factors, disjoints)) => (td,
         // Here we call rt.derivative, but we pass along the correct-by-construction
         //   factors and disjoint types.  The Singleton:disjointDown method takes
@@ -194,7 +186,7 @@ abstract class Rte {
         //   in question is a subtype or a disjoint type of the type in question.
 
         try locally {
-          check_for_thread_interrupt()
+          check_for_thread_interrupt(s"in Extract.extractRte() while computing derivatives of $rt")
           rt.derivative(Some(td),
                         factors.toList.sortBy(_.toString),
                         disjoints.toList.sortBy(_.toString)).canonicalize
@@ -308,6 +300,48 @@ abstract class Rte {
     }
     bfs(Set[Rte](this), Vector[Rte](this), Vector[Rte](this))
   }
+
+  def countLeaves():Int = {
+    val cs = this.children()
+
+    if (cs.isEmpty)
+      1
+    else
+      cs.map(child => child.countLeaves()).sum
+  }
+
+  def measureBalance():(Int,Int,Int) = {
+    // compute length of shortest branch
+    def shortest(depth:Int, rtes:Seq[Rte]):Int = {
+      if (rtes.exists(r => r.children().isEmpty))
+        depth
+      else
+        shortest(depth+1, rtes.flatMap(r => r.children()))
+    }
+
+    // compute length of longest branch
+    def longest(depth:Int, rtes:Seq[Rte]):Int = {
+      if (rtes.forall(r => r.children().isEmpty))
+        depth
+      else
+        longest(depth+1, rtes.flatMap(r => r.children()))
+    }
+
+    // sum the length of all the branches.
+    def total(depth:Int, rtes:Seq[Rte]):Int = {
+      rtes.foldLeft(0){case (acc:Int,rte:Rte) =>
+        val children = rte.children()
+        if (children.isEmpty)
+          acc + depth
+        else {
+          val t = total(depth+1,children)
+          t + acc
+        }
+      }
+    }
+
+    (shortest(0,Seq(this)), longest(0,Seq(this)), total(0, Seq(this)))
+  }
 }
 
 // abstract class for grouping subclasses of Rte which do not
@@ -379,10 +413,6 @@ object Rte {
       else
         false
     case _ => false
-  }
-
-  def randomSeq(depth: Int, length: Int, option: Boolean = true): Seq[Rte] = {
-    (0 until length).map { _ => randomRte(depth, option) }
   }
 
   def rteCase[E](seq: Seq[(Rte, E)],
@@ -476,80 +506,15 @@ object Rte {
     seq.sortBy(_.toString)
   }
 
-  // Here we are passing along an avoidEmpty boolean that will be true when we do not wish there to be
-  // any ANDs or NOTs in the RTE, and that any of the SimpleTypeDs will not be empty either
-  // this way we are also excluding the EmptySeq, EmptySet, and notSigma explicitly, while also not allowing
-  // the recursive call for the randomTypeD to create any EmptyTypes
-  def randomRte(depth: Int, avoidEmpty: Boolean = true): Rte = {
-    import scala.util.Random
-    val random = new Random
-
-    val rteVector = Vector(notEmptySeq,
-                           Sigma,
-                           sigmaStar,
-                           notSigma,
-                           EmptySeq,
-                           EmptySet)
-    val generators: Seq[() => Rte] = Vector(
-      () => rteVector(random.nextInt(rteVector.length - (if (avoidEmpty) 3 else 0))),
-      () => Or(randomSeq(depth - 1, random.nextInt(3) + 2, avoidEmpty)),
-      () => Star(randomRte(depth - 1, avoidEmpty)),
-      () => Cat(randomSeq(depth - 1, random.nextInt(2) + 2, avoidEmpty)),
-      () => Singleton(RandomType.randomType(0, Some(!avoidEmpty))),
-      () => And(randomSeq(depth - 1, 2, avoidEmpty)),
-      () => Not(randomRte(depth - 1, avoidEmpty)))
-
-    if (depth <= 0)
-      Singleton(RandomType.randomType(0, Some(!avoidEmpty)))
-    else {
-      val g = generators(random.nextInt(generators.length - (if (avoidEmpty) 2 else 0)))
-      g()
-    }
-  }
-
-  // Generate an RTE which corresponds (on average) in shape closely to a balanced
-  // binary tree.  The goal is to sample languages uniformly rather than sampling
-  // syntactic structure of the RTE uniformly.
-  //
-  // probability_binary: float strictly between 0.0 and 1.0
-  def randomTotallyBalancedRte(probability_binary:Float,
-                               depth:Int) = {
-    import adjuvant.{Tree012, Tree012Binary, Tree012Leaf, Tree012Unary}
-
-    def tree012ToRte(tree:Tree012):Rte = {
-      tree match {
-        case Tree012Leaf() => randCase(EmptySet,
-                                       List((0.90, () => Singleton(RandomType.randomType(0))),
-                                            (0.05, () => Sigma),
-                                            (0.05, () => EmptySeq)))
-        case Tree012Unary(_, child) =>
-          // Star, Not
-          randElement(Seq((t) => Star(t),
-                          (t) => Not(t)))(tree012ToRte(child))
-
-        case Tree012Binary(_, left, right) =>
-          // And, Or, Cat
-          randElement(Seq((a:Rte, b:Rte) => And(a, b),
-                          (a:Rte, b:Rte) => Or(a, b),
-                          (a:Rte, b:Rte) => Cat(a, b)))(tree012ToRte(left), tree012ToRte(right))
-      }
-    }
-   //(printf "generating tree of depth %d:  %s <= count < %s\n" depth (pow 2 depth) (pow 2 (inc depth)))
-   // a binary tree of depth=n has 2^n <= m < 2^(n+1) leaves
-   // so generate a random number 2^n <= rand < 2^(n+1)
-   // i.e 2^n + (rand-int 2^(n+1) - 2^n)
-   //    2^n + (rand-int 2^n)
-    val tree = Tree012.rand(probability_binary, depth)
-    val rte = tree012ToRte(tree)
-
-    rte
-  }
-
   def rteViewAst(rte:Rte,
                  title: String = "",
                  dotFileCB: String => Unit = (_ => ()),
-                 habitation:Boolean=true):(Vector[SimpleTypeD], String) = {
-    GraphViz.rteView(rte, title=title, dotFileCB=println, habitation=true)
+                 habitation:Boolean=true,
+    // typeLegend controls whether a legend of types
+    //   appears in the png file.  otherwise the legend will be
+    //   printed to stdout
+                 typeLegend:Boolean=false):(Vector[SimpleTypeD], String) = {
+    GraphViz.rteView(rte, title=title, dotFileCB=dotFileCB, habitation=habitation,typeLegend=typeLegend)
   }
 
   def rteViewDfa(rte: Rte,
@@ -559,11 +524,14 @@ object Rte {
                  showSink: Boolean = true,
                  dotFileCB: String => Unit = (_ => ()),
                  givenLabels: Seq[SimpleTypeD] = Seq(),
-                 printLatex: Boolean = false): (Vector[SimpleTypeD],String) = {
+    // typeLegend controls whether a legend of transition types
+    //   appears in the png file.  otherwise the legend will be
+    //   printed to stdout
+                 typeLegend:Boolean=false): (Vector[SimpleTypeD],String) = {
 
     xymbolyco.GraphViz.dfaView[Any,SimpleTypeD,Boolean](rte.toDfa(true),
                                                         title, abbrev, label, showSink,
-                                                        dotFileCB, givenLabels, printLatex)
+                                                        dotFileCB, givenLabels, typeLegend=typeLegend)
   }
 
 }
