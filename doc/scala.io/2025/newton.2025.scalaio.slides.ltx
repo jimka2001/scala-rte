@@ -56,7 +56,7 @@
 \end{frame}
 
 \begin{frame}{Motivation}
-  \only<1>{\input{map-s-to-t}}%
+  \only<1>{\input{map-s-to-t-bias}}%
   \only<2>{\input{thought-balloon}}%
 
   \begin{itemize}
@@ -208,24 +208,36 @@
 \end{frame}
 
 \begin{frame}{Recommendations}
-  \begin{columns}
+  \begin{columns}[t]
     \begin{column}{0.4\textwidth}
       \textcolor{red}{UNIFORM\\ --- \emph{Portrait} --- narrow and deep}
 
       \medskip
 
+      \begin{minipage}{0.45\textwidth}
+        \includegraphics[width=\textwidth, height=0.6\textheight, keepaspectratio]{rte-narrow-and-deep}
+      \end{minipage}%
+      \hfill
+      \begin{minipage}{0.45\textwidth}
+        \includegraphics[width=7mm, keepaspectratio]{dfa-narrow-and-deep}
+      \end{minipage}
       
-      \includegraphics[width=0.8\textwidth, height=0.8\textheight, keepaspectratio]{generations-uniform}
+      
     \end{column}
     \begin{column}{0.6\textwidth}
       \textcolor{greeny}{BALANCED\\ --- \emph{Landscape} --- shallow and wide}
-
+      
       \medskip
-
-      \includegraphics[width=0.9\textwidth, height=0.6\textheight, keepaspectratio]{generations-balanced}    
+      
+      \begin{minipage}{0.45\textwidth}
+        \includegraphics[width=\textwidth, height=0.6\textheight, keepaspectratio]{rte-shallow-and-wide}
+      \end{minipage}%
+      \hfill
+      \begin{minipage}{0.45\textwidth}
+        \includegraphics[width=\textwidth, height=0.6\textheight, keepaspectratio]{dfa-shallow-and-wide}
+      \end{minipage}
     \end{column}
   \end{columns}
- 
 \end{frame}
 
 
