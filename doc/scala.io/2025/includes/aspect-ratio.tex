@@ -1,0 +1,54 @@
+\documentclass[tikz, border=10pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{trees, arrows.meta, positioning, decorations.pathreplacing}
+
+\begin{document}
+
+\begin{tikzpicture}[
+  level distance=10mm,
+  level 1/.style={sibling distance=80mm},
+  level 2/.style={sibling distance=40mm},
+  level 3/.style={sibling distance=20mm},
+  level 4/.style={sibling distance=10mm},
+  every node/.style={draw, circle, minimum size=5pt, inner sep=0pt}
+]
+
+% --- Binary tree ---
+\node (root) {}
+  child { node {}
+    child { node {}
+      child { node {} }
+      child { node {} }
+    }
+    child { node {}
+      child { node {} }
+      child { node {} }
+    }
+  }
+  child { node {}
+    child { node {}
+      child { node {} }
+      child { node {} }
+    }
+    child { node {}
+      child { node {} }
+      child { node {} }
+    }
+  };
+
+% --- Compute coordinates for annotations ---
+% Get top (root) and bottom (leftmost leaf) coordinates
+\path (root) ++(0,0) coordinate (top);
+\path (root-1-1-1-1) ++(0,0) coordinate (bottom);
+\path (root-1-1-1-1) ++(-1,0) coordinate (leftmost);
+\path (root-2-2-2-2) ++(1,0) coordinate (rightmost);
+
+% --- Height annotation ---
+\draw[<->, thick] ([xshift=10mm]top) -- node[right, midway] {$\log_2(n)$} ([xshift=10mm]bottom);
+
+% --- Width annotation ---
+\draw[<->, thick] (leftmost) ++(0,-1) -- node[below, midway] {$n$} (rightmost |- leftmost);
+
+\end{tikzpicture}
+
+\end{document}
