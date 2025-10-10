@@ -48,7 +48,7 @@ object FileLock {
           }
 
         case other =>
-          println(s"retry $lockFileName, got [${other.getOrElse("")}], expecting [$lockKey]")
+          println(s"retry $lockFileName, expecting [$lockKey]")
           Thread.sleep(ms)
           tryCreateSymlink()
           loop()

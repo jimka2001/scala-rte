@@ -24,6 +24,8 @@ package genus
 // genus
 
 import NormalForm._
+import adjuvant.ReflectionUtils.computeSubclassesOf
+
 import scala.annotation.tailrec
 import scala.collection.mutable
 
@@ -292,76 +294,6 @@ object SAtomic {
     }
   }
 
-  private val subclassCache =
-    scala.collection.mutable.Map[Class[_], Seq[Class[_]]]()
-
-  // The following code came from chatGPT
-  // https://chatgpt.com/share/684a63ce-d610-800d-a20e-8fc8cdb4b768
-  //
-  // Computes all subclasses (or implementing classes, for interfaces/traits) of the given class `sup`.
-  //
-  // Notes / caveats:
-  // 1. Scala-specific considerations:
-  //    - Sealed classes/traits only allow subclasses within the same source file or package.
-  //    - Traits compile to interfaces + helper classes; detecting all implementors requires checking both.
-  //    - Many Scala collection classes (e.g., List) have concrete subclasses with compiler-generated names ($colon$colon, Nil$).
-  //
-  // 2. ClassLoaders:
-  //    - Two Class[_] objects with the same name may be unequal if loaded by different classloaders.
-  //    - To ensure equality and avoid ClassNotFoundException, all discovered classes are loaded using
-  //      the thread context classloader.
-  //
-  // 3. Runtime scanning:
-  //    - Uses ClassGraph to scan the classpath for all subclasses.
-  //    - Some classes may be discovered but not loadable in the chosen classloader; these are skipped.
-  //
-  // 4. Caching:
-  //    - Results are cached per superclass to avoid repeated expensive scans.
-  //
-  // Usage:
-  //    val subclasses = computeSubclassesOf(classOf[List[Any]])
-  //    // subclasses will include :: and Nil$, for example.
-  //
-  // Important:
-  //    - This method may not find all subclasses if they are not on the runtime classpath.
-  //    - Avoid relying on exact Class[_] equality across different classloaders; use this method’s cache to guarantee consistency.
-  def computeSubclassesOf(sup: Class[_]): Seq[Class[_]] = {
-    import io.github.classgraph.ClassGraph
-    import scala.jdk.CollectionConverters._
-    import scala.util.Try
-
-    subclassCache.getOrElseUpdate(sup, {
-      val scanResult = new ClassGraph()
-        .enableClassInfo()
-        .scan()
-
-      try {
-        val className = sup.getName
-        val loader = Thread.currentThread.getContextClassLoader
-
-        // Collect class names as strings first
-        val classNames: Seq[String] =
-          if (sup.isInterface) {
-            val implementors = scanResult.getClassesImplementing(className)
-              .asScala.map(_.getName).toSeq
-            val extendingTraits = scanResult.getAllInterfaces.asScala.collect {
-              case iface if iface.getInterfaces.asScala.exists(_.getName == className) =>
-                iface.getName
-            }.toSeq
-            (implementors ++ extendingTraits).distinct
-          } else {
-            scanResult.getSubclasses(className)
-              .asScala.map(_.getName).toSeq.distinct
-          }
-
-        // Attempt to load each class with the chosen loader, skip if unavailable
-        classNames.flatMap(name => Try(Class.forName(name, false, loader)).toOption)
-
-      } finally {
-        scanResult.close()
-      }
-    })
-  }
 
 
   def instantiatableSubclasses(cl: Class[_]): Array[Class[_]] = {
@@ -430,6 +362,6 @@ object SAtomic {
 
 object SAtomicTest {
   def main(argv:Array[String]): Unit = {
-    println("Number:" + SAtomic.computeSubclassesOf(classOf[Number]))
+    println("Number:" + computeSubclassesOf(classOf[Number]))
   }
 }

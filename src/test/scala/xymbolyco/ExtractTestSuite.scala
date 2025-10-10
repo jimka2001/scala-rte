@@ -31,6 +31,7 @@ import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.concurrent.TimeLimits.failAfter
 import org.scalatest.time.{Millis, Span}
 import org.scalatest.time.SpanSugar._
+import rte.Random.randomTotallyBalancedRteByDepth
 
 //noinspection RedundantDefaultArgument
 class ExtractTestSuite  extends AdjFunSuite {
@@ -100,7 +101,7 @@ class ExtractTestSuite  extends AdjFunSuite {
       SAtomic.withClosedWorldView {
         for {depth <- 1 to 3
              rep <- 0 to 25
-             rt = Rte.randomTotallyBalancedRte(0.75F, depth)
+             rt = randomTotallyBalancedRteByDepth(0.75F, depth)
              } locally{
           val now = System.nanoTime()
           print(s"elapsed = ${(now - start)/(1e9)} ")

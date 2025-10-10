@@ -6,8 +6,9 @@ import genus.Types.mdtd
 import genus.{RandomType, SAnd, SNot, SOr, STop, SimpleTypeD}
 import rte.And.createAnd
 import rte.Cat.createCat
-import rte.{And, Cat, EmptySet, EmptySeq, Not, Or, Rte, Sigma, Singleton, Star}
+import rte.{And, Cat, EmptySeq, EmptySet, Not, Or, Rte, Sigma, Singleton, Star}
 import rte.Or.createOr
+import rte.Random.randomRteByDepth
 import xymbolyco.GraphViz.dfaView
 //import gnuplot.GnuPlot.gnuPlot
 
@@ -609,7 +610,7 @@ object Profiling {
     // each time an rte is created, the dfas are built, transitions are counted and then added to the map that already has been created
     for {depth <- 1 until depth
          r <- 0 until num_random_tests
-         pattern = Rte.randomRte(depth)
+         pattern = randomRteByDepth(depth)
          } {
       //builds an object, during which's construction the number of transitions are counted
           val temp = RTEStatistics(pattern).numberOfTransitions
@@ -635,7 +636,7 @@ object Profiling {
     val num_random_tests = 10000 * 3
     for {depth <- 1 until 6
          r <- 0 until num_random_tests
-         pattern = Rte.randomRte(depth)
+         pattern = randomRteByDepth(depth)
          } {
       println((depth-1)*num_random_tests+r)
       println(pattern.toMachineReadable())

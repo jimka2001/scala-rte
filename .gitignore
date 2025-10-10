@@ -1,6 +1,7 @@
 *.fasl
 *.class
 *.cache
+*.lock
 *~
 #*
 *.DS_Store

@@ -22,6 +22,7 @@ package genus
 
 import adjuvant.AdjFunSuite
 import adjuvant.Adjuvant.eql
+import adjuvant.ReflectionUtils.computeSubclassesOf
 import genus.RandomType._
 import genus.Types._
 
@@ -36,7 +37,6 @@ class RCat extends RAnimal
 import scala.language.implicitConversions
 
 class ReflectionTest extends AdjFunSuite {
-  import SAtomic.computeSubclassesOf
 
   test("Number"){
     println(computeSubclassesOf(classOf[Number]))
