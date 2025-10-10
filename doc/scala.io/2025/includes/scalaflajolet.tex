@@ -1,5 +1,5 @@
 \begin{lstlisting}[style=scalaioScala]
-def randomTotallyBalancedRte(leaves:Int):Rte =
+def flajoletRte(leaves:Int):Rte =
   def recur(node:Node):Rte =
     weightedCase(
       (5, () => Star(recur(node))),
