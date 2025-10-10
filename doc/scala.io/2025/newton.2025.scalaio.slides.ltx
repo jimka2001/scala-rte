@@ -164,7 +164,7 @@ CONCRETELY: uniformly sample Finite Automata by:
 \begin{frame}{Generate a Random RTE/AST (depth-based)}
   \begin{columns}
     \begin{column}{0.45\textwidth}
-  \scalebox{0.9}{\input{rte-adt-narrow}}
+      \scalebox{0.9}{\input{rte-adt-narrow}}
     \end{column}
     \begin{column}{0.55\textwidth}
   \usebox\examplegenrte      
@@ -178,68 +178,44 @@ CONCRETELY: uniformly sample Finite Automata by:
 \begin{frame}
 
 \Large How do RTEs relate to Deterministic Finite Automata (DFAs)?
-  
+
+\centering
+
+\scalebox{0.6}{\input{fig-3}}
+
 \end{frame}
 }
-
-\section{Non-uniformity caused by so-called annihilators}
-{\setbeamercolor{background canvas}{bg=toccolor}
-\begin{frame}
-
-\Large {Non-uniformity caused by so-called annihilators}y
-  
-\end{frame}
-}
-
-\section{Proposed fix: Balanced Tree Generation}
-{\setbeamercolor{background canvas}{bg=toccolor}
-\begin{frame}
-
-\Large {Proposed fix: Balanced Tree Generation}
-  
-\end{frame}
-}
-
-\section{Algorithms for Balanced Generation}
-{\setbeamercolor{background canvas}{bg=toccolor}
-\begin{frame}
-
-\Large {Algorithms for Balanced Generation}
-  
-\end{frame}
-}
-
-\section{Experimental Results}
-{\setbeamercolor{background canvas}{bg=toccolor}
-\begin{frame}
-
-\Large {Experimental Results}
-  
-\end{frame}
-}
-
-
-
-
-
-
-
-
 
 \input{re-match} % matching (a 1 1.0 b "a" "an" "the" -5 2 22 222 d 2/3)
 
+\begin{frame}{DFA Library \code{xymbolyco}}
+  Symbolic Finite Automata Library
+  \begin{itemize}
+    \item RTE to DFA
+    \item DFA to RTE
+    \item Pattern matching
+    \item Minimization
+    \item Union, Intersection, Emptyness check
+    \item Need to test \code{xymbolyco}
+    \begin{itemize}
+    \item Random generation of DFA
+    \end{itemize}
 
+  \end{itemize}
+\end{frame}
 
+\section{Generating random DFA}
+{\setbeamercolor{background canvas}{bg=toccolor}
 \begin{frame}{Generating random DFA}
-
-  How to generate a random DFA?
 
   \begin{itemize}
   \item We can construct DFA from RTE
   \item ... so generate random RTE (as seen earlier)
   \item ... and construct DFA
   \end{itemize}
+  
 \end{frame}
+}
 
 \begin{frame}{Successful: Generation of DFA from RTE}
   \begin{columns}
@@ -254,11 +230,44 @@ CONCRETELY: uniformly sample Finite Automata by:
 
 \begin{frame}{Dubious: Generation of DFA from RTE}
   \begin{columns}
-    \begin{column}{0.5\textwidth}
+    \begin{column}{0.4\textwidth}
       \includegraphics[width=\textwidth, height=0.9\textheight, keepaspectratio]{rte-naive-edge}
     \end{column}
-    \begin{column}{0.5\textwidth}
-      \includegraphics[width=3cm, keepaspectratio]{dfa-naive-edge}
+    \begin{column}{0.6\textwidth}
+      \begin{itemize}
+      \item<1->{Trival DFA. \includegraphics[width=3cm, keepaspectratio]{dfa-naive-edge}}
+      \item<2->{Non-uniformity caused by so-called annihilators}
+      \item<3->{Whenever an input $X=\emptyset$ then $X \cap Y = \emptyset$.}
+      \item<4->{Thus entire tree generating $Y$ is \textcolor{red}{in vain.}}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+
+
+
+\begin{frame}{Proposed fix: Balanced Tree Generation}
+  \begin{columns}[t]
+    \begin{column}{0.4\textwidth}
+      \textcolor{red}{UNIFORM\\ \emph{Portrait} --- narrow and deep}
+
+      \centering
+      
+      \begin{minipage}{0.75\textwidth}
+        \includegraphics[width=\textwidth, height=0.8\textheight, keepaspectratio]{rte-narrow-and-deep}
+      \end{minipage}%
+      
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \textcolor{greeny}{BALANCED\\ \emph{Landscape} --- shallow and wide}
+
+      \centering
+      
+      \begin{minipage}{0.85\textwidth}
+        \includegraphics[width=\textwidth, height=0.6\textheight, keepaspectratio]{rte-shallow-and-wide}
+      \end{minipage}%
     \end{column}
   \end{columns}
 \end{frame}
@@ -270,966 +279,78 @@ CONCRETELY: uniformly sample Finite Automata by:
 
   \item However, this is not sufficient.  Many large RTEs generate small/trivial DFAs.
 
-  \item    Why?
+  \item We must generate \textcolor{greeny}{Portrait} not \textcolor{red}{Landscape} aspect ratios.
   \end{itemize} 
 \end{frame}
 
 
-\begin{frame}{Requirements}
-  \begin{columns}
-    
-    \begin{column}{0.55\textwidth}
-      \begin{itemize}
-      \item   Why?
 
-      \item Because of so-called \emph{annihilators}.
-        
-      \item Whenever an input $X=\emptyset$ then $X \cap Y = \emptyset$.
-        
-      \item Thus all the tree which generated $Y$ has no effect on the result.
-      \end{itemize}      
-    \end{column}
-    \begin{column}{0.45\textwidth}
-      \includegraphics[width=\textwidth, height=0.9\textheight, keepaspectratio]{rte-naive-edge}
-    \end{column}
 
+\section{Algorithms for Balanced Generation}
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}
+
+\Large {Algorithms for Balanced Generation}
   
-  \end{columns}
-
 \end{frame}
+}
 
-\begin{frame}{Recommendations}
-  \begin{columns}[t]
-    \begin{column}{0.4\textwidth}
-      \textcolor{red}{UNIFORM\\ --- \emph{Portrait} --- narrow and deep}
-
-      \medskip
-
-      \begin{minipage}{0.45\textwidth}
-        \includegraphics[width=\textwidth, height=0.6\textheight, keepaspectratio]{rte-narrow-and-deep}
-      \end{minipage}%
-      \hfill
-      \begin{minipage}{0.45\textwidth}
-        \includegraphics[width=7mm, keepaspectratio]{dfa-narrow-and-deep}
-      \end{minipage}
-      
-      
-    \end{column}
-    \begin{column}{0.6\textwidth}
-      \textcolor{greeny}{BALANCED\\ --- \emph{Landscape} --- shallow and wide}
-      
-      \medskip
-      
-      \begin{minipage}{0.45\textwidth}
-        \includegraphics[width=\textwidth, height=0.6\textheight, keepaspectratio]{rte-shallow-and-wide}
-      \end{minipage}%
-      \hfill
-      \begin{minipage}{0.45\textwidth}
-        \includegraphics[width=\textwidth, height=0.6\textheight, keepaspectratio]{dfa-shallow-and-wide}
-      \end{minipage}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-\begin{frame}{How to measure aspect-ratio of a binary tree}
-  \scalebox{1.2}{\input{aspect-ratio}}
-
-  \[\text{aspect ratio} = \frac{d}{\log_2 n} = \frac{\text{longest path}}{\text{leaf count}}\]
-\end{frame}
-
-
-\newsavebox\scalanaive
-\begin{lrbox}{\scalanaive}
+\newsavebox\scalatreesplitcore
+\begin{lrbox}{\scalatreesplitcore}
   \begin{minipage}{15cm}
-    \input{scalanaive}
+    \input{scalatreesplitcore}
   \end{minipage}
 \end{lrbox}
-\begin{frame}{Rte Generator}
-  \usebox\scalanaive
+\begin{frame}{Rte Tree-Split Generator}
+  \usebox\scalatreesplitcore
 \end{frame}
 
-\newsavebox\scaladnc
-\begin{lrbox}{\scaladnc}
+\newsavebox\scalatreesplit
+\begin{lrbox}{\scalatreesplit}
   \begin{minipage}{15cm}
-    \input{scaladnc}
+    \input{scalatreesplit}
   \end{minipage}
 \end{lrbox}
-\begin{frame}{Rte Divide and Conquor Generator}
-  \usebox\scaladnc
+\begin{frame}{Rte Tree-Split 4-variants}
+  \usebox\scalatreesplit
 \end{frame}
 
-\newsavebox\scalabalanced
-\begin{lrbox}{\scalabalanced}
+\newsavebox\scalaflajolet
+\begin{lrbox}{\scalaflajolet}
   \begin{minipage}{15cm}
-    \input{scalabalanced}
+    \input{scalaflajolet}
   \end{minipage}
 \end{lrbox}
-\begin{frame}{Rte Balanced Generator}
-  \usebox\scalabalanced
+\begin{frame}{Rte Flajolet Generator}
+  \usebox\scalaflajolet
 \end{frame}
+
+
+
+\section{Experimental Results}
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}
+
+\Large {Experimental Results}
+  
+\end{frame}
+}
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% Plots
 %%%%%%%%%%%%%%%%%%%%%%
-{\setbeamercolor{background canvas}{bg=toccolor}
-\begin{frame}{Plots}
 
-\end{frame}
-}
+\input{used-plots}
 
 
 
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-rte-leaf-count-histogram.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Sampling Population.  How many RE's were generated of each leaf-count.
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-histogram.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Population Histogram of DFA state counts.
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-histogram.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
-
-      \medskip
-      
-      Population Histogram of DFA state counts.
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-histogram.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
-
-      \medskip
-      
-      Population Histogram of DFA state counts.
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-time-outs.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Time-outs
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-% use this box via:    \usebox\arbox
-\newsavebox\arbox
-\begin{lrbox}{\arbox}
-  \begin{minipage}{4cm}
-    \[\rho = \frac{longest~path}{\log_2(leaf~count)}\]
-
-    \begin{align*}
-      \rho = 1 & \implies \text{balanced}\\
-      \rho < 1 & \implies \text{landscape}\\
-      \rho > 1 & \implies \text{portrait}
-    \end{align*}
-  \end{minipage}
-\end{lrbox}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Aspect-Ratio.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      DFA state count \\vs Aspect Ratio
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      DFA state count \\vs Aspect Ratio
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
-
-      \medskip
-      
-      DFA state count \\vs Aspect Ratio
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
-
-      \medskip
-      
-
-      DFA state count \\vs Aspect Ratio
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-flajolet-node-count.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Average DFA state counts vs RTE leaf counts
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%2
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-naive-edge-node-count.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Average DFA state counts vs RTE leaf counts
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%3
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-naive-mid-node-count.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Average DFA state counts vs RTE leaf counts
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-average-comb-node-count.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Average DFA state counts vs RTE leaf counts
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%19
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-histogram.png}      
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Balanced sampling results in 18 to 19\% of DFAs with 10 states or larger.
-      Uniform sampling results in 12\%.
-    \end{column}
-  \end{columns}
-
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-histogram.png}      
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes.}
-
-      \medskip
-
-      Balanced sampling results in YYY to XXX\% of DFAs with 10 states or larger.
-      Uniform sampling results in ZZZ\%.
-    \end{column}
-  \end{columns}
-
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-histogram.png}      
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes.}
-
-      \medskip
-
-      Balanced sampling results in YYY to XXX\% of DFAs with 10 states or larger.
-      Uniform sampling results in ZZZ\%.
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-threshold.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Which percent of all DFAs have larger than x-many states?
-
-      Balanced sampling produces 10\% of DFAs larger than 40 states
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-threshold.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes.}
-
-      \medskip
-
-      Which percent of all DFAs have larger than x-many states?
-
-      
-      Balanced sampling produces 10\% of DFAs more than 30 states.
-
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-threshold.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes.}
-
-      \medskip
-      
-      Which percent of all DFAs have larger than x-many states?
-
-      15\% of Balanced DFAs more than 40 states.
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%
-%%% Supplementary Plots
-%%%%%%%%%%%%%%%%%%%%%%
-{\setbeamercolor{background canvas}{bg=toccolor}
-\begin{frame}{Supplementary Plots}
-
-\end{frame}
-}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-diversity.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Diversity
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-diversity-per-sample.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Diversity Per Sample
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-
-
-
-
-
-%1
-
-%4
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-computation-time.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      Computation Times per\\ RTE size (leaf count)
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%5
-
-
-
-%6
-
-% use this box via:    \usebox\imbfbox
-\newsavebox\imbfbox
-\begin{lrbox}{\imbfbox}
-  \begin{minipage}{4cm}
-    \[\rho = \frac{actual~total~path~length}{ideal~total~path~length}\]
-
-    \begin{align*}
-      \rho = 1 & \implies \text{balanced}\\
-      \rho < 1 & \implies \text{landscape}\\
-      \rho > 1 & \implies \text{portrait}
-    \end{align*}
-  \end{minipage}
-\end{lrbox}
-
-
-
-
-%7
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Imbalance-Factor-ratsnest.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      DFA state count \\vs Imbalance Factor
-
-      \usebox\imbfbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Imbalance-Factor-ratsnest.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
-
-      \medskip
-      
-
-      DFA state count \\vs Imbalance Factor
-
-      \usebox\imbfbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Imbalance-Factor-ratsnest.png}  
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
-      
-      \medskip
-      
-      
-      DFA state count \\vs Imbalance Factor
-
-      \usebox\imbfbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-% use this box via:    \usebox\lsrbox
-\newsavebox\lsrbox
-\begin{lrbox}{\lsrbox}
-  \begin{minipage}{4cm}
-    \[\rho = \frac{longest~path}{shortest~path}\]
-
-    \begin{align*}
-      \rho = 1 & \implies \text{balanced}\\
-      \rho > 1 & \implies \text{imbalanced}
-    \end{align*}
-  \end{minipage}
-\end{lrbox}
-
-
-%8
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Ratio-longest:shortest-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      DFA state count vs $\rho$
-
-      \usebox\lsrbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Ratio-longest:shortest-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
-      
-      \medskip
-      
-      
-      DFA state count vs $\rho$
-
-      \usebox\lsrbox
-
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Ratio-longest:shortest-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
-      
-      \medskip
-      
-      
-      DFA state count vs $\rho$
-
-      \usebox\lsrbox
-
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%9
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-local-average.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%10
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-lossage-Imbalance-Factor-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-
-      Lossage = $\lambda = \frac{state~count}{node~count}$
-
-      $\lambda > 1$ is good.
-
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-lossage-Imbalance-Factor-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
-
-      \medskip
-
-      Lossage = $\lambda = \frac{state~count}{node~count}$
-
-      $\lambda > 1$ is good.
-
-    \end{column}
-  \end{columns}
-\end{frame}
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-lossage-Imbalance-Factor-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
-
-      \medskip
-
-      Lossage = $\lambda = \frac{state~count}{node~count}$
-
-      $\lambda > 1$ is good.
-
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-%12 Aspect-Ratio
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-balances-Aspect-Ratio.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      Running Balances:\\percentage of DFAs having $\geq 2$ states vs imbalance factor.
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-running-balances-Aspect-Ratio.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      \textcolor{orange}{Limited to RTEs of exactly 64 leaf nodes}
-
-      \medskip
-      Running Balances:\\
-      percentage of DFAs having $\geq 2$ states vs imbalance factor.
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-running-balances-Aspect-Ratio.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      \textcolor{orange}{Limited to RTEs of exactly 128 leaf nodes}
-
-      \medskip
-      Running Balances:\\
-      percentage of DFAs having $\geq 2$ states vs imbalance factor.
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%12 Imbalance-Factor
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-balances-Imbalance-Factor.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      Running Balances:\\percentage of DFAs having $\geq 2$ states vs imbalance factor.
-
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
-      \usebox\imbfbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-running-balances-Imbalance-Factor.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      \textcolor{orange}{Limited to RTEs of exactly 64 leaf nodes}
-
-      \medskip
-      Running Balances:\\
-      percentage of DFAs having $\geq 2$ states vs imbalance factor.
-
-      \usebox\imbfbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-running-balances-Imbalance-Factor.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      \textcolor{orange}{Limited to RTEs of exactly 128 leaf nodes}
-
-      \medskip
-      Running Balances:\\
-      percentage of DFAs having $\geq 2$ states vs imbalance factor.
-
-      \medskip
-
-      For each imbalance factor $<1 \implies \text{landscape}$ $>1 \implies\text{portrait}$
-      
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%12 Ratio-longest:shortest
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-balances-Ratio-longest:shortest.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      Running Balances:\\percentage of DFAs having $\geq 2$ states vs imbalance factor.
-
-      \usebox\lsrbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-running-balances-Ratio-longest:shortest.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      \textcolor{orange}{Limited to RTEs of exactly 64 leaf nodes}
-
-      \medskip
-      Running Balances:\\
-      percentage of DFAs having $\geq 2$ states vs $\rho$
-
-      \usebox\lsrbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-running-balances-Ratio-longest:shortest.png}
-    \end{column}
-    \begin{column}{.33\textwidth}
-      \textcolor{orange}{Limited to RTEs of exactly 128 leaf nodes}
-
-      \medskip
-      Running Balances:\\
-      percentage of DFAs having $\geq 2$ states vs $\rho$
-
-      \usebox\lsrbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%13
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-sum-balances-per-Aspect-Ratio.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-running-sum-balances-per-Aspect-Ratio.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes}
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-running-sum-balances-per-Aspect-Ratio.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes}
-
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%15
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-sum-balances-per-Imbalance-Factor.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      
-      \usebox\imbfbox
-
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-running-sum-balances-per-Imbalance-Factor.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes}
-
-      
-      $\rho = 1 \to \text{perfectly balanced}$
-
-      \usebox\imbfbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-running-sum-balances-per-Imbalance-Factor.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes}
-
-
-      \usebox\imbfbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%16
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-running-sum-balances-per-Ratio-longest:shortest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \usebox\lsrbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-running-sum-balances-per-Ratio-longest:shortest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes}
-
-
-      \usebox\lsrbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-running-sum-balances-per-Ratio-longest:shortest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes}
-
-      \usebox\lsrbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-%17
 
 \input{conclusion}
+
+\input{unused-plots}
+
 \end{document}

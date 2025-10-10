@@ -9,13 +9,12 @@ def treecombRte(leaves:Int):Rte =
 def treeSplitLinear(leaves:Int):Rte =
   treeSplitRte(leaves, (n) => random.between(1, n))
 
-// inverse Gaussian split
-def treeSplitEdge(leaves:Int):Rte =   
-  treeSplitRte(leaves, (n) => invertedGaussian(1, n))
-
 // Gaussian split
 def treeSplitMid(leaves:Int):Rte =   
   treeSplitRte(leaves, (n)=> {
-    if (n == 2 || n == 3)      1
-    else random.between(1, n / 2) + random.between(1, n / 2)})
+    random.between(1, n / 2) + random.between(1, n / 2)})
+
+// inverse Gaussian split
+def treeSplitEdge(leaves:Int):Rte =   
+  treeSplitRte(leaves, (n) => invertedGaussian(1, n))
 \end{lstlisting}

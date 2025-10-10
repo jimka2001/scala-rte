@@ -8,6 +8,7 @@ def treeSplitRte(leaves:Int, pivot:Int => Int):Rte =
     lazy val left  = treeSplitRte(leftSize, pivot)
     lazy val right = treeSplitRte(leaves - leftSize, pivot)
     lazy val mid   = treeSplitRte(leaves, pivot)
+
     weightedCase((20, () => Cat(left, right)),
                  (30, () => And(left,right)),
                  (30, () => Or(left,right)),
