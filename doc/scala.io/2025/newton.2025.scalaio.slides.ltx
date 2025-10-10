@@ -28,60 +28,87 @@
 \titlepage
 \end{frame}
 
-{\setbeamercolor{background canvas}{bg=toccolor}
-\begin{frame}{Overview}
-\tableofcontents
-\end{frame}
-}
-
+%%\section{Motivation}
 
 \begin{frame}{Motivation}
   \begin{itemize}
-  \item<1->{ Property-Based Testing (PBT) requires object generation.}
-
-  \item<1->{ Select objects (uniformly?) from an infinite space $T$.
+  \item<1->{ Property-Based Testing (PBT) requires generating objects of a target type.}%
+  \item<2->{ Select objects from an infinite set, $T$.
 
     \input{set-t}
-}
-
-  \item<2->{ Selecting uniformly in $T$ may be difficult, so we may prefer to sample in another space $S$, and then convert object $s\in S$ to $f(s) = t \in T$.
-
-    \input{map-s-to-t}
-}
-
-  \item<3>{Sadly uniform selection in $S$
-    may not deliver uniformity in $T$.}
-    
+  }%
+  \item<3->{Selection should be \emph{surjective}.\\
+    \Ie any conceivalbe object of the target type should be possible.}%
+  \item<4->{Selection should be \emph{uniform}.\\
+    \Ie, any two objects are equally likely.}
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Motivation}
-  \only<1>{\input{map-s-to-t-bias}}%
-  \only<2>{\input{thought-balloon}}%
-
   \begin{itemize}
-  \item OBSERVATION:  When we select $s\in S$ then generate $f(s)\in T$ we often find that $f(s)$ is  trivial.  
-    
-  \item GOAL: improve uniformity in $T$ by biasing the selection in $S$.
+    \item<1->{Selecting surjectively and uniformly in $T$ may be difficult.}
 
-  \item<2>{ CONCRETELY: uniformly sample Finite Automata by:
+    \item<2->{We may prefer to sample in another space $S$.}%      
+    \item<2->{$f:S\to T$ ... and then convert object $s\in S$ to $f(s) = t \in T$.
+
+    \input{map-s-to-t}
+  }%
+  \end{itemize}
+\end{frame}
+    
+
+\begin{frame}{Motivation}
+  \begin{itemize}
+  \item<1->{Sadly uniform selection in $S$  may not deliver uniformity in $T$.
+    \input{map-s-bias-to-t}}%
+  \item<2->{OBSERVATION:  When we select $s\in S$ then generate $f(s)\in T$ we often find that $f(s)$ is  trivial.  }
+  \item<3->{GOAL: improve uniformity in $T$ by biasing the selection in $S$.
+    \input{map-s-to-t-bias}}%
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Motivation}
+CONCRETELY: uniformly sample Finite Automata by:
     \begin{enumerate}
     \item  Biased sample of Regular Expressions
     \item  Convert Regular Expression to Finite Automaton
     \end{enumerate}
-}
-  \end{itemize}
 
+    Uniform generantion of Deterministic Finite Automata (DFA) is \textcolor{red}{difficult}.\\
+    Conversion from RE to DFA is a  \textcolor{greeny}{solved problem}.
+
+    \input{thought-balloon}%
 \end{frame}
 
-\input{rtes}
 
+
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}{Overview}
+  \tableofcontents
+\end{frame}
+}
+
+\section{What are Regular Type Expressions (RTEs), viewed as ASTs.}
+
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}
+
+\Large What are Regular Type Expressions (RTEs), viewed as ASTs.
+  
+  \centering
+  
+  \includegraphics[width=0.9\textwidth]{regexp.png}
+
+\end{frame}
+}
+
+\input{rtes}
 
 
 % use this box via:    \usebox\exnotebox
 \newsavebox\exnotebox
 \begin{lrbox}{\exnotebox}
-  \begin{minipage}{6.5cm}
+  \begin{minipage}{7cm}
     \input{exnotebox}
   \end{minipage}
 \end{lrbox}
@@ -105,10 +132,6 @@
 \end{frame}
 
 
-\begin{frame}{\code{RTE} class quasi-ADT}
-  \scalebox{0.9}{\input{rte-adt}}
-
-\end{frame}
 
 
 
@@ -116,11 +139,12 @@
   \begin{itemize}
   \item RTE operations include union, intersection, complement, Kleene-star
   \item Habitation, Subset, Emptiness checks
-  \item Need to test RTE by generating random RTE/AST
   \item Membership check (RE-matching)
-  \item Random generation of RTE/AST
+  \item Need to test RTE library
+    \begin{itemize}
+    \item Random generation of RTE/AST
+    \end{itemize}
   \end{itemize}
-
 \end{frame}
 
 \newsavebox\examplegenrte
@@ -130,9 +154,76 @@
   \end{minipage}
 \end{lrbox}
 
-\begin{frame}{Generate a Random RTE/AST (depth-based)}
-  \usebox\examplegenrte
+
+\begin{frame}{\code{RTE} class quasi-ADT}
+  \scalebox{0.9}{\input{rte-adt}}
+
 \end{frame}
+
+
+\begin{frame}{Generate a Random RTE/AST (depth-based)}
+  \begin{columns}
+    \begin{column}{0.45\textwidth}
+  \scalebox{0.9}{\input{rte-adt-narrow}}
+    \end{column}
+    \begin{column}{0.55\textwidth}
+  \usebox\examplegenrte      
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\section{How do RTEs relate to Deterministic Finite Automata (DFAs)?}
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}
+
+\Large How do RTEs relate to Deterministic Finite Automata (DFAs)?
+  
+\end{frame}
+}
+
+\section{Non-uniformity caused by so-called annihilators}
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}
+
+\Large {Non-uniformity caused by so-called annihilators}y
+  
+\end{frame}
+}
+
+\section{Proposed fix: Balanced Tree Generation}
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}
+
+\Large {Proposed fix: Balanced Tree Generation}
+  
+\end{frame}
+}
+
+\section{Algorithms for Balanced Generation}
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}
+
+\Large {Algorithms for Balanced Generation}
+  
+\end{frame}
+}
+
+\section{Experimental Results}
+{\setbeamercolor{background canvas}{bg=toccolor}
+\begin{frame}
+
+\Large {Experimental Results}
+  
+\end{frame}
+}
+
+
+
+
+
+
+
 
 
 \input{re-match} % matching (a 1 1.0 b "a" "an" "the" -5 2 22 222 d 2/3)
@@ -238,6 +329,13 @@
       \end{minipage}
     \end{column}
   \end{columns}
+\end{frame}
+
+
+\begin{frame}{How to measure aspect-ratio of a binary tree}
+  \scalebox{1.2}{\input{aspect-ratio}}
+
+  \[\text{aspect ratio} = \frac{d}{\log_2 n} = \frac{\text{longest path}}{\text{leaf count}}\]
 \end{frame}
 
 
@@ -350,17 +448,83 @@
   \end{columns}
 \end{frame}
 
+
+% use this box via:    \usebox\arbox
+\newsavebox\arbox
+\begin{lrbox}{\arbox}
+  \begin{minipage}{4cm}
+    \[\rho = \frac{longest~path}{\log_2(leaf~count)}\]
+
+    \begin{align*}
+      \rho = 1 & \implies \text{balanced}\\
+      \rho < 1 & \implies \text{landscape}\\
+      \rho > 1 & \implies \text{portrait}
+    \end{align*}
+  \end{minipage}
+\end{lrbox}
+
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-diversity.png}  
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Aspect-Ratio.png}
     \end{column}
     \begin{column}{.35\textwidth}
-      Diversity
+      DFA state count \\vs Aspect Ratio
+
+      \usebox\arbox
     \end{column}
   \end{columns}
 \end{frame}
 
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
+    \end{column}
+    \begin{column}{.35\textwidth}
+      DFA state count \\vs Aspect Ratio
+
+      \usebox\arbox
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
+    \end{column}
+    \begin{column}{.35\textwidth}
+      \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
+
+      \medskip
+      
+      DFA state count \\vs Aspect Ratio
+
+      \usebox\arbox
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
+    \end{column}
+    \begin{column}{.35\textwidth}
+      \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
+
+      \medskip
+      
+
+      DFA state count \\vs Aspect Ratio
+
+      \usebox\arbox
+    \end{column}
+  \end{columns}
+\end{frame}
 
 \begin{frame}
   \begin{columns}
@@ -529,6 +693,20 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
+\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-diversity.png}  
+    \end{column}
+    \begin{column}{.35\textwidth}
+      Diversity
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
 \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-diversity-per-sample.png}  
     \end{column}
     \begin{column}{.35\textwidth}
@@ -560,72 +738,9 @@
 
 %5
 
-% use this box via:    \usebox\arbox
-\newsavebox\arbox
-\begin{lrbox}{\arbox}
-  \begin{minipage}{4cm}
-    \[\rho = \frac{longest~path}{\log_2(leaf~count)}\]
-
-    \begin{align*}
-      \rho = 1 & \implies \text{balanced}\\
-      \rho < 1 & \implies \text{landscape}\\
-      \rho > 1 & \implies \text{portrait}
-    \end{align*}
-  \end{minipage}
-\end{lrbox}
-
 
 
 %6
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      DFA state count \\vs Aspect Ratio
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
-
-      \medskip
-      
-      DFA state count \\vs Aspect Ratio
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Aspect-Ratio-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
-
-      \medskip
-      
-
-      DFA state count \\vs Aspect Ratio
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
 
 % use this box via:    \usebox\imbfbox
 \newsavebox\imbfbox
