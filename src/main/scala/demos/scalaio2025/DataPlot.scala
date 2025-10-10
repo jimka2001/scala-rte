@@ -12,7 +12,7 @@ import scala.language.postfixOps
 object DataPlot {
   def plotCB(base:String): (String=>Unit) = {
     assert(!base.contains("."))
-    val reportDir = "/Users/jnewton/Repos/rte/scala-rte/doc/scala.io/2025/includes/"
+    val reportDir = "/Users/jnewton/Repos/rte/scala-rte/doc/scala.io/2025/gnu/"
     val gnuFileName = reportDir + base + ".gnu"
     val pngFileName = reportDir + base + ".png"
     (fn:String) => locally {
@@ -50,7 +50,7 @@ object DataPlot {
     ((cl: CsvLine) => cl.imbalance(), "Imbalance-Factor"),
     ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
 
-  def plotStateLossage(prefix:String="",view:Boolean): Unit = {
+  def plotStateRetention(prefix:String="",view:Boolean): Unit = {
     import scala.util.Random.shuffle
     for {(imb, algoName) <- imbalanceAlgos
          } {
@@ -60,24 +60,27 @@ object DataPlot {
                                    if cl.node_count != 0
                                    } yield (imb(cl), cl.state_count / cl.node_count.toDouble )
                         } yield (algo + s" ${cvslines.length} samples", shuffle(xys.to(List)))
-      gnuPlot(descrs.to(Seq))(title = s"Lossage: Ratio node count per state count $prefix",
+      gnuPlot(descrs.to(Seq))(title = s"Retention: Ratio node count per state count $prefix",
         xAxisLabel = algoName,
-        yAxisLabel = "lossage",
+        yAxisLabel = "retention",
         yLog = true,
+        grid = true,
         plotWith = "points",
-        gnuFileCB = plotCB(s"plot-${prefix}lossage-${algoName}"),
+        gnuFileCB = plotCB(s"plot-${prefix}retention-${algoName}"),
         view = view
       )
-      gnuPlot(descrs.to(Seq))(title = s"Lossage: Ratio node count per state count $prefix",
+      gnuPlot(descrs.to(Seq))(title = s"Retention: Ratio node count per state count $prefix",
         xAxisLabel = algoName,
-        yAxisLabel = "lossage",
+        yAxisLabel = "retention",
         yLog = true,
+        grid = true,
         plotWith = "lines",
-        gnuFileCB = plotCB(s"plot-${prefix}lossage-${algoName}-ratsnest"),
+        gnuFileCB = plotCB(s"plot-${prefix}retention-${algoName}-ratsnest"),
         view = view
       )
     }
   }
+
   def plotBalanceLocalAverage(view:Boolean): Unit = {
     import scala.math.abs
     val delta_balance = 0.25
@@ -340,15 +343,15 @@ object DataPlot {
   }
 }
 
-object LossagePlot {
+object RetentionPlot {
   def main(array: Array[String]):Unit = {
     sup(view=true)
   }
 
   def sup(view:Boolean) = {
-    DataPlot.plotStateLossage(view=view)
-    DataPlot.plotStateLossage("64-",view=view)
-    DataPlot.plotStateLossage("128-",view=view)
+    DataPlot.plotStateRetention(view=view)
+    DataPlot.plotStateRetention("64-",view=view)
+    DataPlot.plotStateRetention("128-",view=view)
   }
 }
 
@@ -452,7 +455,7 @@ object Plots {
     Average.sup(view=view)
     Histograms.sup(view=view)
     BalancePlot.sup(view=view)
-    LossagePlot.sup(view=view)
+    RetentionPlot.sup(view=view)
     TimeOutPlot.sup(view=view)
     DiversityPlot.sup(view=view)
   }
