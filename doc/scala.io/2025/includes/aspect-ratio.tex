@@ -1,51 +1,79 @@
-\documentclass[tikz, border=10pt]{standalone}
+\documentclass[tikz,border=8pt]{standalone}
 \usepackage{tikz}
-\usetikzlibrary{trees, arrows.meta, positioning, decorations.pathreplacing}
+\usetikzlibrary{trees,arrows.meta,positioning}
 
 \begin{document}
-
 \begin{tikzpicture}[
-  level distance=10mm,
+  level distance=12mm,
   level 1/.style={sibling distance=80mm},
   level 2/.style={sibling distance=40mm},
   level 3/.style={sibling distance=20mm},
   level 4/.style={sibling distance=10mm},
-  every node/.style={draw, circle, minimum size=5pt, inner sep=0pt}
+  every node/.style={circle,draw,inner sep=1pt,minimum size=6pt},
+  edge from parent/.style={draw,-{Stealth}}
 ]
 
-% --- Binary tree with named leaves ---
+% ---------- Full binary tree of depth 4 (16 leaves) ----------
 \node (root) {}
   child { node {}
     child { node {}
-      child { node (L) {} }   % leftmost leaf
-      child { node {} }
+      child { node {}
+        child { node (L) {} }  % leftmost leaf
+        child { node {} }
+      }
+      child { node {}
+        child { node {} }
+        child { node {} }
+      }
     }
     child { node {}
-      child { node {} }
-      child { node {} }
+      child { node {}
+        child { node {} }
+        child { node {} }
+      }
+      child { node {}
+        child { node {} }
+        child { node {} }
+      }
     }
   }
   child { node {}
     child { node {}
-      child { node {} }
-      child { node {} }
+      child { node {}
+        child { node {} }
+        child { node {} }
+      }
+      child { node {}
+        child { node {} }
+        child { node {} }
+      }
     }
     child { node {}
-      child { node {} }
-      child { node (R) {} }   % rightmost leaf
+      child { node {}
+        child { node {} }
+        child { node {} }
+      }
+      child { node {}
+        child { node {} }
+        child { node (R) {} }  % rightmost leaf
+      }
     }
-  };
+  }
+;
 
-% --- Height annotation ---
-\draw[<->, thick] ([xshift=10mm]root.north) -- 
-  node[right, midway] {$\log_2(n)$} 
-  ([xshift=10mm]L.south);
+% ---------- Right-side vertical arrow for height ----------
+% place a fixed x-coordinate slightly to the right of the rightmost leaf
+\coordinate (rightside) at ($(R.east)+(8mm,0)$);
+% draw a vertical arrow whose x is the fixed x of (rightside) and whose y
+% runs from the root top to the leaves bottom (projection using |-).
+\draw[<->, thick] (rightside |- root.north) -- 
+  node[right, midway] {$\log_2 n$} 
+  (rightside |- R.south);
 
-% --- Width annotation ---
-\draw[<->, thick] (L.south west) ++(0,-5mm) --
-  node[below, midway] {$n$}
-  (R.south east);
+% ---------- Bottom horizontal arrow for width ----------
+\coordinate (Lbot) at ($(L.south)-(0,8mm)$);
+\coordinate (Rbot) at ($(R.south)-(0,8mm)$);
+\draw[<->, thick] (Lbot) -- node[below] {$n$} (Rbot);
 
 \end{tikzpicture}
-
 \end{document}
