@@ -210,3 +210,26 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.8\textwidth}
+      \only<1>{\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-retention-Imbalance-Factor.png}}%
+      \only<2>{\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-retention-Imbalance-Factor-ratsnest.png}}
+    \end{column}
+    \begin{column}{.33\textwidth}
+      \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
+
+      Retention measures resistance to lossage.
+
+      High lossage means large RTEs result in small DFAs.
+      High retention means more DFAs are large (don't \emph{lose} as many states).
+
+      \medskip
+
+      $\rho = \frac{state~count}{node~count}$
+
+      $\rho > 1$ is good.
+
+    \end{column}
+  \end{columns}
+\end{frame}

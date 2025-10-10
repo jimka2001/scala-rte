@@ -332,13 +332,14 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-lossage-Imbalance-Factor-ratsnest.png}
+      \only<1>{\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-retention-Imbalance-Factor.png}}
+      \only<2>{\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-retention-Imbalance-Factor-ratsnest.png}}
     \end{column}
     \begin{column}{.35\textwidth}
 
-      Lossage = $\lambda = \frac{state~count}{node~count}$
+      Retention = $\rho = \frac{state~count}{node~count}$
 
-      $\lambda > 1$ is good.
+      $\rho > 1$ is good.
 
     \end{column}
   \end{columns}
@@ -347,33 +348,16 @@
 \begin{frame}
   \begin{columns}
     \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-lossage-Imbalance-Factor-ratsnest.png}
+      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-retention-Imbalance-Factor-ratsnest.png}
     \end{column}
     \begin{column}{.35\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
 
       \medskip
 
-      Lossage = $\lambda = \frac{state~count}{node~count}$
+      Retention = $\rho = \frac{state~count}{node~count}$
 
-      $\lambda > 1$ is good.
-
-    \end{column}
-  \end{columns}
-\end{frame}
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-lossage-Imbalance-Factor-ratsnest.png}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
-
-      \medskip
-
-      Lossage = $\lambda = \frac{state~count}{node~count}$
-
-      $\lambda > 1$ is good.
+      $\rho > 1$ is good.
 
     \end{column}
   \end{columns}
