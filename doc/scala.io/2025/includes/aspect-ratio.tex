@@ -13,11 +13,11 @@
   every node/.style={draw, circle, minimum size=5pt, inner sep=0pt}
 ]
 
-% --- Binary tree ---
+% --- Binary tree with named leaves ---
 \node (root) {}
   child { node {}
     child { node {}
-      child { node {} }
+      child { node (L) {} }   % leftmost leaf
       child { node {} }
     }
     child { node {}
@@ -32,22 +32,19 @@
     }
     child { node {}
       child { node {} }
-      child { node {} }
+      child { node (R) {} }   % rightmost leaf
     }
   };
 
-% --- Compute coordinates for annotations ---
-% Get top (root) and bottom (leftmost leaf) coordinates
-\path (root) ++(0,0) coordinate (top);
-\path (root-1-1-1-1) ++(0,0) coordinate (bottom);
-\path (root-1-1-1-1) ++(-1,0) coordinate (leftmost);
-\path (root-2-2-2-2) ++(1,0) coordinate (rightmost);
-
 % --- Height annotation ---
-\draw[<->, thick] ([xshift=10mm]top) -- node[right, midway] {$\log_2(n)$} ([xshift=10mm]bottom);
+\draw[<->, thick] ([xshift=10mm]root.north) -- 
+  node[right, midway] {$\log_2(n)$} 
+  ([xshift=10mm]L.south);
 
 % --- Width annotation ---
-\draw[<->, thick] (leftmost) ++(0,-1) -- node[below, midway] {$n$} (rightmost |- leftmost);
+\draw[<->, thick] (L.south west) ++(0,-5mm) --
+  node[below, midway] {$n$}
+  (R.south east);
 
 \end{tikzpicture}
 
