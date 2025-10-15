@@ -315,17 +315,7 @@ CONCRETELY: uniformly sample Finite Automata by:
   \usebox\scalatreesplit
 \end{frame}
 
-\newsavebox\scalaflajolet
-\begin{lrbox}{\scalaflajolet}
-  \begin{minipage}{15cm}
-    \input{scalaflajolet}
-  \end{minipage}
-\end{lrbox}
-\begin{frame}{Rte Flajolet Generator}
-  \usebox\scalaflajolet
-\end{frame}
-
-\begin{frame}{Flajolet Example}
+\begin{frame}{Flajolet Algorithm}{Generate a Skeleton}
 
   Inserting 0 \ldots 9 in random order into Binary Search Tree: \code{[5 4 2 9 7 8 0 3 6 1]}
 
@@ -340,6 +330,18 @@ CONCRETELY: uniformly sample Finite Automata by:
   \only<8>{\includegraphics[height=.8\textheight]{flajolet-8-02345789}}%
   \only<9>{\includegraphics[height=.8\textheight]{flajolet-9-023456789}}%
   \only<10>{\includegraphics[height=.8\textheight]{flajolet-10-0123456789}}%
+\end{frame}
+
+
+
+\newsavebox\scalaflajolet
+\begin{lrbox}{\scalaflajolet}
+  \begin{minipage}{15cm}
+    \input{scalaflajolet}
+  \end{minipage}
+\end{lrbox}
+\begin{frame}{Rte Flajolet Generator}
+  \usebox\scalaflajolet
 \end{frame}
 
 

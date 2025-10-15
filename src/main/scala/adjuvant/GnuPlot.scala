@@ -94,7 +94,7 @@ object GnuPlot {
         gnu.write(s"""set ylabel "$yAxisLabel" font ",15"\n""")
       if (grid)
         gnu.write(s"set grid\n")
-      gnu.write("set key font ',15'\n")
+      gnu.write("set key font ',10'\n")
       gnu.write("set xtics font ',15'\n")
       gnu.write("set ytics font ',15'\n")
       if (plotWith == "points") {

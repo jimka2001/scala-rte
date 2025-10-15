@@ -1,15 +1,15 @@
 # 
 set xlabel "Ratio longest to shortest" font ",15"
 set ylabel "node:state ratio" font ",15"
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
 set title "Ratio Longest to Shortest "
-plot "-" using 1:2 with points title "naive-mid 864 samples",\
-    "-" using 1:2 with points title "naive-edge 868 samples",\
+plot "-" using 1:2 with points title "naive-gauss 864 samples",\
+    "-" using 1:2 with points title "naive-inv-gauss 868 samples",\
     "-" using 1:2 with points title "balanced 863 samples"
-#naive-mid 864 samples
+#naive-gauss 864 samples
 1.0 0.1869158878504673
 1.25 0.09236295219362012
 1.3333333333333333 0.06818181818181818
@@ -46,7 +46,7 @@ plot "-" using 1:2 with points title "naive-mid 864 samples",\
 5.0 0.05063291139240506
 5.5 0.00995575221238938
 end
-#naive-edge 868 samples
+#naive-inv-gauss 868 samples
 1.5 0.7777777777777777
 2.0 0.2291325695581015
 2.5 0.1018867924528302

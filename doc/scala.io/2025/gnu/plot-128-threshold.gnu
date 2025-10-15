@@ -4,14 +4,14 @@ set logscale y
 set xlabel "DFA state count" font ",15"
 set ylabel "Percentage" font ",15"
 set grid
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
 set title "Fraction of DFAs larger than given state count 128-"
 plot "-" using 1:2 with linespoints title "tree-split-linear samples=144",\
-    "-" using 1:2 with linespoints title "tree-split-mid samples=128",\
-    "-" using 1:2 with linespoints title "tree-split-edge samples=135",\
+    "-" using 1:2 with linespoints title "tree-split-gauss samples=128",\
+    "-" using 1:2 with linespoints title "tree-split-inv-gauss samples=135",\
     "-" using 1:2 with linespoints title "flajolet samples=122",\
     "-" using 1:2 with linespoints title "comb samples=130"
 #tree-split-linear samples=144
@@ -48,7 +48,7 @@ plot "-" using 1:2 with linespoints title "tree-split-linear samples=144",\
 186.000 1.389
 625.000 0.694
 end
-#tree-split-mid samples=128
+#tree-split-gauss samples=128
 1.000 100.000
 2.000 49.219
 3.000 41.406
@@ -92,7 +92,7 @@ end
 399.000 1.563
 450.000 0.781
 end
-#tree-split-edge samples=135
+#tree-split-inv-gauss samples=135
 1.000 100.000
 2.000 57.778
 3.000 55.556

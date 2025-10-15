@@ -12,7 +12,7 @@ GNU_DIR := ./gnu
 GNUS := $(wildcard $(GNU_DIR)/*.gnu)
 GEN_GNU_PDFS := $(GNUS:.gnu=.pdf)
 
-newton.2025.scalaio.slides.pdf : newton.2025.scalaio.slides.ltx $(GEN_DOT_PDFS) $(GEN_GNU_PDFS)
+newton.2025.scalaio.slides.pdf : newton.2025.scalaio.slides.ltx includes/*.tex $(GEN_DOT_PDFS) $(GEN_GNU_PDFS)
 	TEXINPUTS="$(TEXINPUTS):.:./includes:./gnu:./dots" \
 	${LATEXMK} ${FLAGS} newton.2025.scalaio.slides.ltx
 

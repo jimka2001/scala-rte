@@ -3,14 +3,14 @@ set logscale y
 set xlabel "AST leaf count" font ",15"
 set ylabel "DFA state count" font ",15"
 set grid
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
 set style line 1 pt 7 ps 0.8
 set key horizontal bmargin
-set title "Average tree-split-edge node count (720 samples)"
-plot "-" using 1:2 with points ls 1 title "tree-split-edge"
-#tree-split-edge
+set title "Average tree-split-inv-gauss node count (720 samples)"
+plot "-" using 1:2 with points ls 1 title "tree-split-inv-gauss"
+#tree-split-inv-gauss
 64.000 9.500
 65.000 1.000
 66.000 4.429

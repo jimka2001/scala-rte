@@ -3,14 +3,15 @@ set logscale y
 set xlabel "Aspect-Ratio" font ",15"
 set ylabel "retention" font ",15"
 set grid
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
+set key font ',10'
 set key horizontal bmargin
 set title "Retention: Ratio node count per state count "
 plot "-" using 1:2 with lines title "tree-split-linear 233 samples",\
-    "-" using 1:2 with lines title "tree-split-mid 234 samples",\
-    "-" using 1:2 with lines title "tree-split-edge 240 samples",\
+    "-" using 1:2 with lines title "tree-split-gauss 234 samples",\
+    "-" using 1:2 with lines title "tree-split-inv-gauss 240 samples",\
     "-" using 1:2 with lines title "flajolet 236 samples",\
     "-" using 1:2 with lines title "comb 240 samples"
 #tree-split-linear 233 samples
@@ -248,7 +249,7 @@ plot "-" using 1:2 with lines title "tree-split-linear 233 samples",\
 2.781 0.013
 2.610 0.007
 end
-#tree-split-mid 234 samples
+#tree-split-gauss 234 samples
 1.484 0.007
 1.740 0.012
 1.921 0.056
@@ -484,7 +485,7 @@ end
 2.364 0.004
 2.179 0.017
 end
-#tree-split-edge 240 samples
+#tree-split-inv-gauss 240 samples
 4.697 0.005
 5.648 0.004
 4.404 0.076
