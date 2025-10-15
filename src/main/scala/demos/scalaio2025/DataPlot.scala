@@ -48,7 +48,7 @@ object DataPlot {
 
   val imbalanceAlgos = Seq(((cl: CsvLine) => cl.aspectRatio(), "Aspect-Ratio"),
     ((cl: CsvLine) => cl.imbalance(), "Imbalance-Factor"),
-    ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio-longest:shortest"))
+    ((cl: CsvLine) => cl.ratioLongestShortest(), "Ratio-longest-shortest"))
 
   def plotStateRetention(prefix:String="",view:Boolean): Unit = {
     import scala.util.Random.shuffle
