@@ -3,7 +3,7 @@ set logscale y
 set xlabel "Imbalance-Factor" font ",15"
 set ylabel "retention" font ",15"
 set grid
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
 set style line 1 pt 7 ps 0.8
@@ -14,8 +14,8 @@ set style line 5 pt 7 ps 0.8
 set key horizontal bmargin
 set title "Retention: Ratio node count per state count 128-"
 plot "-" using 1:2 with points ls 1 title "tree-split-linear 144 samples",\
-    "-" using 1:2 with points ls 2 title "tree-split-mid 128 samples",\
-    "-" using 1:2 with points ls 3 title "tree-split-edge 135 samples",\
+    "-" using 1:2 with points ls 2 title "tree-split-gauss 128 samples",\
+    "-" using 1:2 with points ls 3 title "tree-split-inv-gauss 135 samples",\
     "-" using 1:2 with points ls 4 title "flajolet 122 samples",\
     "-" using 1:2 with points ls 5 title "comb 130 samples"
 #tree-split-linear 144 samples
@@ -164,7 +164,7 @@ plot "-" using 1:2 with points ls 1 title "tree-split-linear 144 samples",\
 1.535 0.019
 1.393 0.103
 end
-#tree-split-mid 128 samples
+#tree-split-gauss 128 samples
 1.198 0.026
 1.234 0.008
 1.122 1.636
@@ -294,7 +294,7 @@ end
 1.219 1.467
 1.257 0.004
 end
-#tree-split-edge 135 samples
+#tree-split-inv-gauss 135 samples
 1.895 0.004
 1.428 0.385
 1.659 0.027

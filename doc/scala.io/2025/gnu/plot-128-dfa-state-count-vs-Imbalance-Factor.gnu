@@ -3,7 +3,7 @@ set logscale y
 set xlabel "Imbalance-Factor" font ",15"
 set ylabel "DFA state count" font ",15"
 set grid
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
 set style line 1 pt 7 ps 0.8
@@ -14,8 +14,8 @@ set style line 5 pt 7 ps 0.8
 set key horizontal bmargin
 set title "DFA state count 128- vs Imbalance-Factor"
 plot "-" using 1:2 with points ls 1 title "tree-split-linear 144 samples",\
-    "-" using 1:2 with points ls 2 title "tree-split-mid 128 samples",\
-    "-" using 1:2 with points ls 3 title "tree-split-edge 135 samples",\
+    "-" using 1:2 with points ls 2 title "tree-split-gauss 128 samples",\
+    "-" using 1:2 with points ls 3 title "tree-split-inv-gauss 135 samples",\
     "-" using 1:2 with points ls 4 title "flajolet 122 samples",\
     "-" using 1:2 with points ls 5 title "comb 130 samples"
 #tree-split-linear 144 samples
@@ -164,7 +164,7 @@ plot "-" using 1:2 with points ls 1 title "tree-split-linear 144 samples",\
 1.255 1.000
 1.341 4.000
 end
-#tree-split-mid 128 samples
+#tree-split-gauss 128 samples
 1.242 1.000
 1.354 1.000
 1.268 1.000
@@ -294,7 +294,7 @@ end
 0.990 1.000
 1.277 1.000
 end
-#tree-split-edge 135 samples
+#tree-split-inv-gauss 135 samples
 2.355 1.000
 2.028 7.000
 1.381 10.000

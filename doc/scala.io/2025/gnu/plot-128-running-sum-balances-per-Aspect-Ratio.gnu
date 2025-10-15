@@ -2,14 +2,14 @@
 set xlabel "Aspect-Ratio" font ",15"
 set ylabel "DFA state count" font ",15"
 set grid
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
 set key horizontal bmargin
 set title "Running Sum Balances 128- per Aspect-Ratio"
 plot "-" using 1:2 with lines title "tree-split-linear 144 samples",\
-    "-" using 1:2 with lines title "tree-split-mid 128 samples",\
-    "-" using 1:2 with lines title "tree-split-edge 135 samples",\
+    "-" using 1:2 with lines title "tree-split-gauss 128 samples",\
+    "-" using 1:2 with lines title "tree-split-inv-gauss 135 samples",\
     "-" using 1:2 with lines title "flajolet 122 samples",\
     "-" using 1:2 with lines title "comb 130 samples"
 #tree-split-linear 144 samples
@@ -158,7 +158,7 @@ plot "-" using 1:2 with lines title "tree-split-linear 144 samples",\
 2.000 0.000
 2.000 0.000
 end
-#tree-split-mid 128 samples
+#tree-split-gauss 128 samples
 2.786 15.857
 2.714 15.571
 2.714 15.571
@@ -288,7 +288,7 @@ end
 1.571 0.000
 1.571 0.000
 end
-#tree-split-edge 135 samples
+#tree-split-inv-gauss 135 samples
 5.786 56.929
 5.714 56.643
 5.643 56.643

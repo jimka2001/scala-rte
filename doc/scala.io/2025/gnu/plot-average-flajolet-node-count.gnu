@@ -3,7 +3,7 @@ set logscale y
 set xlabel "AST leaf count" font ",15"
 set ylabel "DFA state count" font ",15"
 set grid
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
 set style line 1 pt 7 ps 0.8

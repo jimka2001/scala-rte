@@ -2,7 +2,7 @@
 set xlabel "Leaf Count" font ",15"
 set ylabel "Frequency" font ",15"
 set grid
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
 set style line 1 pt 7 ps 1.25
@@ -13,8 +13,8 @@ set style line 5 pt 7 ps 1.25
 set key horizontal bmargin
 set title "Rte Leaf Count Histogram"
 plot "-" using 1:2 with points ls 1 title "tree-split-linear samples=233",\
-    "-" using 1:2 with points ls 2 title "tree-split-mid samples=234",\
-    "-" using 1:2 with points ls 3 title "tree-split-edge samples=240",\
+    "-" using 1:2 with points ls 2 title "tree-split-gauss samples=234",\
+    "-" using 1:2 with points ls 3 title "tree-split-inv-gauss samples=240",\
     "-" using 1:2 with points ls 4 title "flajolet samples=236",\
     "-" using 1:2 with points ls 5 title "comb samples=240"
 #tree-split-linear samples=233
@@ -83,7 +83,7 @@ plot "-" using 1:2 with points ls 1 title "tree-split-linear samples=233",\
 127.000 2.000
 128.000 6.000
 end
-#tree-split-mid samples=234
+#tree-split-gauss samples=234
 64.000 4.000
 65.000 6.000
 66.000 1.000
@@ -149,7 +149,7 @@ end
 127.000 3.000
 128.000 2.000
 end
-#tree-split-edge samples=240
+#tree-split-inv-gauss samples=240
 64.000 2.000
 65.000 2.000
 66.000 7.000

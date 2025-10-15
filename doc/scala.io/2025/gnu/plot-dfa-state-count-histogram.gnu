@@ -4,7 +4,7 @@ set logscale y
 set xlabel "DFA State Count" font ",15"
 set ylabel "Frequency" font ",15"
 set grid
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
 set style line 1 pt 7 ps 1.25
@@ -15,8 +15,8 @@ set style line 5 pt 7 ps 1.25
 set key horizontal bmargin
 set title "DFA State Count Histogram "
 plot "-" using 1:2 with points ls 1 title "tree-split-linear samples=233",\
-    "-" using 1:2 with points ls 2 title "tree-split-mid samples=234",\
-    "-" using 1:2 with points ls 3 title "tree-split-edge samples=240",\
+    "-" using 1:2 with points ls 2 title "tree-split-gauss samples=234",\
+    "-" using 1:2 with points ls 3 title "tree-split-inv-gauss samples=240",\
     "-" using 1:2 with points ls 4 title "flajolet samples=236",\
     "-" using 1:2 with points ls 5 title "comb samples=240"
 #tree-split-linear samples=233
@@ -56,7 +56,7 @@ plot "-" using 1:2 with points ls 1 title "tree-split-linear samples=233",\
 183.000 1.000
 616.000 1.000
 end
-#tree-split-mid samples=234
+#tree-split-gauss samples=234
 1.000 112.000
 2.000 17.000
 3.000 20.000
@@ -107,7 +107,7 @@ end
 244.000 1.000
 245.000 1.000
 end
-#tree-split-edge samples=240
+#tree-split-inv-gauss samples=240
 1.000 92.000
 2.000 9.000
 3.000 48.000

@@ -3,7 +3,7 @@ set logscale y
 set xlabel "Aspect-Ratio" font ",15"
 set ylabel "DFA state count" font ",15"
 set grid
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
 set style line 1 pt 7 ps 0.8
@@ -14,8 +14,8 @@ set style line 5 pt 7 ps 0.8
 set key horizontal bmargin
 set title "DFA state count  vs Aspect-Ratio"
 plot "-" using 1:2 with points ls 1 title "tree-split-linear 233 samples",\
-    "-" using 1:2 with points ls 2 title "tree-split-mid 234 samples",\
-    "-" using 1:2 with points ls 3 title "tree-split-edge 240 samples",\
+    "-" using 1:2 with points ls 2 title "tree-split-gauss 234 samples",\
+    "-" using 1:2 with points ls 3 title "tree-split-inv-gauss 240 samples",\
     "-" using 1:2 with points ls 4 title "flajolet 236 samples",\
     "-" using 1:2 with points ls 5 title "comb 240 samples"
 #tree-split-linear 233 samples
@@ -253,7 +253,7 @@ plot "-" using 1:2 with points ls 1 title "tree-split-linear 233 samples",\
 2.512 9.000
 2.465 1.000
 end
-#tree-split-mid 234 samples
+#tree-split-gauss 234 samples
 1.877 1.000
 1.740 1.000
 1.910 1.000
@@ -489,7 +489,7 @@ end
 1.694 1.000
 2.337 1.000
 end
-#tree-split-edge 240 samples
+#tree-split-inv-gauss 240 samples
 4.963 5.000
 3.232 10.000
 4.336 3.000

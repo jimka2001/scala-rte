@@ -15,7 +15,7 @@ object GenCsvFlajolet {
 object GenCsvTreeSplitEdge {
   def main(argv: Array[String]): Unit = {
     val num_repetitions:Int = if (argv.length == 0) 50 else argv(0).toInt
-    RteTree.genCsvBySize(num_repetitions, algo="tree-split-edge")
+    RteTree.genCsvBySize(num_repetitions, algo="tree-split-inv-gauss")
   }
 }
 
@@ -29,7 +29,7 @@ object GenCsvTreeSplitLinear {
 object GenCsvTreeSplitMid {
   def main(argv: Array[String]): Unit = {
     val num_repetitions:Int = if (argv.length == 0) 50 else argv(0).toInt
-    RteTree.genCsvBySize(num_repetitions, algo="tree-split-mid")
+    RteTree.genCsvBySize(num_repetitions, algo="tree-split-gauss")
   }
 }
 

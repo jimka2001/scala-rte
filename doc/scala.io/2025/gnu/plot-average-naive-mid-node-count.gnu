@@ -3,14 +3,14 @@ set logscale y
 set xlabel "AST leaf count" font ",15"
 set ylabel "DFA state count" font ",15"
 set grid
-set key font ',15'
+set key font ',10'
 set xtics font ',15'
 set ytics font ',15'
 set style line 1 pt 7 ps 0.8
 set key horizontal bmargin
-set title "Average naive-mid node count (702 samples)"
-plot "-" using 1:2 with points ls 1 title "naive-mid"
-#naive-mid
+set title "Average naive-gauss node count (702 samples)"
+plot "-" using 1:2 with points ls 1 title "naive-gauss"
+#naive-gauss
 64.000 2.000
 65.000 13.833
 66.000 19.000
