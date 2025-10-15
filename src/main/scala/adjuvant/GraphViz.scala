@@ -62,7 +62,7 @@ object GraphViz {
 
     def writeToDot(dotPathName:String, _latexName:String, title:String):Unit = {
       val dotStream = new java.io.FileOutputStream(new File(dotPathName))
-      treeToDot(edges, labels, dotStream, title)
+      treeToDot(edges, labels, dotStream, title=title, drawUnlabeled=false)
       dotStream.close()
       dotFileCB(dotPathName)
     }
@@ -74,6 +74,7 @@ object GraphViz {
   def treeToDot(edges:Seq[(Int,Int)],
                 labels:Map[Int,String],
                 dotStream: OutputStream,
+                drawUnlabeled:Boolean = false,
                 title: String = ""):Unit = {
 
     val vertices:Set[Int] = edges.foldLeft(Set[Int]()){
@@ -94,17 +95,21 @@ object GraphViz {
 
     for { v <- vertices.to(List).sorted
           } {
-      write(s"N$v")
-
-      labels.get(v) match {
-        case None => write(s""" [label=""]""")
-        case Some(lab) => write(s""" [label="${lab}"]""")
+      if (drawUnlabeled)
+        write(s"N$v")
+      else if (labels.contains(v)) {
+        labels.get(v) match {
+          case None => if (drawUnlabeled) write(s""" [label=""]""")
+          case Some(lab) => write(s"""N$v [label="${lab}"]""")
+        }
       }
-      
+
       write("\n")
     }
 
     for { (src,dst) <- edges
+      if labels.contains(src)
+      if labels.contains(dst)
           } write(s"N$src -> N$dst\n")
 
 
@@ -119,6 +124,7 @@ object GraphViz {
   }
 
   def main(argv:Array[String]):Unit = {
+    // simple test
     treeToPng(edges=Seq((0, 1), (0, 2),
       (2, 3), (2, 4)),
       labels=Map(0 -> "0",
