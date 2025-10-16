@@ -38,8 +38,8 @@
     \input{set-t}
   }%
   \item<3->{Selection should be \emph{surjective}.\\
-    \Ie any conceivalbe object of the target type should be possible.}%
-  \item<4->{Selection should be \emph{uniform}.\\
+    \Ie any conceivable object of the target type should be possible.}%
+  \item<4->{Selection should be \emph{uniform}. \textcolor{gold}{controversial}\\
     \Ie, any two objects are equally likely.}
   \end{itemize}
 \end{frame}
@@ -74,7 +74,7 @@ CONCRETELY: uniformly sample Finite Automata by:
     \item  Convert Regular Expression to Finite Automaton
     \end{enumerate}
 
-    Uniform generantion of Deterministic Finite Automata (DFA) is \textcolor{red}{difficult}.\\
+    Uniform generation of Deterministic Finite Automata (DFA) is \textcolor{red}{difficult}.\\
     Conversion from RE to DFA is a  \textcolor{greeny}{solved problem}.
 
     \input{thought-balloon}%
@@ -195,7 +195,7 @@ CONCRETELY: uniformly sample Finite Automata by:
     \item DFA to RTE
     \item Pattern matching
     \item Minimization
-    \item Union, Intersection, Emptyness check
+    \item Union, Intersection, Emptiness check
     \item Need to test \code{xymbolyco}
     \begin{itemize}
     \item Random generation of DFA
@@ -235,7 +235,7 @@ CONCRETELY: uniformly sample Finite Automata by:
     \end{column}
     \begin{column}{0.6\textwidth}
       \begin{itemize}
-      \item<1->{Trival DFA. \includegraphics[width=3cm, keepaspectratio]{dfa-naive-edge}}
+      \item<1->{Trivial DFA. \includegraphics[width=3cm, keepaspectratio]{dfa-naive-edge}}
       \item<2->{Non-uniformity caused by so-called annihilators}
       \item<3->{Whenever an input $X=\emptyset$ then $X \cap Y = \emptyset$.}
       \item<4->{Thus entire tree generating $Y$ is \textcolor{red}{in vain.}}
@@ -340,7 +340,7 @@ CONCRETELY: uniformly sample Finite Automata by:
     \input{scalaflajolet}
   \end{minipage}
 \end{lrbox}
-\begin{frame}{Rte Flajolet Generator}
+\begin{frame}{RTE Flajolet Generator}
   \usebox\scalaflajolet
 \end{frame}
 
@@ -372,3 +372,7 @@ CONCRETELY: uniformly sample Finite Automata by:
 \input{unused-plots}
 
 \end{document}
+
+% LocalWords:  surjective surjectively PBT EPITA Ghiles Ziat greeny
+% LocalWords:  DFA toccolor RTEs ASTs Kleene xymbolyco RTE DFAs AST
+% LocalWords:  keepaspectratio annihilators Flajolet
