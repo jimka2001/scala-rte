@@ -1,15 +1,15 @@
 # 
-set xlabel "Ratio-longest:shortest" font ",15"
-set ylabel "Percentage count >= 2 for imbalance <= x" font ",15"
+set xlabel "Ratio-longest-shortest" font ",10"
+set ylabel "Percentage count >= 2 for imbalance <= x" font ",10"
 set grid
-set key font ',15'
-set xtics font ',15'
-set ytics font ',15'
+set key font ',10'
+set xtics font ',10'
+set ytics font ',10'
 set key horizontal bmargin
-set title "Running Balances 64- for Ratio-longest:shortest"
+set title "Running Balances 64- for Ratio-longest-shortest" font ",12"
 plot "-" using 1:2 with lines title "tree-split-linear 493 samples",\
-    "-" using 1:2 with lines title "tree-split-mid 483 samples",\
-    "-" using 1:2 with lines title "tree-split-edge 484 samples",\
+    "-" using 1:2 with lines title "tree-split-gauss 483 samples",\
+    "-" using 1:2 with lines title "tree-split-inv-gauss 484 samples",\
     "-" using 1:2 with lines title "flajolet 483 samples",\
     "-" using 1:2 with lines title "comb 480 samples"
 #tree-split-linear 493 samples
@@ -60,7 +60,7 @@ plot "-" using 1:2 with lines title "tree-split-linear 493 samples",\
 16.000 45.030
 20.000 45.030
 end
-#tree-split-mid 483 samples
+#tree-split-gauss 483 samples
 1.571 0.414
 1.667 1.035
 1.750 1.242
@@ -100,7 +100,7 @@ end
 5.667 55.901
 8.000 56.108
 end
-#tree-split-edge 484 samples
+#tree-split-inv-gauss 484 samples
 4.000 0.000
 4.200 0.000
 4.250 0.000

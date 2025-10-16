@@ -1,14 +1,14 @@
 # 
-set xlabel "RTE leaf count" font ",15"
-set ylabel "Unique DFA count / log(sample count)" font ",15"
-set key font ',15'
-set xtics font ',15'
-set ytics font ',15'
+set xlabel "RTE leaf count" font ",10"
+set ylabel "Unique DFA count / log(sample count)" font ",10"
+set key font ',10'
+set xtics font ',10'
+set ytics font ',10'
 set key horizontal bmargin
-set title "Diversity Per log(Sample)"
+set title "Diversity Per log(Sample)" font ",12"
 plot "-" using 1:2 with lines title "tree-split-linear - 870 samples",\
-    "-" using 1:2 with lines title "tree-split-mid - 845 samples",\
-    "-" using 1:2 with lines title "tree-split-edge - 859 samples",\
+    "-" using 1:2 with lines title "tree-split-gauss - 845 samples",\
+    "-" using 1:2 with lines title "tree-split-inv-gauss - 859 samples",\
     "-" using 1:2 with lines title "flajolet - 841 samples",\
     "-" using 1:2 with lines title "comb - 850 samples"
 #tree-split-linear - 870 samples
@@ -70,7 +70,7 @@ plot "-" using 1:2 with lines title "tree-split-linear - 870 samples",\
 127.000 2.000
 128.000 8.438
 end
-#tree-split-mid - 845 samples
+#tree-split-gauss - 845 samples
 64.000 22.066
 65.000 2.321
 67.000 2.000
@@ -131,7 +131,7 @@ end
 127.000 1.262
 128.000 7.832
 end
-#tree-split-edge - 859 samples
+#tree-split-inv-gauss - 859 samples
 64.000 18.600
 65.000 1.000
 66.000 2.137

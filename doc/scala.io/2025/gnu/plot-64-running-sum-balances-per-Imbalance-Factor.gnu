@@ -1,15 +1,15 @@
 # 
-set xlabel "Imbalance-Factor" font ",15"
-set ylabel "DFA state count" font ",15"
+set xlabel "Imbalance-Factor" font ",10"
+set ylabel "DFA state count" font ",10"
 set grid
-set key font ',15'
-set xtics font ',15'
-set ytics font ',15'
+set key font ',10'
+set xtics font ',10'
+set ytics font ',10'
 set key horizontal bmargin
-set title "Running Sum Balances 64- per Imbalance-Factor"
+set title "Running Sum Balances 64- per Imbalance-Factor" font ",12"
 plot "-" using 1:2 with lines title "tree-split-linear 493 samples",\
-    "-" using 1:2 with lines title "tree-split-mid 483 samples",\
-    "-" using 1:2 with lines title "tree-split-edge 484 samples",\
+    "-" using 1:2 with lines title "tree-split-gauss 483 samples",\
+    "-" using 1:2 with lines title "tree-split-inv-gauss 484 samples",\
     "-" using 1:2 with lines title "flajolet 483 samples",\
     "-" using 1:2 with lines title "comb 480 samples"
 #tree-split-linear 493 samples
@@ -507,7 +507,7 @@ plot "-" using 1:2 with lines title "tree-split-linear 493 samples",\
 1.020 0.053
 1.011 0.000
 end
-#tree-split-mid 483 samples
+#tree-split-gauss 483 samples
 1.609 6.903
 1.565 6.797
 1.554 6.780
@@ -992,7 +992,7 @@ end
 0.930 0.036
 0.912 0.000
 end
-#tree-split-edge 484 samples
+#tree-split-inv-gauss 484 samples
 2.611 18.781
 2.543 14.343
 2.519 13.193

@@ -1,14 +1,14 @@
 # 
-set xlabel "Ratio-longest:shortest" font ",15"
-set ylabel "Percentage count >= 2 for x=imbalance" font ",15"
-set key font ',15'
-set xtics font ',15'
-set ytics font ',15'
+set xlabel "Ratio-longest-shortest" font ",10"
+set ylabel "Percentage count >= 2 for x=imbalance" font ",10"
+set key font ',10'
+set xtics font ',10'
+set ytics font ',10'
 set key horizontal bmargin
-set title "Local average Ratio-longest:shortest"
+set title "Local average Ratio-longest-shortest" font ",12"
 plot "-" using 1:2 with lines title "tree-split-linear 233 samples",\
-    "-" using 1:2 with lines title "tree-split-mid 234 samples",\
-    "-" using 1:2 with lines title "tree-split-edge 240 samples",\
+    "-" using 1:2 with lines title "tree-split-gauss 234 samples",\
+    "-" using 1:2 with lines title "tree-split-inv-gauss 240 samples",\
     "-" using 1:2 with lines title "flajolet 236 samples",\
     "-" using 1:2 with lines title "comb 240 samples"
 #tree-split-linear 233 samples
@@ -61,7 +61,7 @@ plot "-" using 1:2 with lines title "tree-split-linear 233 samples",\
 16.000 0.000
 24.000 0.000
 end
-#tree-split-mid 234 samples
+#tree-split-gauss 234 samples
 1.833 55.000
 1.857 55.000
 2.000 59.574
@@ -93,7 +93,7 @@ end
 5.000 50.000
 5.333 0.000
 end
-#tree-split-edge 240 samples
+#tree-split-inv-gauss 240 samples
 3.800 0.000
 4.500 50.000
 5.000 33.333

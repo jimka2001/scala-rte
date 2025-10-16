@@ -4,23 +4,23 @@
 LATEX_OPTS ?=
 LATEXMK := latexmk --pdf $(LATEX_OPTS)
 
+DOT_DIR := ./dots
+DOTS := $(wildcard $(DOT_DIR)/*.dot)
+GEN_DOT_PDFS := $(DOTS:.dot=.pdf)
 
+GNU_DIR := ./gnu
+GNUS := $(wildcard $(GNU_DIR)/*.gnu)
+GEN_GNU_PDFS := $(GNUS:.gnu=.pdf)
 
-newton.2025.scalaio.slides.pdf : newton.2025.scalaio.slides.ltx includes/balanced-dfa.pdf includes/balanced-rte.pdf includes/rte-naive-edge.pdf includes/dfa-naive-edge.pdf
-	TEXINPUTS="$(TEXINPUTS):.:./includes:./gnu" \
+newton.2025.scalaio.slides.pdf : newton.2025.scalaio.slides.ltx includes/*.tex $(GEN_DOT_PDFS) $(GEN_GNU_PDFS)
+	TEXINPUTS="$(TEXINPUTS):.:./includes:./gnu:./dots" \
 	${LATEXMK} ${FLAGS} newton.2025.scalaio.slides.ltx
 
-includes/balanced-dfa.pdf : includes/balanced-dfa.dot
-	dot -Tpdf includes/balanced-dfa.dot -o includes/balanced-dfa.pdf
+$(DOT_DIR)/%.pdf: $(DOT_DIR)/%.dot
+	dot -Tpdf $< -o $@
 
-includes/balanced-rte.pdf : includes/balanced-rte.dot
-	dot -Tpdf includes/balanced-rte.dot -o includes/balanced-rte.pdf
-
-includes/rte-naive-edge.pdf : includes/rte-naive-edge.dot
-	dot -Tpdf includes/rte-naive-edge.dot -o includes/rte-naive-edge.pdf
-
-includes/dfa-naive-edge.pdf : includes/dfa-naive-edge.dot
-	dot -Tpdf includes/dfa-naive-edge.dot -o includes/dfa-naive-edge.pdf
+$(GNU_DIR)/%.pdf: $(GNU_DIR)/%.gnu
+	LC_CTYPE=en_US.UTF-8 gnuplot -e "set terminal pdf ; set output '$@' ; load '$<'"
 
 clean:
 	rm -rf newton.2025.scalaio.slides.pdf *.sta *.log *.fls *.aux *.fdb_latexmk *.snm *.out *.nav *.toc
