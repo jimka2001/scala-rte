@@ -295,6 +295,36 @@ CONCRETELY: uniformly sample Finite Automata by:
 \end{frame}
 }
 
+\begin{frame}{Tree-Split Algorithm}{Divide and Conquer}
+
+  To generate tree having $n$ leaves, find $p=pivot$ between 1 and
+  $n$; build tree with $p$ leaves on left and $n-p$ leaves on right.
+  Repeat recursively.
+  \begin{columns}
+    \begin{column}{.5\textwidth}
+      \only<1>{\includegraphics[height=.8\textheight]{tree-split-1}}%
+      \only<2>{\includegraphics[height=.8\textheight]{tree-split-2}}%
+      \only<3>{\includegraphics[height=.8\textheight]{tree-split-3}}%
+      \only<4>{\includegraphics[height=.8\textheight]{tree-split-4}}%
+      \only<5>{\includegraphics[height=.8\textheight]{tree-split-5}}%
+      \only<6->{\includegraphics[height=.8\textheight]{tree-split-6}}%
+    \end{column}\hspace{-1cm}    
+    \begin{column}{.5\textwidth}
+      \only<7>{Question is how to produce the pivot?
+        \begin{itemize}
+        \item Gaussian
+        \item Inverse Gaussian
+        \item Linear
+        \item Lopsided Comb
+        \end{itemize}
+      }
+    \end{column}
+
+  \end{columns}
+\end{frame}
+
+
+
 \newsavebox\scalatreesplitcore
 \begin{lrbox}{\scalatreesplitcore}
   \begin{minipage}{15cm}
