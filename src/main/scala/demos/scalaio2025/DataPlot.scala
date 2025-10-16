@@ -66,6 +66,7 @@ object DataPlot {
         yLog = true,
         grid = true,
         plotWith = "points",
+        pointSize = 0.2,
         gnuFileCB = plotCB(s"plot-${prefix}retention-${algoName}"),
         view = view
       )
@@ -143,6 +144,7 @@ object DataPlot {
         yAxisLabel = "DFA state count",
         plotWith = "points",
         yLog = true,
+        pointSize = 0.2,
         gnuFileCB = plotCB(s"plot-${prefix}dfa-state-count-vs-$xlabel"),
         grid = true,
         view = view

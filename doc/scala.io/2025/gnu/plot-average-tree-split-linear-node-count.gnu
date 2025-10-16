@@ -1,14 +1,14 @@
 # 
 set logscale y
-set xlabel "AST leaf count" font ",15"
-set ylabel "DFA state count" font ",15"
+set xlabel "AST leaf count" font ",10"
+set ylabel "DFA state count" font ",10"
 set grid
 set key font ',10'
-set xtics font ',15'
-set ytics font ',15'
+set xtics font ',10'
+set ytics font ',10'
 set style line 1 pt 7 ps 0.8
 set key horizontal bmargin
-set title "Average tree-split-linear node count (699 samples)"
+set title "Average tree-split-linear node count (699 samples)" font ",12"
 plot "-" using 1:2 with points ls 1 title "tree-split-linear"
 #tree-split-linear
 64.000 5.500

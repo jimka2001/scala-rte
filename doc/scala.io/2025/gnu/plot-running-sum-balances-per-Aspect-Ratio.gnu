@@ -1,12 +1,12 @@
 # 
-set xlabel "Aspect-Ratio" font ",15"
-set ylabel "DFA state count" font ",15"
+set xlabel "Aspect-Ratio" font ",10"
+set ylabel "DFA state count" font ",10"
 set grid
 set key font ',10'
-set xtics font ',15'
-set ytics font ',15'
+set xtics font ',10'
+set ytics font ',10'
 set key horizontal bmargin
-set title "Running Sum Balances  per Aspect-Ratio"
+set title "Running Sum Balances  per Aspect-Ratio" font ",12"
 plot "-" using 1:2 with lines title "tree-split-linear 233 samples",\
     "-" using 1:2 with lines title "tree-split-gauss 234 samples",\
     "-" using 1:2 with lines title "tree-split-inv-gauss 240 samples",\

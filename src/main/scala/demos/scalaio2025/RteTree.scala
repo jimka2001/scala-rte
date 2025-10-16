@@ -4,18 +4,18 @@ import scala.util.Random
 
 object RteTree {
   import demos.scalaio2025.CsvLine.{statisticsResource,writeCsvStatistic}
-  import demos.scalaio2025.Random.{treeSplitRteMid,treeSplitRteEdge,treeSplitRteLinear,combRte}
+  import demos.scalaio2025.Random.{treeSplitRteGaussian,treeSplitRteInvGaussian,treeSplitRteLinear,combRte}
   import demos.scalaio2025.Random.flajoletRteBySize
   val random = new Random
 
-  val algos = Seq("tree-split-linear", "tree-split-mid", "tree-split-edge", "flajolet", "comb")
+  val algos = Seq("tree-split-linear", "tree-split-gauss", "tree-split-inv-gauss", "flajolet", "comb")
 
   def csv(algo:String, prefix:String=""):String = {
     statisticsResource + prefix + algo + ".csv"
   }
 
-  val genRte = Map("tree-split-edge" -> treeSplitRteEdge _,
-                   "tree-split-mid" -> treeSplitRteMid _,
+  val genRte = Map("tree-split-inv-gauss" -> treeSplitRteInvGaussian _,
+                   "tree-split-gauss" -> treeSplitRteGaussian _,
                    "tree-split-linear" -> treeSplitRteLinear _,
                    "flajolet" -> flajoletRteBySize _,
                    "comb" -> combRte _,

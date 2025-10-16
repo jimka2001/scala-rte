@@ -1,19 +1,19 @@
 # 
 set logscale x
 set logscale y
-set xlabel "DFA State Count" font ",15"
-set ylabel "Frequency" font ",15"
+set xlabel "DFA State Count" font ",10"
+set ylabel "Frequency" font ",10"
 set grid
 set key font ',10'
-set xtics font ',15'
-set ytics font ',15'
+set xtics font ',10'
+set ytics font ',10'
 set style line 1 pt 7 ps 1.25
 set style line 2 pt 7 ps 1.25
 set style line 3 pt 7 ps 1.25
 set style line 4 pt 7 ps 1.25
 set style line 5 pt 7 ps 1.25
 set key horizontal bmargin
-set title "DFA State Count Histogram 64-"
+set title "DFA State Count Histogram 64-" font ",12"
 plot "-" using 1:2 with points ls 1 title "tree-split-linear samples=493",\
     "-" using 1:2 with points ls 2 title "tree-split-gauss samples=483",\
     "-" using 1:2 with points ls 3 title "tree-split-inv-gauss samples=484",\

@@ -1,17 +1,17 @@
 # 
-set xlabel "RTE leaf count" font ",15"
-set ylabel "Frequency" font ",15"
+set xlabel "RTE leaf count" font ",10"
+set ylabel "Frequency" font ",10"
 set grid
 set key font ',10'
-set xtics font ',15'
-set ytics font ',15'
+set xtics font ',10'
+set ytics font ',10'
 set style line 1 pt 7 ps 2.0
 set style line 2 pt 7 ps 2.0
 set style line 3 pt 7 ps 2.0
 set style line 4 pt 7 ps 2.0
 set style line 5 pt 7 ps 2.0
 set key horizontal bmargin
-set title "Time Outs"
+set title "Time Outs" font ",12"
 plot "-" using 1:2 with points ls 1 title "tree-split-linear - 894 samples",\
     "-" using 1:2 with points ls 2 title "tree-split-gauss - 870 samples",\
     "-" using 1:2 with points ls 3 title "tree-split-inv-gauss - 869 samples",\

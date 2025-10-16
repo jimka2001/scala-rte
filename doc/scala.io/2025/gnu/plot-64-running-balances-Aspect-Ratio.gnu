@@ -1,12 +1,12 @@
 # 
-set xlabel "Aspect-Ratio" font ",15"
-set ylabel "Percentage count >= 2 for imbalance <= x" font ",15"
+set xlabel "Aspect-Ratio" font ",10"
+set ylabel "Percentage count >= 2 for imbalance <= x" font ",10"
 set grid
 set key font ',10'
-set xtics font ',15'
-set ytics font ',15'
+set xtics font ',10'
+set ytics font ',10'
 set key horizontal bmargin
-set title "Running Balances 64- for Aspect-Ratio"
+set title "Running Balances 64- for Aspect-Ratio" font ",12"
 plot "-" using 1:2 with lines title "tree-split-linear 493 samples",\
     "-" using 1:2 with lines title "tree-split-gauss 483 samples",\
     "-" using 1:2 with lines title "tree-split-inv-gauss 484 samples",\

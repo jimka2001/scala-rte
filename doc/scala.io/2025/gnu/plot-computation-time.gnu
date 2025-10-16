@@ -1,13 +1,13 @@
 # 
 set logscale y
-set xlabel "RTE leaf count" font ",15"
-set ylabel "Average Computation Time (sec)" font ",15"
+set xlabel "RTE leaf count" font ",10"
+set ylabel "Average Computation Time (sec)" font ",10"
 set grid
 set key font ',10'
-set xtics font ',15'
-set ytics font ',15'
+set xtics font ',10'
+set ytics font ',10'
 set key horizontal bmargin
-set title "Computation Time"
+set title "Computation Time" font ",12"
 plot "-" using 1:2 with linespoints title "tree-split-linear - 233 samples",\
     "-" using 1:2 with linespoints title "tree-split-gauss - 234 samples",\
     "-" using 1:2 with linespoints title "tree-split-inv-gauss - 240 samples",\

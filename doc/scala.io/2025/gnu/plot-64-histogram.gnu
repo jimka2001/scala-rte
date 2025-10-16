@@ -8,7 +8,7 @@ set xtics rotate by -45
 set grid
 set xlabel "DFA state count"
 set ylabel "Percentage of DFAs per state count"
-set title "DFA State distribution for Rte 64-"
+set title "DFA State distribution for Rte 64-" font ",10"
 
 
 

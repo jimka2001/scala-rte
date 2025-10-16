@@ -1,9 +1,9 @@
 
 \begin{frame}
   \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-histogram}      
-    \end{column}
+    \begin{column}{.85\textwidth}
+      \includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-histogram}      
+    \end{column}\hspace{-1cm}
     \begin{column}{.33\textwidth}
       Balanced sampling results in $\approx 24$ to 26\% of DFAs with 10 states or larger.
       Tree-split (uneven) results in $\approx 27\%$.
@@ -16,9 +16,9 @@
 
 \begin{frame}
   \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-histogram}      
-    \end{column}
+    \begin{column}{.85\textwidth}
+      \includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-64-histogram}      
+    \end{column}\hspace{-1cm}
     \begin{column}{.33\textwidth}
       \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes.}
 
@@ -33,9 +33,9 @@
 
 \begin{frame}
   \begin{columns}
-    \begin{column}{.8\textwidth}
-      \includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-histogram}      
-    \end{column}
+    \begin{column}{.85\textwidth}
+      \includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-128-histogram}      
+    \end{column}\hspace{-1cm}
     \begin{column}{.33\textwidth}
       \textcolor{orange}{Restricted to larger RTEs with exactly 128 leaf nodes.}
 
@@ -93,25 +93,14 @@
 
 \begin{frame}
   \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Aspect-Ratio}
-    \end{column}
+    \begin{column}{.85\textwidth}
+      \only<1>{\includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-dfa-state-count-vs-Aspect-Ratio}}%
+      \only<2>{\includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-dfa-state-count-vs-Aspect-Ratio-ratsnest}}%
+      \only<3>{\includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Aspect-Ratio-ratsnest}}%
+      \only<4>{\includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Aspect-Ratio-ratsnest}}
+    \end{column}\hspace{-1cm}
     \begin{column}{.35\textwidth}
       DFA state count \\vs Aspect Ratio
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-dfa-state-count-vs-Aspect-Ratio-ratsnest}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      DFA state count \\vs Aspect Ratio
-
       \usebox\arbox
     \end{column}
   \end{columns}
@@ -121,49 +110,9 @@
 
 \begin{frame}
   \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-dfa-state-count-vs-Aspect-Ratio-ratsnest}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 64 leaf nodes.}
-
-      \medskip
-      
-      DFA state count \\vs Aspect Ratio
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-dfa-state-count-vs-Aspect-Ratio-ratsnest}
-    \end{column}
-    \begin{column}{.35\textwidth}
-      \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
-
-      \medskip
-      
-
-      DFA state count \\vs Aspect Ratio
-
-      \usebox\arbox
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-
-
-
-
-\begin{frame}
-  \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-threshold}
-    \end{column}
+    \begin{column}{.85\textwidth}
+\includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-threshold}
+    \end{column}\hspace{-1cm}
     \begin{column}{.35\textwidth}
       Which percent of all DFAs have larger than x-many states?
 
@@ -183,9 +132,9 @@
 
 \begin{frame}
   \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-64-threshold}
-    \end{column}
+    \begin{column}{.85\textwidth}
+\includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-64-threshold}
+    \end{column}\hspace{-1cm}
     \begin{column}{.33\textwidth}
       \textcolor{orange}{Restricted to RTEs with exactly 64 leaf nodes.}
 
@@ -195,9 +144,9 @@
 
 \begin{frame}
   \begin{columns}
-    \begin{column}{.8\textwidth}
-\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-threshold}
-    \end{column}
+    \begin{column}{.85\textwidth}
+\includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-128-threshold}
+    \end{column}\hspace{-1cm}
     \begin{column}{.33\textwidth}
       \textcolor{orange}{Restricted to RTEs with exactly 128 leaf nodes.}
 
@@ -212,10 +161,10 @@
 
 \begin{frame}
   \begin{columns}
-    \begin{column}{.8\textwidth}
-      \only<1>{\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-retention-Aspect-Ratio}}%
-      \only<2>{\includegraphics[width=0.9\textwidth, height=0.9\textheight, keepaspectratio]{plot-128-retention-Aspect-Ratio-ratsnest}}
-    \end{column}
+    \begin{column}{.85\textwidth}
+      \only<1>{\includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-128-retention-Aspect-Ratio}}%
+      \only<2>{\includegraphics[width=0.95\textwidth, height=0.95\textheight, keepaspectratio]{plot-128-retention-Aspect-Ratio-ratsnest}}
+    \end{column}\hspace{-1cm}
     \begin{column}{.33\textwidth}
       \textcolor{orange}{Restricted to RTEs having exactly 128 leaf nodes.}
 

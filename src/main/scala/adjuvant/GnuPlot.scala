@@ -89,14 +89,14 @@ object GnuPlot {
       if (yLog && logCompatible(_._3))
         gnu.write("set logscale y\n")
       if ("" != xAxisLabel)
-        gnu.write(s"""set xlabel "$xAxisLabel" font ",15"\n""")
+        gnu.write(s"""set xlabel "$xAxisLabel" font ",10"\n""")
       if ("" != yAxisLabel)
-        gnu.write(s"""set ylabel "$yAxisLabel" font ",15"\n""")
+        gnu.write(s"""set ylabel "$yAxisLabel" font ",10"\n""")
       if (grid)
         gnu.write(s"set grid\n")
       gnu.write("set key font ',10'\n")
-      gnu.write("set xtics font ',15'\n")
-      gnu.write("set ytics font ',15'\n")
+      gnu.write("set xtics font ',10'\n")
+      gnu.write("set ytics font ',10'\n")
       if (plotWith == "points") {
         for {i <- dataToPlot.indices} {
           gnu.write(s"set style line ${i+1} pt 7 ps ${pointSize}\n")
@@ -104,7 +104,7 @@ object GnuPlot {
       }
       gnu.write(s"set key $key\n") // TODO can also use set key at x,y
       if ("" != title)
-        gnu.write(s"""set title "$title"\n""")
+        gnu.write(s"""set title "$title" font ",12"\n""")
       gnu.write("plot ")
       val footer: String = withOutputToString { prFooter =>
         val header: String = withOutputToString { prHeader =>
@@ -291,7 +291,7 @@ object GnuPlot {
          |set grid
          |set xlabel "$xlabel"
          |set ylabel "$ylabel"
-         |set title "$title"
+         |set title "$title" font ",10"
          |""".stripMargin +
         s"\n"
     }
