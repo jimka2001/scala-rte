@@ -11,6 +11,8 @@
 .metals
 .scalafmt.conf
 .vscode
+*.gnu
+*.png
 project/.bloop
 project/project
 project/project/.bloop
