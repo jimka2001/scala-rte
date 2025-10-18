@@ -1,15 +1,15 @@
 # 
-set xlabel "Imbalance-Factor" font ",15"
-set ylabel "Percentage count >= 2 for imbalance <= x" font ",15"
+set xlabel "Imbalance-Factor" font ",10"
+set ylabel "Percentage count >= 2 for imbalance <= x" font ",10"
 set grid
-set key font ',15'
-set xtics font ',15'
-set ytics font ',15'
+set key font ',10'
+set xtics font ',10'
+set ytics font ',10'
 set key horizontal bmargin
-set title "Running Balances 64- for Imbalance-Factor"
+set title "Running Balances 64- for Imbalance-Factor" font ",12"
 plot "-" using 1:2 with lines title "tree-split-linear 493 samples",\
-    "-" using 1:2 with lines title "tree-split-mid 483 samples",\
-    "-" using 1:2 with lines title "tree-split-edge 484 samples",\
+    "-" using 1:2 with lines title "tree-split-gauss 483 samples",\
+    "-" using 1:2 with lines title "tree-split-inv-gauss 484 samples",\
     "-" using 1:2 with lines title "flajolet 483 samples",\
     "-" using 1:2 with lines title "comb 480 samples"
 #tree-split-linear 493 samples
@@ -483,7 +483,7 @@ plot "-" using 1:2 with lines title "tree-split-linear 493 samples",\
 1.774 44.828
 1.824 45.030
 end
-#tree-split-mid 483 samples
+#tree-split-gauss 483 samples
 0.912 0.207
 0.949 0.414
 0.952 0.621
@@ -922,7 +922,7 @@ end
 1.573 55.901
 1.644 56.108
 end
-#tree-split-edge 484 samples
+#tree-split-inv-gauss 484 samples
 1.267 0.000
 1.270 0.000
 1.274 0.000

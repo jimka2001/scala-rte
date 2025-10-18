@@ -537,6 +537,58 @@ object Adjuvant {
     population.foldLeft(default)(insert)
   }
 
+  def flajoletIllustration(internalNodeCount:Int):Node = {
+    import adjuvant.GraphViz.treeToPng
+    import scala.sys.process.stringSeqToProcess
+
+    val population = scala.util.Random.shuffle((0 until internalNodeCount).to(List))
+
+    println(population)
+
+    def insert(node: Node, a: Int): Node = {
+      node match {
+        case InternalNode(n, left, right) if a < n => InternalNode(n, insert(left, a), right)
+        case InternalNode(n, left, right) => InternalNode(n, left, insert(right, a))
+        case LeafNode() => InternalNode(a, LeafNode(), LeafNode())
+      }
+    }
+
+    def getEdges(node:Node):Seq[(Int,Int)] = {
+      node match {
+        case LeafNode() => Seq[(Int, Int)]()
+        case InternalNode(n, left, right) =>
+          val rightedges:Seq[(Int,Int)] = getEdges(right) ++ (right match {
+            case LeafNode() => Seq()
+            case InternalNode(m, _, _) => Seq((n, m))
+          })
+          val leftedges:Seq[(Int,Int)] = getEdges(left) ++ (left match {
+            case LeafNode() => Seq()
+            case InternalNode(m, _, _) => Seq((n, m))
+          })
+          rightedges ++ leftedges
+      }
+    }
+
+    val default: Node = LeafNode()
+    val (_, flajtree) = population.foldLeft((Map[Int,String](), default)){
+
+
+      case ((labels:Map[Int,String], node:Node), a:Int) =>
+        val newnode = insert(node,a)
+        val newlabels = labels + (a -> a.toString)
+        val edges = getEdges(newnode)
+        treeToPng(edges=edges,
+          labels=labels,
+          baseName="tree",
+          title="sample-tree",
+          dotFileCB=(str:String) => Seq("cp", str, ".").!,
+          view=true)
+        (newlabels,newnode)
+
+    }
+    flajtree
+  }
+
 
   def biasedGaussian(n: Int, m: Int, biasFactor: Double = 6.0): Int = {
 
@@ -564,13 +616,6 @@ object Adjuvant {
   }
 
   def main(argv:Array[String]):Unit = {
-    val data = (for {i <- 0 until 999} yield {
-      weightedCase((10, () => 10),
-        (20, () => 20),
-        (30, () => 30),
-        (40, () => 40)
-      )
-    }).to(Vector).groupBy(x=>x).to(List)
-    print(data.map(p => (p._1, p._2.length)))
+    flajoletIllustration(10)
   }
 }

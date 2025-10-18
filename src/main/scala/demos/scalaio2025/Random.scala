@@ -33,11 +33,11 @@ object Random {
     treeSplitRte(leaves, (n) => random.between(1,n))
   }
 
-  def treeSplitRteEdge(leaves:Int):Rte = {
+  def treeSplitRteInvGaussian(leaves:Int):Rte = {
     treeSplitRte(leaves, (n) => biasedGaussian(1, n))
   }
 
-  def treeSplitRteMid(leaves:Int):Rte = {
+  def treeSplitRteGaussian(leaves:Int):Rte = {
     treeSplitRte(leaves, (n)=> {
       if (n == 2 || n == 3)
         1

@@ -8,12 +8,12 @@ set xtics rotate by -45
 set grid
 set xlabel "DFA state count"
 set ylabel "Percentage of DFAs per state count"
-set title "DFA State distribution for Rte "
+set title "DFA State distribution for Rte " font ",10"
 
 
 
 $MyData << EOD
-"DFA state count" "tree-split-linear samples=233" "tree-split-mid samples=234" "tree-split-edge samples=240" "flajolet samples=236" "comb samples=240"
+"DFA state count" "tree-split-linear samples=233" "tree-split-gauss samples=234" "tree-split-inv-gauss samples=240" "flajolet samples=236" "comb samples=240"
 "1" 45.064 47.863 38.333 46.186 26.667 
 "2" 4.292 7.265 3.750 5.508 3.333 
 "3" 14.163 8.547 20.000 9.746 31.667 

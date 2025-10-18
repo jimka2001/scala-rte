@@ -1,15 +1,15 @@
 # 
-set xlabel "Ratio-longest:shortest" font ",15"
-set ylabel "DFA state count" font ",15"
+set xlabel "Ratio-longest-shortest" font ",10"
+set ylabel "DFA state count" font ",10"
 set grid
-set key font ',15'
-set xtics font ',15'
-set ytics font ',15'
+set key font ',10'
+set xtics font ',10'
+set ytics font ',10'
 set key horizontal bmargin
-set title "Running Sum Balances 128- per Ratio-longest:shortest"
+set title "Running Sum Balances 128- per Ratio-longest-shortest" font ",12"
 plot "-" using 1:2 with lines title "tree-split-linear 144 samples",\
-    "-" using 1:2 with lines title "tree-split-mid 128 samples",\
-    "-" using 1:2 with lines title "tree-split-edge 135 samples",\
+    "-" using 1:2 with lines title "tree-split-gauss 128 samples",\
+    "-" using 1:2 with lines title "tree-split-inv-gauss 135 samples",\
     "-" using 1:2 with lines title "flajolet 122 samples",\
     "-" using 1:2 with lines title "comb 130 samples"
 #tree-split-linear 144 samples
@@ -158,7 +158,7 @@ plot "-" using 1:2 with lines title "tree-split-linear 144 samples",\
 2.762 0.190
 2.667 0.000
 end
-#tree-split-mid 128 samples
+#tree-split-gauss 128 samples
 6.250 94.080
 5.000 90.330
 5.000 90.330
@@ -288,7 +288,7 @@ end
 1.833 0.000
 1.833 0.000
 end
-#tree-split-edge 135 samples
+#tree-split-inv-gauss 135 samples
 32.500 196.600
 29.500 190.600
 26.000 187.600
