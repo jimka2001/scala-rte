@@ -11,6 +11,8 @@
 .metals
 .scalafmt.conf
 .vscode
+*.gnu
+*.png
 project/.bloop
 project/project
 project/project/.bloop
@@ -41,3 +43,4 @@ doc/functional.scala/2024/newton.2024.functional.scala.slides.out
 doc/functional.scala/2024/newton.2024.functional.scala.slides.snm
 doc/functional.scala/2024/newton.2024.functional.scala.slides.sta
 doc/functional.scala/2024/newton.2024.functional.scala.slides.toc
+*.ltx\#

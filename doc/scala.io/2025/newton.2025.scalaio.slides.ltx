@@ -1,4 +1,6 @@
 \documentclass[aspectratio=169]{beamer}
+\beamertemplatenavigationsymbolsempty
+\setbeamertemplate{footline}[frame number]
 \usepackage{xspace}
 \usepackage{pgf}
 \usepackage{tikz}
@@ -275,12 +277,12 @@ CONCRETELY: uniformly sample Finite Automata by:
 \begin{frame}{Requirements}
   \begin{itemize}
 
-  \item If we want to generate \emph{large} DFAs, we necessarily must generate \emph{large} RTE (AST).
+  \item If we want to generate \emph{large} DFAs, we necessarily \textcolor{gold}{should} generate \emph{large} RTE (AST).
 
   \item However, this is not sufficient.  Many large RTEs generate small/trivial DFAs.
 
   \item We must generate \textcolor{greeny}{Portrait} not \textcolor{red}{Landscape} aspect ratios.
-  \end{itemize} 
+  \end{itemize}
 \end{frame}
 
 
@@ -403,7 +405,7 @@ CONCRETELY: uniformly sample Finite Automata by:
 
 \input{conclusion}
 
-\input{unused-plots}
+% \input{unused-plots}
 
 \end{document}
 
