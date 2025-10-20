@@ -13,5 +13,5 @@ def flajoletRte(leaves:Int):Rte =
           randElement(inhabitedLeaves)      }))
 
   val skeleton = balancedRandTree(leaves - 1)
-  nodeToRte(skeleton)
+  recur(skeleton)
 \end{lstlisting}
