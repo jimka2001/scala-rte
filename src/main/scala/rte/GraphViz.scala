@@ -95,7 +95,7 @@ object GraphViz {
     write("  edge [fontsize=20];\n")
 
     val linear = rte.linearize().zipWithIndex
-    val nodemap = linear.to(Map)
+    val nodemap: Map[Rte, Int] = linear.to(Map)
 
     // collect all type designators used in as operand of Singleton in this Rte.
     // some of these might already be in givenTypes
