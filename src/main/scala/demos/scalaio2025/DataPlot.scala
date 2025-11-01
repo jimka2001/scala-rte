@@ -459,6 +459,5 @@ object Plots {
     BalancePlot.sup(view=view)
     RetentionPlot.sup(view=view)
     TimeOutPlot.sup(view=view)
-    DiversityPlot.sup(view=view)
   }
 }

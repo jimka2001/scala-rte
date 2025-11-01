@@ -108,7 +108,7 @@ object GnuPlot {
       gnu.write("plot ")
       val footer: String = withOutputToString { prFooter =>
         val header: String = withOutputToString { prHeader =>
-          def plot(title: String, i:Int, xys: Seq[(Double, Double)]): Unit = {
+          def write_curve(title: String, i:Int, xys: Seq[(Double, Double)]): Unit = {
             prHeader(""""-" using 1:2""")
             prHeader(s" with $plotWith")
             if (plotWith == "points"){
@@ -123,11 +123,11 @@ object GnuPlot {
           }
 
           if (dataToPlot.nonEmpty) {
-            plot(dataToPlot.head._1, 1, dataToPlot.head._2.zip(dataToPlot.head._3))
+            write_curve(dataToPlot.head._1, 1, dataToPlot.head._2.zip(dataToPlot.head._3))
 
             dataToPlot.zipWithIndex.tail.foreach { case ((curveTitle, xs, ys),i) =>
               prHeader(",\\\n    ")
-              plot(curveTitle, i+1, xs.zip(ys))
+              write_curve(curveTitle, i+1, xs.zip(ys))
             }
           }
         }
@@ -311,14 +311,14 @@ object GnuPlot {
          num_samples = counts.length} gnu.write(s" \"$label samples=${num_samples}\"")
     gnu.write("\n")
     // create map of label -> xys, where xys = Seq((Some(count), percentage), (Some(count), percentage) ...)
-    val data = for {(label, counts) <- buckets
-                    groups = counts.groupBy(n => n).to(Seq).sortBy(_._1)
-                    xys = for {(state_count, samples) <- groups
+    val data: Seq[(String, Seq[(Option[Int], Double)])] = for {(label, counts) <- buckets
+                                                               groups = counts.groupBy(n => n).to(Seq).sortBy(_._1)
+                                                               xys = for {(state_count, samples) <- groups
                                if keepIf(state_count)
                                percentage = 100.0 * samples.length.toDouble / counts.length
                                } yield (Some(state_count), percentage)
-                    leftOverPercent = 100.0 - xys.map(_._2).sum
-                    } yield (label, xys.sortBy(_._1.get) ++ Seq((None, leftOverPercent)))
+                                                               leftOverPercent = 100.0 - xys.map(_._2).sum
+                                                               } yield (label, xys.sortBy(_._1.get) ++ Seq((None, leftOverPercent)))
 
     val counts = (for {(label, xys) <- data
                       (col, percent) <- xys
