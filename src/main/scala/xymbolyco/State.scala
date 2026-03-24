@@ -21,7 +21,7 @@
 
 package xymbolyco
 
-class State[Σ,L,E](dfa:Dfa[Σ,L,E], val id:Int) {
+class State[Σ,L,E](val dfa:Dfa[Σ,L,E], val id:Int) {
   var transitions:Set[Transition[Σ,L,E]] = Set()
 
   // find the destination state of this state given the label,
@@ -30,6 +30,9 @@ class State[Σ,L,E](dfa:Dfa[Σ,L,E], val id:Int) {
   def delta(label:L):State[Σ,L,E] = dfa.delta(this,label)
   def accepting():Boolean = {
     dfa.Fids.contains(id)
+  }
+  def exitOption():Option[E] = {
+    dfa.fMap.get(id)
   }
 
   lazy val successorFunction: Σ=>Option[State[Σ,L,E]] = dfa.labeler.successor[E](transitions)
