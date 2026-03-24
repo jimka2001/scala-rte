@@ -445,7 +445,7 @@ object Rte {
             Some(dfa)
         }
       }
-      .reduceLeft(dfaUnion(_, _, xymbolyco.Dfa.defaultArbitrate))
+      .reduceLeft(dfaUnion(_, _))
 
     // it is important that caseDfa is computed separately.
     // because when the caller calls the following function,

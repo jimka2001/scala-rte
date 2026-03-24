@@ -25,8 +25,11 @@ package xymbolyco
 
 import adjuvant.AdjFunSuite
 import adjuvant.Adjuvant.callWithTimeout
+import genus.SimpleTypeD
 import org.scalatest.funsuite.AnyFunSuite
+import rte.Member
 import rte.Random.randomRteByDepth
+import xymbolyco.Dfa.{dfaAndNot, dfaIntersection, dfaNand, dfaNor, dfaUnion, dfaXor}
 import xymbolyco.Minimize.trim
 
 class DfaTestSuite extends AdjFunSuite {
@@ -341,8 +344,7 @@ class DfaTestSuite extends AdjFunSuite {
               fMap=Map(2 -> 3)
               )
     }
-    val s = Minimize.sxp[Any,SimpleTypeD,Int](trim(dfa1),trim(dfa2),
-                         (a:Boolean,b:Boolean) => (a || b))
+    val s = dfaUnion(trim(dfa1),trim(dfa2))
     assert(s.Fids.size >= 2)
   }
 
@@ -367,8 +369,7 @@ class DfaTestSuite extends AdjFunSuite {
               fMap=Map(1 -> 20)
               )
     }
-    val s = Minimize.sxp(dfa1,dfa2,
-                         (a:Boolean,b:Boolean) => a || b)
+    val s = dfaUnion(dfa1,dfa2)
     assert(s.Fids.size >= 2)
     s.simulate(Seq(-1)).contains(10)
     s.simulate(Seq(-2)).contains(20)
@@ -517,5 +518,24 @@ class DfaTestSuite extends AdjFunSuite {
       assert(empty == Some(true) || empty == None,
              s"depth=$depth n=$n rte1=$rte1")
     }
+  }
+
+  test("exit values") {
+    val dfa1: Dfa[Any, SimpleTypeD, Int] = Member(1, 2, 3).toDfa(1) // rte.toDfa(1)
+    val dfa2: Dfa[Any, SimpleTypeD, Int] = Member(1, 3, 5).toDfa(2)
+    val dfa3: Dfa[Any, SimpleTypeD, Int] = Member(2, 4, 6).toDfa(3)
+    val f1:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaXor
+    val f2:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaAndNot
+    val f3:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaNand
+    val f4:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaNor
+    val f5:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaIntersection
+    val f6:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaUnion
+
+    for {f:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) <- List(f1, f2, f3, f4, f5, f6)
+         dfa4 = f(dfa1, dfa2)
+         dfa4b = f(dfa2, dfa1)
+         dfa5 = f(dfa2, dfa3)
+         dfa5b = f(dfa3, dfa2)}
+      println(List(dfa4, dfa4b, dfa5, dfa5b))
   }
 }

@@ -401,7 +401,7 @@ class RteTestSuite extends AdjFunSuite {
          rte3 = randomRteByDepth(depth)
          dfa1 <- callWithTimeout(2000*depth, () => Cat(rte1, Star(rte2), Not(rte2), rte3).toDfa(1))
          dfa2 <- callWithTimeout(2000*depth, () => Cat(rte2, Star(rte3), Not(rte3), rte1).toDfa(2))
-         dfau = dfaUnion(dfa1, dfa2, arbitrate = arbitrate)
+         dfau = dfaUnion(dfa1, dfa2)
          } {
       println("======================")
       println(f"depth=$depth n=$n")

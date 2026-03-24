@@ -28,6 +28,9 @@ class State[Σ,L,E](dfa:Dfa[Σ,L,E], val id:Int) {
   //     this uses a label search, independent of the particular
   //     value of an input sequence.
   def delta(label:L):State[Σ,L,E] = dfa.delta(this,label)
+  def accepting():Boolean = {
+    dfa.Fids.contains(id)
+  }
 
   lazy val successorFunction: Σ=>Option[State[Σ,L,E]] = dfa.labeler.successor[E](transitions)
 

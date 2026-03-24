@@ -214,7 +214,8 @@ object Minimize {
   def sxp[Σ, L, E](dfa1:Dfa[Σ, L, E],
                    dfa2:Dfa[Σ, L, E],
                    arbitrateFinal:(Boolean,Boolean)=>Boolean,
-                   combineFmap:(Option[E], Option[E])=>Option[E] = (e1:Option[E], e2:Option[E]) => Dfa.combineFmap[E](e1,e2)):Dfa[Σ, L, E] = {
+                   combineFmap:(State[Σ, L, E], State[Σ, L, E])=>Option[E]
+                  ):Dfa[Σ, L, E] = {
     val grouped1 = complete(dfa1).protoDelta.groupBy(_._1)
     val grouped2 = complete(dfa2).protoDelta.groupBy(_._1)
 
@@ -271,7 +272,7 @@ object Minimize {
     }
     val fMap = for { q <- fIds
                      (q1,q2) = vertices(q)
-                     e <- combineFmap(dfa1.fMap.get(q1),dfa2.fMap.get(q2))
+                     e <- combineFmap(dfa1.idToState(q1), dfa2.idToState(q2))
                      } yield q -> e
     val protoDelta = for { (seq,src) <- edges.zipWithIndex
                            (lab,dst) <- seq

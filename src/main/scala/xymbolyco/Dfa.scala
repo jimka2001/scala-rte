@@ -346,39 +346,96 @@ object Dfa {
     new Dfa[Σ, L, E](Qids, q0id, Fids, merged, labeler, fMap)
   }
 
-  def combineFmap[E](e1: Option[E],
-                     e2: Option[E],
-                     arbitrate:(E,E)=>E = defaultArbitrate[E] _): Option[E] = {
-    (e1, e2) match {
-      case (None, None) => None
-      case (Some(b), Some(c)) if c == b => Some(b)
-      case (Some(b), Some(c)) => Some(arbitrate(b,c))
-      case (Some(b), None) => Some(b)
-      case (None, Some(b)) => Some(b)
+
+  def dfaXor[Σ,L,E](dfa1: Dfa[Σ, L, E],
+                    dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
+      assert(qa.accepting() && ! qb.accepting()
+        || qb.accepting() && !qa.accepting())
+      if (qa.accepting())
+        dfa1.fMap.get(qa.id)
+      else
+        dfa2.fMap.get(qb.id)
     }
-  }
-
-  def defaultArbitrate[E](b:E, c:E):E = {
-    println(s"combineFmap: warning loosing value $c, using $b")
-    b // f-value of dfa1 has precedence over dfa2
-  }
-
-  def dfaXor[Σ,L,E](dfa1: xymbolyco.Dfa[Σ, L, E],
-                    dfa2: xymbolyco.Dfa[Σ, L, E],
-                    arbitrate: (E,E)=>E = defaultArbitrate[E] _): xymbolyco.Dfa[Σ, L, E] = {
     Minimize.sxp[Σ, L, E](dfa1, dfa2,
                           (a: Boolean, b: Boolean) => (a && !b) || (!a && b), // arbitrateFinal:(Boolean,Boolean)=>Boolean,
-                          combineFmap(_,_,arbitrate)
+                          arbitrate
                           )
   }
 
-  def dfaUnion[Σ,L,E](dfa1: xymbolyco.Dfa[Σ, L, E],
-                      dfa2: xymbolyco.Dfa[Σ, L, E],
-                      arbitrate: (E,E)=>E = defaultArbitrate[E] _): xymbolyco.Dfa[Σ, L, E] = {
-    Minimize.sxp[Σ, L, E](dfa1, dfa2,
-                          (a: Boolean, b: Boolean) => a || b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
-                          combineFmap(_,_,arbitrate)
-                          )
+  def dfaUnion[Σ,L,E](dfa1: Dfa[Σ, L, E],
+                      dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
+      assert(qa.accepting() || qb.accepting())
+      if (qa.accepting())
+        dfa1.fMap.get(qa.id)
+      else if (qb.accepting())
+        dfa2.fMap.get(qb.id)
+      else
+        None
+    }
+    Minimize.sxp[Σ, L, E](
+      dfa1, dfa2,
+      (a: Boolean, b: Boolean) => a || b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+      arbitrate
+    )
+  }
+  def dfaIntersection[Σ,L,E](dfa1: Dfa[Σ, L, E],
+                             dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
+      assert(qa.accepting() && qb.accepting())
+      (dfa1.fMap.get(qa.id), dfa2.fMap.get(qb.id)) match {
+        case (Some(a), _) => Some(a)
+        case (_, b) => b
+      }
+    }
+    Minimize.sxp[Σ, L, E](
+      dfa1, dfa2,
+      (a: Boolean, b: Boolean) => a && b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+      arbitrate
+    )
+  }
+  def dfaAndNot[Σ,L,E](dfa1: Dfa[Σ, L, E],
+                       dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
+      assert(qa.accepting() && !qb.accepting())
+      dfa1.fMap.get(qa.id)
+    }
+    Minimize.sxp[Σ, L, E](
+      dfa1, dfa2,
+      (a: Boolean, b: Boolean) => a && !b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+      arbitrate
+    )
+  }
+
+  def dfaNand[Σ,L,E](dfa1: Dfa[Σ, L, E],
+                     dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
+      assert(!(qa.accepting() && qb.accepting()))
+      if (qa.accepting())
+        dfa1.fMap.get(qa.id)
+      else if (qb.accepting())
+        dfa2.fMap.get(qb.id)
+      else
+        None
+    }
+    Minimize.sxp[Σ, L, E](
+      dfa1, dfa2,
+      (a: Boolean, b: Boolean) => !(a && b), // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+      arbitrate
+    )
+  }
+  def dfaNor[Σ,L,E](dfa1: Dfa[Σ, L, E],
+                    dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
+      assert(!(qa.accepting() || qb.accepting()))
+        None
+    }
+    Minimize.sxp[Σ, L, E](
+      dfa1, dfa2,
+      (a: Boolean, b: Boolean) => !(a || b), // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+      arbitrate
+    )
   }
 
   // returns Some(true), Some(false), or None
@@ -387,8 +444,8 @@ object Dfa {
   // Some(false) => The Dfas are provably not equivalent.
   // None => It cannot be proven whether the Dfas are equivalent.  For example
   //   because it contains a transition which is not known to be inhabited.
-  def dfaEquivalent[Σ,L,E](dfa1: xymbolyco.Dfa[Σ, L, E],
-                           dfa2: xymbolyco.Dfa[Σ, L, E]): Option[Boolean] = {
+  def dfaEquivalent[Σ,L,E](dfa1: Dfa[Σ, L, E],
+                           dfa2: Dfa[Σ, L, E]): Option[Boolean] = {
     dfaXor(dfa1, dfa2).vacuous()
   }
 }
