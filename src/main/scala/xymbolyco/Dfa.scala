@@ -325,7 +325,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
 
 object Dfa {
 
-  def mergeParallel[Σ, L](labeler:Labeler[Σ, L],
+  def mergeParallel[Σ, L](labeler: Labeler[Σ, L],
                           transitions: Seq[(Int, L, Int)]): Set[(Int, L, Int)] = {
     val merged = for {(src, triples1) <- transitions.groupBy(_._1)
                       (dst, triples2) <- triples1.groupBy(_._3)
@@ -342,30 +342,31 @@ object Dfa {
                      protoDelta: Set[(Int, L, Int)],
                      labeler: Labeler[Σ, L],
                      fMap: Map[Int, E]): Dfa[Σ, L, E] = {
-    val merged = mergeParallel[Σ, L](labeler,protoDelta.toSeq)
+    val merged = mergeParallel[Σ, L](labeler, protoDelta.toSeq)
     new Dfa[Σ, L, E](Qids, q0id, Fids, merged, labeler, fMap)
   }
 
 
-  def dfaXor[Σ,L,E](dfa1: Dfa[Σ, L, E],
-                    dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
-      assert(qa.accepting() && ! qb.accepting()
+  def dfaXor[Σ, L, E](dfa1: Dfa[Σ, L, E],
+                      dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa: State[Σ, L, E], qb: State[Σ, L, E]): Option[E] = {
+      assert(qa.accepting() && !qb.accepting()
         || qb.accepting() && !qa.accepting())
       if (qa.accepting())
         dfa1.fMap.get(qa.id)
       else
         dfa2.fMap.get(qb.id)
     }
+
     Minimize.sxp[Σ, L, E](dfa1, dfa2,
-                          (a: Boolean, b: Boolean) => (a && !b) || (!a && b), // arbitrateFinal:(Boolean,Boolean)=>Boolean,
-                          arbitrate
-                          )
+      (a: Boolean, b: Boolean) => (a && !b) || (!a && b), // arbitrateFinal:(Boolean,Boolean)=>Boolean,
+      arbitrate
+    )
   }
 
-  def dfaUnion[Σ,L,E](dfa1: Dfa[Σ, L, E],
-                      dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
+  def dfaUnion[Σ, L, E](dfa1: Dfa[Σ, L, E],
+                        dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa: State[Σ, L, E], qb: State[Σ, L, E]): Option[E] = {
       assert(qa.accepting() || qb.accepting())
       if (qa.accepting())
         dfa1.fMap.get(qa.id)
@@ -374,33 +375,38 @@ object Dfa {
       else
         None
     }
+
     Minimize.sxp[Σ, L, E](
       dfa1, dfa2,
       (a: Boolean, b: Boolean) => a || b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
       arbitrate
     )
   }
-  def dfaIntersection[Σ,L,E](dfa1: Dfa[Σ, L, E],
-                             dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
+
+  def dfaIntersection[Σ, L, E](dfa1: Dfa[Σ, L, E],
+                               dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa: State[Σ, L, E], qb: State[Σ, L, E]): Option[E] = {
       assert(qa.accepting() && qb.accepting())
       (dfa1.fMap.get(qa.id), dfa2.fMap.get(qb.id)) match {
         case (Some(a), _) => Some(a)
         case (_, b) => b
       }
     }
+
     Minimize.sxp[Σ, L, E](
       dfa1, dfa2,
       (a: Boolean, b: Boolean) => a && b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
       arbitrate
     )
   }
-  def dfaAndNot[Σ,L,E](dfa1: Dfa[Σ, L, E],
-                       dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
+
+  def dfaAndNot[Σ, L, E](dfa1: Dfa[Σ, L, E],
+                         dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa: State[Σ, L, E], qb: State[Σ, L, E]): Option[E] = {
       assert(qa.accepting() && !qb.accepting())
       dfa1.fMap.get(qa.id)
     }
+
     Minimize.sxp[Σ, L, E](
       dfa1, dfa2,
       (a: Boolean, b: Boolean) => a && !b, // arbitrateFinal:(Boolean,Boolean)=>Boolean,
@@ -408,9 +414,9 @@ object Dfa {
     )
   }
 
-  def dfaNand[Σ,L,E](dfa1: Dfa[Σ, L, E],
-                     dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
+  def dfaNand[Σ, L, E](dfa1: Dfa[Σ, L, E],
+                       dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa: State[Σ, L, E], qb: State[Σ, L, E]): Option[E] = {
       assert(!(qa.accepting() && qb.accepting()))
       if (qa.accepting())
         dfa1.fMap.get(qa.id)
@@ -419,18 +425,21 @@ object Dfa {
       else
         None
     }
+
     Minimize.sxp[Σ, L, E](
       dfa1, dfa2,
       (a: Boolean, b: Boolean) => !(a && b), // arbitrateFinal:(Boolean,Boolean)=>Boolean,
       arbitrate
     )
   }
-  def dfaNor[Σ,L,E](dfa1: Dfa[Σ, L, E],
-                    dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
-    def arbitrate(qa:State[Σ,L,E], qb:State[Σ,L,E]):Option[E] = {
+
+  def dfaNor[Σ, L, E](dfa1: Dfa[Σ, L, E],
+                      dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
+    def arbitrate(qa: State[Σ, L, E], qb: State[Σ, L, E]): Option[E] = {
       assert(!(qa.accepting() || qb.accepting()))
-        None
+      None
     }
+
     Minimize.sxp[Σ, L, E](
       dfa1, dfa2,
       (a: Boolean, b: Boolean) => !(a || b), // arbitrateFinal:(Boolean,Boolean)=>Boolean,
@@ -444,8 +453,8 @@ object Dfa {
   // Some(false) => The Dfas are provably not equivalent.
   // None => It cannot be proven whether the Dfas are equivalent.  For example
   //   because it contains a transition which is not known to be inhabited.
-  def dfaEquivalent[Σ,L,E](dfa1: Dfa[Σ, L, E],
-                           dfa2: Dfa[Σ, L, E]): Option[Boolean] = {
+  def dfaEquivalent[Σ, L, E](dfa1: Dfa[Σ, L, E],
+                             dfa2: Dfa[Σ, L, E]): Option[Boolean] = {
     dfaXor(dfa1, dfa2).vacuous()
   }
 }
