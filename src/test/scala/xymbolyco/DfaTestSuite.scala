@@ -27,14 +27,15 @@ import adjuvant.AdjFunSuite
 import adjuvant.Adjuvant.callWithTimeout
 import genus.SimpleTypeD
 import org.scalatest.funsuite.AnyFunSuite
-import rte.Member
+import rte.{And, Atomic, Cat, Eql, Member, Not, Optional, Or, Plus, Rte, Star}
 import rte.Random.randomRteByDepth
 import xymbolyco.Dfa.{dfaAndNot, dfaIntersection, dfaNand, dfaNor, dfaUnion, dfaXor}
+import xymbolyco.GraphViz.dfaView
 import xymbolyco.Minimize.trim
 
 class DfaTestSuite extends AdjFunSuite {
 
-  import bdd._
+  import bdd.{Bdd,BddTrue,BddFalse}
 
   class StringLabelerT1 extends Labeler[String, Set[String]] {
     def member(x: String, s: Set[String]): Boolean = s.contains(x)
@@ -61,6 +62,7 @@ class DfaTestSuite extends AdjFunSuite {
   }
 
   class BddLabelerT2 extends Labeler[Int, Bdd] {
+    import bdd.{Or}
     def member(x: Int, b: Bdd): Boolean = ???
 
     def combineLabels(a: Bdd, b: Bdd): Bdd = Or(a, b)
@@ -76,8 +78,72 @@ class DfaTestSuite extends AdjFunSuite {
     }
   }
 
-  test("build bdd dfa") {
+  val testRtes: Seq[Rte] = locally{
+    val i = Atomic(classOf[Int])
+    val sh = Atomic(classOf[Short])
+    val st = Atomic(classOf[String])
+    Seq[Rte](
+    Star(i),
+    Star(sh),
+    Star(Cat(st, i)),
+    Star(Cat(st, sh)),
+    Or(Star(Cat(st, i)),
+      Star(Cat(st, sh))),
+    Or(Star(Cat(st, i)),
+      Not(Star(Cat(st, sh)))),
 
+    And(Not(Eql(1)),      i),
+    And(Not(Eql(1)),      Star(i)),
+    Star(And(Not(Eql(1)),      i)),
+    Plus(i),
+    Plus(sh),
+    Plus(Cat(st, i)),
+    Plus(Cat(st, sh)),
+    Or(Plus(Cat(st, i)),
+      Star(Cat(st, sh))),
+    Or(Star(Cat(st, i)),
+      Plus(Cat(st, sh))),
+    Or(Star(Cat(st, i)),
+      Not(Star(Cat(st, sh)))),
+    Or(Plus(Cat(st, i)),
+      Not(Star(Cat(st, sh)))),
+    Or(Star(Cat(st, i)),
+      Not(Plus(Cat(st, sh)))),
+    Plus(Cat(st, Optional(i))),
+    Cat(Star(st), i),
+    And(Plus(Cat(st, Optional(i))),
+      Cat(Star(st), i)))
+  }
+  val testSequences = Seq(
+    List(),
+    List(1),
+    List(3),
+    List(1, 2, 3, 4),
+    List(1, 2, 3),
+    List(2,3,4),
+    List(1, 2) ++ List(3.0, 4.0),
+    List(2) ++ List(3.0, 4.0),
+    List("hello", "world")++List(1)++List( "hello", "there", "world") ++List(2),
+    List("hello", "world", 1, "hello", "world", 2),
+    List("hello", "world", 2),
+    List("hello", "world"),
+    List("hello", 1, "world", 2),
+    List("hello", 1, "world"),
+    List("hello", 1.0, "world"),
+    List("hello", 1.0, 42),
+    List("hello", 1.0),
+    List("hello", 1),
+    List("hello", 42, "world"),
+    List("hello", 42, 1.0),
+    List("hello", 42),
+    List("hello"),
+    List(1, "two", "3.0"),
+    List(42, "two", "3.0"),
+    List(1.0, "two", "3.0")
+  )
+
+  test("build bdd dfa") {
+    import bdd.{And, Not}
     Bdd.withNewBddHash {
       val t1 = Bdd(1) // fixnum
       val t2 = Bdd(2) // integer
@@ -110,7 +176,7 @@ class DfaTestSuite extends AdjFunSuite {
     }
   }
   test("build bdd dfa 2") {
-    import bdd._
+    import bdd.{Bdd, And, Not}
 
     Bdd.withNewBddHash {
       val t1 = Bdd(1) // fixnum
@@ -552,5 +618,94 @@ class DfaTestSuite extends AdjFunSuite {
          dfa5 = f(dfa2, dfa3)
          dfa5b = f(dfa3, dfa2)}
       println(List(dfa4, dfa4b, dfa5, dfa5b))
+  }
+  // dfaIntersection
+  test("sxp intersection"){
+    for{rte1 <- testRtes
+        dfa1 = rte1.toDfa[Boolean](true)
+        rte2 <- testRtes
+        dfa2 = rte2.toDfa[Boolean](true)
+        dfax = dfaIntersection(trim(dfa1), trim(dfa2))
+        s <- testSequences
+        vx = dfax.simulate(s).getOrElse(false)
+        v1 = dfa1.simulate(s).getOrElse(false)
+        v2 = dfa2.simulate(s).getOrElse(false)
+        }
+      assert(vx == (v1 && v2), s"vx=$vx v1=$v1 v2=$v2")
+  }
+  // dfaXor
+  test("sxp xor"){
+    for{rte1 <- testRtes
+        dfa1 = rte1.toDfa[Boolean](true)
+        rte2 <- testRtes
+        dfa2 = rte2.toDfa[Boolean](true)
+        dfax = dfaXor(trim(dfa1), trim(dfa2))
+        s <- testSequences
+        vx = dfax.simulate(s).getOrElse(false)
+        v1 = dfa1.simulate(s).getOrElse(false)
+        v2 = dfa2.simulate(s).getOrElse(false)
+        } assert(vx == ((v1 && !v2) || (!v1 && v2)),
+                 s"vx=$vx v1=$v1 v2=$v2")
+  }
+  // dfaAndNot
+  test("sxp and-not"){
+    for{rte1 <- testRtes
+        dfa1 = rte1.toDfa[Boolean](true)
+        rte2 <- testRtes
+        dfa2 = rte2.toDfa[Boolean](true)
+        dfax = dfaAndNot(trim(dfa1), trim(dfa2))
+        s <- testSequences
+        vx = dfax.simulate(s).getOrElse(false)
+        v1 = dfa1.simulate(s).getOrElse(false)
+        v2 = dfa2.simulate(s).getOrElse(false)
+        } {
+      if (vx != (v1 && !v2)){
+        dfaView(dfa1, "dfa1", showSink=true)
+        dfaView(dfa2, "dfa2", showSink=true)
+        dfaView(dfax, "dfax", showSink=true)
+        dfaView(Minimize.complete(dfax), "complete dfax", showSink=true)
+      }
+      assert(vx == (v1 && !v2),
+             s"vx=$vx v1=$v1 v2=$v2  v1 && !v2 = ${v1 && !v2}\ns=$s\nrte1=$rte1\nrte2=$rte2")
+    }
+  }
+  // dfaNand
+  test("sxp nand"){
+    for{rte1 <- testRtes
+        dfa1 = rte1.toDfa[Boolean](true)
+        rte2 <- testRtes
+        dfa2 = rte2.toDfa[Boolean](true)
+        dfax = dfaNand(trim(dfa1), trim(dfa2))
+        s <- testSequences
+        vx = dfax.simulate(s).getOrElse(false)
+        v1 = dfa1.simulate(s).getOrElse(false)
+        v2 = dfa2.simulate(s).getOrElse(false)
+        } assert(vx == !(v1 && v2), s"vx=$vx v1=$v1 v2=$v2")
+  }
+  // dfaNor
+  test("sxp nor"){
+    for{rte1 <- testRtes
+        dfa1 = rte1.toDfa[Boolean](true)
+        rte2 <- testRtes
+        dfa2 = rte2.toDfa[Boolean](true)
+        dfax = dfaNor(trim(dfa1), trim(dfa2))
+        s <- testSequences
+        vx = dfax.simulate(s).getOrElse(false)
+        v1 = dfa1.simulate(s).getOrElse(false)
+        v2 = dfa2.simulate(s).getOrElse(false)
+        } assert(vx == !(v1 || v2), s"vx=$vx v1=$v1 v2=$v2")
+  }
+  // dfaUnion
+  test("sxp union"){
+    for{rte1 <- testRtes
+        dfa1 = rte1.toDfa[Boolean](true)
+        rte2 <- testRtes
+        dfa2 = rte2.toDfa[Boolean](true)
+        dfax = dfaUnion(trim(dfa1), trim(dfa2))
+        s <- testSequences
+        vx = dfax.simulate(s).getOrElse(false)
+        v1 = dfa1.simulate(s).getOrElse(false)
+        v2 = dfa2.simulate(s).getOrElse(false)
+        } assert(vx == (v1 || v2), s"vx=$vx v1=$v1 v2=$v2")
   }
 }
