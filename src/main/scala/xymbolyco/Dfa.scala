@@ -353,9 +353,9 @@ object Dfa {
       assert(qa.accepting() && !qb.accepting()
         || qb.accepting() && !qa.accepting())
       if (qa.accepting())
-        dfa1.fMap.get(qa.id)
+        qa.exitOption()
       else
-        dfa2.fMap.get(qb.id)
+        qb.exitOption()
     }
 
     Minimize.sxp[Σ, L, E](dfa1, dfa2,
@@ -368,10 +368,11 @@ object Dfa {
                         dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
     def arbitrate(qa: State[Σ, L, E], qb: State[Σ, L, E]): Option[E] = {
       assert(qa.accepting() || qb.accepting())
+
       if (qa.accepting())
-        dfa1.fMap.get(qa.id)
+        qa.exitOption()
       else if (qb.accepting())
-        dfa2.fMap.get(qb.id)
+        qb.exitOption()
       else
         None
     }
@@ -387,7 +388,7 @@ object Dfa {
                                dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
     def arbitrate(qa: State[Σ, L, E], qb: State[Σ, L, E]): Option[E] = {
       assert(qa.accepting() && qb.accepting())
-      (dfa1.fMap.get(qa.id), dfa2.fMap.get(qb.id)) match {
+      (qa.exitOption(), qb.exitOption()) match {
         case (Some(a), _) => Some(a)
         case (_, b) => b
       }
@@ -404,7 +405,7 @@ object Dfa {
                          dfa2: Dfa[Σ, L, E]): Dfa[Σ, L, E] = {
     def arbitrate(qa: State[Σ, L, E], qb: State[Σ, L, E]): Option[E] = {
       assert(qa.accepting() && !qb.accepting())
-      dfa1.fMap.get(qa.id)
+      qa.exitOption()
     }
 
     Minimize.sxp[Σ, L, E](
@@ -419,9 +420,9 @@ object Dfa {
     def arbitrate(qa: State[Σ, L, E], qb: State[Σ, L, E]): Option[E] = {
       assert(!(qa.accepting() && qb.accepting()))
       if (qa.accepting())
-        dfa1.fMap.get(qa.id)
+        qa.exitOption()
       else if (qb.accepting())
-        dfa2.fMap.get(qb.id)
+        qa.exitOption()
       else
         None
     }

@@ -36,32 +36,42 @@ class DfaTestSuite extends AdjFunSuite {
 
   import bdd._
 
-  class StringLabelerT1 extends Labeler[String,Set[String]] {
-    def member(x:String,s:Set[String]):Boolean = s.contains(x)
-    def combineLabels(a:Set[String],b:Set[String]):Set[String] = a.union(b)
-    override def universal(a:Set[String]):Boolean = false
+  class StringLabelerT1 extends Labeler[String, Set[String]] {
+    def member(x: String, s: Set[String]): Boolean = s.contains(x)
+
+    def combineLabels(a: Set[String], b: Set[String]): Set[String] = a.union(b)
+
+    override def universal(a: Set[String]): Boolean = false
 
     override def inhabited(a: Set[String]): Option[Boolean] = {
       Some(a.nonEmpty)
     }
   }
-  class IntLabelerT1 extends Labeler[Int,Set[Int]] {
-    def member(x:Int,s:Set[Int]):Boolean = s.contains(x)
-    def combineLabels(a:Set[Int],b:Set[Int]):Set[Int] = a.union(b)
-    override def universal(a:Set[Int]):Boolean = false
+
+  class IntLabelerT1 extends Labeler[Int, Set[Int]] {
+    def member(x: Int, s: Set[Int]): Boolean = s.contains(x)
+
+    def combineLabels(a: Set[Int], b: Set[Int]): Set[Int] = a.union(b)
+
+    override def universal(a: Set[Int]): Boolean = false
+
     override def inhabited(a: Set[Int]): Option[Boolean] = {
       Some(a.nonEmpty)
     }
   }
 
-  class BddLabelerT2 extends Labeler[Int,Bdd] {
-    def member(x:Int,b:Bdd):Boolean = ???
-    def combineLabels(a:Bdd,b:Bdd):Bdd = Or(a, b)
-    override lazy val universe:Bdd = BddTrue
-    override def subtractLabels(a:Bdd,others:Seq[Bdd]):Bdd = {
-      bdd.AndNot.apply(a::others.toList)
+  class BddLabelerT2 extends Labeler[Int, Bdd] {
+    def member(x: Int, b: Bdd): Boolean = ???
+
+    def combineLabels(a: Bdd, b: Bdd): Bdd = Or(a, b)
+
+    override lazy val universe: Bdd = BddTrue
+
+    override def subtractLabels(a: Bdd, others: Seq[Bdd]): Bdd = {
+      bdd.AndNot.apply(a :: others.toList)
     }
-    override def inhabited(a:Bdd):Option[Boolean] = {
+
+    override def inhabited(a: Bdd): Option[Boolean] = {
       Some(a != BddFalse)
     }
   }
@@ -78,22 +88,22 @@ class DfaTestSuite extends AdjFunSuite {
       val t9 = Bdd(9) // symbol
 
       val dfa = Dfa[Int, Bdd, String](Qids = Set(0, 1, 2, 4, 5, 6, 7, 8),
-                                          q0id = 0,
-                                          Fids = Set(4, 5, 6, 7),
-                                          protoDelta = Set((0, t1, 1),
-                                                           (0, t4, 2),
-                                                           (0, t9, 8),
-                                                           (1, t6, 4),
-                                                           (1, t1, 5),
-                                                           (1, t7, 6),
-                                                           (2, t3, 7),
-                                                           (8, t7, 6),
-                                                           (8, t2, 7)),
-                                          new BddLabelerT2(),
-                                          fMap = Map(4 -> "clause-2",
-                                                     5 -> "clause-1",
-                                                     6 -> "clause-3",
-                                                     7 -> "clause-3"))
+                                      q0id = 0,
+                                      Fids = Set(4, 5, 6, 7),
+                                      protoDelta = Set((0, t1, 1),
+                                                       (0, t4, 2),
+                                                       (0, t9, 8),
+                                                       (1, t6, 4),
+                                                       (1, t1, 5),
+                                                       (1, t7, 6),
+                                                       (2, t3, 7),
+                                                       (8, t7, 6),
+                                                       (8, t2, 7)),
+                                      new BddLabelerT2(),
+                                      fMap = Map(4 -> "clause-2",
+                                                 5 -> "clause-1",
+                                                 6 -> "clause-3",
+                                                 7 -> "clause-3"))
       assert(dfa.F.size == 4)
       assert(dfa.q0.id == 0)
       assert(dfa.F.map(_.id) == Set(4, 5, 6, 7))
@@ -112,23 +122,23 @@ class DfaTestSuite extends AdjFunSuite {
       val t9 = Bdd(9) // symbol
 
       val dfa = Dfa[Int, Bdd, String](Set(0, 1, 2, 4, 5, 6, 7, 8),
-                                          0,
-                                          Set(4, 5, 6, 7),
-                                          Set((0, t1, 1),
-                                              (0, t4, 2),
-                                              (0, t9, 8), // mergable
-                                              (0, t4, 8), // mergable
-                                              (1, t6, 4),
-                                              (1, t1, 5),
-                                              (1, t7, 6),
-                                              (2, t3, 7),
-                                              (8, t7, 6),
-                                              (8, t2, 7)),
-                                          new BddLabelerT2,
-                                          Map(4 -> "clause-2",
-                                              5 -> "clause-1",
-                                              6 -> "clause-3",
-                                              7 -> "clause-3"))
+                                      0,
+                                      Set(4, 5, 6, 7),
+                                      Set((0, t1, 1),
+                                          (0, t4, 2),
+                                          (0, t9, 8), // mergable
+                                          (0, t4, 8), // mergable
+                                          (1, t6, 4),
+                                          (1, t1, 5),
+                                          (1, t7, 6),
+                                          (2, t3, 7),
+                                          (8, t7, 6),
+                                          (8, t2, 7)),
+                                      new BddLabelerT2,
+                                      Map(4 -> "clause-2",
+                                          5 -> "clause-1",
+                                          6 -> "clause-3",
+                                          7 -> "clause-3"))
       assert(dfa.F.size == 4)
       assert(dfa.q0.id == 0)
       assert(dfa.F.map(_.id) == Set(4, 5, 6, 7))
@@ -174,22 +184,22 @@ class DfaTestSuite extends AdjFunSuite {
   }
 
   test("simulate set dfa") {
-    val dfa = Dfa[Int, Set[Int], Int](Set(0,1,2,3),
-                                         0,
-                                         Set(1,2),
-                                         Set((0, Set(1), 1),
-                                             (0, Set(2), 2),
-                                             (2, Set(1,2), 3),
-                                             (1, Set(0), 0)
-                                             ),
-                                         new IntLabelerT1,
-                                         Map(1 -> 42,
-                                             2 -> 43))
+    val dfa = Dfa[Int, Set[Int], Int](Set(0, 1, 2, 3),
+                                      0,
+                                      Set(1, 2),
+                                      Set((0, Set(1), 1),
+                                          (0, Set(2), 2),
+                                          (2, Set(1, 2), 3),
+                                          (1, Set(0), 0)
+                                          ),
+                                      new IntLabelerT1,
+                                      Map(1 -> 42,
+                                          2 -> 43))
     assert(dfa.simulate(Seq[Int]()) == None)
     assert(dfa.simulate(Seq(1)) == Some(42))
     assert(dfa.simulate(Seq(2)) == Some(43))
-    assert(dfa.simulate(Seq(1,0,2)) == Some(43))
-    assert(dfa.simulate(Seq(1,0,2,0)) == None)
+    assert(dfa.simulate(Seq(1, 0, 2)) == Some(43))
+    assert(dfa.simulate(Seq(1, 0, 2, 0)) == None)
   }
 
   test("minimize dfa") {
@@ -203,23 +213,23 @@ class DfaTestSuite extends AdjFunSuite {
     val t9 = Set("e9") // symbol
 
     val dfa = Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7, 8),
-                                                   0,
-                                                   Set(4, 5, 6, 7),
-                                                   Set((0, t1, 1),
-                                                       (0, t4, 2),
-                                                       (0, t9, 8), // mergable
-                                                       (0, t4, 8), // mergable
-                                                       (1, t6, 4),
-                                                       (1, t1, 5),
-                                                       (1, t7, 6),
-                                                       (2, t3, 7),
-                                                       (8, t7, 6),
-                                                       (8, t2, 7)),
-                                                   new StringLabelerT1,
-                                                   Map(4 -> "clause-2",
-                                                       5 -> "clause-1",
-                                                       6 -> "clause-3",
-                                                       7 -> "clause-3"))
+                                               0,
+                                               Set(4, 5, 6, 7),
+                                               Set((0, t1, 1),
+                                                   (0, t4, 2),
+                                                   (0, t9, 8), // mergable
+                                                   (0, t4, 8), // mergable
+                                                   (1, t6, 4),
+                                                   (1, t1, 5),
+                                                   (1, t7, 6),
+                                                   (2, t3, 7),
+                                                   (8, t7, 6),
+                                                   (8, t2, 7)),
+                                               new StringLabelerT1,
+                                               Map(4 -> "clause-2",
+                                                   5 -> "clause-1",
+                                                   6 -> "clause-3",
+                                                   7 -> "clause-3"))
     val minDfa = Minimize.minimize(dfa)
     assert(minDfa.F.size == 3)
     assert(minDfa.F.map(q => minDfa.exitValue(q)) == Set("clause-1", "clause-2", "clause-3"))
@@ -236,19 +246,19 @@ class DfaTestSuite extends AdjFunSuite {
     val t7 = t3.diff(t2) // !integer & number
 
     val dfa = Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
-                                                   0,
-                                                   Set(4, 5, 6, 7),
-                                                   Set((0, t1, 1),
-                                                       (0, t4, 2),
-                                                       (1, t6, 4),
-                                                       (1, t1, 5),
-                                                       (1, t7, 6),
-                                                       (2, t3, 7)),
-                                                   new StringLabelerT1,
-                                                   Map(4 -> "clause-2",
-                                                       5 -> "clause-1",
-                                                       6 -> "clause-3",
-                                                       7 -> "clause-3"))
+                                               0,
+                                               Set(4, 5, 6, 7),
+                                               Set((0, t1, 1),
+                                                   (0, t4, 2),
+                                                   (1, t6, 4),
+                                                   (1, t1, 5),
+                                                   (1, t7, 6),
+                                                   (2, t3, 7)),
+                                               new StringLabelerT1,
+                                               Map(4 -> "clause-2",
+                                                   5 -> "clause-1",
+                                                   6 -> "clause-3",
+                                                   7 -> "clause-3"))
     val minDfa = Minimize.minimize(dfa)
     assert(minDfa.F.size == 3)
     assert(minDfa.F.map(q => minDfa.exitValue(q)) == Set("clause-1", "clause-2", "clause-3"))
@@ -264,19 +274,19 @@ class DfaTestSuite extends AdjFunSuite {
     val t7 = t3.diff(t2) // !integer & number
 
     val sdfa = Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
-                                                   0,
-                                                   Set(4, 5, 6, 7),
-                                                   Set((0, t1, 1),
-                                                       (0, t4, 2),
-                                                       (1, t6, 4),
-                                                       (1, t1, 5),
-                                                       (1, t7, 6),
-                                                       (2, t3, 7)),
-                                                   new StringLabelerT1,
-                                                   Map(4 -> "clause-2",
-                                                       5 -> "clause-1",
-                                                       6 -> "clause-3",
-                                                       7 -> "clause-3"))
+                                                0,
+                                                Set(4, 5, 6, 7),
+                                                Set((0, t1, 1),
+                                                    (0, t4, 2),
+                                                    (1, t6, 4),
+                                                    (1, t1, 5),
+                                                    (1, t7, 6),
+                                                    (2, t3, 7)),
+                                                new StringLabelerT1,
+                                                Map(4 -> "clause-2",
+                                                    5 -> "clause-1",
+                                                    6 -> "clause-3",
+                                                    7 -> "clause-3"))
     assert(sdfa.Q.size == 7)
     xymbolyco.GraphViz.dfaToPng(sdfa, "test render", abbrev = false)
     //Render.dfaView(dfa,"test render")
@@ -295,26 +305,26 @@ class DfaTestSuite extends AdjFunSuite {
     val t7 = t3.diff(t2) // !integer & number
 
     val dfa = Dfa[String, Set[String], String](Set(0, 1, 2, 4, 5, 6, 7),
-                                                   0,
-                                                   Set(4, 5, 6, 7),
-                                                   Set((0, t1, 1), // a1
-                                                       (0, t4, 2), // d4
-                                                       (1, t6, 4), // b2 c3 == !(a1) & (a1 b2 c3)
-                                                       (1, t1, 5), // a1
-                                                       (1, t7, 6), // c3 == !(a1 b2) & (a1 b2 c3)
-                                                       (2, t3, 7)), // a1 b2 c3
-                                                   new StringLabelerT1,
-                                                   Map(4 -> "clause-2",
-                                                       5 -> "clause-1",
-                                                       6 -> "clause-3",
-                                                       7 -> "clause-3"))
+                                               0,
+                                               Set(4, 5, 6, 7),
+                                               Set((0, t1, 1), // a1
+                                                   (0, t4, 2), // d4
+                                                   (1, t6, 4), // b2 c3 == !(a1) & (a1 b2 c3)
+                                                   (1, t1, 5), // a1
+                                                   (1, t7, 6), // c3 == !(a1 b2) & (a1 b2 c3)
+                                                   (2, t3, 7)), // a1 b2 c3
+                                               new StringLabelerT1,
+                                               Map(4 -> "clause-2",
+                                                   5 -> "clause-1",
+                                                   6 -> "clause-3",
+                                                   7 -> "clause-3"))
 
     assert(dfa.simulate(List("a1", "a1")).contains("clause-1"))
     assert(dfa.simulate(List()).isEmpty)
     assert(dfa.simulate(Vector("a1", "b2")).contains("clause-2"))
     assert(dfa.simulate(Vector("a1", "b2", "b2")).isEmpty)
   }
-  test("sxp"){
+  test("sxp") {
     import genus._
     val t0 = SAtomic(classOf[String])
     val dfa1 = locally {
@@ -333,60 +343,60 @@ class DfaTestSuite extends AdjFunSuite {
           labeler = GenusLabeler(),
           fMap = Map(2 -> 4))
     }
-    val dfa2 = locally{
+    val dfa2 = locally {
       val t1 = SEql(-1)
-      Dfa(Qids= Set(0,2),
-              q0id = 0,
-              Fids=Set(2),
-              protoDelta = Set((0,t0,0),
-                               (0,t1,2)),
-              labeler=GenusLabeler(),
-              fMap=Map(2 -> 3)
-              )
+      Dfa(Qids = Set(0, 2),
+          q0id = 0,
+          Fids = Set(2),
+          protoDelta = Set((0, t0, 0),
+                           (0, t1, 2)),
+          labeler = GenusLabeler(),
+          fMap = Map(2 -> 3)
+          )
     }
-    val s = dfaUnion(trim(dfa1),trim(dfa2))
+    val s = dfaUnion(trim(dfa1), trim(dfa2))
     assert(s.Fids.size >= 2)
   }
 
-  test("sxp 2"){
+  test("sxp 2") {
     import genus._
     val dfa1 = locally {
-      val t0:SimpleTypeD = SEql(-1)
+      val t0: SimpleTypeD = SEql(-1)
       Dfa(Qids = Set(0, 1),
-              q0id = 0,
-              Fids = Set(1),
-              protoDelta = Set((0, t0, 1)),
-              labeler=GenusLabeler(),
-              fMap=Map(1 -> 10))
+          q0id = 0,
+          Fids = Set(1),
+          protoDelta = Set((0, t0, 1)),
+          labeler = GenusLabeler(),
+          fMap = Map(1 -> 10))
     }
-    val dfa2 = locally{
-      val t0:SimpleTypeD = SEql(-2)
-      Dfa(Qids= Set(0,1),
-              q0id = 0,
-              Fids=Set(1),
-              protoDelta = Set((0,t0,1)),
-              labeler=GenusLabeler(),
-              fMap=Map(1 -> 20)
-              )
+    val dfa2 = locally {
+      val t0: SimpleTypeD = SEql(-2)
+      Dfa(Qids = Set(0, 1),
+          q0id = 0,
+          Fids = Set(1),
+          protoDelta = Set((0, t0, 1)),
+          labeler = GenusLabeler(),
+          fMap = Map(1 -> 20)
+          )
     }
-    val s = dfaUnion(dfa1,dfa2)
+    val s = dfaUnion(dfa1, dfa2)
     assert(s.Fids.size >= 2)
     s.simulate(Seq(-1)).contains(10)
     s.simulate(Seq(-2)).contains(20)
     s.simulate(Seq(0)).isEmpty
   }
 
-  test("spanning path 0"){
-    import rte.{And,Not,Star,Singleton}
+  test("spanning path 0") {
+    import rte.{And, Not, Star, Singleton}
     import genus.SAtomic
     // this test checks the normal behavior of rteCase
     val int = Singleton(SAtomic(classOf[Int]))
     val str = Singleton(SAtomic(classOf[String]))
     val dfa = And(Star(str), Not(Star(int))).toDfa(1)
-    assert( dfa.spanningPath != None)
+    assert(dfa.spanningPath != None)
   }
 
-  test("spanning path"){
+  test("spanning path") {
     import genus.{SAnd, SAtomic, SEql, SOr, SSatisfies, SimpleTypeD}
     import rte.{Or, Rte, Singleton, Xor}
     val data1 = Seq("XY", 1, 0.5F, 2, 0.8F, 5, 1.2F, 7, 0.4F, // 1 or more x,y where x is integer and y is float
@@ -395,52 +405,53 @@ class DfaTestSuite extends AdjFunSuite {
                     "C", 2, 5, 3,
                     "M", 0.5, 1.2
                     )
-    val D:SimpleTypeD = SAtomic(classOf[Double])
-    val F:SimpleTypeD = SAtomic(classOf[Float])
-    val DF:Rte = Singleton(SOr(F, D))
+    val D: SimpleTypeD = SAtomic(classOf[Double])
+    val F: SimpleTypeD = SAtomic(classOf[Float])
+    val DF: Rte = Singleton(SOr(F, D))
 
-    def positive(x:Any):Boolean = {
+    def positive(x: Any): Boolean = {
       x match {
-        case a:Int => a > 0
+        case a: Int => a > 0
         case _ => false
       }
     }
-    val IPos:Rte = Singleton(SAnd(SAtomic(classOf[Int]),
-                                  SSatisfies(positive, "IPos")))
-    val M:Rte = Singleton(SEql("M"))
-    val C:Rte = Singleton(SEql("C"))
-    val XY:Rte = Singleton(SEql("XY"))
 
-    val XYclause:Rte = XY ++ (Singleton(SAtomic(classOf[Int])) ++ DF).+
-    val Mclause:Rte = M ++ DF.+
-    val Cclause:Rte = C ++ IPos.+
+    val IPos: Rte = Singleton(SAnd(SAtomic(classOf[Int]),
+                                   SSatisfies(positive, "IPos")))
+    val M: Rte = Singleton(SEql("M"))
+    val C: Rte = Singleton(SEql("C"))
+    val XY: Rte = Singleton(SEql("XY"))
+
+    val XYclause: Rte = XY ++ (Singleton(SAtomic(classOf[Int])) ++ DF).+
+    val Mclause: Rte = M ++ DF.+
+    val Cclause: Rte = C ++ IPos.+
 
     //assert(Mclause.contains(Seq("M", 0.5F, 0.8, 1.2F, 0.4F)))
     //assert(XYclause.contains(Seq("XY", 1, 0.5F, 2, 0.8F, 5, 1.2F, 7, 0.4F)))
     //assert(Cclause.contains(Seq("C", 2, 5, 3)))
 
-    val pattern1:Rte = Or(XYclause, Mclause, Cclause).*
+    val pattern1: Rte = Or(XYclause, Mclause, Cclause).*
 
-    val pattern2:Rte = ((XY ++ (IPos ++ DF).+) | (M ++ DF.+) | (C ++ IPos.+)).*
+    val pattern2: Rte = ((XY ++ (IPos ++ DF).+) | (M ++ DF.+) | (C ++ IPos.+)).*
 
     assert(true == pattern1.contains(data1))
     assert(true == pattern2.contains(data1))
-    val diff = Xor(pattern2 ,pattern1)
-    val dfa = diff.toDfa(exitValue=true)
+    val diff = Xor(pattern2, pattern1)
+    val dfa = diff.toDfa(exitValue = true)
     val qs = dfa.spanningPath match {
       case Some((Satisfiable, qs)) => {
         assert(qs.length == 4)
         qs
       }
       case Some((Indeterminate, qs)) => {
-        assert (qs.length == 4)
+        assert(qs.length == 4)
         qs
       }
       case _ => List()
     }
     dfa.spanningTrace match {
-      case Some((Satisfiable,tds)) => assert(tds.length == 3)
-      case Some((Indeterminate,tds)) => assert(tds.length == 3)
+      case Some((Satisfiable, tds)) => assert(tds.length == 3)
+      case Some((Indeterminate, tds)) => assert(tds.length == 3)
       case _ => ()
     }
     val m = dfa.findSpanningPathMap()
@@ -448,8 +459,8 @@ class DfaTestSuite extends AdjFunSuite {
     assert(qs == qs2)
   }
 
-  test("complement 0"){
-    import rte.{Rte,Not,Or, And, Atomic, Singleton}
+  test("complement 0") {
+    import rte.{Rte, Not, Or, And, Atomic, Singleton}
     import rte.Rte.sigmaStar
     import xymbolyco.GraphViz.dfaView
     import genus.Types.oddType
@@ -460,12 +471,14 @@ class DfaTestSuite extends AdjFunSuite {
     val dfa2 = rte2.toDfa()
 
     //dfaView(dfa1, title = "dfa of rte", dotFileCB=(name:String)=>{println(s"dot file name=$name")})
-    dfaView(dfa2, title = "dfa of negated rte", dotFileCB=(name:String)=>{println(s"dot file name=$name")})
+    dfaView(dfa2, title = "dfa of negated rte", dotFileCB = (name: String) => {
+      println(s"dot file name=$name")
+    })
 
   }
 
-  test("complement 1"){
-    import rte.{Rte,Not,Or, Atomic}
+  test("complement 1") {
+    import rte.{Rte, Not, Or, Atomic}
     import rte.Rte.sigmaStar
     import xymbolyco.GraphViz.dfaView
     import xymbolyco.Dfa.dfaXor
@@ -476,7 +489,7 @@ class DfaTestSuite extends AdjFunSuite {
     val rte2 = Not(rte1)
     val dfa1 = rte1.toDfa().negate(true)
     val dfa2 = rte2.toDfa()
-    val xor = dfaXor(dfa1,dfa2)
+    val xor = dfaXor(dfa1, dfa2)
     val empty = xor.vacuous()
 
     dfaView(dfa1, title = "dfa1: negated dfa")
@@ -493,8 +506,8 @@ class DfaTestSuite extends AdjFunSuite {
            s"rte1=$rte1")
   }
 
-  test("complement 2"){
-    import rte.{Rte,Not}
+  test("complement 2") {
+    import rte.{Rte, Not}
     import xymbolyco.GraphViz.dfaView
     import xymbolyco.Dfa.dfaXor
     // we should get equivalent Dfas if we build a Dfa from a negated rte
@@ -503,9 +516,9 @@ class DfaTestSuite extends AdjFunSuite {
          n <- 0 to 50
          rte1 = randomRteByDepth(depth)
          rte2 = Not(rte1)
-         dfa1 <- callWithTimeout(2000*depth, () => rte1.toDfa().negate(true))
-         dfa2 <- callWithTimeout(200*depth, () => rte2.toDfa())
-         xor = dfaXor(dfa1,dfa2)
+         dfa1 <- callWithTimeout(2000 * depth, () => rte1.toDfa().negate(true))
+         dfa2 <- callWithTimeout(200 * depth, () => rte2.toDfa())
+         xor = dfaXor(dfa1, dfa2)
          empty = xor.vacuous()
          } {
       if (empty == Some(false) || empty == None) {
@@ -521,17 +534,19 @@ class DfaTestSuite extends AdjFunSuite {
   }
 
   test("exit values") {
-    val dfa1: Dfa[Any, SimpleTypeD, Int] = Member(1, 2, 3).toDfa(1) // rte.toDfa(1)
-    val dfa2: Dfa[Any, SimpleTypeD, Int] = Member(1, 3, 5).toDfa(2)
-    val dfa3: Dfa[Any, SimpleTypeD, Int] = Member(2, 4, 6).toDfa(3)
-    val f1:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaXor
-    val f2:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaAndNot
-    val f3:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaNand
-    val f4:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaNor
-    val f5:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaIntersection
-    val f6:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) = dfaUnion
+    type DfaX = Dfa[Any, SimpleTypeD, Int]
+    val dfa1: DfaX = Member(1, 2, 3).toDfa(1) // rte.toDfa(1)
+    val dfa2: DfaX = Member(1, 3, 5).toDfa(2)
+    val dfa3: DfaX = Member(2, 4, 6).toDfa(3)
 
-    for {f:((Dfa[Any, SimpleTypeD, Int], Dfa[Any, SimpleTypeD, Int]) => Dfa[Any, SimpleTypeD, Int]) <- List(f1, f2, f3, f4, f5, f6)
+    for {f <- List[(DfaX, DfaX) => DfaX](
+      dfaXor,
+      dfaAndNot,
+      dfaNand,
+      dfaNor,
+      dfaUnion,
+      dfaIntersection
+      )
          dfa4 = f(dfa1, dfa2)
          dfa4b = f(dfa2, dfa1)
          dfa5 = f(dfa2, dfa3)

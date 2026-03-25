@@ -211,13 +211,17 @@ object Minimize {
   //  Cross Product).  If dfa1 has m states and dfa2 has n states, the sxp
   //  has some subset of m*n states.  The subset will contain all the
   //  states accessible from the initial state.
-  def sxp[Σ, L, E](dfa1:Dfa[Σ, L, E],
-                   dfa2:Dfa[Σ, L, E],
+  def sxp[Σ, L, E](dfa1_ : Dfa[Σ, L, E],
+                   dfa2_ : Dfa[Σ, L, E],
                    arbitrateFinal:(Boolean,Boolean)=>Boolean,
                    combineFmap:(State[Σ, L, E], State[Σ, L, E])=>Option[E]
                   ):Dfa[Σ, L, E] = {
-    val grouped1 = complete(dfa1).protoDelta.groupBy(_._1)
-    val grouped2 = complete(dfa2).protoDelta.groupBy(_._1)
+
+    val dfa1 = complete(dfa1_)
+    val dfa2 = complete(dfa2_)
+
+    val grouped1 = dfa1.protoDelta.groupBy(_._1)
+    val grouped2 = dfa2.protoDelta.groupBy(_._1)
 
     // This function does some consistency checking and prints
     // errors, raises exceptions, displays results if duplicate
@@ -253,10 +257,10 @@ object Minimize {
       val (q1id,q2id) = pair
       val x1 = grouped1.getOrElse(q1id,Set.empty)
       val x2 = grouped2.getOrElse(q2id,Set.empty)
-      val edges = for { (_,lab1,dst1) <- x1
-                        (_,lab2,dst2) <- x2
-                        lab <- dfa1.labeler.maybeIntersectLabels(lab1,lab2)
-                        } yield (lab,(dst1,dst2),(lab1,lab2))
+      val edges: Set[(L, (Int, Int), (L, L))] = for {(_,lab1,dst1) <- x1
+                                                     (_,lab2,dst2) <- x2
+                                                     lab <- dfa1.labeler.maybeIntersectLabels(lab1,lab2)
+                                                     } yield (lab,(dst1,dst2),(lab1,lab2))
 
       reportInconsistent(edges.toSeq).map{tr => (tr._1,tr._2)}
     }
