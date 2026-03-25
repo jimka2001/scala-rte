@@ -1060,4 +1060,16 @@ class GenusCanonicalize extends AdjFunSuite {
     assert(SOr(SEql(true),SEql(false)).conversion177() == b)
     assert(SOr(SEql(true),SEql(false), X).conversion177() == SOr(b, X))
   }
+  test("discovered 1063 and"){
+    val I = SAtomic(classOf[Integer])
+    val T = SAnd(I, SNot(SAnd(I, SNot(SEql(1)))))
+
+    assert(T.canonicalize() == SEql(1))
+  }
+  test("discovered 1063 or"){
+    val I = SAtomic(classOf[Integer])
+    val T = SOr(I, SNot(SOr(I, SNot(SEql(1)))))
+
+    assert(T.canonicalize() == I)
+  }
 }

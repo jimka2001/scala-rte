@@ -176,6 +176,21 @@ case class SAnd(override val tds: SimpleTypeD*) extends SCombination { // SAnd  
     else
       this
   }
+  def conversion1063():SimpleTypeD = {
+    val search = tds.find {
+      case SNot(SAnd(_*)) => true
+      case _ => false
+    }
+    if( search.nonEmpty)
+      create(tds.map{td =>
+        if (td == search.get)
+          td.toCnf
+        else
+          td
+      })
+    else
+      this
+  }
 
   def conversion177(): SimpleTypeD = {
     // SAnd(Boolean,SNot(true)) -> false

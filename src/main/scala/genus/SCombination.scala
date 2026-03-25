@@ -405,6 +405,8 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SNode {
 
   def conversionD3():SimpleTypeD
 
+
+
   def conversion98():SimpleTypeD = {
     create(tds.sortWith(cmpTypeDesignators))
   }
@@ -414,6 +416,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SNode {
   }
 
   def conversion177(): SimpleTypeD
+  def conversion1063(): SimpleTypeD
 
   // SCombination(tds: SimpleTypeD*)
   override def canonicalizeOnce(nf: Option[NormalForm] = None): SimpleTypeD = {
@@ -438,6 +441,7 @@ abstract class SCombination(val tds: SimpleTypeD*) extends SNode {
       "D1" -> conversionD1,
       "D3" -> conversionD3,
       "177" -> conversion177,
+      "1063" -> conversion1063,
       "98" -> conversion98,
       "99" -> (() => { conversion99(nf) })
       ))

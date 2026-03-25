@@ -123,6 +123,22 @@ case class SOr(override val tds: SimpleTypeD*) extends SCombination {
       this
   }
 
+  def conversion1063():SimpleTypeD = {
+    val search = tds.find {
+      case SNot(SOr(_*)) => true
+      case _ => false
+    }
+    if( search.nonEmpty)
+      create(tds.map{td =>
+        if (td == search.get)
+          td.toDnf
+        else
+          td
+      })
+    else
+      this
+  }
+
   def conversion177(): SimpleTypeD = {
     // SOr(true,false) -> Boolean
     val b = SAtomic(classOf[Boolean])
