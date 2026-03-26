@@ -54,11 +54,12 @@ object Minimize {
     val succ:Map[Int,Set[Int]] = dfa.successors()
     val accessible:Set[Int] = findReachable(succ,Set(),Set(dfa.q0.id))
     Dfa(accessible,
-            dfa.q0id,
-            dfa.Fids.intersect(accessible),
-            dfa.protoDelta.collect{case sld@(src,_,dst) if accessible.contains(src) && accessible.contains(dst) =>sld},
-            dfa.labeler,
-            dfa.fMap
+        dfa.q0id,
+        dfa.Fids.intersect(accessible),
+        dfa.protoDelta.collect{case sld@(src,_,dst) if accessible.contains(src) && accessible.contains(dst) =>sld},
+        dfa.labeler,
+        dfa.fMap,
+        dfa.defaultExitValue
             )
   }
 
@@ -67,11 +68,12 @@ object Minimize {
     val coaccessible:Set[Int] = findReachable(pred,Set[Int](),dfa.Fids)
     if(coaccessible.contains(dfa.q0id)){
       Dfa(coaccessible,
-              dfa.q0id,
-              dfa.Fids,
-              dfa.protoDelta.collect{case sld@(src,_,dst) if coaccessible.contains(src) && coaccessible.contains(dst) =>sld},
-              dfa.labeler,
-              dfa.fMap)
+          dfa.q0id,
+          dfa.Fids,
+          dfa.protoDelta.collect{case sld@(src,_,dst) if coaccessible.contains(src) && coaccessible.contains(dst) =>sld},
+          dfa.labeler,
+          dfa.fMap,
+          dfa.defaultExitValue)
     }
     else {
       val q0id = dfa.q0id
@@ -86,7 +88,8 @@ object Minimize {
               Set(),
               protoDelta,
               dfa.labeler,
-              dfa.fMap
+              dfa.fMap,
+          dfa.defaultExitValue
               )
     }
   }
@@ -124,10 +127,12 @@ object Minimize {
       (eqv, id) <- ids
       if newFids.contains(id)
       q = eqv.head
-    } yield id -> dfa.exitValue(q)
+      ev = dfa.exitValue(q)
+      if ev != dfa.defaultExitValue
+    } yield id -> ev
 
     // return a newly constructed Dfa extracted from the Hopcroft partition minimization
-    Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap)
+    Dfa[Σ, L, E](newIds, newQ0, newFids, newProtoDelta, dfa.labeler, newFmap.to(Map), dfa.defaultExitValue)
   }
 
   def findHopcroftPartition[Σ, L, E](dfa: Dfa[Σ, L, E]): Set[Set[State[Σ, L, E]]] = {
@@ -203,7 +208,8 @@ object Minimize {
                                        Fids = dfa.Fids,
                                        protoDelta = protoDelta,
                                        labeler = dfa.labeler,
-                                       fMap = dfa.fMap)
+                                       fMap = dfa.fMap,
+                                   defaultExitValue = dfa.defaultExitValue)
     dfaComplete
   }
 
@@ -236,8 +242,8 @@ object Minimize {
              } {
           println(s"$c * $trans")
         }
-        GraphViz.dfaView(dfa1, abbrev = true, title = "sxp dfa1")
-        GraphViz.dfaView(dfa2, abbrev = true, title = "sxp dfa2")
+        val (lv, _) = GraphViz.dfaView(dfa1, abbrev = true, title = "sxp dfa1")
+        GraphViz.dfaView(dfa2, abbrev = true, title = "sxp dfa2", givenLabels = lv)
         assert(edgeSeq.map(_._1).distinct.size == edgeSeq.size,
                s"$countDuplicates duplicate transition(s) found in \n"
                  + edgeSeq.map(_.toString).mkString(": ", "\n: ", ""))
@@ -277,6 +283,7 @@ object Minimize {
     val fMap = for { q <- fIds
                      (q1,q2) = vertices(q)
                      e <- combineFmap(dfa1.idToState(q1), dfa2.idToState(q2))
+                     if e != dfa1.defaultExitValue
                      } yield q -> e
     val protoDelta = for { (seq,src) <- edges.zipWithIndex
                            (lab,dst) <- seq
@@ -286,7 +293,8 @@ object Minimize {
                      fIds.toSet, // Fids:Set[Int],
                      protoDelta.toSet, //    protoDelta:Set[(Int,L,Int)],
                      dfa1.labeler, // labeler:Labeler[Σ,L],
-                     fMap.toMap // val fMap:Map[Int,E]
+                     fMap.toMap, // val fMap:Map[Int,E]
+                           dfa1.defaultExitValue
                      )
     trim(dfa)
   }

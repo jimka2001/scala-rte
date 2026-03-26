@@ -36,7 +36,8 @@ class IfThenElseTreeSuite extends AdjFunSuite {
                   Fids = Set(0),
                   protoDelta = Set((0, t1, 0)),
                   labeler = GenusLabeler(),
-                  fMap = Map(0 -> 4))
+                  fMap = Map(0 -> 4),
+                  defaultExitValue = 4)
     val maybe: Option[State[Any, SimpleTypeD, Int]] = dfa.q0.successor(42)
     assert(maybe.nonEmpty)
     maybe.map(q => assert(q.id == 0))
@@ -51,7 +52,8 @@ class IfThenElseTreeSuite extends AdjFunSuite {
                   protoDelta = Set((0, t1, 1),
                                    (0, t2, 2)),
                   labeler = GenusLabeler(),
-                  fMap = Map(0 -> 4))
+                  fMap = Map(0 -> 4),
+                  defaultExitValue = 4)
 
     dfa.q0.successor(42).map(q => assert(q.id == 1))
     dfa.q0.successor(43).map(q => assert(q.id == 2))
@@ -68,7 +70,8 @@ class IfThenElseTreeSuite extends AdjFunSuite {
                                    (2, t1, 0),
                                    (1, t2, 0)),
                   labeler = GenusLabeler(),
-                  fMap = Map(0 -> 4)))
+                  fMap = Map(0 -> 4),
+                           defaultExitValue = 4))
 
     assert(dfa.simulate(Seq(42,43)).contains(4))
     assert(dfa.simulate(Seq(43,42)).contains(4))

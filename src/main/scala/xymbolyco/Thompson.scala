@@ -559,13 +559,13 @@ object Thompson {
   def constructThompsonDfa[E](rte: Rte, exitValue: E): Dfa[Any, SimpleTypeD, E] = {
     val (in0, outs0, determinized0) = constructDeterminizedTransitions(rte)
     val (in, outs, determinized) = renumberTransitions(in0, outs0, determinized0, makeCounter(0, 1))
-    val fmap = outs.map { i => i -> exitValue }.toMap
     Dfa(Qids = findAllStates(determinized)+in,
         q0id = in,
         Fids = outs.toSet,
         protoDelta = determinized.toSet,
         labeler = xymbolyco.GenusLabeler(),
-        fMap = fmap)
+        fMap = Map.empty,
+        defaultExitValue = exitValue)
   }
 }
 

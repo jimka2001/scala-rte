@@ -26,12 +26,11 @@ package xymbolyco
 import adjuvant.AdjFunSuite
 import adjuvant.Adjuvant.callWithTimeout
 import genus.SimpleTypeD
-import org.scalatest.funsuite.AnyFunSuite
 import rte.{And, Atomic, Cat, Eql, Member, Not, Optional, Or, Plus, Rte, Star}
 import rte.Random.randomRteByDepth
 import xymbolyco.Dfa.{dfaAndNot, dfaIntersection, dfaNand, dfaNor, dfaUnion, dfaXor}
 import xymbolyco.GraphViz.dfaView
-import xymbolyco.Minimize.trim
+import xymbolyco.Minimize.complete
 
 class DfaTestSuite extends AdjFunSuite {
 
@@ -169,7 +168,8 @@ class DfaTestSuite extends AdjFunSuite {
                                       fMap = Map(4 -> "clause-2",
                                                  5 -> "clause-1",
                                                  6 -> "clause-3",
-                                                 7 -> "clause-3"))
+                                                 7 -> "clause-3"),
+                                      defaultExitValue = "clause-not-found")
       assert(dfa.F.size == 4)
       assert(dfa.q0.id == 0)
       assert(dfa.F.map(_.id) == Set(4, 5, 6, 7))
@@ -204,7 +204,8 @@ class DfaTestSuite extends AdjFunSuite {
                                       Map(4 -> "clause-2",
                                           5 -> "clause-1",
                                           6 -> "clause-3",
-                                          7 -> "clause-3"))
+                                          7 -> "clause-3"),
+                                      defaultExitValue="clauseNotFound")
       assert(dfa.F.size == 4)
       assert(dfa.q0.id == 0)
       assert(dfa.F.map(_.id) == Set(4, 5, 6, 7))
@@ -237,7 +238,8 @@ class DfaTestSuite extends AdjFunSuite {
                                          Map(4 -> "clause-2",
                                              5 -> "clause-1",
                                              6 -> "clause-3",
-                                             7 -> "clause-3"))
+                                             7 -> "clause-3"),
+                                         defaultExitValue="clause-not-found")
     assert(dfa.F.size == 4)
     assert(dfa.q0.id == 0)
     assert(dfa.F.map(_.id) == Set(4, 5, 6, 7))
@@ -260,7 +262,8 @@ class DfaTestSuite extends AdjFunSuite {
                                           ),
                                       new IntLabelerT1,
                                       Map(1 -> 42,
-                                          2 -> 43))
+                                          2 -> 43),
+                                      defaultExitValue=42)
     assert(dfa.simulate(Seq[Int]()) == None)
     assert(dfa.simulate(Seq(1)) == Some(42))
     assert(dfa.simulate(Seq(2)) == Some(43))
@@ -295,7 +298,8 @@ class DfaTestSuite extends AdjFunSuite {
                                                Map(4 -> "clause-2",
                                                    5 -> "clause-1",
                                                    6 -> "clause-3",
-                                                   7 -> "clause-3"))
+                                                   7 -> "clause-3"),
+                                               defaultExitValue="clause-not-found")
     val minDfa = Minimize.minimize(dfa)
     assert(minDfa.F.size == 3)
     assert(minDfa.F.map(q => minDfa.exitValue(q)) == Set("clause-1", "clause-2", "clause-3"))
@@ -324,7 +328,8 @@ class DfaTestSuite extends AdjFunSuite {
                                                Map(4 -> "clause-2",
                                                    5 -> "clause-1",
                                                    6 -> "clause-3",
-                                                   7 -> "clause-3"))
+                                                   7 -> "clause-3"),
+                                               defaultExitValue="clause-not-found")
     val minDfa = Minimize.minimize(dfa)
     assert(minDfa.F.size == 3)
     assert(minDfa.F.map(q => minDfa.exitValue(q)) == Set("clause-1", "clause-2", "clause-3"))
@@ -352,7 +357,8 @@ class DfaTestSuite extends AdjFunSuite {
                                                 Map(4 -> "clause-2",
                                                     5 -> "clause-1",
                                                     6 -> "clause-3",
-                                                    7 -> "clause-3"))
+                                                    7 -> "clause-3"),
+                                                defaultExitValue="clause-not-found")
     assert(sdfa.Q.size == 7)
     xymbolyco.GraphViz.dfaToPng(sdfa, "test render", abbrev = false)
     //Render.dfaView(dfa,"test render")
@@ -383,7 +389,8 @@ class DfaTestSuite extends AdjFunSuite {
                                                Map(4 -> "clause-2",
                                                    5 -> "clause-1",
                                                    6 -> "clause-3",
-                                                   7 -> "clause-3"))
+                                                   7 -> "clause-3"),
+                                               defaultExitValue="clause-not-found")
 
     assert(dfa.simulate(List("a1", "a1")).contains("clause-1"))
     assert(dfa.simulate(List()).isEmpty)
@@ -407,7 +414,8 @@ class DfaTestSuite extends AdjFunSuite {
                            (2, t3, 1),
                            (1, t3, 1)),
           labeler = GenusLabeler(),
-          fMap = Map(2 -> 4))
+          fMap = Map(2 -> 4),
+          defaultExitValue = 4)
     }
     val dfa2 = locally {
       val t1 = SEql(-1)
@@ -417,10 +425,11 @@ class DfaTestSuite extends AdjFunSuite {
           protoDelta = Set((0, t0, 0),
                            (0, t1, 2)),
           labeler = GenusLabeler(),
-          fMap = Map(2 -> 3)
+          fMap = Map(2 -> 3),
+          defaultExitValue = 3
           )
     }
-    val s = dfaUnion(trim(dfa1), trim(dfa2))
+    val s = dfaUnion(complete(dfa1), complete(dfa2))
     assert(s.Fids.size >= 2)
   }
 
@@ -433,7 +442,8 @@ class DfaTestSuite extends AdjFunSuite {
           Fids = Set(1),
           protoDelta = Set((0, t0, 1)),
           labeler = GenusLabeler(),
-          fMap = Map(1 -> 10))
+          fMap = Map(1 -> 10),
+          defaultExitValue = 10)
     }
     val dfa2 = locally {
       val t0: SimpleTypeD = SEql(-2)
@@ -442,7 +452,8 @@ class DfaTestSuite extends AdjFunSuite {
           Fids = Set(1),
           protoDelta = Set((0, t0, 1)),
           labeler = GenusLabeler(),
-          fMap = Map(1 -> 20)
+          fMap = Map(1 -> 20),
+          defaultExitValue = 20
           )
     }
     val s = dfaUnion(dfa1, dfa2)
@@ -459,6 +470,7 @@ class DfaTestSuite extends AdjFunSuite {
     val int = Singleton(SAtomic(classOf[Int]))
     val str = Singleton(SAtomic(classOf[String]))
     val dfa = And(Star(str), Not(Star(int))).toDfa(1)
+    //print(dfa.findSpanningPathMap())
     assert(dfa.spanningPath != None)
   }
 
@@ -625,7 +637,7 @@ class DfaTestSuite extends AdjFunSuite {
         dfa1 = rte1.toDfa[Boolean](true)
         rte2 <- testRtes
         dfa2 = rte2.toDfa[Boolean](true)
-        dfax = dfaIntersection(trim(dfa1), trim(dfa2))
+        dfax = dfaIntersection(complete(dfa1), complete(dfa2))
         s <- testSequences
         vx = dfax.simulate(s).getOrElse(false)
         v1 = dfa1.simulate(s).getOrElse(false)
@@ -639,7 +651,7 @@ class DfaTestSuite extends AdjFunSuite {
         dfa1 = rte1.toDfa[Boolean](true)
         rte2 <- testRtes
         dfa2 = rte2.toDfa[Boolean](true)
-        dfax = dfaXor(trim(dfa1), trim(dfa2))
+        dfax = dfaXor(complete(dfa1), complete(dfa2))
         s <- testSequences
         vx = dfax.simulate(s).getOrElse(false)
         v1 = dfa1.simulate(s).getOrElse(false)
@@ -653,7 +665,7 @@ class DfaTestSuite extends AdjFunSuite {
         dfa1 = rte1.toDfa[Boolean](true)
         rte2 <- testRtes
         dfa2 = rte2.toDfa[Boolean](true)
-        dfax = dfaAndNot(trim(dfa1), trim(dfa2))
+        dfax = dfaAndNot(complete(dfa1), complete(dfa2))
         s <- testSequences
         vx = dfax.simulate(s).getOrElse(false)
         v1 = dfa1.simulate(s).getOrElse(false)
@@ -672,15 +684,56 @@ class DfaTestSuite extends AdjFunSuite {
   // dfaNand
   test("sxp nand"){
     for{rte1 <- testRtes
-        dfa1 = rte1.toDfa[Boolean](true)
+        dfa1 = rte1.toDfa[Int](42)
         rte2 <- testRtes
-        dfa2 = rte2.toDfa[Boolean](true)
-        dfax = dfaNand(trim(dfa1), trim(dfa2))
+        dfa2 = rte2.toDfa[Int](42)
+
+        dfax = dfaNand(complete(dfa1), complete(dfa2))
         s <- testSequences
-        vx = dfax.simulate(s).getOrElse(false)
-        v1 = dfa1.simulate(s).getOrElse(false)
-        v2 = dfa2.simulate(s).getOrElse(false)
-        } assert(vx == !(v1 && v2), s"vx=$vx v1=$v1 v2=$v2")
+
+        _ = println("---------------------")
+        _ = locally{
+          println(s"1: rte=${rte1}")
+          println(s"2: rte=${rte2}")
+          for{q <- dfa1.Q}
+            println(s"1: ${q.id} -> ${q.exitOption()}")
+          for{q <- complete(dfa1).Q}
+            println(s"complete-1: ${q.id} -> ${q.exitOption()}")
+        }
+        v1 = dfa1.simulate(s).getOrElse(0)
+        _ = locally{
+          for{q <- dfa2.Q}
+            println(s"2: ${q.id} -> ${q.exitOption()}")
+          for{q <- complete(dfa2).Q}
+            println(s"complete-2: ${q.id} -> ${q.exitOption()}")
+        }
+        v2 = dfa2.simulate(s).getOrElse(0)
+        _ = locally{
+          for{q <- dfax.Q}
+            println(s"x: ${q.id} -> ${q.exitOption()}")
+          for{q <- complete(dfax).Q}
+            println(s"complete-x: ${q.id} -> ${q.exitOption()}")
+        }
+        vx = dfax.simulate(s).getOrElse(0)
+
+        } {
+      if(vx==42 != !(v1==42 && v2==42)){
+
+        dfaView(dfa1, "dfa 1", showSink=true)
+        dfaView(dfa2, "dfa 2", showSink=true)
+
+        dfaView(complete(dfa1), "complete-dfa1", showSink=true)
+        dfaView(complete(dfa2), "complete-dfa2", showSink=true)
+        dfaView(dfax, "dfax", showSink=true)
+        println("--------------------")
+
+        for{q <- dfa2.Q}
+          println(s"2: ${q.id} -> ${q.exitOption()}")
+        for{q <- complete(dfa2).Q}
+          println(s"complete-2: ${q.id} -> ${q.exitOption()}")
+      }
+      assert((vx==42) == !(v1==42 && v2==42), s"vx=$vx v1=$v1 v2=$v2, seq=$s")
+    }
   }
   // dfaNor
   test("sxp nor"){
@@ -688,7 +741,7 @@ class DfaTestSuite extends AdjFunSuite {
         dfa1 = rte1.toDfa[Boolean](true)
         rte2 <- testRtes
         dfa2 = rte2.toDfa[Boolean](true)
-        dfax = dfaNor(trim(dfa1), trim(dfa2))
+        dfax = dfaNor(complete(dfa1), complete(dfa2))
         s <- testSequences
         vx = dfax.simulate(s).getOrElse(false)
         v1 = dfa1.simulate(s).getOrElse(false)
@@ -701,7 +754,7 @@ class DfaTestSuite extends AdjFunSuite {
         dfa1 = rte1.toDfa[Boolean](true)
         rte2 <- testRtes
         dfa2 = rte2.toDfa[Boolean](true)
-        dfax = dfaUnion(trim(dfa1), trim(dfa2))
+        dfax = dfaUnion(complete(dfa1), complete(dfa2))
         s <- testSequences
         vx = dfax.simulate(s).getOrElse(false)
         v1 = dfa1.simulate(s).getOrElse(false)

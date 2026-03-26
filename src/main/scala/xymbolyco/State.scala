@@ -31,8 +31,18 @@ class State[Σ,L,E](val dfa:Dfa[Σ,L,E], val id:Int) {
   def accepting():Boolean = {
     dfa.Fids.contains(id)
   }
+
+  // if the current state (this) is not a final state,
+  //   then return None,
+  //   otherwise return Some(the-exit-value)
   def exitOption():Option[E] = {
-    dfa.fMap.get(id)
+    if (!dfa.F.contains(this))
+      None
+    else
+      dfa.fMap.get(id) match {
+        case op@Some(_) => op
+        case None => Some(dfa.defaultExitValue)
+      }
   }
 
   lazy val successorFunction: Σ=>Option[State[Σ,L,E]] = dfa.labeler.successor[E](transitions)

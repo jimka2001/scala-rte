@@ -239,7 +239,6 @@ abstract class Rte {
     }
     val qids = rtes.indices.toSet
     val fids = qids.filter(i => rtes(i).nullable)
-    val fmap = fids.map { i => i -> exitValue }.toMap
     val protoDelta = (for {src <- rtes.indices
                            srcEdges: Seq[(SimpleTypeD, Int)] = edges(src)
                            // in the case that all the transitions from src go to the same destination
@@ -253,7 +252,8 @@ abstract class Rte {
         Fids = fids,
         protoDelta = protoDelta,
         labeler = xymbolyco.GenusLabeler(),
-        fMap = fmap)
+      fMap = Map.empty,
+        defaultExitValue = exitValue)
   }
 
   /*

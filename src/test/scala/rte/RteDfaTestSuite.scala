@@ -107,7 +107,8 @@ class RteDfaTestSuite extends AdjFunSuite {
                                                  (1, genus.SEql(1), 2),
                                                  (3, genus.SEql(-1), 2)),
                                 labeler = new xymbolyco.GenusLabeler,
-                                fMap = Map(2 -> true))
+                                fMap = Map(2 -> true),
+                                                               defaultExitValue=true)
 
     assert(dfa.simulate(Seq(1,1)).contains(true),"did not match Seq(1,1)")
     assert(! dfa.simulate(Seq(-1,1)).contains(true),"did not fail to match Seq(-1,1)")
@@ -148,7 +149,8 @@ class RteDfaTestSuite extends AdjFunSuite {
                                                                                 (10, genus.SEql(-1), 9),
                                                                                 (5, genus.SEql(-1), 2)),
                                                                labeler = new xymbolyco.GenusLabeler,
-                                                               fMap = Map(2 -> true))
+                                                               fMap = Map(2 -> true),
+                                                               defaultExitValue = true)
 
     assert(dfa.simulate(Seq(1,1)).contains(true),"did not match Seq(1,1)")
     assert(! dfa.simulate(Seq(-1,1)).contains(true),"did not fail to match Seq(-1,1)")

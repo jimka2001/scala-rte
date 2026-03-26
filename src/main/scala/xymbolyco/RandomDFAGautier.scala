@@ -24,7 +24,8 @@ object RandomDFAGautier {
                            mytuple = (i, label, mylist(j))
                            }
       yield mytuple).toSet
-    Dfa.apply(qids, 0, fids, protoDelta, xymbolyco.GenusLabeler(), fids.map { i => i -> exitValue }.toMap)
+    val fmap:Map[Int,E] = Map.empty
+    Dfa.apply(qids, 0, fids, protoDelta, xymbolyco.GenusLabeler(), fmap, exitValue)
   }
 
   def randomTransition(t: Int, trrange: Int, i: Int, num: Int): Set[Int] = {

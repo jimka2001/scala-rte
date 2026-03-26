@@ -41,7 +41,8 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
                  val Fids:Set[Int],
                  val protoDelta:Set[(Int,L,Int)],
                  val labeler:Labeler[Σ,L],
-                 val fMap:Map[Int,E]) {
+                 val fMap:Map[Int,E] = Map.empty,
+                 val defaultExitValue:E) {
 
   // q0id is in Qids
   require(Qids.contains(q0id))
@@ -65,7 +66,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
          } yield dst -> triples.map(_._1)
   }
 
-  def exitValue(q: State[Σ, L, E]): E = fMap(q.id)
+  def exitValue(q: State[Σ, L, E]): E = q.exitOption().getOrElse(defaultExitValue)
 
   def idToState(id: Int): State[Σ, L, E] = {
     Q.find(s => s.id == id).get
@@ -204,7 +205,7 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
           edge_weights_map.getOrElse((st1,st2), PositiveInfinity) + path_weight(st2::states)
       }
     }
-    val (d,p) = shortestPath(states, q0, edge_weights) // Bellman Ford or Dikjstra
+    val (d,p) = shortestPath(states, q0, edge_weights) // Bellman Ford or Dijkstra
     // returns a pair (which will contribute to a Map entry)
     //   which maps a state id to a pair of (Option[Boolean], Path)
     //   where the path is a list of consecutive states from q0 to the state in question.
@@ -239,13 +240,20 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
       }
     }
 
-    // m maps final state to a shortest path, we need to map exit-value
+    // m maps final state to a shortest path. we need to map exit-value
     // to a shortest path.  In the case that 2 (or more) final states
     // have the same exit value, we need to select the best path of
     // the paths for those final states.
-    val x: Map[E, (Satisfiability, StatePath)] = for {(e,fs) <- fMap.groupMap(_._2)(_._1)
-                                                      best = bestPath(fs.map(m).toSeq)
-                                                      } yield e -> best
+    val x: Map[E, (Satisfiability, StatePath)] = (for {e <- F.map(exitValue)
+                                                       fs = for {id <- Fids
+                                                                 q = idToState(id)
+                                                                 if exitValue(q) == e
+                                                                 } yield id
+                                                       // There might be several final states with the same exit value.
+                                                       // For each final state, there is a shorest path to it.
+                                                       // Select the best path among the pats from
+                                                       best = bestPath(fs.map(m).toSeq)
+                                                       } yield e -> best).to(Map)
     x
   }
 
@@ -273,10 +281,10 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
   }
 
   def simulate(seq: IterableOnce[Σ], verbose:Boolean=false): Option[E] = {
-    for {
-      d <- findReachableFinal(seq, verbose=verbose)
-      if F.contains(d)
-    } yield exitValue(d)
+    findReachableFinal(seq, verbose=verbose) match {
+      case Some(q) if F.contains(q) => Some(exitValue(q))
+      case _ => None
+    }
   }
 
   def vacuous():Option[Boolean] = {
@@ -318,7 +326,8 @@ class Dfa[Σ,L,E](val Qids:Set[Int],
         // build new fMap, keeping all the old values,
         // and adding any new q -> value which is not found with q -> exitValue
         fMap = (for{q <- negatedFids
-                    } yield (q -> exitValue)).toMap ++ fMap
+                    } yield (q -> exitValue)).toMap ++ fMap,
+        defaultExitValue = defaultExitValue
         )
   }
 }
@@ -341,9 +350,10 @@ object Dfa {
                      Fids: Set[Int],
                      protoDelta: Set[(Int, L, Int)],
                      labeler: Labeler[Σ, L],
-                     fMap: Map[Int, E]): Dfa[Σ, L, E] = {
+                     fMap: Map[Int, E],
+                     defaultExitValue: E): Dfa[Σ, L, E] = {
     val merged = mergeParallel[Σ, L](labeler, protoDelta.toSeq)
-    new Dfa[Σ, L, E](Qids, q0id, Fids, merged, labeler, fMap)
+    new Dfa[Σ, L, E](Qids, q0id, Fids, merged, labeler, fMap, defaultExitValue)
   }
 
 
@@ -426,6 +436,7 @@ object Dfa {
       else
         None
     }
+
 
     Minimize.sxp[Σ, L, E](
       dfa1, dfa2,
