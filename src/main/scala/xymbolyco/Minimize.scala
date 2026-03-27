@@ -190,7 +190,7 @@ object Minimize {
     val labeler = dfa.labeler
     val toSink = for {(src, triples) <- dfa.protoDelta.groupBy(_._1)
                       tds = triples.map(_._2).toSeq
-                      // compute the union of the transition labels of this state
+                      // compute the union of the transition labels leaving this state
                       // and subtract that from the universe.  If this is non-empty,
                       // or if we cannot prove it is empty, then we create a
                       // transition to the sink state.
