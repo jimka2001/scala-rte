@@ -188,7 +188,12 @@ object Minimize {
       case _ => 0
     }
     val labeler = dfa.labeler
-    val toSink = for {(src, triples) <- dfa.protoDelta.groupBy(_._1)
+    val grouped = dfa.protoDelta.groupBy(_._1)
+    // we have to iterate over every state, NOT simply every transition,
+    //   because some state may have no exiting transitions
+    val toSink = for {src <- dfa.Qids
+                      // find all transitions exiting this state, which might be no transitions
+                      triples = grouped.getOrElse(src,Set.empty)
                       tds = triples.map(_._2).toSeq
                       // compute the union of the transition labels leaving this state
                       // and subtract that from the universe.  If this is non-empty,
@@ -197,18 +202,17 @@ object Minimize {
                       newTd = labeler.subtractLabels(labeler.universe, tds)
                       if !labeler.inhabited(newTd).contains(false)
                       } yield (src, newTd, sinkId)
-
     // add transitions to the sink state if there are any, and if so, also
     //   the loop on the sink state.
     val protoDelta = dfa.protoDelta ++
       toSink ++
       (if (toSink.nonEmpty) Set((sinkId, labeler.universe, sinkId)) else Set())
     val dfaComplete = Dfa[Σ, L, E](Qids = dfa.Qids + sinkId,
-                                       q0id = dfa.q0id,
-                                       Fids = dfa.Fids,
-                                       protoDelta = protoDelta,
-                                       labeler = dfa.labeler,
-                                       fMap = dfa.fMap,
+                                   q0id = dfa.q0id,
+                                   Fids = dfa.Fids,
+                                   protoDelta = protoDelta,
+                                   labeler = dfa.labeler,
+                                   fMap = dfa.fMap,
                                    defaultExitValue = dfa.defaultExitValue)
     dfaComplete
   }
@@ -222,10 +226,8 @@ object Minimize {
                    arbitrateFinal:(Boolean,Boolean)=>Boolean,
                    combineFmap:(State[Σ, L, E], State[Σ, L, E])=>Option[E]
                   ):Dfa[Σ, L, E] = {
-
     val dfa1 = complete(dfa1_)
     val dfa2 = complete(dfa2_)
-
     val grouped1 = dfa1.protoDelta.groupBy(_._1)
     val grouped2 = dfa2.protoDelta.groupBy(_._1)
 
@@ -261,13 +263,14 @@ object Minimize {
     //  transition.
     def getEdges(pair:(Int,Int)):Seq[(L, (Int,Int))] = {
       val (q1id,q2id) = pair
-      val x1 = grouped1.getOrElse(q1id,Set.empty)
-      val x2 = grouped2.getOrElse(q2id,Set.empty)
+      assert(grouped1.contains(q1id), s"dfa1 expected to be complete, but state $q1id has no exiting transitions")
+      assert(grouped2.contains(q2id), s"dfa2 expected to be complete, but state $q2id has no exiting transitions")
+      val x1 = grouped1(q1id)
+      val x2 = grouped2(q2id)
       val edges: Set[(L, (Int, Int), (L, L))] = for {(_,lab1,dst1) <- x1
                                                      (_,lab2,dst2) <- x2
                                                      lab <- dfa1.labeler.maybeIntersectLabels(lab1,lab2)
                                                      } yield (lab,(dst1,dst2),(lab1,lab2))
-
       reportInconsistent(edges.toSeq).map{tr => (tr._1,tr._2)}
     }
 
@@ -289,13 +292,14 @@ object Minimize {
                            (lab,dst) <- seq
                            } yield (src,lab,dst)
     val dfa = Dfa[Σ, L, E](vertices.indices.toSet,
-                     0, // q0id:Int,
-                     fIds.toSet, // Fids:Set[Int],
-                     protoDelta.toSet, //    protoDelta:Set[(Int,L,Int)],
-                     dfa1.labeler, // labeler:Labeler[Σ,L],
-                     fMap.toMap, // val fMap:Map[Int,E]
+                           0, // q0id:Int,
+                           fIds.toSet, // Fids:Set[Int],
+                           protoDelta.toSet, //    protoDelta:Set[(Int,L,Int)],
+                           dfa1.labeler, // labeler:Labeler[Σ,L],
+                           fMap.toMap, // val fMap:Map[Int,E]
                            dfa1.defaultExitValue
                      )
     trim(dfa)
+    //dfa
   }
 }

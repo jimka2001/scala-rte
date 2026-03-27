@@ -634,49 +634,69 @@ class DfaTestSuite extends AdjFunSuite {
   // dfaIntersection
   test("sxp intersection"){
     testBoolOp(dfaIntersection,
-      (vx, v1, v2, s) =>   assert(vx == (v1 && v2), s"vx=$vx v1=$v1 v2=$v2"))
+      (r1, r2, vx, v1, v2, s) =>   assert(vx == (v1 && v2), s"vx=$vx v1=$v1 v2=$v2"))
   }
   // dfaXor
   test("sxp xor"){
     testBoolOp(dfaXor,
-               (vx, v1, v2, s) =>
+               (r1, r2, vx, v1, v2, s) =>
                  assert(vx == ((v1 && !v2) || (!v1 && v2)),
                         s"vx=$vx v1=$v1 v2=$v2"))
   }
   // dfaAndNot
   test("sxp and-not"){
     testBoolOp(dfaAndNot,
-               (vx, v1, v2, s) =>
+               (r1, r2, vx, v1, v2, s) =>
                  assert(vx == (v1 && !v2),
                         s"vx=$vx v1=$v1 v2=$v2  v1 && !v2 = ${v1 && !v2}\ns=$s"))
   }
   // dfaNand
   test("sxp nand"){
     testBoolOp(dfaNand,
-               (vx, v1, v2, s)=> assert(vx == !(v1 && v2), s"vx=$vx v1=$v1 v2=$v2, seq=$s"))
+               (rte1, rte2, vx, v1, v2, s)=> assert(vx == !(v1 && v2), s"vx=$vx v1=$v1 v2=$v2, seq=$s"))
   }
   // dfaNor
   test("sxp nor"){
     testBoolOp(dfaNor,
-               (vx, v1, v2, s)=> assert(vx == !(v1 || v2), s"vx=$vx v1=$v1 v2=$v2"))
+               (rte1, rte2, vx, v1, v2, s)=> assert(vx == !(v1 || v2), s"vx=$vx v1=$v1 v2=$v2"))
   }
   // dfaUnion
   test("sxp union"){
     testBoolOp(dfaUnion,
-               (vx, v1, v2, s) => assert(vx == (v1 || v2), s"vx=$vx v1=$v1 v2=$v2"))
+               (rte1, rte2, vx, v1, v2, s) =>
+                 assert(vx == (v1 || v2), s"\nrte1=$rte1\nrte2=$rte2\ns=$s\nvx=$vx v1=$v1 v2=$v2"))
+  }
+
+  test("sxp union discovered 669"){
+    val rte1 = Star(Atomic(classOf[Int]))
+    val rte2 = And(Not(Eql(1)),
+                   Atomic(classOf[Int]))
+    val s = List(2,3,4)
+
+    val dfa1 = rte1.toDfa[Boolean](true)
+    val dfa2 = rte2.toDfa[Boolean](true)
+    val dfax = dfaUnion(dfa1, dfa2)
+
+    val v1 = dfa1.simulate(s).getOrElse(false)
+    val v2 = dfa2.simulate(s).getOrElse(false)
+    val vx = dfax.simulate(s).getOrElse(false)
+    assert(vx == (v1 || v2))
   }
 
   type DfaB = Dfa[Any, SimpleTypeD, Boolean]
-  def testBoolOp(boolOp:(DfaB,DfaB)=>DfaB, asrt:(Boolean, Boolean, Boolean, Seq[Any])=>Unit):Unit = {
+  def testBoolOp(boolOp:(DfaB,DfaB)=>DfaB, asrt:(Rte, Rte, Boolean, Boolean, Boolean, Seq[Any])=>Unit):Unit = {
     for{rte1 <- testRtes
         dfa1 = rte1.toDfa[Boolean](true)
         rte2 <- testRtes
         dfa2 = rte2.toDfa[Boolean](true)
         dfax = boolOp(trim(dfa1), trim(dfa2))
         s <- testSequences
-        } asrt(dfax.simulate(s).getOrElse(false),
-               dfa1.simulate(s).getOrElse(false),
-               dfa2.simulate(s).getOrElse(false),
-               s)
+        } {
+
+      asrt(rte1, rte2,
+           dfax.simulate(s).getOrElse(false),
+           dfa1.simulate(s).getOrElse(false),
+           dfa2.simulate(s).getOrElse(false),
+           s)}
   }
 }
