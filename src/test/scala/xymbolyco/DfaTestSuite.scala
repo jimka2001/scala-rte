@@ -30,7 +30,7 @@ import rte.{And, Atomic, Cat, Eql, Member, Not, Optional, Or, Plus, Rte, Star}
 import rte.Random.randomRteByDepth
 import xymbolyco.Dfa.{dfaAndNot, dfaIntersection, dfaNand, dfaNor, dfaUnion, dfaXor}
 import xymbolyco.GraphViz.dfaView
-import xymbolyco.Minimize.complete
+import xymbolyco.Minimize.{trim,complete}
 
 class DfaTestSuite extends AdjFunSuite {
 
@@ -429,7 +429,7 @@ class DfaTestSuite extends AdjFunSuite {
           defaultExitValue = 3
           )
     }
-    val s = dfaUnion(complete(dfa1), complete(dfa2))
+    val s = dfaUnion(trim(dfa1), trim(dfa2))
     assert(s.Fids.size >= 2)
   }
 
@@ -633,132 +633,50 @@ class DfaTestSuite extends AdjFunSuite {
   }
   // dfaIntersection
   test("sxp intersection"){
-    for{rte1 <- testRtes
-        dfa1 = rte1.toDfa[Boolean](true)
-        rte2 <- testRtes
-        dfa2 = rte2.toDfa[Boolean](true)
-        dfax = dfaIntersection(complete(dfa1), complete(dfa2))
-        s <- testSequences
-        vx = dfax.simulate(s).getOrElse(false)
-        v1 = dfa1.simulate(s).getOrElse(false)
-        v2 = dfa2.simulate(s).getOrElse(false)
-        }
-      assert(vx == (v1 && v2), s"vx=$vx v1=$v1 v2=$v2")
+    testBoolOp(dfaIntersection,
+      (vx, v1, v2, s) =>   assert(vx == (v1 && v2), s"vx=$vx v1=$v1 v2=$v2"))
   }
   // dfaXor
   test("sxp xor"){
-    for{rte1 <- testRtes
-        dfa1 = rte1.toDfa[Boolean](true)
-        rte2 <- testRtes
-        dfa2 = rte2.toDfa[Boolean](true)
-        dfax = dfaXor(complete(dfa1), complete(dfa2))
-        s <- testSequences
-        vx = dfax.simulate(s).getOrElse(false)
-        v1 = dfa1.simulate(s).getOrElse(false)
-        v2 = dfa2.simulate(s).getOrElse(false)
-        } assert(vx == ((v1 && !v2) || (!v1 && v2)),
-                 s"vx=$vx v1=$v1 v2=$v2")
+    testBoolOp(dfaXor,
+               (vx, v1, v2, s) =>
+                 assert(vx == ((v1 && !v2) || (!v1 && v2)),
+                        s"vx=$vx v1=$v1 v2=$v2"))
   }
   // dfaAndNot
   test("sxp and-not"){
-    for{rte1 <- testRtes
-        dfa1 = rte1.toDfa[Boolean](true)
-        rte2 <- testRtes
-        dfa2 = rte2.toDfa[Boolean](true)
-        dfax = dfaAndNot(complete(dfa1), complete(dfa2))
-        s <- testSequences
-        vx = dfax.simulate(s).getOrElse(false)
-        v1 = dfa1.simulate(s).getOrElse(false)
-        v2 = dfa2.simulate(s).getOrElse(false)
-        } {
-      if (vx != (v1 && !v2)){
-        dfaView(dfa1, "dfa1", showSink=true)
-        dfaView(dfa2, "dfa2", showSink=true)
-        dfaView(dfax, "dfax", showSink=true)
-        dfaView(Minimize.complete(dfax), "complete dfax", showSink=true)
-      }
-      assert(vx == (v1 && !v2),
-             s"vx=$vx v1=$v1 v2=$v2  v1 && !v2 = ${v1 && !v2}\ns=$s\nrte1=$rte1\nrte2=$rte2")
-    }
+    testBoolOp(dfaAndNot,
+               (vx, v1, v2, s) =>
+                 assert(vx == (v1 && !v2),
+                        s"vx=$vx v1=$v1 v2=$v2  v1 && !v2 = ${v1 && !v2}\ns=$s"))
   }
   // dfaNand
   test("sxp nand"){
-    for{rte1 <- testRtes
-        dfa1 = rte1.toDfa[Int](42)
-        rte2 <- testRtes
-        dfa2 = rte2.toDfa[Int](42)
-
-        dfax = dfaNand(complete(dfa1), complete(dfa2))
-        s <- testSequences
-
-        _ = println("---------------------")
-        _ = locally{
-          println(s"1: rte=${rte1}")
-          println(s"2: rte=${rte2}")
-          for{q <- dfa1.Q}
-            println(s"1: ${q.id} -> ${q.exitOption()}")
-          for{q <- complete(dfa1).Q}
-            println(s"complete-1: ${q.id} -> ${q.exitOption()}")
-        }
-        v1 = dfa1.simulate(s).getOrElse(0)
-        _ = locally{
-          for{q <- dfa2.Q}
-            println(s"2: ${q.id} -> ${q.exitOption()}")
-          for{q <- complete(dfa2).Q}
-            println(s"complete-2: ${q.id} -> ${q.exitOption()}")
-        }
-        v2 = dfa2.simulate(s).getOrElse(0)
-        _ = locally{
-          for{q <- dfax.Q}
-            println(s"x: ${q.id} -> ${q.exitOption()}")
-          for{q <- complete(dfax).Q}
-            println(s"complete-x: ${q.id} -> ${q.exitOption()}")
-        }
-        vx = dfax.simulate(s).getOrElse(0)
-
-        } {
-      if(vx==42 != !(v1==42 && v2==42)){
-
-        dfaView(dfa1, "dfa 1", showSink=true)
-        dfaView(dfa2, "dfa 2", showSink=true)
-
-        dfaView(complete(dfa1), "complete-dfa1", showSink=true)
-        dfaView(complete(dfa2), "complete-dfa2", showSink=true)
-        dfaView(dfax, "dfax", showSink=true)
-        println("--------------------")
-
-        for{q <- dfa2.Q}
-          println(s"2: ${q.id} -> ${q.exitOption()}")
-        for{q <- complete(dfa2).Q}
-          println(s"complete-2: ${q.id} -> ${q.exitOption()}")
-      }
-      assert((vx==42) == !(v1==42 && v2==42), s"vx=$vx v1=$v1 v2=$v2, seq=$s")
-    }
+    testBoolOp(dfaNand,
+               (vx, v1, v2, s)=> assert(vx == !(v1 && v2), s"vx=$vx v1=$v1 v2=$v2, seq=$s"))
   }
   // dfaNor
   test("sxp nor"){
-    for{rte1 <- testRtes
-        dfa1 = rte1.toDfa[Boolean](true)
-        rte2 <- testRtes
-        dfa2 = rte2.toDfa[Boolean](true)
-        dfax = dfaNor(complete(dfa1), complete(dfa2))
-        s <- testSequences
-        vx = dfax.simulate(s).getOrElse(false)
-        v1 = dfa1.simulate(s).getOrElse(false)
-        v2 = dfa2.simulate(s).getOrElse(false)
-        } assert(vx == !(v1 || v2), s"vx=$vx v1=$v1 v2=$v2")
+    testBoolOp(dfaNor,
+               (vx, v1, v2, s)=> assert(vx == !(v1 || v2), s"vx=$vx v1=$v1 v2=$v2"))
   }
   // dfaUnion
   test("sxp union"){
+    testBoolOp(dfaUnion,
+               (vx, v1, v2, s) => assert(vx == (v1 || v2), s"vx=$vx v1=$v1 v2=$v2"))
+  }
+
+  type DfaB = Dfa[Any, SimpleTypeD, Boolean]
+  def testBoolOp(boolOp:(DfaB,DfaB)=>DfaB, asrt:(Boolean, Boolean, Boolean, Seq[Any])=>Unit):Unit = {
     for{rte1 <- testRtes
         dfa1 = rte1.toDfa[Boolean](true)
         rte2 <- testRtes
         dfa2 = rte2.toDfa[Boolean](true)
-        dfax = dfaUnion(complete(dfa1), complete(dfa2))
+        dfax = boolOp(trim(dfa1), trim(dfa2))
         s <- testSequences
-        vx = dfax.simulate(s).getOrElse(false)
-        v1 = dfa1.simulate(s).getOrElse(false)
-        v2 = dfa2.simulate(s).getOrElse(false)
-        } assert(vx == (v1 || v2), s"vx=$vx v1=$v1 v2=$v2")
+        } asrt(dfax.simulate(s).getOrElse(false),
+               dfa1.simulate(s).getOrElse(false),
+               dfa2.simulate(s).getOrElse(false),
+               s)
   }
 }
