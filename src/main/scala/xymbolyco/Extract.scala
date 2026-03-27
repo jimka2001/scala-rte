@@ -161,7 +161,7 @@ object Extract {
         assert(f < 0, s"f=$f, new_transition_triples=$new_transition_triples")
         assert(i == -1, s"i=$i  f=$f, new_transition_triples=$new_transition_triples")
         // compute exit_value of the final state whose negative-index is f
-        dfa.fMap(nindexToState(f).id)
+        dfa.exitValue(nindexToState(f))
       }
       // return value of extractRte
       for {(exit_value, triples) <- grouped
