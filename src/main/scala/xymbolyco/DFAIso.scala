@@ -33,7 +33,7 @@ object DFAIso {
   // return a map of exit value -> option(boolean)
   def isIsomorphic[E](dfa: Dfa[Any, SimpleTypeD, E], dfa2: Dfa[Any, SimpleTypeD, E]): (Option[Boolean], Map[E, Option[Boolean]]) = {
     //creating a set of all exit values ( from both dfas)
-    val fvals: Set[E] = dfa.fMap.toList.map(a => a._2).toSet union dfa2.fMap.toList.map(a => a._2).toSet
+    val fvals: Set[E] = Set(dfa.defaultExitValue) union dfa.fMap.toList.map(a => a._2).toSet union dfa2.fMap.toList.map(a => a._2).toSet
     // creating the xor of the two dfas
     val xor = Dfa.dfaXor(dfa, dfa2)
     //calculating the value of each edge for Bellman Ford or Dijkstra
