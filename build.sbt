@@ -36,3 +36,7 @@ Test / parallelExecution := false
 
 libraryDependencies += "org.typelevel" %% "cats-core" % "2.10.0"
 
+
+libraryDependencies ++= Seq(
+  "org.clojure" % "clojure" % "1.11.1"
+  )
