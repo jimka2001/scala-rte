@@ -7,6 +7,12 @@ setenv LC_CTYPE en_US.UTF-8
 setenv LC_ALL en_US.UTF-8
 setenv LANGUAGE en_US.UTF-8
 
+if ($#argv) == 1 then
+  set branch=$argv[1]
+else
+  set branch=lre-master
+endif
+
 set tmp=/tmp/$USER/$0/$$
 echo tmp = $tmp
 mkdir -p $tmp
