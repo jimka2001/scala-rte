@@ -18,7 +18,8 @@ libraryDependencies += "io.github.classgraph" % "classgraph" % "4.8.162"
 
 
 //libraryDependencies += "org.typelevel" %% "spire" % "0.14.1"
-libraryDependencies += "org.typelevel" %% "spire" % "0.17.0-RC1"
+//libraryDependencies += "org.typelevel" %% "spire" % "0.17.0-RC1"
+libraryDependencies += "org.typelevel" %% "spire" % "0.18.0"
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.10"
 
