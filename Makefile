@@ -62,3 +62,6 @@ sample-128:
 	for i in $$(seq 1 50); do \
 		sbt "runMain demos.scalaio2025.GenCsvFixedLeafCount 10 128" ;\
 	done
+
+sbt-test:
+	bin/sbt-test.csh
