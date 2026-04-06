@@ -60,7 +60,7 @@ object TreeReducible {
 object TreeReduce {
   // The actual function. Note that it takes as parameter `m` any type for which there exists an implicit
   // TreeReducible, but you have to pass that *as* a parameter.
-  def treeMapReduceIntern[A, B, M[_]](m: M[A])(init: B)(seqOp: A => B, combOp: (B, B) => B)(implicit reducible: TreeReducible[M]): B = {
+  private def treeMapReduceIntern[A, B, M[_]](m: M[A])(init: B)(seqOp: A => B, combOp: (B, B) => B)(implicit reducible: TreeReducible[M]): B = {
 
     @tailrec
     def consumeStack(stack: List[(Int, B)]): List[(Int, B)] = {
