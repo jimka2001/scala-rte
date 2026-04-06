@@ -12,7 +12,7 @@ libraryDependencies += "org.scalatestplus" %% "scalacheck-1-18" % "3.2.19.0" % "
 libraryDependencies += "org.scalafx" %% "scalafx" % "26.0.0-R38"
 libraryDependencies += "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4"
 libraryDependencies += "org.jboss" % "jboss-common-core" % "2.5.0.Final"
-libraryDependencies += "org.sameersingh.scalaplot" % "scalaplot" % "0.1"
+// libraryDependencies += "org.sameersingh.scalaplot" % "scalaplot" % "0.1"
 
 libraryDependencies += "io.github.classgraph" % "classgraph" % "4.8.162"
 
