@@ -48,11 +48,8 @@ object Evaluator {
     // a permutation such that apply(b1, l) != apply(b2, l)
     // then return false, else return true?
     // TODO perhaps convert for to find ?
-    for (l <- mapPermutations(n)) {
-      if (apply(b1, l) != apply(b2, l)) false // this false has no effect, perhaps this is a long-standing bug
-    }
-    true
-      // it seems this function returns true in every case ???
+    mapPermutations(n).forall((l) => apply(b1, l) == apply(b2, l))
+
   }
 
 
