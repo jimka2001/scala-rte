@@ -59,7 +59,8 @@ object Ifl2022 {
     val byFoldLeft = (1 to n).foldLeft(0.0)((acc:Double,i:Int) =>
                                             acc + (i + 0.1))
 
-    val byTreeFold = (1 to n).treeMapReduce(0.0)((i: Int) => (i.toDouble + 0.1),
+    // patch (1 to n).to(List) for the moment because type class seems to be broken in scala 3
+    val byTreeFold = (1 to n).to(List).treeMapReduce(0.0)((i: Int) => (i.toDouble + 0.1),
                                                  (acc: Double, d: Double) => acc + d)
 
     (exact,byFoldLeft,byTreeFold)

@@ -61,12 +61,12 @@ object GenusSpecifications {
    def genInternalNode(depth: Int): Gen[SimpleTypeD] = Gen.lzy {
      val newDepth = depth - 1 // Maximal depth of the generated subtrees
      implicit lazy val arbitraryGen: Arbitrary[SimpleTypeD] = Arbitrary(naiveGenGenus(newDepth))
-     lazy val listGenus = Gen.listOfN[SimpleTypeD](childrenNum, Arbitrary.arbitrary[SimpleTypeD](arbitraryGen)).sample.get
+     lazy val listGenus = Gen.listOfN[SimpleTypeD](childrenNum, Arbitrary.arbitrary[SimpleTypeD](using arbitraryGen)).sample.get
 
-    // Choose between one of the 3 non-terminal types
-    Gen.frequency(
-      2 -> Gen.lzy(SAnd(listGenus: _*)),
-      2 -> Gen.lzy(SOr(listGenus: _*)),
+     // Choose between one of the 3 non-terminal types
+     Gen.frequency(
+      2 -> Gen.lzy(SAnd(listGenus*)),
+      2 -> Gen.lzy(SOr(listGenus*)),
       1 -> Gen.lzy(SNot(naiveGenGenus(newDepth).sample.get))
     )
   }

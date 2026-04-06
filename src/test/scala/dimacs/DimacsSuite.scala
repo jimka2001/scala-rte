@@ -78,7 +78,7 @@ class DimacsSuite extends AdjFunSuite {
     assert(clauseLess(List(1, 2, 3), List(1, -3, 4)), "test4")
   }
   test("merge") {
-    val less = clauseLess _
+    val less = clauseLess
     assert(List() == merge(List(), List(), less), "test0")
     assert(List(List(1, 2), List(2, 3), List(3, 4), List(4, 5))
              == merge(List(List(1, 2), List(3, 4)),

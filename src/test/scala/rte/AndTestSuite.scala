@@ -803,6 +803,6 @@ class AndTestSuite extends AdjFunSuite {
     fixedPoint[Rte](problematic,
                     f,
                     good_enough,
-                    invariant _)
+                    invariant)
   }
 }

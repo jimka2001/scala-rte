@@ -33,7 +33,7 @@ class AdjFunSuite extends AnyFunSuite {
   }
 
   override def test(testName: String, testTags: Tag*)(testFun: => Any /* Assertion */)(implicit pos: source.Position):Unit = {
-    super.test(testName,testTags : _*)(locally{
+    super.test(testName,testTags*)(locally{
       import java.time.{Duration, LocalDateTime}
       val start = LocalDateTime.now()
       println("[ starting " + testName

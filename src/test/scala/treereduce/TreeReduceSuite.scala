@@ -63,7 +63,7 @@ class TreeReduceSuite extends AdjFunSuite {
 
     for {
       max <- 1 to 100
-      nums = 1 to max
+      nums = (1 to max).to(List)
       sum = nums.sum
     } {
       assert(sum == nums.fold(0) {
@@ -71,13 +71,13 @@ class TreeReduceSuite extends AdjFunSuite {
       })
       assert(sum == nums.toSet.sum)
       assert(sum == nums.treeMapReduce(0)(id, _ + _))
-      assert(sum == nums.toList.treeMapReduce(0)(id, _ + _))
+      assert(sum == nums.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.toSet.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.iterator.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.par.toIterator.treeMapReduce(0)(id, _ + _))
 
       assert(sum == nums.par.treeMapReduce(0)(id, _ + _))
-      assert(sum == nums.toList.par.treeMapReduce(0)(id, _ + _))
+      assert(sum == nums.par.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.iterator.treeMapReduce(0)(id, _ + _))
     }
 
