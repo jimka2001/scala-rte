@@ -111,10 +111,10 @@ class TypesTest extends AdjFunSuite {
     assert(computeSubclassesOf(classOf[List[Any]]).nonEmpty,
       s"112: failed to find subclasses of classOf[List[Any]]")
     assert(computeSubclassesOf(classOf[List[Any]]).contains(List(1,2,3).getClass),
-      s"114: List(1,2,3).getClass was not in the subclasses of classOf[List[Any]], subclasses are:"
+      s"114: List(1,2,3).getClass i.e., ${List(1,2,3).getClass} was not in the subclasses of classOf[List[Any]], subclasses are:"
         + computeSubclassesOf(classOf[List[Any]]))
     assert(computeSubclassesOf(classOf[List[Any]]).contains(List.empty.getClass),
-      s"116: List.empty.getClass was not in the subclasses of classOf[List[Any]], subclasses are:"
+      s"116: List.empty.getClass i.e., ${List.empty.getClass} was not in the subclasses of classOf[List[Any]], subclasses are:"
            + computeSubclassesOf(classOf[List[Any]]))
   }
 
