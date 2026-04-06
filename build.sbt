@@ -2,7 +2,7 @@ name := "scala-rte"
 
 version := "0.1"
 
-scalaVersion := "2.13.14"
+scalaVersion := "2.13.18"
 
 libraryDependencies += "junit" % "junit" % "4.13.2" % "test"
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.18"
