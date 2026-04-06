@@ -25,16 +25,20 @@ object ReflectionUtils {
    * Implementation details:
    * - Uses ClassGraph to perform a one-time scan of the classpath (`globalScanResult`).
    *   This avoids rescanning on each call, which is expensive and can exhaust memory.
-   * - Results are further cached per-superclass in `subclassCache`.
+   * - Results are cached per-superclass in `subclassCache`.
    * - If `sup` is a trait/interface, returns all implementors and sub-interfaces.
    * - If `sup` is a concrete class, returns all subclasses.
+   * - All discovered classes are reloaded using the same ClassLoader as `sup`.
+   *   This is critical: on the JVM, class identity depends on both name and
+   *   classloader. Without this normalization, equality checks (e.g. `contains`)
+   *   may fail even for classes with the same name.
    *
    * Limitations:
-   * - This finds all subclasses available **on the classpath**, not just the ones
-   *   already loaded into the JVM.
-   * - If you don’t restrict the scan with `.acceptPackages(...)`, ClassGraph will
-   *   scan the *entire* classpath (JDK + all dependencies), which can be slow and
-   *   memory-intensive. For most projects, you should limit it to your own packages.
+   * - Finds subclasses available on the classpath, not just those already loaded.
+   * - If `.acceptPackages(...)` is not used, the entire classpath (including JDK
+   *   and all dependencies) is scanned, which can be slow and memory-intensive.
+   * - Some discovered classes may not be loadable by `sup`'s classloader; these
+   *   are skipped.
    *
    * @param sup The superclass or interface to search for subclasses.
    * @return A sequence of discovered subclass Class[_] objects.
@@ -42,17 +46,35 @@ object ReflectionUtils {
   def computeSubclassesOf(sup: Class[_]): Seq[Class[_]] =
     subclassCache.getOrElseUpdate(sup, {
       val className = sup.getName
+
       val classInfos =
         if (sup.isInterface) {
-          val implementors = globalScanResult.getClassesImplementing(className).asScala
-          val extendingTraits = globalScanResult.getAllInterfaces.asScala.filter { iface =>
-            iface.getInterfaces.asScala.exists(_.getName == className)
-          }
-          (implementors ++ extendingTraits).distinct
+          val implementors =
+            globalScanResult.getClassesImplementing(className).asScala
+
+          val extendingTraits =
+            globalScanResult.getAllInterfaces.asScala.filter { iface =>
+              iface.getInterfaces.asScala.exists(_.getName == className)
+            }
+
+          implementors ++ extendingTraits
         } else {
           globalScanResult.getSubclasses(className).asScala
         }
 
-      classInfos.toSeq.map(_.loadClass())
+      // 🔑 CRITICAL: use the same classloader that loaded `sup`
+      val loader =
+        Option(sup.getClassLoader)
+          .getOrElse(ClassLoader.getSystemClassLoader)
+
+      // Normalize all classes into that loader
+      classInfos.toSeq.flatMap { ci =>
+        val name = ci.getName
+        try {
+          Some(Class.forName(name, false, loader))
+        } catch {
+          case _: ClassNotFoundException => None
+        }
+      }
     })
 }
