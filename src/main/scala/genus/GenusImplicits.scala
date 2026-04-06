@@ -26,7 +26,7 @@ object GenusImplicits {
 
   import scala.language.implicitConversions
 
-  implicit def classToTd(raw: Class[_]): SimpleTypeD = {
+  implicit def classToTd(raw: Class[?]): SimpleTypeD = {
     SAtomic(raw)
   }
 }

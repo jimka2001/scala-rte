@@ -71,7 +71,7 @@ sealed abstract class LBdd {
     }
 
     var ret: R = z
-    bfsWalk { b: LBdd =>
+    bfsWalk { (b: LBdd) =>
       ret = f(ret, b)
     }
     ret

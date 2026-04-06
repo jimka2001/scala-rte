@@ -42,10 +42,10 @@ case class Singleton(td:SimpleTypeD) extends RteTerminal {
       case td2 if !flattenTypes => Singleton(td2)
       // convert Singleton(SAnd(...)) to And(...)
       // i.e. convert an Rte of a conjunction type to a conjunction Rte
-      case SAnd(operands@_*) => And.createAnd(operands.map(Singleton))
+      case SAnd(operands@_*) => And.createAnd(operands.map(Singleton.apply))
       // convert Singleton(SOr(...)) to Or(...)
       // i.e. convert an Rte of a disjunction type to a disjunction Rte
-      case SOr(operands@_*) => Or.createOr(operands.map(Singleton))
+      case SOr(operands@_*) => Or.createOr(operands.map(Singleton.apply))
       // convert Singleton(SNot(...)) to And(Not(...),Sigma)
       // i.e. convert an Rte of a complement type to a complement Rte
       //  However, the complement Rte matches the empty sequence and also

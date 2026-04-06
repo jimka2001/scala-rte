@@ -64,7 +64,7 @@ abstract class Labeler[Σ,L] {
     // which iterates over the transitions, testing each one whether s is a
     // member of the set corresponding to the label.  If such a transitions
     // is found, return the destination part of the label, else return None
-    s:Σ =>
+    (s:Σ) =>
       transitions
         .find { case Transition(_, label, _) => member(s, label) }
         .flatMap { case Transition(_, _, dest) => Some(dest)
@@ -104,7 +104,7 @@ case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
   }
 
   override def subtractLabels(l1: SimpleTypeD, ls: Seq[SimpleTypeD]): SimpleTypeD = {
-    SAnd(l1, SNot(SOr(ls: _*))).canonicalize()
+    SAnd(l1, SNot(SOr(ls*))).canonicalize()
   }
 
   override def inhabited(l1: SimpleTypeD): Option[Boolean] = l1.inhabited
@@ -129,7 +129,7 @@ case class GenusLabeler() extends Labeler[Any,SimpleTypeD]() {
     // find all leaf-level types in the transitions
     val leaves = transitions.flatMap{case Transition(_,td,_) => td.leafTypes()}
     val itet = IfThenElseTree(leaves.toList,transitions.map{case Transition(_,td,dst) => (td,dst)})
-    a:Any => itet(a)
+    (a:Any) => itet(a)
   }
 
   override def examples(td:SimpleTypeD): Set[Any] = td.sampleValues

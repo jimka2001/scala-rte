@@ -149,7 +149,7 @@ object GraphViz {
 
     val typesLabels = for{(td,idx) <- mergedTypes.zipWithIndex
                           if usedTypes.contains(td)
-                         lab = multiLineString(td.toDot()).replaceAll("\"","\\\"")
+                          lab = multiLineString(td.toDot()).replaceAll("\"","\\\"")
                          }  yield s"t$idx = $lab"
     val typesLabel = typesLabels.mkString("", "\\l", "")
 

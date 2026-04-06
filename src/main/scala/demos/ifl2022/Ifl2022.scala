@@ -119,7 +119,7 @@ object Ifl2022 {
                        pairs:Seq[List[A]] = Random.shuffle(for {i <- 0 to k
                                                    x1 = getA()
                                                    x2 = getA()
-                                                  y = List(x1, x2)
+                                                   y = List(x1, x2)
                                                   } yield y)
                        time0 = nanoTime.toDouble/1e6 // milliseconds
 

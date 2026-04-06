@@ -46,7 +46,7 @@ object perfTest{
       } yield sign * i)
     }
 
-    randomList(numClauses, Set[ClauseAsList](), randomClause _)
+    randomList(numClauses, Set[ClauseAsList](), randomClause )
   }
 
 

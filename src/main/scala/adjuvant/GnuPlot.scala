@@ -139,7 +139,7 @@ object GnuPlot {
       if (verbose)
         println(s"finished $gnuName]")
 
-      if (dataToPlot.exists { data: (String, Seq[Double], Seq[Double]) =>
+      if (dataToPlot.exists { (data: (String, Seq[Double], Seq[Double])) =>
         data._2.nonEmpty && data._3.nonEmpty
       })
         terminals.foreach { terminal =>

@@ -110,9 +110,9 @@ case class SNot(s: SimpleTypeD) extends SNode {
     //  --> SAnd(SNot(x1),SNot(x2),SNot(x3))
     s match {
       case SAnd(xs @ _*) =>
-        SOr.createOr(xs.map(SNot))
+        SOr.createOr(xs.map(SNot.apply))
       case SOr(xs @ _*) =>
-        SAnd.createAnd(xs.map(SNot))
+        SAnd.createAnd(xs.map(SNot.apply))
       case _ => this
     }
   }

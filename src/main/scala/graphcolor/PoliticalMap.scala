@@ -106,8 +106,8 @@ object GenericGraph extends PoliticalMap {
 
   def biGraphToDot[V](biGraph:Map[V,Set[V]],
                    locations:Map[V,(Double,Double)],
-                   baseName:String)(symbols: V=>V ={ x:V=>x},
-                                    colors: V=>String = { _:V=>"no-color"},
+                   baseName:String)(symbols: V=>V ={ (x:V)=>x},
+                                    colors: V=>String = { (_:V)=>"no-color"},
                                     view:Boolean,
                                     verbose:Boolean): Int = {
     val dotPathName = s"/tmp/$baseName.dot"

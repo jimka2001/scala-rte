@@ -14,11 +14,11 @@ object RteTree {
     statisticsResource + prefix + algo + ".csv"
   }
 
-  val genRte = Map("tree-split-inv-gauss" -> treeSplitRteInvGaussian _,
-                   "tree-split-gauss" -> treeSplitRteGaussian _,
-                   "tree-split-linear" -> treeSplitRteLinear _,
-                   "flajolet" -> flajoletRteBySize _,
-                   "comb" -> combRte _,
+  val genRte = Map("tree-split-inv-gauss" -> treeSplitRteInvGaussian ,
+                   "tree-split-gauss" -> treeSplitRteGaussian ,
+                   "tree-split-linear" -> treeSplitRteLinear ,
+                   "flajolet" -> flajoletRteBySize ,
+                   "comb" -> combRte ,
                    )
 
   def genCsvBySize(num_repetitions: Int,
