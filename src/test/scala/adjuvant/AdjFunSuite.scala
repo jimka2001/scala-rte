@@ -20,7 +20,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package adjuvant
-import adjuvant.Adjuvant.printTime
 import org.scalatest.funsuite.AnyFunSuite
 
 
