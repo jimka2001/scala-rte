@@ -20,7 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package xymbolyco
-import genus.SyntaxSugar.SAndNot
+//import genus.SyntaxSugar.SAndNot
 import genus.{SAnd, SEmpty, SNot, STop, SimpleTypeD}
 
 // an IfThenElseTree is a lazy tree which is used to figure out given
@@ -72,18 +72,18 @@ object IfThenElseTree {
 
 case class IfThenElseFound[E,S](dest:S) extends IfThenElseTree[E,S] {
   def apply(a:Any):Option[S] = Some(dest)
-  override def toString():String = dest.toString()
+  override def toString:String = dest.toString
 }
 
 case class IfThenElseMissing[E,S]() extends IfThenElseTree[E,S] {
   def apply(a:Any):Option[S] = None
-  override def toString():String = "missing"
+  override def toString:String = "missing"
 }
 
 case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTypeD, S)])
   extends IfThenElseTree[E,S] {
-  val tdh::tdt = tds.filter(td1 => transitions.exists{case (td2,_) => td2.leafTypes().contains(td1)})
-  def reduceTransitions(intersect: SimpleTypeD, search:SimpleTypeD, replace: SimpleTypeD): Set[(SimpleTypeD, S)] = {
+  private val tdh::tdt = tds.filter(td1 => transitions.exists{case (td2,_) => td2.leafTypes().contains(td1)})
+  private def reduceTransitions(intersect: SimpleTypeD, search:SimpleTypeD, replace: SimpleTypeD): Set[(SimpleTypeD, S)] = {
     transitions.flatMap { case (td, dest) =>
       val simpler = SAnd(td, intersect)
         .canonicalize()
@@ -97,13 +97,13 @@ case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTyp
   }
 
   var ifTrueEvaluated:Boolean = false // this is here just for testing
-  var ifFalseEvaluated:Boolean = false // it would be nice to eliminate if the test could figure out whether or not a lazy val has been evaluated
+  var ifFalseEvaluated:Boolean = false // it would be nice to eliminate if the test could figure out whether a lazy val has been evaluated
 
-  override def toString():String = {
+  override def toString:String = {
     s"Ite($tdh, $transitions, " +
-      (if (ifTrueEvaluated) ifTrue.toString() else "_") +
+      (if (ifTrueEvaluated) ifTrue.toString else "_") +
       ", " +
-      (if (ifFalseEvaluated) ifFalse.toString() else "_") +
+      (if (ifFalseEvaluated) ifFalse.toString else "_") +
       ")"
   }
 
