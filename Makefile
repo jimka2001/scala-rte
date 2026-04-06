@@ -63,5 +63,9 @@ sample-128:
 		sbt "runMain demos.scalaio2025.GenCsvFixedLeafCount 10 128" ;\
 	done
 
-sbt-test:
+sbt-test-2:
 	bin/sbt-test.csh
+
+sbt-test-3:
+	bin/sbt-test.csh try-2-conv-3.x
+
