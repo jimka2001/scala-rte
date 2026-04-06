@@ -15,8 +15,9 @@ set repo=git@gitlab.lre.epita.fr:jnewton/${project}.git
 cd $tmp
 git clone $repo
 cd $tmp/$project
-git checkout master
+git checkout lre-master
 sbt compile
 sbt test
+
 
 
