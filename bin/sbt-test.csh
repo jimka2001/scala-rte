@@ -21,7 +21,11 @@ set repo=git@gitlab.lre.epita.fr:jnewton/${project}.git
 cd $tmp
 git clone $repo
 cd $tmp/$project
-git checkout lre-master
+git checkout $branch
+if ($status != 0) then
+  echo cannot checkout branch $branch | STDERR
+  exit 1
+endif
 sbt compile
 sbt test
 
