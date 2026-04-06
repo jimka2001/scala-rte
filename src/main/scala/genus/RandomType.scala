@@ -197,10 +197,13 @@ object RandomType {
   def randomType(depth: Int, avoid: Boolean = false): SimpleTypeD = {
     val random = new scala.util.Random
     val maxCompoundSize = 2
+    // at least one argument for SOr and SAnd
+    def rndargs() = List.tabulate(
+      1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize))(
+      _ => randomType(depth - 1, avoid))
     val generators: Seq[() => SimpleTypeD] = Vector(
-      () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1, avoid) }*),
-      // always at least one argument of SAnd and SOr
-      () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1, avoid) }*),
+      () => SOr(rndargs()*),
+      () => SAnd(rndargs()*),
       () => SNot(randomType(depth - 1, avoid))
       )
     if (depth <= 0) {
