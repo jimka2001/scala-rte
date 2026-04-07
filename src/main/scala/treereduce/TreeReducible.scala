@@ -102,3 +102,15 @@ object TreeReduce {
       treeMapReduceIntern(m)(init)(seqOp, combOp)
   }
 }
+
+object SanityTest {
+  import treereduce.TreeReducible._
+  // This imports the obj.treeMapReduce() syntax.
+  import treereduce.TreeReduce._
+  def main(argv:Array[String]):Unit = {
+    val v1 = List(1, 2, 3)
+    val v2 = 0 to 10
+    assert(v1.foldLeft(0)(_ + _) == v1.treeMapReduce(0)((x)=>x, _ + _))
+    assert(v2.foldLeft(0)(_ + _) == v2.treeMapReduce(0)((x)=>x, _ + _))
+  }
+}
