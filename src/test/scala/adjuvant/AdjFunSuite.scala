@@ -26,7 +26,6 @@ import org.scalatest.funsuite.AnyFunSuite
 class AdjFunSuite extends AnyFunSuite {
   import org.scalactic.source
   import org.scalatest.Tag
-
   val num_random_tests:Int = sys.env.get("CI_REGISTRY_IMAGE") match {
     case None => 1000   // if interactive
     case Some(_) => 100 // if in ci/cd pipeline
@@ -36,10 +35,12 @@ class AdjFunSuite extends AnyFunSuite {
 
     def wrapper():Any = {
       import java.time.{Duration, LocalDateTime}
+      import AdjFunSuite.{elapsed, format}
+
       val start = LocalDateTime.now()
       println("[ starting " + testName
                 + " at : " + start
-                + " total time: " + AdjFunSuite.formatDuration(AdjFunSuite.elapsed()))
+                + " total time: " + format(elapsed()))
       var finished = false
       try{
         testFun
@@ -51,8 +52,8 @@ class AdjFunSuite extends AnyFunSuite {
         println(s"] ${status} "
                   + testName
                   + " at : " + endLocalTime
-                  + " test time: " + AdjFunSuite.formatDuration(Duration.between(start, endLocalTime))
-                  + " total time: " + AdjFunSuite.formatDuration(AdjFunSuite.elapsed()))
+                  + " test time: " + format(Duration.between(start, endLocalTime))
+                  + " total time: " + format(elapsed()))
       }
     }
     AdjFunSuite.testImpl.invoke(this, testName, testTags, () => wrapper(), pos)
@@ -66,7 +67,7 @@ object AdjFunSuite {
 
   def elapsed():Duration = Duration.between(testsStartedTime, LocalDateTime.now())
 
-  def formatDuration(d:Duration):String = {
+  def format(d:Duration):String = {
     val minutes = d.toMinutes
     val seconds = d.getSeconds % 60
     val millis = d.toMillis % 1000
