@@ -102,7 +102,7 @@ class GenusRandomTypeTestSuite extends AdjFunSuite {
     println(classOf[java.lang.Integer].isInstance(1)) // works
     println(classOf[Int].isInstance(1))
     println(1.isInstanceOf[Int])
-    println(1.isInstanceOf[Any])
+    //assert(1.isInstanceOf[Any])
     println(classOf[Any].isInstance(1))
     println(classOf[java.lang.Object].isInstance(1))
   }
