@@ -80,5 +80,4 @@ object AdjFunSuite {
     .find(m => m.getName.contains("testImpl") && m.getParameterCount == 4)
     .get
   testImpl.setAccessible(true)
-
 }
