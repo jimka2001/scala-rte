@@ -26,7 +26,8 @@ if ($status != 0) then
   echo cannot checkout branch $branch | STDERR
   exit 1
 endif
-sbt compile
+echo COMPILER MESSAGES REDIRECTED TO: ${PWD}/compile.out
+sbt compile | tee compile.out
 if ($status != 0) then
   echo failed to compile | STDERR
   exit 2

@@ -312,7 +312,7 @@ object SAtomic {
     //    Note that a class is considered a subclass of itself.
     isInstantiatable(cl) || computeSubclassesOf(cl).toArray.exists {
       case c: Class[_] => isInstantiatable(c)
-      case _ => false
+      case null => false
     }
   }
 
