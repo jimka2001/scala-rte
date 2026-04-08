@@ -27,6 +27,10 @@ if ($status != 0) then
   exit 1
 endif
 sbt compile
+if ($status != 0) then
+  echo failed to compile | STDERR
+  exit 2
+endif
 sbt test
 
 
