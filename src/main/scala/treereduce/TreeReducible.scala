@@ -111,6 +111,14 @@ object SanityTest {
     val v1 = List(1, 2, 3)
     val v2 = 0 to 10
     assert(v1.foldLeft(0)(_ + _) == v1.treeMapReduce(0)((x)=>x, _ + _))
-    assert(v2.foldLeft(0)(_ + _) == v2.treeMapReduce(0)((x)=>x, _ + _))
+
+    //assert(v2.foldLeft(0)(_ + _) == (new RichReducible(v2)).treeMapReduce(0)((x)=>x, _ + _))
+
+    // TODO, this issues is not yet resolved, just a hacky workaround.
+    // For the moment, i'm inserting .to(Iterator) here to make the code work.
+    // This may be a bug in the scala 3 compiler.
+    // see  https://users.scala-lang.org/t/type-class-fails-for-range-in-scala-3-but-works-in-scala-2/12251
+    assert(v2.foldLeft(0)(_ + _) == v2.to(Iterator).treeMapReduce(0)((x)=>x, _ + _))
+    //assert(v2.foldLeft(0)(_ + _) == v2.treeMapReduce(0)((x)=>x, _ + _))
   }
 }
