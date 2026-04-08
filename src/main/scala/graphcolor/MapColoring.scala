@@ -35,11 +35,11 @@ object MapColoring {
     import treereduce.TreeReducible._ // This imports the obj.treeMapReduce() syntax.
     Array((
             "tree-fold",
-            (states, top, getConstraints, op) =>
+            (states:Seq[V], top:Bdd, getConstraints:(V=>Bdd), op:((Bdd,Bdd)=>Bdd)) =>
               states.treeMapReduce(top)(getConstraints, op)),
           (
             "fold-left",
-            (states, top, getConstraints, op) =>
+            (states:Seq[V], top:Bdd, getConstraints:(V=>Bdd), op:((Bdd,Bdd)=>Bdd)) =>
               states.map(getConstraints).reduceOption(op) match {
                 case None => top
                 case Some(bdd) => bdd

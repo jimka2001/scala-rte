@@ -300,10 +300,10 @@ object dimacsParse {
     Files.createDirectories(Paths.get(outDir)) // create any necessary directories
 
     if (argv.length <= 2)
-      dimacsConvertDirectory("cnf", inDir, { f: String => s"$outDir/$f" })
+      dimacsConvertDirectory("cnf", inDir, { (f: String) => s"$outDir/$f" })
     else
       (2 until argv.length).foreach { i =>
-        dimacsConvertDirectory("cnf", inDir, { f: String => s"$outDir/$f" }, List(argv(i)))
+        dimacsConvertDirectory("cnf", inDir, { (f: String) => s"$outDir/$f" }, List(argv(i)))
       }
   }
 }

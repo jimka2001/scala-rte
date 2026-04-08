@@ -63,7 +63,7 @@ class TreeReduceSuite extends AdjFunSuite {
 
     for {
       max <- 1 to 100
-      nums = 1 to max
+      nums = (1 to max).to(List)
       sum = nums.sum
     } {
       assert(sum == nums.fold(0) {
@@ -71,13 +71,13 @@ class TreeReduceSuite extends AdjFunSuite {
       })
       assert(sum == nums.toSet.sum)
       assert(sum == nums.treeMapReduce(0)(id, _ + _))
-      assert(sum == nums.toList.treeMapReduce(0)(id, _ + _))
+      assert(sum == nums.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.toSet.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.iterator.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.par.toIterator.treeMapReduce(0)(id, _ + _))
 
       assert(sum == nums.par.treeMapReduce(0)(id, _ + _))
-      assert(sum == nums.toList.par.treeMapReduce(0)(id, _ + _))
+      assert(sum == nums.par.treeMapReduce(0)(id, _ + _))
       assert(sum == nums.iterator.treeMapReduce(0)(id, _ + _))
     }
 
@@ -244,8 +244,6 @@ class TreeReduceSuite extends AdjFunSuite {
 
     val loremBlock = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     val loremWords:Array[String] = loremBlock.split(" ")
-    // IntelliJ thinks treeMapReduce is an unresolved symbol, but that's a bug in IntelliJ
-    //   similar for length and +
     assert(loremWords.map(_.length).foldLeft(0)(_ + _) == loremWords.treeMapReduce(0)(_.length, _ + _))
   }
 }

@@ -33,7 +33,7 @@ import scala.collection.mutable
  *
  * @param ct the class of a Scala or Java type this class will wrap (call it with `classOf[native_type]`)
  */
-case class SAtomic(ct: Class[_]) extends STerminal {
+case class SAtomic(ct: Class[?]) extends STerminal {
   // syntax: SAtomic(classOf[Int])
   //if (ct != classOf[Nothing] && ! SAtomic.existsInstantiatableSubclass(ct))
   //  println(s"WARNING: SAtomic($ct) is equivalent to SEmpty")
@@ -241,10 +241,10 @@ object OpenWorldView extends WorldView("open")
  * deal with EmptyType and TopType construction.
  */
 object SAtomic {
-  val knownSAtomics: mutable.Map[(WorldView, Class[_]), SAtomic] = mutable.Map[(WorldView, Class[_]), SAtomic]()
+  val knownSAtomics: mutable.Map[(WorldView, Class[?]), SAtomic] = mutable.Map[(WorldView, Class[?]), SAtomic]()
 
   @tailrec
-  def apply(ct: Class[_]): SimpleTypeD = {
+  def apply(ct: Class[?]): SimpleTypeD = {
     if (ct == classOf[Nothing]) SEmpty
     else if (ct == classOf[Char]) SAtomic(classOf[java.lang.Character])
     else if (ct == classOf[Boolean]) SAtomic(classOf[java.lang.Boolean])
@@ -296,7 +296,7 @@ object SAtomic {
 
 
 
-  def instantiatableSubclasses(cl: Class[_]): Array[Class[_]] = {
+  def instantiatableSubclasses(cl: Class[?]): Array[Class[?]] = {
     val properSubs = computeSubclassesOf(cl).toArray.collect {
       case c: Class[_] if isInstantiatable(c) => c
     }
@@ -307,16 +307,16 @@ object SAtomic {
   }
 
 
-  def existsInstantiatableSubclass(cl: Class[_]): Boolean = {
+  def existsInstantiatableSubclass(cl: Class[?]): Boolean = {
     // determine whether an instantiatable subclass exists.
     //    Note that a class is considered a subclass of itself.
     isInstantiatable(cl) || computeSubclassesOf(cl).toArray.exists {
       case c: Class[_] => isInstantiatable(c)
-      case _ => false
+      case null => false
     }
   }
 
-  def existsCommonInstantiatableSubclass(c1: Class[_], c2: Class[_]): Boolean = {
+  def existsCommonInstantiatableSubclass(c1: Class[?], c2: Class[?]): Boolean = {
     // use the reflections API to determine whether there is a common subclass
     // which is instantiable, i.e., not empty, not interface, not abstract.
     val subsC1 = instantiatableSubclasses(c1)
@@ -333,19 +333,19 @@ object SAtomic {
 
   import java.lang.reflect.Modifier
 
-  def isFinal(cl: Class[_]): Boolean = {
+  def isFinal(cl: Class[?]): Boolean = {
     Modifier.isFinal(cl.getModifiers)
   }
 
-  def isAbstract(cl: Class[_]): Boolean = {
+  def isAbstract(cl: Class[?]): Boolean = {
     Modifier.isAbstract(cl.getModifiers)
   }
 
-  def isInterface(cl: Class[_]): Boolean = {
+  def isInterface(cl: Class[?]): Boolean = {
     Modifier.isInterface(cl.getModifiers)
   }
 
-  def isInstantiatable(cl: Class[_]): Boolean = {
+  def isInstantiatable(cl: Class[?]): Boolean = {
     if (cl == classOf[Nothing])
       false
     else if (isFinal(cl))

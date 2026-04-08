@@ -31,7 +31,7 @@ object RteImplicits {
   implicit def tdToRte(raw: SimpleTypeD): Rte = {
     Singleton(raw)
   }
-  implicit def classToRte(raw: Class[_]): Rte = {
+  implicit def classToRte(raw: Class[?]): Rte = {
     Singleton(genus.SAtomic(raw))
   }
 }

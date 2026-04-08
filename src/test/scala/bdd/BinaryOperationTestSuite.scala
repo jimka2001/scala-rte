@@ -41,7 +41,7 @@ class BinaryOperationTestSuite  extends AdjFunSuite {
 
   test("identities") {
     withNewBddHash {
-      assert(Or(BddTrue, BddFalse) equals BddTrue)
+      assert(Or(BddTrue, BddFalse).equals( BddTrue))
       assert(Or(BddTrue, BddFalse) eq BddTrue)
       assert(Or(BddFalse, BddFalse) eq BddFalse)
       assert(Or(BddFalse, BddTrue) eq BddTrue)

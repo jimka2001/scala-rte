@@ -82,7 +82,7 @@ case class IfThenElseMissing[E,S]() extends IfThenElseTree[E,S] {
 
 case class IfThenElseNode[E,S](tds:List[SimpleTypeD], transitions:Set[(SimpleTypeD, S)])
   extends IfThenElseTree[E,S] {
-  private val tdh::tdt = tds.filter(td1 => transitions.exists{case (td2,_) => td2.leafTypes().contains(td1)})
+  private val tdh::tdt = tds.filter((td1) => transitions.exists{case (td2,_) => td2.leafTypes().contains(td1)}).runtimeChecked
   private def reduceTransitions(intersect: SimpleTypeD, search:SimpleTypeD, replace: SimpleTypeD): Set[(SimpleTypeD, S)] = {
     transitions.flatMap { case (td, dest) =>
       val simpler = SAnd(td, intersect)

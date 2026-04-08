@@ -94,35 +94,35 @@ object Histogram {
       .map { case (size: Int, population: Long) => size -> population * normalizer }
   }
 
-  def gnuPlotBddSizeHistogram(r  : Range, numSamples: Int => Long): Unit = {
-    import org.sameersingh.scalaplot.Implicits._
-    import org.sameersingh.scalaplot._
-    import org.sameersingh.scalaplot.jfreegraph.JFGraphPlotter
+  // def gnuPlotBddSizeHistogram(r  : Range, numSamples: Int => Long): Unit = {
+  //   import org.sameersingh.scalaplot.Implicits._
+  //   import org.sameersingh.scalaplot._
+  //   import org.sameersingh.scalaplot.jfreegraph.JFGraphPlotter
 
-    import scala.concurrent.ExecutionContext
+  //   import scala.concurrent.ExecutionContext
 
-    implicit val executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-    val data = new XYData()
-    withNewBddHash {
-      r.foreach { n =>
-        println(s"calculating histogram for n=$n numSamples=${numSamples(n)}")
-        val xys = genBddNormalizedSizeHistogram(n, numSamples(n)).toList.sortBy {
-          _._1
-        }
-        println(s"finished ============ n=$n =================")
-        val xs = xys.map(_._1.toDouble)
-        val ys = xys.map(_._2)
-        data += new MemXYSeries(xs, ys, name = s"n=$n")
-      }
-    }
+  //   implicit val executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  //   val data = new XYData()
+  //   withNewBddHash {
+  //     r.foreach { n =>
+  //       println(s"calculating histogram for n=$n numSamples=${numSamples(n)}")
+  //       val xys = genBddNormalizedSizeHistogram(n, numSamples(n)).toList.sortBy {
+  //         _._1
+  //       }
+  //       println(s"finished ============ n=$n =================")
+  //       val xs = xys.map(_._1.toDouble)
+  //       val ys = xys.map(_._2)
+  //       data += new MemXYSeries(xs, ys, name = s"n=$n")
+  //     }
+  //   }
 
-    val chart = new XYChart("BDD size distribution n Boolean variables",
-                            data, x = Axis(log = true), y = Axis(label = "Normalized size"))
-    chart.showLegend = true
+  //   val chart = new XYChart("BDD size distribution n Boolean variables",
+  //                           data, x = Axis(log = true), y = Axis(label = "Normalized size"))
+  //   chart.showLegend = true
 
-    val plotter = new JFGraphPlotter(chart)
-    plotter.gui()
-  }
+  //   val plotter = new JFGraphPlotter(chart)
+  //   plotter.gui()
+  // }
 
 
   def main(argv: Array[String]): Unit = {

@@ -26,27 +26,27 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class CLcompatTestSuite extends AdjFunSuite {
   type T= Int=>Nothing
-  assert(42 == block{ret:T => ret(42)})
-  assert(43 == block{_:T => 43})
-  assert(44 == block{ret1:T =>
-    block{_:T =>
+  assert(42 == block{(ret:T) => ret(42)})
+  assert(43 == block{(_:T) => 43})
+  assert(44 == block{(ret1:T) =>
+    block{(_:T) =>
       ret1(44)
     }})
 
-  assert(45 == block{ret1:T =>
-    block{_:T =>
+  assert(45 == block{(ret1:T) =>
+    block{(_:T) =>
       ret1(45)
     }
     ret1(46)})
 
-  assert(48 == block{ret1:T =>
-    block{ret2:T =>
+  assert(48 == block{(ret1:T) =>
+    block{(ret2:T) =>
       ret2(47)
     }
     ret1(48)})
 
-  assert(49 == block{ret1:T =>
-    block{_:T =>
+  assert(49 == block{(ret1:T) =>
+    block{(_:T) =>
       ret1(49)
     }
     assert(false, "this line should never be reached")

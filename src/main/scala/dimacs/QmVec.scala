@@ -190,7 +190,7 @@ class QmVec() {
     def loop(posCounts: Set[(Int, Int, ClauseAsList)]): Unit = {
 
       if (posCounts.nonEmpty) {
-        val RemoveAdd(removes, adds) = foldUps(posCounts.par.map((reducePosCountClausesIncremental _).tupled).toList)
+        val RemoveAdd(removes, adds) = foldUps(posCounts.par.map((reducePosCountClausesIncremental ).tupled).toList)
         loop(calcNextPhase(removes, adds))
       }
     }

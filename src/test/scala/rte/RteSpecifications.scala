@@ -45,12 +45,12 @@ object RteSpecifications {
   def genInternalNode(depth: Int) = Gen.lzy {
     val newDepth = depth - 1
     implicit lazy val arbitraryGen: Arbitrary[Rte] = Arbitrary(naiveGenRte(newDepth))
-    lazy val listRte = Gen.listOfN[Rte](childLimit, Arbitrary.arbitrary[Rte](arbitraryGen)).sample.get
+    lazy val listRte = Gen.listOfN[Rte](childLimit, Arbitrary.arbitrary[Rte](using arbitraryGen)).sample.get
 
-    lazy val genAnd = And(listRte: _*)
-    lazy val genOr = Or(listRte: _*)
+    lazy val genAnd = And(listRte*)
+    lazy val genOr = Or(listRte*)
     lazy val genNot = Not(naiveGenRte(newDepth).sample.get)
-    lazy val genCat = Cat(listRte: _*)
+    lazy val genCat = Cat(listRte*)
     lazy val genStar = Star(naiveGenRte(newDepth).sample.get)
 
     // Choose between one of the 3 non-terminal types

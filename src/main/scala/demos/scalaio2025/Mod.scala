@@ -38,7 +38,7 @@ object Expr {
   }
 
   def naiveRandBySize(leaves: Int, p: Int): Expr = {
-        assert(leaves > 0)
+    assert(leaves > 0)
     if (leaves == 1)
       Const(random.nextInt(p))
     else {
@@ -130,9 +130,9 @@ object TestExprBySize {
     val size = 1 << 6
     val p = 5
     val m = 100
-    println("Balanced", returnPercentages(m, () => eval(balancedRandBySize(size, p), p)))
-    println("Naive   ", returnPercentages(m, () => eval(naiveRandBySize(size, p), p)))
-    println("All     ", ModDemo.allProducts(p))
+    println("Balanced: "+ returnPercentages(m, () => eval(balancedRandBySize(size, p), p)))
+    println("Naive:   "+ returnPercentages(m, () => eval(naiveRandBySize(size, p), p)))
+    println("All:     "+ ModDemo.allProducts(p))
   }
 }
 
@@ -145,8 +145,8 @@ object TestExprByDepth {
     val depth = 6
     val p = 5
     val m = 100000
-    println("Balanced", returnPercentages(m, () => eval(balancedRandByDepth(depth, p), p)))
-    println("Naive   ", returnPercentages(m, () => eval(naiveRandByDepth(depth, p), p)))
-    println("All     ", ModDemo.allProducts(p))
+    println("Balanced "+ returnPercentages(m, () => eval(balancedRandByDepth(depth, p), p)))
+    println("Naive    "+ returnPercentages(m, () => eval(naiveRandByDepth(depth, p), p)))
+    println("All      "+ ModDemo.allProducts(p))
   }
 }

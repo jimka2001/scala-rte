@@ -72,11 +72,11 @@ class RteCaseTestSuite extends AdjFunSuite {
 
 
 
-    assert(f(List(1, 2, "three", "four")) == Some(3))
-    assert(f(Vector(1, 2, "three", "four")) == Some(3))
+      assert(f(List(1, 2, "three", "four")) == Some(3))
+      assert(f(Vector(1, 2, "three", "four")) == Some(3))
 
-    assert(f(List("one", "two", 3, 4)) == None)
-    assert(f(Vector("one", "two", 3, 4)) == None)
+      assert(f(List("one", "two", 3, 4)) == None)
+      assert(f(Vector("one", "two", 3, 4)) == None)
 
   }
   test("rteCase"){

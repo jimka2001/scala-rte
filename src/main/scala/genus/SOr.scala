@@ -182,7 +182,7 @@ object SOr {
     tds match {
       case Seq() => SEmpty
       case Seq(td) => td
-      case _ => SOr(tds: _*)
+      case _ => SOr(tds*)
     }
   }
 }

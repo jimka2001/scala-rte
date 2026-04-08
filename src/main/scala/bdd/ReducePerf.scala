@@ -39,10 +39,10 @@ object ReducePerf {
     elapsed
   }
 
-  val foldPairs = List(("         fold", bdd.DimacsFold.dnfToBdd _)
-                       , ("pairMapReduce", bdd.DimacsParallelReduce.dnfToBdd _)
-                       , ("treeMapReduce", bdd.DimacsBdd.dnfToBdd _)
-                       //,("  mixedReduce", bdd.DimacsMixedReduce.dnfToBdd _)
+  val foldPairs = List(("         fold", bdd.DimacsFold.dnfToBdd )
+                       , ("pairMapReduce", bdd.DimacsParallelReduce.dnfToBdd )
+                       , ("treeMapReduce", bdd.DimacsBdd.dnfToBdd )
+                       //,("  mixedReduce", bdd.DimacsMixedReduce.dnfToBdd )
                        )
 
   def testLimitedBddConstruction(verbose:Boolean):Unit = {
@@ -129,8 +129,8 @@ object ReducePerf {
   def testGenSizePlotPerFold(numVars:Int,numTerms:Int,maxNumLiteralsPerTerm:Int,verbose:Boolean): Unit = {
     import bdd.Bdd.withNewBddHash
     import bdd.BitFiddle.genDnfFromBitMask
-    val foldPairs = List(("         fold", bdd.DimacsFold.dnfToBdd2 _)
-                         , ("treeMapReduce", bdd.DimacsBdd.dnfToBdd2 _)
+    val foldPairs = List(("         fold", bdd.DimacsFold.dnfToBdd2 )
+                         , ("treeMapReduce", bdd.DimacsBdd.dnfToBdd2 )
                          )
     type PLOT_DATA = (String, Int, Int, Long, Long, Long, Long)
     val rawDataForPlot:Seq[PLOT_DATA] = for {
@@ -235,8 +235,8 @@ object ReducePerf {
   def testNumBitsConstruction(numVars:Int,maxNumTerms:Int,numDnfs:Int,maxNumLiteralsPerTerm:Int,verbose:Boolean): Unit = {
     import bdd.Bdd.withNewBddHash
     import bdd.BitFiddle.genDnfFromBitMask
-    val foldPairs = List(("         fold", bdd.DimacsFold.dnfToBdd _)
-                         , ("treeMapReduce", bdd.DimacsBdd.dnfToBdd _)
+    val foldPairs = List(("         fold", bdd.DimacsFold.dnfToBdd )
+                         , ("treeMapReduce", bdd.DimacsBdd.dnfToBdd )
                          )
     val runsPerDnf = 1
     val step =  4

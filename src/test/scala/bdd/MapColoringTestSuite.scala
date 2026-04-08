@@ -28,7 +28,7 @@ import graphcolor.USAgraph
 class MapColoringTestSuite extends AdjFunSuite {
   import org.scalactic.source
   override def test(testName: String, testTags: Tag*)(testFun: =>Any)(implicit pos: source.Position):Unit = {
-    super.test(testName, testTags :_*){
+    super.test(testName, testTags*){
       println(s"[ starting $testName")
       testFun
       println(s"] finished $testName")

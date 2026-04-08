@@ -659,8 +659,8 @@ object Profiling {
                   label = Some(s"depth=$depth:$r " + pattern.toString))
           dfaView(data("xor") ,title = "xor",abbrev = true,
                   label = Some(s"depth=$depth:$r " + pattern.toString))
-          println(depth, data, pattern)
-          s"different minimized sizes ${data("min_thompson")} vs ${data("min_brzozowski")}"
+          println(s"$depth $data $pattern")
+          println(s"different minimized sizes ${data("min_thompson")} vs ${data("min_brzozowski")}")
         }
     }
     }

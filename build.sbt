@@ -2,17 +2,17 @@ name := "scala-rte"
 
 version := "0.1"
 
-scalaVersion := "2.13.18"
+scalaVersion := "3.8.3"
 
 libraryDependencies += "junit" % "junit" % "4.13.2" % "test"
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.18"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % "test"
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.18.0"
 libraryDependencies += "org.scalatestplus" %% "scalacheck-1-18" % "3.2.19.0" % "test"
-libraryDependencies += "org.scalafx" %% "scalafx" % "14-R19"
+libraryDependencies += "org.scalafx" %% "scalafx" % "26.0.0-R38"
 libraryDependencies += "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4"
 libraryDependencies += "org.jboss" % "jboss-common-core" % "2.5.0.Final"
-libraryDependencies += "org.sameersingh.scalaplot" % "scalaplot" % "0.1"
+// libraryDependencies += "org.sameersingh.scalaplot" % "scalaplot" % "0.1"
 
 libraryDependencies += "io.github.classgraph" % "classgraph" % "4.8.162"
 

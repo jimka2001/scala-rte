@@ -57,13 +57,11 @@ object Accumulators {
     acc
   }
 
-  def withMaximizer[A](init: A)(f: (A => Unit) => Unit)(implicit ev: A => Ordered[A]): A = {
-    withReducer(init, (a: A, b: A) => if (a < b) b else a)(f)
-  }
+  def withMaximizer[A](init: A)(f: (A => Unit) => Unit)(using ord: Ordering[A]): A =
+    withReducer(init, (a: A, b: A) => if (ord.lt(a, b)) b else a)(f)
 
-  def withMinimizer[A](init: A)(f: (A => Unit) => Unit)(implicit ev: A => Ordered[A]): A = {
-    withReducer(init, (a: A, b: A) => if (a > b) b else a)(f)
-  }
+  def withMinimizer[A](init: A)(f: (A => Unit) => Unit)(using ord: Ordering[A]): A =
+    withReducer(init, (a: A, b: A) => if (ord.gt(a, b)) b else a)(f)
 
   def withSummer[A](init: A, plus: (A, A) => A)(f: (A => Unit) => Unit): A = {
     withReducer(init, plus)(f)

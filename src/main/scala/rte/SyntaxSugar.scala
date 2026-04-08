@@ -51,7 +51,7 @@ object Exponent extends RteSyntaxSugar {
 
 object Member extends RteSyntaxSugar {
   import genus.SMember
-  def apply(xs: Any*): Rte = Singleton(SMember(xs: _*))
+  def apply(xs: Any*): Rte = Singleton(SMember(xs*))
 }
 
 object Satisfies extends RteSyntaxSugar {
@@ -68,6 +68,6 @@ object Eql extends RteSyntaxSugar {
 
 object Atomic extends RteSyntaxSugar {
   import genus.SAtomic
-  def apply(ct: Class[_]): Rte =
+  def apply(ct: Class[?]): Rte =
     Singleton(SAtomic(ct))
 }

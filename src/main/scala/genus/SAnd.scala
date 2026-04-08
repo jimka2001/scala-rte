@@ -254,7 +254,7 @@ object SAnd {
     tds match {
       case Seq() => STop
       case Seq(td) => td
-      case _ => SAnd(tds: _*)
+      case _ => SAnd(tds*)
     }
   }
   def main(argv:Array[String]):Unit = {

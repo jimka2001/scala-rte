@@ -33,19 +33,19 @@ class GenusDisjoint extends AdjFunSuite {
       // (and (not Float) (not Double) (not (member 1 2 3))) --> inhabited=true
       // (and (not Float) java.lang.Comparable) -> inhabited=true
       // (and (not Float) (not (member 1 2 3)) java.lang.Comparable) -> inhabited=true
-      assert(SAtomic.isInterface(classOf[java.lang.Comparable[_]]))
+      assert(SAtomic.isInterface(classOf[java.lang.Comparable[?]]))
       assert(SNot(SAtomic(classOf[Number])).inhabited.contains(true))
       assert(SNot(SMember(1, 2, 3)).inhabited.contains(true))
-      assert(SAtomic(classOf[java.lang.Comparable[_]]).inhabited.contains(true))
+      assert(SAtomic(classOf[java.lang.Comparable[?]]).inhabited.contains(true))
       assert(SAnd(SNot(SAtomic(classOf[Number])),
                   SNot(SMember(1, 2, 3)),
-                  SAtomic(classOf[java.lang.Comparable[_]]))
+                  SAtomic(classOf[java.lang.Comparable[?]]))
                .inhabited
                .contains(true))
-      assert(SAnd(SNot(SAtomic(classOf[Number])), SNot(SMember(1, 2, 3)), SAtomic(classOf[java.lang.Comparable[_]]))
-               .disjoint(SAtomic(classOf[java.lang.Comparable[_]]))
+      assert(SAnd(SNot(SAtomic(classOf[Number])), SNot(SMember(1, 2, 3)), SAtomic(classOf[java.lang.Comparable[?]]))
+               .disjoint(SAtomic(classOf[java.lang.Comparable[?]]))
                .contains(false))
-      assert(SAnd(SNot(SAtomic(classOf[java.lang.Comparable[_]])),
+      assert(SAnd(SNot(SAtomic(classOf[java.lang.Comparable[?]])),
                   SNot(SAtomic(classOf[java.lang.CharSequence])),
                   SAtomic(classOf[java.math.BigDecimal]))
                .inhabited

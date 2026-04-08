@@ -16,7 +16,7 @@ object ReflectionUtils {
       .scan()
 
   // Cache for subclass lookups
-  private val subclassCache = mutable.Map[Class[_], Seq[Class[_]]]()
+  private val subclassCache = mutable.Map[Class[?], Seq[Class[?]]]()
 
   /**
    * Compute all subclasses (or implementing classes, if `sup` is an interface)
@@ -43,7 +43,7 @@ object ReflectionUtils {
    * @param sup The superclass or interface to search for subclasses.
    * @return A sequence of discovered subclass Class[_] objects.
    */
-  def computeSubclassesOf(sup: Class[_]): Seq[Class[_]] =
+  def computeSubclassesOf(sup: Class[?]): Seq[Class[?]] =
     subclassCache.getOrElseUpdate(sup, {
       val className = sup.getName
 

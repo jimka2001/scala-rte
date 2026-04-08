@@ -65,7 +65,7 @@ object RandomType {
   // allow implicit conversions from c:Class[_] to AtomicType(c)
   //    thus allowing Types such as classOf[java.lang.Integer] && !SEql(0)
   //    classOf[A] && classOf[B]
-  implicit def class2type(c: Class[_]): SimpleTypeD = SAtomic(c)
+  implicit def class2type(c: Class[?]): SimpleTypeD = SAtomic(c)
 
 
   // The following definitions are defined as functions rather than
@@ -197,10 +197,13 @@ object RandomType {
   def randomType(depth: Int, avoid: Boolean = false): SimpleTypeD = {
     val random = new scala.util.Random
     val maxCompoundSize = 2
+    // at least one argument for SOr and SAnd
+    def rndargs() = List.tabulate(
+      1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize))(
+      _ => randomType(depth - 1, avoid))
     val generators: Seq[() => SimpleTypeD] = Vector(
-      () => SOr(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1, avoid) }: _*),
-      // always at least one argument of SAnd and SOr
-      () => SAnd(0 until 1 + random.nextInt(maxCompoundSize) + random.nextInt(maxCompoundSize) map { _ => randomType(depth - 1, avoid) }: _*),
+      () => SOr(rndargs()*),
+      () => SAnd(rndargs()*),
       () => SNot(randomType(depth - 1, avoid))
       )
     if (depth <= 0) {
