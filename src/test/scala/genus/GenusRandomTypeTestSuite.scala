@@ -93,18 +93,23 @@ class GenusRandomTypeTestSuite extends AdjFunSuite {
   }
 
   test("test192") {
+    val one:Any = 1
     case class Box(value: Any)
-    println(SAtomic(classOf[scala.runtime.RichInt]).typep(1))
-    println(SAtomic(classOf[Int]).typep(Box(1).value))
-    println(SAtomic(classOf[java.lang.Integer]).typep(Box(1).value))
-    println(SAtomic(classOf[java.lang.Integer]).typep(1)) // works
-    println(SAtomic(classOf[Integer]).typep(1)) // works
-    println(classOf[java.lang.Integer].isInstance(1)) // works
-    println(classOf[Int].isInstance(1))
-    println(1.isInstanceOf[Int])
+    assert(false == SAtomic(classOf[scala.runtime.RichInt]).typep(1))
+    assert(SAtomic(classOf[Int]).typep(Box(1).value))
+    assert(SAtomic(classOf[java.lang.Integer]).typep(Box(1).value))
+    assert(SAtomic(classOf[java.lang.Integer]).typep(1)) // works
+    assert(SAtomic(classOf[Integer]).typep(1)) // works
+    assert(classOf[java.lang.Integer].isInstance(1)) // works
+    assert(false == classOf[Int].isInstance(1))
+    assert(1.isInstanceOf[Int])
+    // fails
     //assert(1.isInstanceOf[Any])
-    println(classOf[Any].isInstance(1))
-    println(classOf[java.lang.Object].isInstance(1))
+    assert((1:Any).isInstanceOf[Any])
+    assert(one.isInstanceOf[Int])
+    assert(one.isInstanceOf[Any])
+    assert(classOf[Any].isInstance(1))
+    assert(classOf[java.lang.Object].isInstance(1))
   }
 
 }
