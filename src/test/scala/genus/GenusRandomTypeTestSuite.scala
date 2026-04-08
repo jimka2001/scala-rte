@@ -33,48 +33,55 @@ class GenusRandomTypeTestSuite extends AdjFunSuite {
       assert(data.contains(None) && data.contains(Some(true)) && data.contains(Some(false)))
     }
   }
+  test("sanity check random type"){
+
+    import RandomType.randomType
+    (0 to 10).foreach { i =>
+      val t = randomType(6)
+      val c = t.canonicalize()
+      assert(c.typep(42) || SNot(c).typep(42))
+    }
+  }
+
   test("sanity check") {
     import NormalForm._
-    import RandomType.randomType
     val a = 2
     val t = SAtomic(classOf[Int])
 
-    println("type of a = " + a.getClass)
-    println("class of Int = " + classOf[Int])
+    //println("type of a = " + a.getClass)
+    //println("class of Int = " + classOf[Int])
 
-    println(t.typep(a))
+    assert(t.typep(a))
     class Abstract1
     class Abstract2
     trait Trait1
     trait Trait2
     trait Trait3
+    val t0 = SOr(SAtomic(classOf[Abstract1]),
+                SAtomic(classOf[Abstract2]))
     val t1 = SAnd(SAtomic(classOf[Trait1]),
-                  SOr(SAtomic(classOf[Abstract1]),
-                      SAtomic(classOf[Abstract2])),
+                  t0,
                   SAtomic(classOf[Trait2]))
     val t2 = SAnd(SAtomic(classOf[Trait1]),
-                  SNot(SOr(SAtomic(classOf[Abstract1]),
-                           SAtomic(classOf[Abstract2]))),
+                  SNot(t0),
                   SAtomic(classOf[Trait2]))
-    println(t1)
-    println(t2)
-    println(t2.canonicalize(nf = Some(Dnf)))
-    println(t1.canonicalize())
-    println(t1.canonicalize(nf = Some(Dnf)))
-    println(SNot(t1).canonicalize(nf = Some(Dnf)))
-    (0 to 10).foreach { i =>
-      val t = randomType(6)
-      println(s"$i:" + t)
-      println("   " + t.canonicalize())
-    }
+    assert(t1 == SAnd(SEmpty, t0, SEmpty))
+    assert(t2 == SAnd(SEmpty, SNot(t0), SEmpty))
+    assert(SEmpty == t2.canonicalize(nf = Some(Dnf)))
+    assert(SEmpty == t1.canonicalize())
+    assert(SEmpty == t1.canonicalize(nf = Some(Dnf)))
+    assert(STop == SNot(t1).canonicalize(nf = Some(Dnf)))
 
-    println(t1 || t2)
-    println(t1 && t2)
-    println(t1 ^^ t2)
-    println(t1 - t2)
-    println(!t1)
 
-    println(SAtomic(classOf[String]) || SAtomic(classOf[Integer]))
+    assert(SEmpty == (t1 || t2))
+    assert(SEmpty == (t1 && t2))
+    assert(SEmpty == (t1 ^^ t2))
+    assert(SEmpty == (t1 - t2))
+    assert(STop == (!t1))
+
+    assert((SAtomic(classOf[String]) || SAtomic(classOf[Integer])).typep("hello"))
+    assert((SAtomic(classOf[String]) || SAtomic(classOf[Integer])).typep(12))
+    assert(!((SAtomic(classOf[String]) || SAtomic(classOf[Integer])).typep(12.32)))
   }
 
 
@@ -89,6 +96,7 @@ class GenusRandomTypeTestSuite extends AdjFunSuite {
       val rte = SAnd(SAtomic(classOf[D]), SNot(SAnd(SAtomic(classOf[B]), SAtomic(classOf[C]))))
 
       println("xxxxxx -> " + rte.inhabited)
+      assert(Some(false) == rte.inhabited)
     }
   }
 
