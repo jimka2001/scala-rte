@@ -24,5 +24,6 @@ WORKDIR /app
 COPY . .
 RUN ls -la /app
 
+
 RUN sbt sbtVersion
 RUN sbt clean compile
