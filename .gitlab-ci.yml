@@ -12,7 +12,7 @@ docker-build:
   image: docker
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker build --pull -t $CI_REGISTRY_IMAGE:latest docker
+    - docker build --pull -f docker/Dockerfile -t $CI_REGISTRY_IMAGE:latest .
     - docker push $CI_REGISTRY_IMAGE:latest
   only:
     changes:
