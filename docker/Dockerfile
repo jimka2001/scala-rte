@@ -2,6 +2,7 @@ FROM eclipse-temurin:21-jdk-jammy
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
+      apt-transport-https \
       curl \
       gnupg \
       git \
@@ -10,14 +11,16 @@ RUN apt-get update \
       csh \
  && rm -rf /var/lib/apt/lists/*
 
-# Install sbt
-RUN curl -fsSL https://repo.scala-sbt.org/scalasbt/debian/gpg.key | gpg --dearmor -o /usr/share/keyrings/sbt.gpg \
- && echo "deb [signed-by=/usr/share/keyrings/sbt.gpg] https://repo.scala-sbt.org/scalasbt/debian all main" > /etc/apt/sources.list.d/sbt.list \
+RUN mkdir -p /etc/apt/keyrings \
+ && curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" \
+    | gpg --dearmor \
+    > /etc/apt/keyrings/scalasbt.gpg \
+ && echo "deb [signed-by=/etc/apt/keyrings/scalasbt.gpg] https://repo.scala-sbt.org/scalasbt/debian all main" \
+    > /etc/apt/sources.list.d/sbt.list \
  && apt-get update \
  && apt-get install -y sbt
 
 WORKDIR /app
-
 COPY . .
 
 RUN sbt sbtVersion
