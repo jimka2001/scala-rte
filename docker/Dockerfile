@@ -1,11 +1,9 @@
-FROM sbtscala/scala-sbt:eclipse-temurin-jammy-11.0.22_7_1.9.9_2.13.13
+FROM sbtscala/scala-sbt:eclipse-temurin-jammy-17.0.10_7_1.10.0
 
+# Rebuild image when this file changes
 
-# The .gitlab-ci.yml file at the top level directory checks whether this
-# file has changed, and if so rebuilds the docker image.
-
-RUN apt-get update                              \
-  && RUNLEVEL=1 DEBIAN_FRONTEND=noninteractive  \
+RUN apt-get update \
+  && RUNLEVEL=1 DEBIAN_FRONTEND=noninteractive \
      apt-get install -y --no-install-recommends \
        graphviz \
        gnuplot \
@@ -14,6 +12,10 @@ RUN apt-get update                              \
        curl \
        gnupg \
   && sbt sbtVersion
+
+WORKDIR /app
+
+COPY . .
 
 RUN sbt update
 RUN sbt compile
