@@ -30,50 +30,51 @@ class MapColoringTestSuite extends AdjFunSuite {
   override def test(testName: String, testTags: Tag*)(testFun: =>Any)(implicit pos: source.Position):Unit = {
     super.test(testName, testTags*){
       println(s"[ starting $testName")
-      testFun
+      Bdd.withNewBddHash {
+        testFun
+      }
       println(s"] finished $testName")
     }
   }
   import graphcolor.MapColoring._
 
   test("coloring") {
-    Bdd.withNewBddHash {
-      val nodes: List[String] = List("a", "b", "c", "d")
-      val uniDirectionalGraph: Map[String, Set[String]] = Map("a" -> Set(),
-                                                              "b" -> Set("a"),
-                                                              "c" -> Set("a"),
-                                                              "d" -> Set("c", "b"))
-      val biDirectionalGraph: Map[String, Set[String]] = Map("a" -> Set("b","c"),
-                                                             "b" -> Set("a","d"),
-                                                             "c" -> Set("a","d"),
-                                                             "d" -> Set("c", "b"))
+    val nodes: List[String] = List("a", "b", "c", "d")
+    val uniDirectionalGraph: Map[String, Set[String]] = Map("a" -> Set(),
+                                                            "b" -> Set("a"),
+                                                            "c" -> Set("a"),
+                                                            "d" -> Set("c", "b"))
+    val biDirectionalGraph: Map[String, Set[String]] = Map("a" -> Set("b","c"),
+                                                           "b" -> Set("a","d"),
+                                                           "c" -> Set("a","d"),
+                                                           "d" -> Set("c", "b"))
 
-      val colors = Array("red", "green", "blue", "yellow")
-      val (colorization, bdd) = politicalGraphToBdd(nodes,
-                                                    uniDirectionalGraph,
-                                                    biDirectionalGraph,
-                                                    4,
-                                           (_,_)=>(),
-                                                    List(),
-                                                    1,
-                                                    verbose=false)
-      bdd.visitSatisfyingAssignments { (assignTrue,assignFalse) =>
-        val colorMapping: Map[String, String] = assignColors(colorization, assignTrue,assignFalse, colors)
-        colors.foreach { color =>
-          val sameColorStates = colorMapping.view.filterKeys { state => colorMapping(state) == color }.keys
-          for {state1 <- sameColorStates
-               state2 <- sameColorStates
-               if state1 != state2
-               } locally {
-            // assert that if two states on the map are colored the same, then they don't connect
-            //   i.e., they don't share a border as per uniDirectionalGraph
-            assert(!uniDirectionalGraph(state1).contains(state2))
-            assert(!uniDirectionalGraph(state2).contains(state1))
-          }
+    val colors = Array("red", "green", "blue", "yellow")
+    val (colorization, bdd) = politicalGraphToBdd(nodes,
+                                                  uniDirectionalGraph,
+                                                  biDirectionalGraph,
+                                                  4,
+                                                  (_,_)=>(),
+                                                  List(),
+                                                  1,
+                                                  verbose=false)
+    bdd.visitSatisfyingAssignments { (assignTrue,assignFalse) =>
+      val colorMapping: Map[String, String] = assignColors(colorization, assignTrue,assignFalse, colors)
+      colors.foreach { color =>
+        val sameColorStates = colorMapping.view.filterKeys { state => colorMapping(state) == color }.keys
+        for {state1 <- sameColorStates
+             state2 <- sameColorStates
+             if state1 != state2
+             } locally {
+          // assert that if two states on the map are colored the same, then they don't connect
+          //   i.e., they don't share a border as per uniDirectionalGraph
+          assert(!uniDirectionalGraph(state1).contains(state2))
+          assert(!uniDirectionalGraph(state2).contains(state1))
         }
       }
     }
   }
+
 
   test("europe"){
     import graphcolor.sampleColoring.europeTimedMapColoringTest
@@ -88,31 +89,29 @@ class MapColoringTestSuite extends AdjFunSuite {
   }
   def sanityCheck(numNodes:Int,verbose:Boolean):Unit = {
     import adjuvant.Accumulators._
-    Bdd.withNewBddHash {
-      //val (states, subGraph) = findSubGraph("AL", numNodes)
-      val (colorization,bdd) = politicalGraphToBdd(List("CA"),
-                                                   USAgraph.stateUniGraph,
-                                                   USAgraph.stateBiGraph,
-                                                   numNodes,
-                                          (n,size)=> if (verbose) println(s"plot $n ${size()}"),
-                                                   List("AZ","CO","NM","UT"),
-                                                   1,
-                                                   verbose=verbose)
+    //val (states, subGraph) = findSubGraph("AL", numNodes)
+    val (colorization,bdd) = politicalGraphToBdd(List("CA"),
+                                                 USAgraph.stateUniGraph,
+                                                 USAgraph.stateBiGraph,
+                                                 numNodes,
+                                                 (n,size)=> if (verbose) println(s"plot $n ${size()}"),
+                                                 List("AZ","CO","NM","UT"),
+                                                 1,
+                                                 verbose=verbose)
 
-      if (verbose) println(s"colors=$colorization")
-      val countSolutions =
-        withCounter { count =>
-          bdd.visitSatisfyingAssignments { (assignTrue:Assignment,assignFalse:Assignment) =>
-            if (verbose)
-              println(s"   color assignment="+ assignColors(colorization,
-                                                            assignTrue,assignFalse,
-                                                            Array("red","green","blue","yellow")))
+    if (verbose) println(s"colors=$colorization")
+    val countSolutions =
+      withCounter { count =>
+        bdd.visitSatisfyingAssignments { (assignTrue:Assignment,assignFalse:Assignment) =>
+          if (verbose)
+            println(s"   color assignment="+ assignColors(colorization,
+                                                          assignTrue,assignFalse,
+                                                          Array("red","green","blue","yellow")))
             count()
-          }
         }
-      if (verbose)
-        println(s"How many possible colorizations of the graph of $numNodes nodes = $countSolutions")
-    }
+      }
+    if (verbose)
+      println(s"How many possible colorizations of the graph of $numNodes nodes = $countSolutions")
   }
 
   test("sanity") {
