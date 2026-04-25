@@ -1,4 +1,5 @@
-FROM docker.io/sbtscala/scala-sbt:eclipse-temurin-11.0.17_8_1.8.2_2.13.10
+FROM sbtscala/scala-sbt:eclipse-temurin-jammy-11.0.22_7_1.9.9_2.13.13
+
 
 # The .gitlab-ci.yml file at the top level directory checks whether this
 # file has changed, and if so rebuilds the docker image.
@@ -14,3 +15,4 @@ RUN apt-get update                              \
        gnupg \
   && sbt sbtVersion
 
+RUN sbt update
