@@ -16,3 +16,4 @@ RUN apt-get update                              \
   && sbt sbtVersion
 
 RUN sbt update
+RUN sbt compile
