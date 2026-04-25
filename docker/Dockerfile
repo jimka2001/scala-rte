@@ -1,6 +1,4 @@
-FROM sbtscala/scala-sbt:eclipse-temurin-jammy-17.0.10_7_1.10.0
-
-# Rebuild image when this file changes
+FROM sbtscala/scala-sbt:eclipse-temurin-jammy-11.0.22_7_1.9.9
 
 RUN apt-get update \
   && RUNLEVEL=1 DEBIAN_FRONTEND=noninteractive \
@@ -14,8 +12,6 @@ RUN apt-get update \
   && sbt sbtVersion
 
 WORKDIR /app
-
 COPY . .
 
-RUN sbt update
-RUN sbt compile
+RUN sbt clean compile
