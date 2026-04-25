@@ -56,6 +56,7 @@ class AdjFunSuite extends AnyFunSuite {
                   + " total time: " + format(elapsed()))
       }
     }
+
     AdjFunSuite.testImpl.invoke(this, testName, testTags, () => wrapper(), pos)
   }
 }
@@ -79,5 +80,6 @@ object AdjFunSuite {
     .getDeclaredMethods
     .find(m => m.getName.contains("testImpl") && m.getParameterCount == 4)
     .get
+
   testImpl.setAccessible(true)
 }
