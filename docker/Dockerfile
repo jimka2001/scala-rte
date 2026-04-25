@@ -1,17 +1,24 @@
-FROM sbtscala/scala-sbt:eclipse-temurin-jammy-11.0.22_7_1.9.9
+FROM eclipse-temurin:21-jdk-jammy
 
 RUN apt-get update \
-  && RUNLEVEL=1 DEBIAN_FRONTEND=noninteractive \
-     apt-get install -y --no-install-recommends \
-       graphviz \
-       gnuplot \
-       git \
-       csh \
-       curl \
-       gnupg \
-  && sbt sbtVersion
+ && apt-get install -y --no-install-recommends \
+      curl \
+      gnupg \
+      git \
+      graphviz \
+      gnuplot \
+      csh \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install sbt
+RUN curl -fsSL https://repo.scala-sbt.org/scalasbt/debian/gpg.key | gpg --dearmor -o /usr/share/keyrings/sbt.gpg \
+ && echo "deb [signed-by=/usr/share/keyrings/sbt.gpg] https://repo.scala-sbt.org/scalasbt/debian all main" > /etc/apt/sources.list.d/sbt.list \
+ && apt-get update \
+ && apt-get install -y sbt
 
 WORKDIR /app
+
 COPY . .
 
+RUN sbt sbtVersion
 RUN sbt clean compile
