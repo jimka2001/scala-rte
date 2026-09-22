@@ -24,3 +24,15 @@ $(GNU_DIR)/%.pdf: $(GNU_DIR)/%.gnu
 
 clean:
 	rm -rf newton.2025.scalaio.slides.pdf *.sta *.log *.fls *.aux *.fdb_latexmk *.snm *.out *.nav *.toc
+
+WEBPAGE_REPO := git@gitlab.lre.epita.fr:lre/lre-web/members/jim-newton.git
+
+webpage: newton.2025.scalaio.slides.pdf
+	tmp=$$(mktemp -d) && \
+	git clone --depth 1 --quiet $(WEBPAGE_REPO) $$tmp && \
+	cp newton.2025.scalaio.slides.pdf $$tmp/ && \
+	cd $$tmp && \
+	git add newton.2025.scalaio.slides.pdf && \
+	(git diff --cached --quiet || git commit --quiet -m "Update newton.2025.scalaio.slides.pdf") && \
+	git push --quiet ; \
+	status=$$? ; rm -rf $$tmp ; exit $$status
