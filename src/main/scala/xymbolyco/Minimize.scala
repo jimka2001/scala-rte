@@ -166,6 +166,25 @@ object Minimize {
         m.toSet
       }
 
+      // TODO (proposed fix, see newton.27.lmcs, Perspectives): states are
+      //   split by *structural* equality (==) of their Phi sets, i.e. of
+      //   their (combined label, destination class) pairs.  The labels are
+      //   combined and canonicalized, but never compared semantically, so two
+      //   states whose labels are equivalent -- even provably so -- but
+      //   canonicalize to different designators are not merged.  minimize
+      //   is therefore sound (it never merges inequivalent states) but not
+      //   maximal.  Proposed fix: in addition to structural equality, also
+      //   treat s1 and s2 as equivalent when they reach the same
+      //   destination classes and, for each class, the XOR of their
+      //   combined labels is provably empty (labeler.inhabited returns
+      //   Some(false)); merge only on that certain answer, never on None.
+      //   Costs extra semi-Boolean calls, pairwise within a class.
+      //   TODO (tests, not yet written): add test cases for this situation:
+      //   a DFA with two states whose labels into the same destination class
+      //   are equivalent (e.g. T' and T'' into one class vs. a single T'|T''
+      //   label) but canonicalize differently.  Today they must stay
+      //   separate; with the fix they must merge, and they must never merge
+      //   when the XOR's emptiness is only dont-know.
       def repartition(eqvClass: EQVCLASS): PARTITION = {
         partitionBy(eqvClass, Phi)
       }
