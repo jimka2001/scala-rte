@@ -271,6 +271,82 @@ class DfaTestSuite extends AdjFunSuite {
     assert(dfa.simulate(Seq(1, 0, 2, 0)) == None)
   }
 
+  // A Dfa for testing successors() and predecessors():
+  //   state 3 is accepting and has no exiting transition,
+  //   state 4 is reached only by a transition whose label is empty,
+  //   state 5 has no transition at all.
+  //      0 -{1}-> 1    0 -{2}-> 2    1 -{1,2}-> 2    2 -{3}-> 3    1 -{}-> 4
+  def dfaWithTransitionlessStates: Dfa[Int, Set[Int], Int] =
+    Dfa[Int, Set[Int], Int](Set(0, 1, 2, 3, 4, 5),
+                            0,
+                            Set(3),
+                            Set((0, Set(1), 1),
+                                (0, Set(2), 2),
+                                (1, Set(1, 2), 2),
+                                (2, Set(3), 3),
+                                (1, Set[Int](), 4)),
+                            new IntLabelerT1,
+                            Map(3 -> 1),
+                            defaultExitValue = 0)
+
+  // TODO (cross-implementation test audit): verify whether equivalent tests
+  //   exist in the Clojure and Python implementations, and whether any code in
+  //   any implementation derives "the set of states" from the transition
+  //   relation, as complete() did before fe1ab296.  Not yet checked.
+  test("successors has keys only for states with an exiting transition") {
+    val dfa = dfaWithTransitionlessStates
+    val succ = dfa.successors()
+    // a transition labeled by an empty type is not a successor edge (0 -> ... -> 4)
+    assert(succ == Map(0 -> Set(1, 2),
+                       1 -> Set(2),
+                       2 -> Set(3)))
+    // states 3, 4, 5 have no (non-empty) exiting transition, hence are not keys
+    assert(!succ.contains(3))
+    assert(!succ.contains(4))
+    assert(!succ.contains(5))
+    // callers therefore must not index without a default
+    assert(succ.getOrElse(3, Set()) == Set())
+  }
+
+  test("predecessors has keys only for states with an entering transition") {
+    val dfa = dfaWithTransitionlessStates
+    val pred = dfa.predecessors()
+    // unlike successors(), predecessors() does not look at labels, so the
+    //   transition 1 -{}-> 4 is included.
+    assert(pred == Map(1 -> Set(0),
+                       2 -> Set(0, 1),
+                       3 -> Set(2),
+                       4 -> Set(1)))
+    // states 0 and 5 have no entering transition, hence are not keys
+    assert(!pred.contains(0))
+    assert(!pred.contains(5))
+  }
+
+  test("removeNonAccessible keeps an accepting state without exiting transitions") {
+    val dfa = dfaWithTransitionlessStates
+    val accessible = Minimize.removeNonAccessible(dfa)
+    // 3 is reachable, and has no exiting transition: it must survive
+    assert(accessible.Qids == Set(0, 1, 2, 3))
+    assert(accessible.Fids == Set(3))
+    assert(accessible.simulate(Seq(2, 3)) == Some(1))
+    // 4 is reachable only via a transition labeled by an empty type, and 5 not at all
+    assert(!accessible.Qids.contains(4))
+    assert(!accessible.Qids.contains(5))
+  }
+
+  test("removeNonCoAccessible keeps an accepting state without exiting transitions") {
+    val dfa = dfaWithTransitionlessStates
+    val coaccessible = Minimize.removeNonCoAccessible(dfa)
+    // the search starts from the final states, so the final state 3 is kept
+    //   although it has no exiting transition
+    assert(coaccessible.Qids == Set(0, 1, 2, 3))
+    assert(coaccessible.Fids == Set(3))
+    assert(coaccessible.simulate(Seq(2, 3)) == Some(1))
+    // 4 and 5 cannot reach a final state
+    assert(!coaccessible.Qids.contains(4))
+    assert(!coaccessible.Qids.contains(5))
+  }
+
   test("minimize dfa") {
 
     val t1 = Set("a1") // fixnum
